@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "fr.uge.structsure"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -53,7 +53,7 @@ dependencies {
         "dir" to "libs",
         "include" to listOf("*.aar", "*.jar"),
     )))
-
+    implementation(libs.androidx.ui.test.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
