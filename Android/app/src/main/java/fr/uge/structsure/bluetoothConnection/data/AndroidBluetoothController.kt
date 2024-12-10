@@ -9,7 +9,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.widget.TextView
 import com.csl.cs108library4a.Cs108Library4A
-import com.csl.cs108library4a.ReaderDevice
+import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.bluetoothConnection.domain.BluetoothController
 import fr.uge.structsure.bluetoothConnection.domain.BluetoothDeviceDomain
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,17 +73,23 @@ class AndroidBluetoothController(
     }
 
     override fun startDiscovery() {
-        if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)){
-            return
-        }
-
-        context.registerReceiver(
-            foundDeviceReceiver,
-            IntentFilter(BluetoothDevice.ACTION_FOUND)
-        )
-
-        updatePairedDevices()
-        bluetoothAdapter?.startDiscovery()
+//        if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)){
+//            return
+//        }
+//
+//        context.registerReceiver(
+//            foundDeviceReceiver,
+//            IntentFilter(BluetoothDevice.ACTION_FOUND)
+//        )
+//
+//        updatePairedDevices()
+//        bluetoothAdapter?.startDiscovery()
+        val cs108Lib = Cs108Library4A(context,  TextView(context))
+//
+//        val readerDevice = cs108Lib.readerListAdapter.getItem(position);
+//        if (cs108Lib.isBleConnected() && readerDevice.isConnected()) {
+//            cs108Lib
+//        }
     }
 
     override fun stopDiscovery() {

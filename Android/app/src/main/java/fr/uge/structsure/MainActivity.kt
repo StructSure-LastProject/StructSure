@@ -5,23 +5,22 @@ import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
-import fr.uge.structsure.bluetoothConnection.data.AndroidBluetoothController
-import fr.uge.structsure.bluetoothConnection.domain.BluetoothController
-import fr.uge.structsure.bluetoothConnection.presentation.BluetoothViewModel
-import fr.uge.structsure.bluetoothConnection.presentation.components.DeviceScreen
+import com.csl.cs108library4a.Cs108Library4A
+import fr.uge.structsure.bluetooth.cs108.Connexion
+import fr.uge.structsure.bluetoothConnection.presentation.BluetoothPage
 import fr.uge.structsure.ui.theme.StructSureTheme
 
 class MainActivity : ComponentActivity() {
-    private lateinit var bluetoothController: BluetoothController
-    private lateinit var bluetoothViewModel: BluetoothViewModel
+    companion object {
+        lateinit var csLibrary4A: Cs108Library4A
+    }
 
     private val bluetoothManager by lazy {
         applicationContext.getSystemService(BluetoothManager::class.java)
@@ -35,6 +34,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        csLibrary4A = Cs108Library4A(this, TextView(this))
 
         val enableBluetoothLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -65,18 +65,39 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             StructSureTheme {
-                val viewModel = BluetoothViewModel(AndroidBluetoothController(LocalContext.current))
-                val state by viewModel.state.collectAsState()
+                val connexion = Connexion(LocalContext.current)
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    DeviceScreen(
-                        state = state,
-                        onStartScan = viewModel::startScan,
-                        onStopScan = viewModel::stopScan
-                    )
+                    BluetoothPage(connexion)
                 }
             }
         }
+
+//        setContent {
+//            StructSureTheme {
+//                val viewModel = BluetoothViewModel(AndroidBluetoothController(LocalContext.current))
+//                val state by viewModel.state.collectAsState()
+//                Surface(
+//                    color = MaterialTheme.colorScheme.background
+//                ) {
+//                    DeviceScreen(
+//                        state = state,
+//                        onStartScan = viewModel::startScan,
+//                        onStopScan = viewModel::stopScan
+//                    )
+//                }
+//            }
+//        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        csLibrary4A.connect(null)
+    }
+
+    override fun onDestroy() {
+        csLibrary4A.disconnect(true)
+        super.onDestroy()
     }
 }
