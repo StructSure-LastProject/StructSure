@@ -54,6 +54,12 @@ dependencies {
         "include" to listOf("*.aar", "*.jar"),
     )))
 
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.material)
+    implementation(libs.ui)
+    implementation(libs.ui.tooling.preview)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
