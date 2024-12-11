@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -62,24 +61,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.ui)
     implementation(libs.ui.tooling.preview)
-    implementation(libs.androidx.foundation.android)
-    implementation(libs.androidx.room)
-    implementation(libs.androidx.room.ktx)
-
-    // ViewModel for Jetpack Compose
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-
-    //Retrofit
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.gson) // Converter JSON
-    implementation(libs.okhttp)
-    implementation(libs.logging.interceptor)
-    implementation(libs.androidx.runtime.livedata)
-
-
-    ksp(libs.androidx.room.compiler)
-    annotationProcessor(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
