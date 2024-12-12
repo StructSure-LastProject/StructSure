@@ -13,6 +13,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.start_scan.domain.ScanState
+import fr.uge.structsure.start_scan.presentation.components.Variables
 
 @Composable
 fun ToolBar(
@@ -70,7 +71,6 @@ fun ToolBar(
                     )
                 }
             }
-
             ScanState.PAUSED -> {
                 ActionButton(
                     iconRes = R.drawable.play,
@@ -78,8 +78,6 @@ fun ToolBar(
                     onClick = onPlayClick
                 )
             }
-
-            ScanState.STOPPED -> TODO()
         }
 
         Column(

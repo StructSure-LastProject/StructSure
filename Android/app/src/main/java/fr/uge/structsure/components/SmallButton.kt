@@ -29,11 +29,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 
-@Composable
-@Preview
-fun Preview() {
-    // SmallButton(R.drawable.x, "")
-}
 
 /**
  * Component for a header menu button defined by an icon, a description, color and link
