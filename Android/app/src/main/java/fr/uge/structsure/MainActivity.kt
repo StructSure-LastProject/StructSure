@@ -34,10 +34,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Test database
-        val appDatabase = AppDatabase.getDatabase(this)
-        val userDao = appDatabase.userDao()
-        userDao.insert(UserData(uid = 0,lastName = "jean", firstName = "Dupont"))
+
+        val db = AppDatabase.getDatabase(this)
+        val userDao = db.userDao()
+
+        val user = UserData(uid = 1, firstName = "John", lastName = "Doe")
+        val existingUser = userDao.getAll().find { it.uid == user.uid }
+
+        if (existingUser == null) {
+            userDao.insert(user)
+        }
 
         setContent {
             StructSureTheme {
