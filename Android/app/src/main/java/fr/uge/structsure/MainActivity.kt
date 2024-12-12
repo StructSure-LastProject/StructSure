@@ -74,7 +74,6 @@ class MainActivity : ComponentActivity() {
                         PlansView(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .fillMaxHeight()
                         )
                         SensorsListView(modifier = Modifier
                             .fillMaxWidth())
@@ -96,6 +95,14 @@ fun HeaderViewPreview() {
 
 @Preview(showBackground = true)
 @Composable
+fun SensorsListView() {
+    StructSureTheme {
+        SensorsListView()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
 fun StructureSummaryViewPreview() {
     StructSureTheme {
         Column(
@@ -106,8 +113,7 @@ fun StructureSummaryViewPreview() {
             HeaderView()
             StructureSummaryView()
             PlansView(modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Red))
+                .fillMaxWidth())
             SensorsListView(modifier = Modifier
                 .fillMaxWidth())
         }
