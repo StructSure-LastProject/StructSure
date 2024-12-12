@@ -34,7 +34,9 @@ fun PlansView(modifier: Modifier = Modifier) {
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp),
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
+        modifier = Modifier
+            .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -51,13 +53,14 @@ fun PlansView(modifier: Modifier = Modifier) {
         }
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(15.dp),
+            verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start,
             modifier = Modifier
                 .width(378.dp)
-                .background(color = Variables.White, shape = RoundedCornerShape(20.dp))
-                .padding(20.dp)
-        ) {
+                .height(433.dp)
+                .background(color = Variables.White, shape = RoundedCornerShape(size = 20.dp))
+                .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
+        )  {
             Image(
                 painter = painterResource(id = R.drawable.oa_plan),
                 contentDescription = "Plan",

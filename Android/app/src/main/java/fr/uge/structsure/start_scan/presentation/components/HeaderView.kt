@@ -17,7 +17,7 @@ fun HeaderView(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(100.dp),
+            .height(70.dp),
         contentAlignment = Alignment.TopCenter
     ) {
         Image(
