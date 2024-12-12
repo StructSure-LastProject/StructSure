@@ -20,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import fr.uge.structsure.database.AppDatabase
+import fr.uge.structsure.dbTest.data.UserData
 import fr.uge.structsure.start_scan.presentation.components.HeaderView
 import fr.uge.structsure.start_scan.presentation.components.PlansView
 import fr.uge.structsure.start_scan.presentation.components.StructureSummaryView
@@ -31,6 +33,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Test database
+        val appDatabase = AppDatabase.getDatabase(this)
+        val userDao = appDatabase.userDao()
+        userDao.insert(UserData(uid = 0,lastName = "jean", firstName = "Dupont"))
 
         setContent {
             StructSureTheme {
