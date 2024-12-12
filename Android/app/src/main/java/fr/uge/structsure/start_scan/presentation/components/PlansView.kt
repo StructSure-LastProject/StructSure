@@ -35,7 +35,7 @@ fun PlansView(modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp),
         horizontalAlignment = Alignment.Start,
-        modifier = Modifier
+        modifier = modifier
             .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
     ) {
         Row(
