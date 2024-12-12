@@ -1,6 +1,7 @@
 package fr.uge.structsure
 
 
+import ToolBar
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,7 +26,6 @@ import fr.uge.structsure.dbTest.data.UserData
 import fr.uge.structsure.start_scan.presentation.components.HeaderView
 import fr.uge.structsure.start_scan.presentation.components.PlansView
 import fr.uge.structsure.start_scan.presentation.components.StructureSummaryView
-import fr.uge.structsure.start_scan.presentation.components.ToolBar
 import fr.uge.structsure.ui.theme.StructSureTheme
 
 
