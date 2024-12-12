@@ -1,5 +1,8 @@
+package fr.uge.structsure.start_scan.presentation.components
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -9,11 +12,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
+import fr.uge.structsure.start_scan.domain.ScanState
 import fr.uge.structsure.start_scan.presentation.components.Variables
 
 @Composable
 fun ToolBar(
+    currentState: ScanState,
     onPlayClick: () -> Unit,
+    onPauseClick: () -> Unit,
+    onStopClick: () -> Unit,
     onSyncClick: () -> Unit,
     onContentClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -27,74 +34,87 @@ fun ToolBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.Top),
-            horizontalAlignment = Alignment.Start,
             modifier = Modifier
                 .width(77.dp)
                 .height(58.dp)
                 .background(color = Variables.White, shape = RoundedCornerShape(size = 50.dp))
-                .padding(start = 15.dp, top = 15.dp, end = 15.dp, bottom = 15.dp)
+                .padding(15.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .width(47.dp)
-                    .height(28.dp)
-                    .padding(start = 2.dp, top = 2.dp, bottom = 2.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.undo),
-                    contentDescription = "image description",
-                    contentScale = ContentScale.None,
-                    modifier = Modifier
-                        .padding(1.dp)
-                        .width(28.dp)
-                        .height(22.dp)
+            Image(
+                painter = painterResource(id = R.drawable.undo),
+                contentDescription = "Undo",
+                contentScale = ContentScale.None,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+
+        when (currentState) {
+            ScanState.NOT_STARTED -> {
+                ActionButton(
+                    iconRes = R.drawable.play,
+                    description = "Play",
+                    onClick = onPlayClick
+                )
+            }
+            ScanState.STARTED -> {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ActionButton(
+                        iconRes = R.drawable.pause,
+                        description = "Pause",
+                        onClick = onPauseClick
+                    )
+                    ActionButton(
+                        iconRes = R.drawable.square,
+                        description = "Stop",
+                        onClick = onStopClick
+                    )
+                }
+            }
+            ScanState.PAUSED -> {
+                ActionButton(
+                    iconRes = R.drawable.play,
+                    description = "Resume",
+                    onClick = onPlayClick
                 )
             }
         }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.Start),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .width(72.dp)
-                .height(72.dp)
-                .background(color = Variables.Black, shape = RoundedCornerShape(size = 100.dp))
-                .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 20.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.play),
-                contentDescription = "image description",
-                contentScale = ContentScale.None,
-                modifier = Modifier
-                    .padding(1.dp)
-                    .width(32.dp)
-                    .height(32.dp)
-            )
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
             modifier = Modifier
                 .width(75.dp)
                 .height(58.dp)
                 .background(color = Variables.White, shape = RoundedCornerShape(size = 50.dp))
-                .padding(start = 24.dp, top = 15.dp, end = 23.dp, bottom = 15.dp)
+                .padding(15.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
                 painter = painterResource(id = R.drawable.notepad_text),
-                contentDescription = "image description",
+                contentDescription = "Notes",
                 contentScale = ContentScale.None,
-                modifier = Modifier
-                    .padding(1.dp)
-                    .width(28.dp)
-                    .height(28.dp)
+                modifier = Modifier.size(28.dp).clickable { onContentClick() }
             )
         }
+    }
+}
 
-
+@Composable
+fun ActionButton(iconRes: Int, description: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .width(72.dp)
+            .height(72.dp)
+            .background(color = Variables.Black, shape = RoundedCornerShape(50.dp))
+            .padding(20.dp)
+            .clickable { onClick() },
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = iconRes),
+            contentDescription = description,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(32.dp)
+        )
     }
 }
