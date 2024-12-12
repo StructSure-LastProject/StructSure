@@ -73,22 +73,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-//        setContent {
-//            StructSureTheme {
-//                val viewModel = BluetoothViewModel(AndroidBluetoothController(LocalContext.current))
-//                val state by viewModel.state.collectAsState()
-//                Surface(
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//                    DeviceScreen(
-//                        state = state,
-//                        onStartScan = viewModel::startScan,
-//                        onStopScan = viewModel::stopScan
-//                    )
-//                }
-//            }
-//        }
     }
 
     override fun onRestart() {
