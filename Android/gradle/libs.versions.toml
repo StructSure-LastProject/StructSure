@@ -16,6 +16,8 @@ materialVersion = "1.7.6"
 ui = "1.7.6"
 uiToolingPreview = "1.7.6"
 foundationAndroid = "1.6.6"
+room_version = "2.6.1"
+ksp = "2.0.21-1.0.27"
 uiTestAndroid = "1.7.5"
 navigationCompose = "2.8.5"
 
@@ -47,9 +49,14 @@ material = { module = "com.google.android.material:material", version.ref = "mat
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 androidx-foundation-android = { group = "androidx.compose.foundation", name = "foundation-android", version.ref = "foundationAndroid" }
+androidx-room = {group = "androidx.room", name = "room-runtime", version.ref = "room_version" }
+androidx-room-compiler = {group = "androidx.room", name = "room-compiler", version.ref = "room_version" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room_version" }
+androidx-room-testing = {group = "androidx.room", name = "room-testing", version.ref = "room_version"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
