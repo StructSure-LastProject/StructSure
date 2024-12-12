@@ -1,4 +1,4 @@
-package fr.uge.structsure.ui.components
+package fr.uge.structsure.start_scan.presentation.components
 
 
 import android.text.TextUtils.EllipsizeCallback
@@ -38,9 +38,9 @@ fun StructureSummaryView() {
                 fontWeight = FontWeight.Bold
             )
             Icon(
-                painter = painterResource(id = R.drawable.structsure_logo),
+                painter = painterResource(id = R.drawable.notepad_text),
                 contentDescription = "Sync Icon",
-                modifier = Modifier.size(40.dp).
+                modifier = Modifier.size(20.dp).
                 background(Color.White, shape = RoundedCornerShape(20.dp))
             )
         }

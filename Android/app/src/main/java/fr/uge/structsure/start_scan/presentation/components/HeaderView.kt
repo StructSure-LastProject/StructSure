@@ -1,4 +1,4 @@
-package fr.uge.structsure.ui.components
+package fr.uge.structsure.start_scan.presentation.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
