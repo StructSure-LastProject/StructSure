@@ -19,10 +19,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import fr.uge.structsure.R
+import fr.uge.structsure.start_scan.domain.ScanViewModel
+
 
 @Composable
-fun StructureSummaryView() {
+fun StructureSummaryView(viewModel: ScanViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -31,7 +34,6 @@ fun StructureSummaryView() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight()
                 .padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -77,7 +79,7 @@ fun SensorStatusColumn() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        repeat(5) { index ->
+        repeat(4) { index ->
             SensorStatusCircle(sensorNumber = index + 21, sensorState = SensorState.values()[index % 4])
             Spacer(modifier = Modifier.height(8.dp))
         }

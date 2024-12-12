@@ -1,4 +1,9 @@
 package fr.uge.structsure.start_scan.presentation.components
 
-class StatsView {
+import androidx.compose.runtime.Composable
+
+@Composable
+fun StatsView() {
+
+
 }
