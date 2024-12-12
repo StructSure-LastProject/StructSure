@@ -32,7 +32,7 @@ import fr.uge.structsure.R
 @Composable
 @Preview
 fun Preview() {
-    SmallButton(R.drawable.x, "")
+    // SmallButton(R.drawable.x, "")
 }
 
 /**
