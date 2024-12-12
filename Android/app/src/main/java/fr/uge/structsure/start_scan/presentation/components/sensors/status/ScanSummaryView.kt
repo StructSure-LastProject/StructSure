@@ -1,6 +1,7 @@
-package fr.uge.structsure.start_scan.presentation.components.sensors.status
+package fr.uge.structsure.start_scan.presentation.components
 
 
+import android.text.TextUtils.EllipsizeCallback
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,17 +14,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import fr.uge.structsure.R
+import fr.uge.structsure.start_scan.domain.ScanViewModel
+
 import fr.uge.structsure.start_scan.presentation.components.StatsView
 import fr.uge.structsure.start_scan.presentation.components.Variables
 import fr.uge.structsure.start_scan.presentation.components.poppinsFontFamily
 
-@Preview(showBackground = true)
 @Composable
-fun StructureSummaryView() {
+fun StructureSummaryView(viewModel: ScanViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,7 +73,6 @@ fun StructureSummaryView() {
     }
 }
 
-@Preview(showBackground = true)
 @Composable
 fun SensorStatusColumn() {
     Row(
@@ -79,22 +80,46 @@ fun SensorStatusColumn() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        // TODO
-        SensorStatus(
-            SensorState.OK,
-            "27"
-        )
-        SensorStatus(
-            SensorState.NOK,
-            "12"
-        )
-        SensorStatus(
-            SensorState.DEFECTIVE,
-            "0"
-        )
-        SensorStatus(
-            SensorState.UNSCAN,
-            "171"
-        )
+        repeat(5) { index ->
+            SensorStatusCircle(sensorNumber = index + 21, sensorState = SensorState.values()[index % 4])
+            Spacer(modifier = Modifier.height(8.dp))
+        }
     }
+}
+
+
+@Composable
+fun SensorStatusCircle(sensorNumber: Int, sensorState: SensorState) {
+    Box(
+        modifier = Modifier
+            .size(width = 80.dp, height = 40.dp)
+            .background(Color.White, shape = RoundedCornerShape(20.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(20.dp)
+                    .background(sensorState.color, shape = RoundedCornerShape(10.dp))
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = sensorNumber.toString(),
+                color = Color.Black,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+enum class SensorState(val color: Color) {
+    GREEN(Color.Green),
+    RED(Color.Red),
+    ORANGE(Color(0xFFFFA500)), // Orange color
+    GRAY(Color.Gray)
 }

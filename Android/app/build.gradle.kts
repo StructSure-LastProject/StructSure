@@ -66,6 +66,10 @@ dependencies {
     implementation(libs.androidx.room)
     implementation(libs.androidx.room.ktx)
 
+    // ViewModel for Jetpack Compose
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
     ksp(libs.androidx.room.compiler)
     annotationProcessor(libs.androidx.room.compiler)
 
