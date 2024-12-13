@@ -30,6 +30,7 @@ import fr.uge.structsure.start_scan.presentation.components.HeaderView
 import fr.uge.structsure.start_scan.presentation.components.PlansView
 import fr.uge.structsure.start_scan.presentation.components.StructureSummaryView
 import fr.uge.structsure.start_scan.presentation.components.ToolBar
+import fr.uge.structsure.start_scan.presentation.components.sensors.list.SensorsListView
 import fr.uge.structsure.ui.theme.StructSureTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +51,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             StructSureTheme {
-                val scanViewModel: ScanViewModel = viewModel(factory = ScanViewModel.provideFactory(scanDao))
+                val scanViewModel: ScanViewModel =
+                    viewModel(factory = ScanViewModel.provideFactory(scanDao))
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -117,6 +119,10 @@ class MainActivity : ComponentActivity() {
                         HeaderView()
                         StructureSummaryView(viewModel = scanViewModel)
                         PlansView(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                        SensorsListView(
                             modifier = Modifier
                                 .fillMaxWidth()
                         )
