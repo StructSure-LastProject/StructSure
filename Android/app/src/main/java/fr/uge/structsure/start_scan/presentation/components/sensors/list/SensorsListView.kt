@@ -29,7 +29,7 @@ fun SensorsListView(
     Column(
         verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.Start,
-        modifier = modifier.padding(start = 20.dp)
+        modifier = modifier.padding(20.dp)
 
     ) {
         Row(
@@ -37,6 +37,7 @@ fun SensorsListView(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(8.dp)
         ) {
             Text(
                 text = "Capteurs",
