@@ -1,29 +1,22 @@
-package fr.uge.structsure.start_scan.presentation.components.sensorsview
+package fr.uge.structsure.start_scan.presentation.components.sensors.list
 
-import android.content.res.Configuration
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import fr.uge.structsure.R
 import fr.uge.structsure.bluetoothConnection.presentation.SmallButton
 import fr.uge.structsure.start_scan.presentation.components.Variables
-import fr.uge.structsure.start_scan.presentation.components.poppinsFontFamily
+import fr.uge.structsure.start_scan.presentation.components.sensors.status.SensorState
 import fr.uge.structsure.ui.theme.Typography
+
+// Temporary variables for the sensors list
+const val SENSORS_NUMBER = 30
+val SENSORS_STATES_LIST = List(SENSORS_NUMBER) { SensorState.entries.toTypedArray().random() }
 
 @Preview(showBackground = true)
 @Composable
