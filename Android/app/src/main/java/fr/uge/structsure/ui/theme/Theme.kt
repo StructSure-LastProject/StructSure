@@ -5,11 +5,14 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -65,7 +68,11 @@ fun StructSureTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content,
         shapes = MaterialTheme.shapes.copy(medium = RoundedCornerShape(20.dp))
-    )
+    ) {
+        CompositionLocalProvider(LocalTextSelectionColors provides TextSelectionColors(
+            handleColor = Black,
+            backgroundColor = Black.copy(alpha = 0.25f)
+        ), content)
+    }
 }

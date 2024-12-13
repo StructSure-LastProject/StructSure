@@ -10,4 +10,4 @@ val Red = Color(0xFFF13327)
 
 val Ok = Color(0xFF25B61F)
 val Unknown = Color(0xFF6A6A6A)
-val Defaillant = Color(0xFFF19327)
+val Gray = Color(0xFFF19327)
