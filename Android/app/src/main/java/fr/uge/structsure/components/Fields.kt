@@ -3,7 +3,7 @@ package fr.uge.structsure.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,7 +40,7 @@ fun InputText(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit = {}
 ) {
-    Input(modifier, label, value, placeholder, false, onChange, keyboardOptions)
+    Input(modifier, label, value, placeholder, false, onChange, false, keyboardOptions)
 }
 
 /**
@@ -65,6 +65,28 @@ fun InputPassword(
     Input(modifier, label, value, placeholder, true, onChange)
 }
 
+/**
+ * Field containing a multiple lines text input and a label.
+ * @param modifier to customise the text input
+ * @param label the name of the field
+ * @param value the variable in which the text will be stored
+ * @param placeholder indicative text placed in the input when no
+ *     value is typed
+ * @param keyboardOptions modifier to format the text while being typed
+ * @param onChange callback to capture input value modifications
+ */
+@Composable
+fun InputTextArea (
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    placeholder: String = "",
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    onChange: (String) -> Unit = {}
+) {
+    Input(Modifier.defaultMinSize(minHeight = 75.dp).then(modifier), label, value, placeholder, false, onChange, true, keyboardOptions)
+}
+
 @Composable
 private fun Input(
     modifier: Modifier,
@@ -73,6 +95,7 @@ private fun Input(
     placeholder: String,
     password: Boolean,
     onChange: (String) -> Unit,
+    multiLines: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
     Column(
@@ -84,12 +107,12 @@ private fun Input(
             value = value,
             onValueChange = onChange,
             modifier = modifier.fillMaxWidth()
-                .background(color = LightGray, shape = RoundedCornerShape(size = 50.dp))
+                .background(color = LightGray, shape = RoundedCornerShape(size = if (multiLines) 10.dp else 50.dp))
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             enabled = true,
-            textStyle = MaterialTheme.typography.headlineMedium,
+            textStyle = if (multiLines) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
             keyboardOptions = if (password) KeyboardOptions(keyboardType = KeyboardType.Password) else keyboardOptions,
-            singleLine = true,
+            singleLine = !multiLines,
             visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
             decorationBox = { innerTextField -> // Placeholder
                 if (value.isEmpty()) Text(
