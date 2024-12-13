@@ -1,17 +1,26 @@
 package fr.uge.structsure.start_scan.presentation.components.sensorsview
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.tooling.preview.Preview
 
 val SENSORS_NUMBER = 30
 
+@Preview(showBackground = true)
 @Composable
 fun SensorGridView(
     modifier: Modifier = Modifier
@@ -23,11 +32,12 @@ fun SensorGridView(
     val screenHeight = configuration.screenHeightDp.dp
 
     // LazyVerticalGrid -> s'afficher en grille en fonction de l'orientation
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(if (isLandscape) 4 else 2), // 3 colonnes en mode paysage, 1 en portrait
-        modifier = Modifier
+    LazyColumn (
+        modifier = modifier
             .fillMaxWidth()
+            .background(Color.White, shape = RoundedCornerShape(16.dp))
             .heightIn(min = 0.dp, max = screenHeight * 0.8f)
+            .padding(4.dp)
     ) {
         items(SENSORS_NUMBER) { index ->
             // Affichage de chaque capteur
