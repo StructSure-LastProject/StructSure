@@ -30,7 +30,6 @@ import fr.uge.structsure.start_scan.presentation.components.HeaderView
 import fr.uge.structsure.start_scan.presentation.components.PlansView
 import fr.uge.structsure.start_scan.presentation.components.StructureSummaryView
 import fr.uge.structsure.start_scan.presentation.components.ToolBar
-import fr.uge.structsure.start_scan.presentation.components.sensors.list.SensorsListView
 import fr.uge.structsure.ui.theme.StructSureTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -121,9 +120,6 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                                 .fillMaxWidth()
                         )
-
-                        SensorsListView(modifier = Modifier
-                            .fillMaxWidth())
                     }
                 }
             }
@@ -131,11 +127,3 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun HeaderViewPreview() {
-    StructSureTheme {
-        HeaderView()
-    }
-}
