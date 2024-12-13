@@ -24,7 +24,6 @@ fun SensorsListView(
     modifier: Modifier = Modifier
 ) {
     var isSensorListVisible by remember { mutableStateOf(true) }
-    val sensorBackgroundColors = remember { mutableStateListOf(*Array(5) { Variables.White }) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
@@ -32,28 +31,9 @@ fun SensorsListView(
         modifier = modifier.padding(20.dp)
 
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            Text(
-                text = "Capteurs",
-                style = Typography.titleLarge
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-                modifier = Modifier
-            ) {
-                SmallButton(R.drawable.arrow_down_narrow_wide, "Sort")
-                SmallButton(R.drawable.filter, "Filter")
-                SmallButton(R.drawable.plus, "Add", Color.White, Color.Black)
-            }
-        }
+        SensorListHeader()
         if (isSensorListVisible) {
-            SensorGridView(modifier = modifier)
+            SensorList(modifier = modifier)
         }
     }
 }

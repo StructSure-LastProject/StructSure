@@ -27,10 +27,21 @@ val poppinsFontFamily = FontFamily(
     Font(R.font.poppins_bold, FontWeight.Bold)
 )
 
+
+val PLANS_TEMPORARY = listOf(
+    PlanData(name = "Plan A", sectionPath = "sec1/"),
+    // PlanData(name = "Plan C", sectionPath = "sec1/sec2/sec3/"),
+    // PlanData(name = "Plan B", sectionPath = "sec1/sec2/sec3/"),
+    PlanData(name = "Plan D", sectionPath = "sec1/sec2/"),
+    PlanData(name = "Plan E", sectionPath = "sec1"),
+    PlanData(name = "Plan F", sectionPath = "sec4"),
+)
+
 @Composable
 fun PlansView(modifier: Modifier = Modifier) {
     var isSensorListVisible by remember { mutableStateOf(true) }
     val itemBackgroundColors = remember { mutableStateListOf(*Array(5) { Variables.White }) }
+    val organizeData = organizePlans(PLANS_TEMPORARY)
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -60,7 +71,7 @@ fun PlansView(modifier: Modifier = Modifier) {
                 .height(433.dp)
                 .background(color = Variables.White, shape = RoundedCornerShape(size = 20.dp))
                 .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
-        )  {
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.oa_plan),
                 contentDescription = "Plan",
@@ -76,7 +87,11 @@ fun PlansView(modifier: Modifier = Modifier) {
                     .height(1.dp)
                     .background(Variables.LightGray)
             )
+            SectionView(
+                sections = organizeData.subSections
+            )
 
+            /*
             Column(
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 horizontalAlignment = Alignment.Start
@@ -156,6 +171,7 @@ fun PlansView(modifier: Modifier = Modifier) {
                     }
                 }
             }
+            */
         }
     }
 }

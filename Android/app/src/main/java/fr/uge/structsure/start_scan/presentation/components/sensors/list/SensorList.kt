@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 
 @Preview(showBackground = true)
 @Composable
-fun SensorGridView(
+fun SensorList(
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
@@ -31,7 +31,6 @@ fun SensorGridView(
             .padding(4.dp)
     ) {
         items(SENSORS_NUMBER) { index ->
-            // Affichage de chaque capteur
             SensorItem(sensorName = "Capteur $index", state = SENSORS_STATES_LIST[index])
         }
     }
