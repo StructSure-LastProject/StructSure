@@ -24,7 +24,7 @@ import fr.uge.structsure.R
 
 @Composable
 @Preview
-fun Preview() {
+fun ButtonsPreview() {
 //    Button(R.drawable.x, "")
     ButtonText("Connect", R.drawable.x)
 }
