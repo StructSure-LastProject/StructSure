@@ -1,4 +1,4 @@
-package fr.uge.structsure.bluetoothConnection.presentation
+package fr.uge.structsure.bluetooth.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,7 +17,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,11 +29,8 @@ import androidx.compose.ui.unit.dp
 import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.Connexion
-
-object Variables {
-    val White: Color = Color(0xFFFFFFFF)
-    val Black: Color = Color(0xFF181818)
-}
+import fr.uge.structsure.bluetoothConnection.presentation.SmallButton
+import fr.uge.structsure.ui.theme.White
 
 @Composable
 fun BluetoothPage(bleConnexion: Connexion) {
@@ -47,46 +43,33 @@ fun BluetoothPage(bleConnexion: Connexion) {
             .fillMaxHeight()
             .background(color = Color(0x40000000))
     ) {
-        Column( // Pairing flap
+        Column( // Pairing pane
             verticalArrangement = Arrangement.spacedBy(35.dp, Alignment.Top),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .shadow(elevation = 50.dp, spotColor = Color(0x40333333), ambientColor = Color(0x40333333))
                 .fillMaxWidth()
-                .background(color = Variables.White, shape = RoundedCornerShape(25.dp, 25.dp, 0.dp, 0.dp))
+                .background(color = White, shape = RoundedCornerShape(25.dp, 25.dp, 0.dp, 0.dp))
                 .padding(start = 25.dp, top = 25.dp, end = 25.dp, bottom = 25.dp)
         ) {
-            FlapHeader {
+            PaneHeader {
                 System.out.println("Closed")
             }
 
             val devices = remember { bleConnexion.readersList }
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.Top),
-                horizontalAlignment = Alignment.Start
-            ) {
-                // Device(ReaderDevice("CS108ReaderF5E45C", "7C:01:63:27:6B:EE", false, "Details", 1, 0.0)) { }
-                // Device(ReaderDevice("CS108ReaderF768E4", "7C:01:0A:F7:68:E4", true, "Details", 1, 0.0)) { }
-                // Device(ReaderDevice("CS108ReaderF3112B", "7C:01:A0:68:3A:00", false, "Details", 1, 0.0)) { }
-
-                items(
-                    count = devices.size,
-                    key = { i -> devices[i].address },
-                    itemContent = { i -> Device(devices[i]) { bleConnexion.onItemClick(devices[i]) }}
-                )
+            DevicesList(devices) {device ->
+                bleConnexion.onItemClick(device)
             }
-            // val items = remember { mutableStateOf(listOf(Item("Item 1", "Description 1"), Item("Item 2", "Description 2"))) }
-            // DevicesList(devices)
         }
     }
 }
 
 /**
- * Title and close button of the flap
+ * Title and close button of the pane
  * @param onClick action to run when the close button is pressed
  */
 @Composable
-private fun FlapHeader(onClick: () -> Unit) {
+private fun PaneHeader(onClick: () -> Unit) {
     Row( // Title
         Modifier.padding(start = 20.dp)
     ) {
@@ -134,14 +117,19 @@ private fun Device(device: ReaderDevice, onClick: () -> Unit) {
     }
 }
 
+/**
+ * Displays a list of devices in one column and call the given
+ * function if one device tile is clicked
+ * @param devices the list of devices to display
+ * @param callback the action to run when a device is clicked
+ */
 @Composable
-private fun DevicesList(devices: State<List<ReaderDevice>>, callback: (ReaderDevice) -> Unit) {
-
+private fun DevicesList(devices:  MutableList<ReaderDevice>, callback: (ReaderDevice) -> Unit) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.Top),
         horizontalAlignment = Alignment.Start
     ) {
-        items(devices.value) { device ->
+        items(devices) { device ->
             Device(device) { callback(device) }
         }
     }

@@ -14,7 +14,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.platform.LocalContext
 import com.csl.cs108library4a.Cs108Library4A
 import fr.uge.structsure.bluetooth.cs108.Connexion
-import fr.uge.structsure.bluetoothConnection.presentation.BluetoothPage
+import fr.uge.structsure.bluetooth.presentation.BluetoothPage
 import fr.uge.structsure.ui.theme.StructSureTheme
 
 class MainActivity : ComponentActivity() {
