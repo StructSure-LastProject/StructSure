@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import fr.uge.structsure.R
 import fr.uge.structsure.bluetoothConnection.presentation.SmallButton
-import fr.uge.structsure.start_scan.presentation.components.Variables
+import fr.uge.structsure.start_scan.presentation.components.plans.Variables
 import fr.uge.structsure.start_scan.presentation.components.sensors.status.SensorState
 import fr.uge.structsure.ui.theme.Typography
 

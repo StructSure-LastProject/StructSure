@@ -1,7 +1,6 @@
 package fr.uge.structsure.start_scan.presentation.components
 
 
-import android.text.TextUtils.EllipsizeCallback
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,7 +9,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -18,9 +16,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import fr.uge.structsure.R
 import fr.uge.structsure.start_scan.domain.ScanViewModel
+import fr.uge.structsure.start_scan.presentation.components.plans.Variables
+import fr.uge.structsure.start_scan.presentation.components.plans.poppinsFontFamily
 import fr.uge.structsure.start_scan.presentation.components.sensors.status.SensorState
 import fr.uge.structsure.start_scan.presentation.components.sensors.status.SensorStatus
 
