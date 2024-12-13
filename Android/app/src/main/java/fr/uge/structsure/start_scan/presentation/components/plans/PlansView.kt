@@ -67,8 +67,6 @@ fun PlansView(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start,
             modifier = Modifier
-                .width(378.dp)
-                .height(433.dp)
                 .background(color = Variables.White, shape = RoundedCornerShape(size = 20.dp))
                 .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
         ) {
@@ -79,13 +77,6 @@ fun PlansView(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(171.dp)
-            )
-
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(Variables.LightGray)
             )
             SectionView(
                 sections = organizeData.subSections

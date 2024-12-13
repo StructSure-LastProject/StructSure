@@ -115,7 +115,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                                 .fillMaxWidth()
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+
                         SensorsListView(
                             modifier = Modifier
                                 .fillMaxWidth()

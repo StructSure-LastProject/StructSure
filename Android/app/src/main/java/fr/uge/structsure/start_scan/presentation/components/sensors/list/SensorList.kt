@@ -19,7 +19,6 @@ fun SensorList(
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val screenHeight = configuration.screenHeightDp.dp
 
     // LazyVerticalGrid -> s'afficher en grille en fonction de l'orientation
