@@ -11,10 +11,9 @@ import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.data.SensorDao
 import fr.uge.structsure.structuresPage.data.StructureDao
 import fr.uge.structsure.structuresPage.data.StructureData
-import fr.uge.structsure.structuresPage.data.StructureDetailsData
 
 @Database(
-    entities = [StructureData::class, SensorDB::class, PlanDB::class],
+    entities = [StructureData::class, ScanEntity::class, SensorEntity::class, StructureData::class, SensorDB::class, PlanDB::class],
     version = 2,
     exportSchema = false // Désactive l'exportation des schémas c'est qu'un prototype
 )
@@ -43,4 +42,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun structureDao(): StructureDao
     abstract fun planDao(): PlanDao
     abstract fun sensorDao(): SensorDao
+    abstract fun scanDao(): ScanDao
 }
