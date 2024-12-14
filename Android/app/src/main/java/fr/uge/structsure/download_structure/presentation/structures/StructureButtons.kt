@@ -11,6 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
+import fr.uge.structsure.ui.theme.LightGray
 
 @Preview(showBackground = true)
 @Composable
@@ -21,8 +22,8 @@ fun StructureButtons(state : StructureDownloadState = StructureDownloadState.syn
             Button(
                 id = R.drawable.download,
                 description = "Télécharger",
+                background = LightGray,
                 color = Color.Black,
-                background = Color.LightGray,
                 onClick = { /* Logic de téléchargement */ }
             )
         }
@@ -43,7 +44,7 @@ fun StructureButtons(state : StructureDownloadState = StructureDownloadState.syn
                     id = R.drawable.play,
                     description = "Lire",
                     color = Color.Black,
-                    background = Color.LightGray,
+                    background = LightGray,
                     onClick = { /* Logic de lecture */ }
                 )
                 Button(
