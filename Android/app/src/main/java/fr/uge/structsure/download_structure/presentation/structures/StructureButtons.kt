@@ -19,7 +19,7 @@ fun StructureButtons(state : StructureDownloadState = StructureDownloadState.syn
         StructureDownloadState.downloadable -> {
             // Bouton de téléchargement
             Button(
-                id = R.drawable.download, // Remplacez par l'ID réel de l'icône
+                id = R.drawable.download,
                 description = "Télécharger",
                 color = Color.Black,
                 background = Color.LightGray,
@@ -40,14 +40,14 @@ fun StructureButtons(state : StructureDownloadState = StructureDownloadState.syn
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Button(
-                    id = R.drawable.play, // Remplacez par l'ID réel de l'icône
+                    id = R.drawable.play,
                     description = "Lire",
                     color = Color.Black,
                     background = Color.LightGray,
                     onClick = { /* Logic de lecture */ }
                 )
                 Button(
-                    id = R.drawable.x, // Remplacez par l'ID réel de l'icône
+                    id = R.drawable.x,
                     description = "Supprimer",
                     color = Color.Red,
                     background = Color.Red.copy(alpha = 0.05f),
