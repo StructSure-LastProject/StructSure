@@ -70,7 +70,6 @@ fun ToolBar(
                     )
                 }
             }
-
             ScanState.PAUSED -> {
                 ActionButton(
                     iconRes = R.drawable.play,
@@ -78,8 +77,9 @@ fun ToolBar(
                     onClick = onPlayClick
                 )
             }
-
-            ScanState.STOPPED -> TODO()
+            ScanState.STOPPED -> {
+                // Rien à faire ici pour le moment
+            }
         }
 
         Column(
@@ -99,6 +99,7 @@ fun ToolBar(
         }
     }
 }
+
 
 @Composable
 fun ActionButton(iconRes: Int, description: String, onClick: () -> Unit) {
