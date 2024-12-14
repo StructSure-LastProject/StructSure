@@ -16,6 +16,11 @@ val STRUCTURE_LIST_TEMPORARY = listOf(
     StructureDate("Pont d'Ain", StructureDownloadState.downloading),
     StructureDate("Pont des Nautes", StructureDownloadState.downloadable),
     StructureDate("Viaduc de Nantua", StructureDownloadState.downloadable),
+    StructureDate("Viaduc de Sylans bis", StructureDownloadState.downloaded),
+    StructureDate("Viaduc de la Côtière bis", StructureDownloadState.synchronizing),
+    StructureDate("Pont d'Ain bis", StructureDownloadState.downloading),
+    StructureDate("Pont des Nautes bis", StructureDownloadState.downloadable),
+    StructureDate("Viaduc de Nantua bis", StructureDownloadState.downloadable),
 )
 
 @Preview(showBackground = true)

@@ -13,7 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.Typography
+import fr.uge.structsure.ui.theme.White
 
 data class StructureDate(
     val name: String, val state: StructureDownloadState
@@ -30,7 +32,7 @@ fun Structure(
 ) {
     Row(
         modifier = Modifier
-            .background(color = Color.White, shape = RoundedCornerShape(20.dp))
+            .background(color = White, shape = RoundedCornerShape(20.dp))
             .padding(horizontal = 20.dp, vertical = 15.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -39,12 +41,12 @@ fun Structure(
             modifier = Modifier
         ) {
             Text(
-                style = Typography.titleMedium,
+                style = Typography.headlineMedium,
                 text = data.name
             )
             Text(
-                style = Typography.titleSmall,
-                color = Color.Black.copy(alpha = 0.5f),
+                style = Typography.bodyMedium,
+                color = Black.copy(alpha = 0.5f),
                 text = data.state.state
             )
         }

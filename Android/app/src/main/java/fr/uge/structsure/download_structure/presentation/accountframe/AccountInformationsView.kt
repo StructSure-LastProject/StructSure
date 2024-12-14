@@ -16,13 +16,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
+import fr.uge.structsure.ui.theme.Black
+import fr.uge.structsure.ui.theme.LightGray
+import fr.uge.structsure.ui.theme.White
 
 @Preview(showBackground = true)
 @Composable
 fun AccountInformationsView(modifier: Modifier = Modifier) {
     Box(
         modifier = Modifier
-            .background(color = Color.Black, shape = RoundedCornerShape(20.dp))
+            .background(color = Black, shape = RoundedCornerShape(20.dp))
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 15.dp)
     ) {
@@ -31,6 +34,7 @@ fun AccountInformationsView(modifier: Modifier = Modifier) {
             Box(modifier = Modifier.align(Alignment.End)) {
                 Button(
                     id = R.drawable.log_out,
+                    background = White,
                     description = "Log out button that disconnect users who click on it."
                 )
             }
