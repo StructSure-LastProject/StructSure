@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.Connexion
-import fr.uge.structsure.bluetoothConnection.presentation.SmallButton
+import fr.uge.structsure.components.Button
 import fr.uge.structsure.ui.theme.White
 
 @Composable
@@ -74,7 +74,7 @@ private fun PaneHeader(onClick: () -> Unit) {
         Text("Appairage",
             style = MaterialTheme.typography.titleLarge,
             modifier= Modifier.fillMaxWidth().weight(2f))
-        SmallButton(R.drawable.x, "close", MaterialTheme.colorScheme.onSurface, MaterialTheme.colorScheme.surface, onClick)
+        Button(R.drawable.x, "close", MaterialTheme.colorScheme.onSurface, MaterialTheme.colorScheme.surface, onClick)
     }
 }
 
