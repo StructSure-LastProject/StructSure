@@ -6,26 +6,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import fr.uge.structsure.download_structure.domain.StructureData
+import fr.uge.structsure.download_structure.domain.StructureDownloadState
+import fr.uge.structsure.download_structure.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Typography
 
 val STRUCTURE_LIST_TEMPORARY = listOf(
-    StructureDate("Viaduc de Sylans", StructureDownloadState.downloaded),
-    StructureDate("Viaduc de la Côtière", StructureDownloadState.synchronizing),
-    StructureDate("Pont d'Ain", StructureDownloadState.downloading),
-    StructureDate("Pont des Nautes", StructureDownloadState.downloadable),
-    StructureDate("Viaduc de Nantua", StructureDownloadState.downloadable),
-    StructureDate("Viaduc de Sylans bis", StructureDownloadState.downloaded),
-    StructureDate("Viaduc de la Côtière bis", StructureDownloadState.synchronizing),
-    StructureDate("Pont d'Ain bis", StructureDownloadState.downloading),
-    StructureDate("Pont des Nautes bis", StructureDownloadState.downloadable),
-    StructureDate("Viaduc de Nantua bis", StructureDownloadState.downloadable),
+    StructureData("Viaduc de Sylans", StructureDownloadState.downloaded),
+    StructureData("Viaduc de la Côtière", StructureDownloadState.synchronizing),
+    StructureData("Pont d'Ain", StructureDownloadState.downloading),
+    StructureData("Pont des Nautes", StructureDownloadState.downloadable),
+    StructureData("Viaduc de Nantua", StructureDownloadState.downloadable),
+    StructureData("Viaduc de Sylans bis", StructureDownloadState.downloaded),
+    StructureData("Viaduc de la Côtière bis", StructureDownloadState.synchronizing),
+    StructureData("Pont d'Ain bis", StructureDownloadState.downloading),
+    StructureData("Pont des Nautes bis", StructureDownloadState.downloadable),
+    StructureData("Viaduc de Nantua bis", StructureDownloadState.downloadable),
 )
 
-@Preview(showBackground = true)
 @Composable
-fun StructuresListView() {
+fun StructuresListView(viewModel: StructureViewModel) {
     Column(
         modifier = Modifier,
         verticalArrangement = Arrangement.spacedBy(15.dp)
@@ -37,7 +38,10 @@ fun StructuresListView() {
         )
         SearchBar()
         STRUCTURE_LIST_TEMPORARY.forEach { structureData ->
-            Structure(data = structureData)
+            Structure(
+                viewModel = viewModel,
+                data = structureData
+            )
         }
     }
 }

@@ -10,22 +10,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import fr.uge.structsure.download_structure.domain.StructureData
+import fr.uge.structsure.download_structure.domain.StructureDownloadState
+import fr.uge.structsure.download_structure.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 
-data class StructureDate(
-    val name: String, val state: StructureDownloadState
-)
-
-@Preview(showBackground = true)
 @Composable
 fun Structure(
-    modifier: Modifier = Modifier,
-    data: StructureDate = StructureDate(
+    viewModel: StructureViewModel,
+    data: StructureData = StructureData(
         name = "Structure",
         state = StructureDownloadState.downloadable
     )
@@ -50,6 +46,6 @@ fun Structure(
                 text = data.state.state
             )
         }
-        StructureButtons(state = data.state)
+        StructureButtons(viewModel = viewModel, data = data)
     }
 }
