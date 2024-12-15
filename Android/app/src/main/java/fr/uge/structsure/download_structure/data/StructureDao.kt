@@ -13,4 +13,7 @@ interface StructureDao {
 
     @Query("SELECT * FROM structures")
     fun getAllStructures(): Flow<List<StructureEntity>>
+
+    @Query("SELECT name FROM structures WHERE archived = 0")
+    fun getActiveStructures(): List<String>
 }

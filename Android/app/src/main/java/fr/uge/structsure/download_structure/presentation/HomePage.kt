@@ -11,12 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.components.Header
+import fr.uge.structsure.download_structure.domain.StructureViewModel
+import fr.uge.structsure.download_structure.domain.StructureViewModelFactory
 import fr.uge.structsure.download_structure.presentation.accountframe.AccountInformationsView
 import fr.uge.structsure.download_structure.presentation.structures.StructuresListView
 
-@Preview(showBackground = true)
 @Composable
-fun HomePage() {
+fun HomePage(structureRepository: StructureRepository) {
+    val viewModel: StructureViewModel = viewModel(
+        factory = StructureViewModelFactory(structureRepository)
+    )
     Column(
         modifier = Modifier
             .padding(start = 25.dp, top = 50.dp, end = 25.dp)
@@ -25,7 +29,7 @@ fun HomePage() {
     ) {
         Header()
         AccountInformationsView()
-        StructuresListView()
+        StructuresListView(viewModel = viewModel)
         // BluetoothButton()
     }
 

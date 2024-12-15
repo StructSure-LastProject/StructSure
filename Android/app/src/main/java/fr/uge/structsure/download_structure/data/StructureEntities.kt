@@ -6,6 +6,11 @@ import fr.uge.structsure.download_structure.domain.StructureData
 import fr.uge.structsure.download_structure.domain.StructureDownloadState
 
 @Entity(tableName = "structures")
+data class StructurePresentationEntity(
+    @PrimaryKey val name: String,
+)
+
+@Entity(tableName = "structures")
 data class StructureEntity(
     @PrimaryKey val name: String,
     val state: String

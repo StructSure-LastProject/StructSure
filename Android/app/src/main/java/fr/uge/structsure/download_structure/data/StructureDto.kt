@@ -3,6 +3,7 @@ package fr.uge.structsure.download_structure.data
 import fr.uge.structsure.download_structure.domain.StructureData
 import fr.uge.structsure.download_structure.domain.StructureDownloadState
 
+/*
 data class StructureDto(
     val name: String,
     val state: String // Ajoutez cette propriété
@@ -19,3 +20,8 @@ fun StructureDto.toEntity(): StructureEntity {
         state = this.state
     )
 }
+*/
+
+data class StructureDto(
+    val name: String
+)
