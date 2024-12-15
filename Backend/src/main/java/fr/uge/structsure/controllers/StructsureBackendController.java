@@ -1,8 +1,8 @@
 
-package com.example.springbootapi.controllers;
+package fr.uge.structsure.controllers;
 
-import com.example.springbootapi.entities.*;
-import com.example.springbootapi.repositories.*;
+import fr.uge.structsure.entities.*;
+import fr.uge.structsure.repositories.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Time;

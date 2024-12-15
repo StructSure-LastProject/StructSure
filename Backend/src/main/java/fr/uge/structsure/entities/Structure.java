@@ -1,4 +1,4 @@
-package com.example.springbootapi.entities;
+package fr.uge.structsure.entities;
 
 import jakarta.persistence.*;
 import java.util.Objects;

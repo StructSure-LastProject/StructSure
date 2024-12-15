@@ -1,4 +1,4 @@
-package com.example.springbootapi.entities;
+package fr.uge.structsure.entities;
 
 public enum Role {
     OPERATEUR, RESPONSABLE, ADMIN

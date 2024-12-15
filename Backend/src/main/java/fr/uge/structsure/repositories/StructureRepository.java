@@ -1,6 +1,6 @@
-package com.example.springbootapi.repositories;
+package fr.uge.structsure.repositories;
 
-import com.example.springbootapi.entities.Structure;
+import fr.uge.structsure.entities.Structure;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface StructureRepository extends JpaRepository<Structure, Long> {

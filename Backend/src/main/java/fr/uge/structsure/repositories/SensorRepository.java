@@ -1,7 +1,7 @@
 
-package com.example.springbootapi.repositories;
+package fr.uge.structsure.repositories;
 
-import com.example.springbootapi.entities.Sensor;
+import fr.uge.structsure.entities.Sensor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SensorRepository extends JpaRepository<Sensor, Long> {
