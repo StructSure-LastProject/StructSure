@@ -14,6 +14,9 @@ import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.start_scan.domain.ScanState
 
+/**
+ * Composant ToolBar pour gérer les actions liées à l'état du scan.
+ */
 @Composable
 fun ToolBar(
     currentState: ScanState,
@@ -32,6 +35,7 @@ fun ToolBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Bouton Undo
         Column(
             modifier = Modifier
                 .width(77.dp)
@@ -48,6 +52,7 @@ fun ToolBar(
             )
         }
 
+        // Boutons dynamiques en fonction de l'état actuel du scan
         when (currentState) {
             ScanState.NOT_STARTED -> {
                 ActionButton(
@@ -64,24 +69,36 @@ fun ToolBar(
                         onClick = onPauseClick
                     )
                     ActionButton(
-                        iconRes = R.drawable.square,
+                        iconRes = R.drawable.stop,
                         description = "Stop",
                         onClick = onStopClick
                     )
                 }
             }
             ScanState.PAUSED -> {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ActionButton(
+                        iconRes = R.drawable.play,
+                        description = "Resume",
+                        onClick = onPlayClick
+                    )
+                    ActionButton(
+                        iconRes = R.drawable.stop,
+                        description = "Stop",
+                        onClick = onStopClick
+                    )
+                }
+            }
+            ScanState.STOPPED -> {
                 ActionButton(
-                    iconRes = R.drawable.play,
-                    description = "Resume",
+                    iconRes = R.drawable.play, //  redémarrer un scan
+                    description = "Play",
                     onClick = onPlayClick
                 )
             }
-            ScanState.STOPPED -> {
-                // Rien à faire ici pour le moment
-            }
         }
 
+        // Bouton Notes
         Column(
             modifier = Modifier
                 .width(75.dp)
@@ -101,6 +118,10 @@ fun ToolBar(
 }
 
 
+/**
+ * Bouton d'action générique utilisé dans la ToolBar.
+ * - Chaque bouton a une icône et une description.
+ */
 @Composable
 fun ActionButton(iconRes: Int, description: String, onClick: () -> Unit) {
     Row(
