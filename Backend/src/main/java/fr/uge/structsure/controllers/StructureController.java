@@ -1,7 +1,7 @@
 package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.sensors.SensorFilterDTO;
-import fr.uge.structsure.dto.sensors.SensorResponseDTO;
+import fr.uge.structsure.dto.structure.GetAllStructureRequest;
 import fr.uge.structsure.services.SensorService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -9,14 +9,22 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
+
+import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
+import fr.uge.structsure.services.StructureService;
+import org.springframework.http.MediaType;
+
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/structure")
 public class StructureController {
+
+    private final StructureService structureService;
     private final SensorService sensorService;
 
-    public StructureController(SensorService sensorService) {
+    public StructureController(StructureService structureService, SensorService sensorService) {
+        this.structureService = structureService;
         this.sensorService = sensorService;
     }
 
@@ -40,4 +48,10 @@ public class StructureController {
         return ResponseEntity.ok(sensorService.getSensorsByStructureId(id, filter));
     }
 
+
+    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AllStructureResponseDTO> getAllStructure(@RequestBody GetAllStructureRequest getAllStructureRequest){
+        Objects.requireNonNull(getAllStructureRequest);
+        return structureService.getAllStructure(getAllStructureRequest);
+    }
 }

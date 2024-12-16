@@ -123,4 +123,20 @@ public class SensorResponseDTO {
     public void setLastState(String lastState) {
         this.lastState = lastState;
     }
+
+    @Override
+    public String toString() {
+        return "SensorResponseDTO{" +
+                "id=" + id +
+                ", planId=" + planId +
+                ", controlChip='" + controlChip + '\'' +
+                ", measureChip='" + measureChip + '\'' +
+                ", name='" + name + '\'' +
+                ", installationDate=" + installationDate +
+                ", note='" + note + '\'' +
+                ", position=" + position +
+                ", state='" + state + '\'' +
+                ", lastState='" + lastState + '\'' +
+                '}';
+    }
 }

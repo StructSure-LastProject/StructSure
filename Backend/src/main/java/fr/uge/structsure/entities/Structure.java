@@ -22,6 +22,10 @@ public class Structure {
 
     }
 
+    public long getId() {
+        return id;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -32,10 +36,6 @@ public class Structure {
 
     public void setArchived(Boolean archived) {
         this.archived = archived;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public String getName() {

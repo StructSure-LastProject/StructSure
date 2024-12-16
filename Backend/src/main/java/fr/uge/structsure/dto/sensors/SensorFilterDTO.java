@@ -56,4 +56,15 @@ public class SensorFilterDTO {
     public void setDateInstallationMax(LocalDate dateInstallationMax) {
         this.dateInstallationMax = dateInstallationMax;
     }
+
+    @Override
+    public String toString() {
+        return "SensorFilterDTO{" +
+                "tri='" + tri + '\'' +
+                ", ordre='" + ordre + '\'' +
+                ", filtreEtat='" + filtreEtat + '\'' +
+                ", dateInstallationMin=" + dateInstallationMin +
+                ", dateInstallationMax=" + dateInstallationMax +
+                '}';
+    }
 }
