@@ -13,9 +13,9 @@ import fr.uge.structsure.MainActivity
 
 class ScanTask(private val context: Context, private var readersList: MutableList<ReaderDevice>, private val callback: (r: ReaderDevice) -> Unit) : AsyncTask<Void, String, String>() {
     private var timeMillisUpdate = System.currentTimeMillis()
-    var readersListOld: ArrayList<ReaderDevice> = ArrayList()
-    var wait4process: Boolean =false
-    var scanning: kotlin.Boolean = false
+    private var readersListOld: ArrayList<ReaderDevice> = ArrayList()
+    private var wait4process: Boolean =false
+    private var scanning: kotlin.Boolean = false
 
     private val mScanResultList = ArrayList<Cs108ScanData>()
 
@@ -56,15 +56,15 @@ class ScanTask(private val context: Context, private var readersList: MutableLis
             if (scanResultA.device.type == BluetoothDevice.DEVICE_TYPE_LE) {
                 var match = false
                 for (i in readersList.indices) {    // Increment the match counter if already seen
-                    if (readersList.get(i).getAddress()
+                    if (readersList[i].address
                             .matches(scanResultA.device.address.toRegex())
                     ) {
-                        val readerDevice1: ReaderDevice = readersList.get(i)
+                        val readerDevice1: ReaderDevice = readersList[i]
                         var count = readerDevice1.count
                         count++
                         readerDevice1.count = count
                         readerDevice1.rssi = scanResultA.rssi.toDouble()
-                        readersList.set(i, readerDevice1)
+                        readersList[i] = readerDevice1
                         listUpdated = true
                         match = true
                         break
@@ -91,14 +91,13 @@ class ScanTask(private val context: Context, private var readersList: MutableLis
                         )
                     readersList.add(readerDevice)
                     listUpdated = true
-                    callback(readerDevice) // FIXME temporary way to connect to the device
                 }
             }
         }
         if (System.currentTimeMillis() - timeMillisUpdate > 10000) {  // TODO Inspect, strange things seems to happen here
             timeMillisUpdate = System.currentTimeMillis()
             for (i in readersList.indices) {
-                val readerDeviceNew: ReaderDevice = readersList.get(i)
+                val readerDeviceNew: ReaderDevice = readersList[i]
                 var matched = false
                 for (k in readersListOld.indices) {
                     val readerDeviceOld = readersListOld[k]

@@ -114,7 +114,8 @@ fun BluetoothButton(connexion: Connexion) {
 private fun getBatteryLevel(): Int {
     if (csLibrary4A.isBleConnected) {
         val lvl = csLibrary4A.getBatteryDisplay(false)
-        return lvl.substring(0, lvl.indexOf('%')).toInt()
+        val pos = lvl.indexOf('%')
+        return if (pos == -1) 0 else lvl.substring(0, lvl.indexOf('%')).toInt()
     } else {
         return -1
     }
