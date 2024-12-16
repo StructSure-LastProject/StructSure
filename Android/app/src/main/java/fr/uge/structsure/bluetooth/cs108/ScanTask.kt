@@ -34,6 +34,7 @@ class ScanTask(private val context: Context, private var readersList: MutableLis
     }
 
     override fun onProgressUpdate(vararg output: String?) {
+        if (!MainActivity.csLibrary4A.isBleConnected) readersList.clear()
         if (!scanning) {    // Starts the scan the first time
             scanning = true
             if (!MainActivity.csLibrary4A.scanLeDevice(true)) cancel(true)

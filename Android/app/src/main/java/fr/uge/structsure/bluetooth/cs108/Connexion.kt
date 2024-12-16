@@ -3,44 +3,32 @@ package fr.uge.structsure.bluetooth.cs108
 import android.content.Context
 import android.os.AsyncTask
 import android.os.Build
-import android.os.Handler
 import androidx.compose.runtime.mutableStateListOf
 import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.MainActivity
 
-class Connexion(context: Context) {
+class Connexion(private val context: Context) {
     private var scanTask: ScanTask? = null
     private var connectTask: ConnectTask? = null
     var readersList: MutableList<ReaderDevice> = mutableStateListOf()
-    // var readersList: ArrayList<ReaderDevice> = ArrayList()
-    private val mHandler = Handler()
-
-    private val checkRunnable: Runnable = object : Runnable {
-        override fun run() {
-            var operating = MainActivity.csLibrary4A.isBleConnected
-            if (!operating && scanTask != null) {
-                if (!scanTask!!.isCancelled) operating = true
-            }
-            if (!operating && connectTask != null) {
-                if (!connectTask!!.isCancelled) operating = true
-            }
-            if (!operating) {
-                scanTask = ScanTask(context, readersList) {
-                    r: ReaderDevice -> onItemClick(r)
-                }
-                scanTask!!.execute()
-            }
-            mHandler.postDelayed(this, 5000)
-        }
-    }
 
     init {
         if (!MainActivity.csLibrary4A.isBleConnected) readersList.clear()
-        checkRunnable.run()
+    }
+    
+    fun startScan() {
+        val scanning = scanTask != null && !scanTask!!.isCancelled
+
+        if (!scanning) {
+            println("Starting scan")
+            scanTask = ScanTask(context, readersList) {
+                    r: ReaderDevice -> onItemClick(r)
+            }
+            scanTask!!.execute()
+        }
     }
 
     fun onItemClick(readerDevice: ReaderDevice) {
-        //        ReaderDevice readerDevice = readersList.get(position);    // Un ReaderDevice est l'objet qui représente un périphérique BLE compatible
         println("Reader clicked: $readerDevice")
         if (MainActivity.csLibrary4A.isBleConnected && readerDevice.isConnected && (readerDevice.selected)) {
             // If THIS device is already connected, disconnect the device
@@ -63,21 +51,6 @@ class Connexion(context: Context) {
                 }
             }
         }
-
-        //                if (readersList.size() > position) {    // Update displayed list
-        //                  readerDevice.setSelected(!readerDevice.getSelected());    // Invert the selected state of the device
-        //                    readersList.set(position, readerDevice);
-        //                    for (int i = 0; i < readersList.size(); i++) {
-        //                        if (i != position) {
-        //                            ReaderDevice readerDevice1 = readersList.get(i);
-        //                            if (readerDevice1.getSelected()) {
-        //                                readerDevice1.setSelected(false);
-        //                                readersList.set(i, readerDevice1);
-        //                            }
-        //                        }
-        //                    }
-        //                }
-        //                readerListAdapter.notifyDataSetChanged();
     }
 
     private fun afterConnection(device: ReaderDevice?) {
@@ -91,8 +64,8 @@ class Connexion(context: Context) {
      * Once connected
      */
     fun onStop() {
-        mHandler.removeCallbacks(checkRunnable)
         if (scanTask != null) {
+            println("Scan stopped")
             scanTask!!.cancel(true)
         }
         if (connectTask != null) {

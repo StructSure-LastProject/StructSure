@@ -34,6 +34,7 @@ import fr.uge.structsure.ui.theme.White
 
 @Composable
 fun BluetoothPage(bleConnexion: Connexion, onClose: () -> Unit) {
+    bleConnexion.startScan()
 
     Column( // PopUp
         verticalArrangement = Arrangement.spacedBy(0.dp, Alignment.Bottom),
@@ -52,7 +53,10 @@ fun BluetoothPage(bleConnexion: Connexion, onClose: () -> Unit) {
                 .background(color = White, shape = RoundedCornerShape(25.dp, 25.dp, 0.dp, 0.dp))
                 .padding(start = 25.dp, top = 25.dp, end = 25.dp, bottom = 25.dp)
         ) {
-            PaneHeader(onClick = onClose)
+            PaneHeader({
+                bleConnexion.onStop()
+                onClose.invoke()
+            })
 
             val devices = remember { bleConnexion.readersList }
             DevicesList(devices) {device ->
