@@ -8,6 +8,8 @@ import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.OrderEnum;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -55,7 +57,7 @@ public class StructureService {
                 .stream()
                 .map(structure -> {
                         var numberOfPlans = planRepository.countByStructureId(structure.getId());
-                        var numberOfSensors = sensorRepository.findByStructureId(structure.getId()).size(); // NUMBER OF SENSORS TODO
+                        var numberOfSensors = sensorRepository.findByStructureId(structure.getId()).size();
                         return new AllStructureResponseDTO(
                                 structure.getId(),
                                 structure.getName(),
@@ -72,10 +74,11 @@ public class StructureService {
             case WORSTSTATE -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
         };
 
-        if (getAllStructureRequest.order().equals(OrderEnum.DESC)){
-            return resultList.reversed();
+        if (getAllStructureRequest.order() == OrderEnum.DESC) {
+            resultList = resultList.reversed();
         }
         return resultList;
+
     }
 
 }

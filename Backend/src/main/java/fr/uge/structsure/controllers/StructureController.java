@@ -49,6 +49,11 @@ public class StructureController {
     }
 
 
+    /**
+     * This method handle the structure endpoint to get all structures
+     * @param getAllStructureRequest Object that represents the request
+     * @return List of structures
+     */
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<AllStructureResponseDTO> getAllStructure(@RequestBody GetAllStructureRequest getAllStructureRequest){
         Objects.requireNonNull(getAllStructureRequest);
