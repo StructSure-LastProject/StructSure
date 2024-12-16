@@ -9,7 +9,7 @@ import java.util.Objects;
 public class Scan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @ManyToOne
     private Structure structure;

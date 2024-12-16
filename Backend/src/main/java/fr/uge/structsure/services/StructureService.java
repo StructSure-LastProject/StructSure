@@ -11,7 +11,10 @@ import java.util.Objects;
 public class StructureService {
     private final StructureRepository structureRepository;
 
-    public StructureService(StructureRepository structureRepository) {
+    private final SensorService sensorService;
+
+    public StructureService(StructureRepository structureRepository, SensorService sensorService) {
+        this.sensorService = sensorService;
         this.structureRepository = structureRepository;
     }
 
