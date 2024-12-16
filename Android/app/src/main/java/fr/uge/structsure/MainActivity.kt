@@ -28,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.csl.cs108library4a.Cs108Library4A
+import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.bluetooth.cs108.Connexion
 import fr.uge.structsure.components.BluetoothButton
 import fr.uge.structsure.ui.theme.LightGray
