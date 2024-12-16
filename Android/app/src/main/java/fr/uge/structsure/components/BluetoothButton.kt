@@ -41,7 +41,8 @@ import fr.uge.structsure.bluetooth.presentation.BluetoothPage
 @Composable
 fun BluetoothButton(connexion: Connexion) {
     val isBluetoothConnected = csLibrary4A.isBleConnected
-    val batteryLevel = if (isBluetoothConnected) csLibrary4A.batteryLevel else 0
+    csLibrary4A.setBatteryDisplaySetting(1)
+    val batteryLevel = getBatteryLevel()
     var showPopUp by remember { mutableStateOf(false) }
 
     // Determine color based on battery level
@@ -101,5 +102,20 @@ fun BluetoothButton(connexion: Connexion) {
                 onClose = { showPopUp = false },
             )
         }
+    }
+}
+
+/**
+ * Extracts the battery level of the cs108 device. This function is
+ * made to avoid calling directly to csLibrary4A.batteryLevel which is
+ * the raw value without the battery curve.
+ * @return the battery level if connected, -1 otherwise
+ */
+private fun getBatteryLevel(): Int {
+    if (csLibrary4A.isBleConnected) {
+        val lvl = csLibrary4A.getBatteryDisplay(false)
+        return lvl.substring(0, lvl.indexOf('%')).toInt()
+    } else {
+        return -1
     }
 }
