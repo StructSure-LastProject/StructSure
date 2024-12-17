@@ -4,6 +4,7 @@ import fr.uge.structsure.utils.converters.LocalTimeConverter;
 import jakarta.persistence.*;
 
 import java.sql.Time;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
@@ -24,18 +25,12 @@ public class Sensor {
     private String note;
 
     /*
-    @Column(columnDefinition = "TEXT")
-    @Temporal(TemporalType.TIME)
-    private Time installationDate;
-     */
-
     @Convert(converter = LocalTimeConverter.class)
     private LocalTime installationDate;
-
-    /*
-    @Convert(converter = TimeConverter.class)
-    private Time installationDate;
      */
+
+    @Column(columnDefinition = "TIME")
+    private LocalTime installationDate;
 
     @Column(columnDefinition = "REAL")
     private Double x;
@@ -46,7 +41,8 @@ public class Sensor {
     @Column(columnDefinition = "INTEGER")
     private Boolean archived;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "structure_id", nullable = false)
     private Structure structure;
 
     //constructeurs nécéssaire
