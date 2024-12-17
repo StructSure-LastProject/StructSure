@@ -3,6 +3,8 @@ package fr.uge.structsure.controllers;
 import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.dto.structure.GetAllStructureRequest;
 import fr.uge.structsure.services.SensorService;
+import fr.uge.structsure.utils.OrderEnum;
+import fr.uge.structsure.utils.SortEnum;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -68,12 +70,18 @@ public class StructureController {
 
     /**
      * This method handle the structure endpoint to get all structures
-     * @param getAllStructureRequest Object that represents the request
+     * @param searchByName Object that represents the request
+     * @param sort Object that represents the request
+     * @param order Object that represents the request
      * @return List of structures
      */
-    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<AllStructureResponseDTO> getAllStructure(@RequestBody GetAllStructureRequest getAllStructureRequest){
-        Objects.requireNonNull(getAllStructureRequest);
-        return structureService.getAllStructure(getAllStructureRequest);
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AllStructureResponseDTO> getAllStructure(@RequestParam(required = false) String searchByName,
+                                                         @RequestParam(required = false) SortEnum sort,
+                                                         @RequestParam(required = false) OrderEnum order){
+        Objects.requireNonNull(searchByName);
+        Objects.requireNonNull(sort);
+        Objects.requireNonNull(order);
+        return structureService.getAllStructure(new GetAllStructureRequest(searchByName, sort, order));
     }
 }

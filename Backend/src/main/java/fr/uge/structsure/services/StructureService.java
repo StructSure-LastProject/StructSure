@@ -68,6 +68,7 @@ public class StructureService {
                     }
                 );
 
+        // TODO Filters
         var resultList = switch (getAllStructureRequest.sort()){
             case NUMBEROFSENSORS -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
             case NAME -> result.sorted(Comparator.comparing(AllStructureResponseDTO::name)).toList();
