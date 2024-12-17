@@ -10,7 +10,6 @@
     width: 500px;
 }
 
-
 .h-394px {
     height: 394px;
 }
@@ -31,6 +30,10 @@
 
 
 
-.gap-x-25px {
-    column-gap: 25px;
+.gap-y-25px {
+    row-gap: 25px;
+}
+
+.rounded-20px {
+    border-radius: 20px;
 }
