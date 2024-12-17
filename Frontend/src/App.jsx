@@ -1,5 +1,5 @@
 import { createSignal } from 'solid-js'
-import solidLogo from './assets/solid.svg'
+I
 import viteLogo from '/vite.svg'
 import './App.css'
 
@@ -21,7 +21,7 @@ function App() {
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count()}
         </button>
-        <p class="text-4xl">
+        <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
       </div>
