@@ -1,5 +1,6 @@
 package fr.uge.structsure
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -37,7 +39,10 @@ import com.csl.cslibrary4a.Cs108Library4A
 //import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.bluetooth.cs108.Connexion
 import fr.uge.structsure.components.BluetoothButton
+import fr.uge.structsure.components.ButtonText
+import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
+import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.StructSureTheme
 
 class MainActivity : ComponentActivity() {
@@ -68,7 +73,7 @@ class MainActivity : ComponentActivity() {
             ActivityResultContracts.RequestMultiplePermissions()
         ) { perms ->
             val canEnableBluetooth = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                perms[android.Manifest.permission.BLUETOOTH_CONNECT] == true
+                perms[Manifest.permission.BLUETOOTH_CONNECT] == true
             } else true
 
             if(canEnableBluetooth && !isBluetoothEnabled) {
@@ -81,8 +86,8 @@ class MainActivity : ComponentActivity() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             permissionLauncher.launch(
                 arrayOf(
-                    android.Manifest.permission.BLUETOOTH_SCAN,
-                    android.Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT,
                 )
             )
         }
@@ -101,7 +106,8 @@ class MainActivity : ComponentActivity() {
                         content = {
                             var visible by remember { mutableStateOf(false) }
                             Column(
-                                Modifier.blur(radius = if (visible) 10.dp else 0.dp)
+                                Modifier
+                                    .blur(radius = if (visible) 10.dp else 0.dp)
                                     .fillMaxSize()
                                     .background(LightGray)
                                     .padding(it)
@@ -133,7 +139,7 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
 
-            NavHost(navController = navController, startDestination = "home") {
+            NavHost(navController = navController, startDestination = "ecran1") {
                 var connexion = true  // false si pas de connexion
                 lateinit var homePage : String
                 if(connexion) {
@@ -141,6 +147,8 @@ class MainActivity : ComponentActivity() {
                 } else {
                     homePage = "HomePageNoCon"
                 }
+                composable("ecran1") { Ecran1(navController)}
+                composable("ecran2") { Ecran2(navController)}
                 composable(homePage) { /*HomePage(navController)*/ }
                 composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
                 composable("ScanPage"){ /*ScanPage(navController)*/ }
@@ -163,4 +171,25 @@ class MainActivity : ComponentActivity() {
         csLibrary4A.disconnect(true)
         super.onDestroy()
     }
+}
+
+
+@Composable
+fun Ecran1(navController: NavController){
+    ButtonText(
+        text = "ecran1 Vers ecran2",
+        color = Red,
+        onClick = { navController.navigate("ecran2") },
+        id = R.drawable.check
+    )
+}
+
+@Composable
+fun Ecran2(navController: NavController){
+    ButtonText(
+        text = "ecran2 vers ecran1",
+        color = Black,
+        onClick = { navController.navigate("ecran1") },
+        id = R.drawable.x
+    )
 }
