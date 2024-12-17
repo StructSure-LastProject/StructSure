@@ -139,6 +139,22 @@ public class StructureService {
         }
     }
 
+    public List<AllStructureResponseDTO> getAllStructure(){
+        return structureRepository.findAll().stream()
+            .map(structure -> {
+                    var numberOfPlans = planRepository.countByStructureId(structure.getId());
+                    var numberOfSensors = sensorRepository.findByStructureId(structure.getId()).size();
+                    return new AllStructureResponseDTO(
+                        structure.getId(),
+                        structure.getName(),
+                        numberOfSensors,
+                        numberOfPlans,
+                        String.format("/api/structure/%d", structure.getId())
+                    );
+                }
+            ).toList();
+    }
+
     public List<AllStructureResponseDTO> getAllStructure(GetAllStructureRequest getAllStructureRequest){
         Objects.requireNonNull(getAllStructureRequest);
         var result = structureRepository

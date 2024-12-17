@@ -10,26 +10,10 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -38,27 +22,23 @@ import androidx.navigation.compose.rememberNavController
 import com.csl.cslibrary4a.Cs108Library4A
 //import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.bluetooth.cs108.Connexion
-import fr.uge.structsure.components.BluetoothButton
 import fr.uge.structsure.components.ButtonText
+import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.ui.theme.Black
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
-import fr.uge.structsure.retrofit.RetrofitInstance
-import fr.uge.structsure.retrofit.response.GetAllSensorsResponse
-import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
-import androidx.compose.ui.tooling.preview.Preview
-import fr.uge.structsure.download_structure.presentation.HomePage
 import fr.uge.structsure.settings.presentation.SettingsPage
+import fr.uge.structsure.structuresPage.domain.StructureRepository
+import fr.uge.structsure.structuresPage.presentation.HomePage
 import fr.uge.structsure.ui.theme.StructSureTheme
 
 class MainActivity : ComponentActivity() {
     companion object {
         lateinit var csLibrary4A: Cs108Library4A
+    }
+
+    private val db by lazy {
+        AppDatabase.getDatabase(applicationContext)
     }
 
     private val bluetoothManager by lazy {
@@ -74,6 +54,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val structureRepository = StructureRepository(structureDao = db.structureDao())
+
         csLibrary4A = Cs108Library4A(this, TextView(this))
 
         val enableBluetoothLauncher = registerForActivityResult(
@@ -153,13 +136,13 @@ class MainActivity : ComponentActivity() {
             var connexion = true  // false si pas de connexion
             var loggedIn = true  // true si déjà connecté
             val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePageNoCon"
-            NavHost(navController = navController, startDestination = "SettingsPage") {
+            NavHost(navController = navController, startDestination = "HomePage") {
                 /* Example code */
                 composable("ecran1") { Ecran1(navController)}
                 composable("ecran2") { Ecran2(navController)}
 
                 /* Code à compléter */
-                composable("HomePage") { /*HomePage(navController)*/ }
+                composable("HomePage") { HomePage(navController, structureRepository) }
                 composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
                 composable("ScanPage"){ /*ScanPage(navController)*/ }
                 composable("AlerteOk"){ /*AlerteOk(navController)*/ }

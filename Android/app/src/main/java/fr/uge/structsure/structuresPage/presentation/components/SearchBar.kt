@@ -1,4 +1,4 @@
-package fr.uge.structsure.download_structure.presentation.structures
+package fr.uge.structsure.structuresPage.presentation.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable

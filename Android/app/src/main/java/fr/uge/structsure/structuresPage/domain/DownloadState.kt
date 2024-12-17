@@ -1,4 +1,4 @@
-package fr.uge.structsure.download_structure.domain
+package fr.uge.structsure.structuresPage.domain
 
 sealed class DownloadState {
     object Idle : DownloadState() // Aucun téléchargement en cours

@@ -1,4 +1,4 @@
-package fr.uge.structsure.download_structure.presentation.structures
+package fr.uge.structsure.structuresPage.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,14 +11,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import fr.uge.structsure.download_structure.domain.StructureData
-import fr.uge.structsure.download_structure.domain.StructureDownloadState
+import fr.uge.structsure.structuresPage.domain.StructureRepository
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 
 @Composable
-fun Structure() {
+fun Structure(name: String, state: StructureStates, structureRepository: StructureRepository) {
     Row(
         modifier = Modifier
             .background(color = White, shape = RoundedCornerShape(20.dp))
@@ -31,14 +30,14 @@ fun Structure() {
         ) {
             Text(
                 style = Typography.headlineMedium,
-                text = "test"
+                text =  name
             )
             Text(
                 style = Typography.bodyMedium,
                 color = Black.copy(alpha = 0.5f),
-                text = "test"
+                text = state.message
             )
         }
-        StructureButtons()
+        StructureButtons(name, state, structureRepository)
     }
 }

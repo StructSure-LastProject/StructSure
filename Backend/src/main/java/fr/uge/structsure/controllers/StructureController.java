@@ -145,5 +145,8 @@ public class StructureController {
         return structureService.getAllStructure(new GetAllStructureRequest(searchByName, sort, order));
     }
 
-
+    @GetMapping(value = "/android", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AllStructureResponseDTO> getAllStructure(){
+        return structureService.getAllStructure();
+    }
 }

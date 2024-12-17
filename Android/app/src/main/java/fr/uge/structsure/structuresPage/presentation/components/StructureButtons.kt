@@ -1,4 +1,4 @@
-package fr.uge.structsure.download_structure.presentation.structures
+package fr.uge.structsure.structuresPage.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -11,33 +11,34 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
-import fr.uge.structsure.download_structure.domain.StructureData
-import fr.uge.structsure.download_structure.domain.StructureDownloadState
+import fr.uge.structsure.structuresPage.domain.StructureRepository
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
 
 @Composable
-fun StructureButtons() {
-    /*when (data.state) {
-        StructureDownloadState.downloadable -> {
+fun StructureButtons(name: String, state: StructureStates, structureRepository: StructureRepository) {
+    when (state) {
+        StructureStates.ONLINE -> {
             // Bouton de téléchargement
             DownloadButton(
-                structureName = data.name,
-                onDownloadClick = { viewModel.downloadStructure(data.name) }
+                structureName = name,
+                onDownloadClick = {
+                    structureRepository.downloadStructure(name)
+                }
             )
         }
 
-        StructureDownloadState.downloading, StructureDownloadState.synchronizing -> {
+        /*StructureDownloadState.synchronizing -> {
             // Roue de chargement
             LoadingButton();
-        }
+        }*/
 
-        StructureDownloadState.downloaded -> {
+        StructureStates.AVAILABLE -> {
             // Boutons "play" et "suppression"
             PlaySupButton()
         }
-    }*/
+    }
 }
 
 // @Preview(showBackground = true)

@@ -1,4 +1,4 @@
-package fr.uge.structsure.download_structure.domain
+package fr.uge.structsure.structuresPage.data
 
 sealed class StructureDownloadState(val state: String) {
     object downloadable : StructureDownloadState("En ligne")
