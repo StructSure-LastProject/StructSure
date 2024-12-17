@@ -14,7 +14,7 @@ import fr.uge.structsure.MainActivity
 class ScanTask(private val context: Context, private var readersList: MutableList<ReaderDevice>, private val callback: (r: ReaderDevice) -> Unit) : AsyncTask<Void, String, String>() {
     private var timeMillisUpdate = System.currentTimeMillis()
     private var readersListOld: ArrayList<ReaderDevice> = ArrayList()
-    private var wait4process: Boolean =false
+    private var wait4process: Boolean = false
     private var scanning: kotlin.Boolean = false
 
     private val mScanResultList = ArrayList<Cs108ScanData>()

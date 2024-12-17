@@ -37,7 +37,9 @@ class ConnectTask(private var connectingDevice: ReaderDevice, private val callba
     }
 
     override fun onProgressUpdate(vararg output: String?) {
-        println(output)
+        for (o in output) {
+            println(o)
+        }
     }
 
     override fun onCancelled(result: Int?) {

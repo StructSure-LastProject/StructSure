@@ -57,7 +57,31 @@ class Connexion(private val context: Context) {
         if (device != null) {
             readersList.remove(device)
             readersList.add(device)
+
+//            val inventoryRfidTask = RfidTask(
+//                context, -1, -1, 0, 0, 0, 0,
+//                false
+//            )
+//            RfidTask(context).execute()
+//            InventoryRfidTask.startScan(context)
+//             RfidTask.startScan(context)
+//            MainActivity.csLibrary4A.setTagRead(1)
+//            MainActivity.csLibrary4A.setAccessBank(3)
+//            MainActivity.csLibrary4A.setAccessOffset(112)
+//            MainActivity.csLibrary4A.setAccessCount(1)
+//            MainActivity.csLibrary4A.setNotificationListener {
+//                MainActivity.csLibrary4A.appendToLog("setNotificationListener TRIGGER key is pressed in search inventory.")
+//            }
+//            MainActivity.csLibrary4A.startOperation(RfidReaderChipData.OperationTypes.TAG_SEARCHING)
+//            var geigerSearchTask = InventoryRfidTask(
+//                context, -1, -1, 0, 0, 0, 0, true, true,
+//                null, null, null /* textView */, null,
+//                null, null, null, null, null, null
+//            )
+//            geigerSearchTask.execute()
+
         }
+
     }
 
     /**
