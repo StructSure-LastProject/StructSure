@@ -21,6 +21,12 @@ ksp = "2.0.21-1.0.27"
 uiTestAndroid = "1.7.5"
 navigationCompose = "2.8.5"
 
+#Retrofit api
+retrofit = "2.10.0"
+gson = "2.10.0"
+loggingInterceptor = "4.12.0"
+okhttp = "4.12.0"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-ktx-v1101 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
@@ -56,9 +62,16 @@ androidx-room-compiler = {group = "androidx.room", name = "room-compiler", versi
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room_version" }
 androidx-room-testing = {group = "androidx.room", name = "room-testing", version.ref = "room_version"}
 
+#Retrofit
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "gson" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "loggingInterceptor" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+retrofit = { id = "com.squareup.retrofit2", version.ref = "retrofit" }
 

@@ -70,6 +70,13 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
 
+    //Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson) // Converter JSON
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+
+
     ksp(libs.androidx.room.compiler)
     annotationProcessor(libs.androidx.room.compiler)
 
