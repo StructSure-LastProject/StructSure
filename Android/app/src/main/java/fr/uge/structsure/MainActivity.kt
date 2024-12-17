@@ -41,6 +41,14 @@ import fr.uge.structsure.bluetooth.cs108.Connexion
 import fr.uge.structsure.components.BluetoothButton
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.ui.theme.Black
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
+import fr.uge.structsure.retrofit.RetrofitInstance
+import fr.uge.structsure.retrofit.response.GetAllSensorsResponse
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
 import androidx.compose.ui.tooling.preview.Preview
