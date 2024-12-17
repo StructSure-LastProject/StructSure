@@ -34,4 +34,52 @@ public class Account {
         this.role = Objects.requireNonNull(role);
         this.enabled = enabled;
     }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public void setPasswordCrypted(String passwordCrypted) {
+        this.passwordCrypted = passwordCrypted;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public String getPasswordCrypted() {
+        return passwordCrypted;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
 }
