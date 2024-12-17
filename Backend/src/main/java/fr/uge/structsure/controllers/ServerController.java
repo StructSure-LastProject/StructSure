@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ServerController {
 
     @GetMapping()
-    public boolean checkServerStatus(){
-        return true;
+    public String checkServerStatus(){
+        return "{ \"state\": true }";
     }
 }

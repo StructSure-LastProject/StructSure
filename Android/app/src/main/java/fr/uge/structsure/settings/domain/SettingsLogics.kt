@@ -21,10 +21,11 @@ fun checkServerStatus(){
             p0: Call<ServerStatusResponse>,
             p1: Response<ServerStatusResponse>
         ) {
-            if (p1.isSuccessful && p1.body() != null){
-                println("test log")
-                println(p1.raw())
-                Log.d("RESPONSE", p1.body().toString())
+            if (p1.isSuccessful){
+                val status = p1.body()
+                if (status != null) {
+                    Log.d("RESPONSE", "status: ${status.state}")
+                }
             }
         }
 

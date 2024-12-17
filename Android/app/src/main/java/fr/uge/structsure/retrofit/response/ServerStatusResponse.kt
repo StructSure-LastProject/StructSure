@@ -1,3 +1,6 @@
 package fr.uge.structsure.retrofit.response
 
-data class ServerStatusResponse(val status: Boolean)
+import com.google.gson.annotations.SerializedName
+
+
+data class ServerStatusResponse(@SerializedName("state") val state: Boolean)
