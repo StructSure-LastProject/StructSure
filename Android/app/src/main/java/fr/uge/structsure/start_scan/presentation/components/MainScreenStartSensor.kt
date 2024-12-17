@@ -22,32 +22,17 @@ import kotlinx.coroutines.launch
  * @param scanViewModel ViewModel responsable de la logique métier du scan.
  */
 @Composable
-fun MainScreen(scanViewModel: ScanViewModel) {
+fun MainScreenStartSensor(scanViewModel: ScanViewModel) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             ToolBar(
-                currentState = scanViewModel.currentScanState.value, // État actuel du scan
-                onPlayClick = {
-                    // Si le scan est en pause, reprenez l'interrogation des capteurs
-                    if (scanViewModel.currentScanState.value == ScanState.PAUSED) {
-                        scanViewModel.viewModelScope.launch {
-                            scanViewModel.resumeScan(scanViewModel.getSensors())
-                        }
-                    } else {
-                        // Crée un nouveau scan avec des données simulées pour les tests
-                        scanViewModel.createNewScan(
-                            structureId = 1,
-                            sensorDetails = (1..10000).map {
-                                "$it" to (it * 100 to it * 200) // Capteurs avec des coordonnées fictives
-                            }
-                        )
-                    }
-                },
-                onPauseClick = { scanViewModel.pauseScan() }, // Pause le scan
-                onStopClick = { scanViewModel.stopScan() },   // Arrête le scan
-                onSyncClick = { /* Ajouter une logique de synchronisation future */ },
-                onContentClick = { /* Ajouter une logique pour afficher des notes */ }
+                currentState = scanViewModel.currentScanState.value,
+                onPlayClick = { scanViewModel.fetchSensorsAndStartScan(structureId = 1) },
+                onPauseClick = { scanViewModel.pauseScan() },
+                onStopClick = { scanViewModel.stopScan() },
+                onSyncClick = { /* À implémenter */ },
+                onContentClick = { /* À implémenter */ }
             )
         }
     ) { innerPadding ->
