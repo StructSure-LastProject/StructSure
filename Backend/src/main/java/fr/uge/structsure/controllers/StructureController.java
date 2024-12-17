@@ -1,7 +1,7 @@
 package fr.uge.structsure.controllers;
 
+import fr.uge.structsure.dto.structure.*;
 import fr.uge.structsure.dto.sensors.SensorFilterDTO;
-import fr.uge.structsure.dto.structure.GetAllStructureRequest;
 import fr.uge.structsure.services.SensorService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
 import fr.uge.structsure.services.StructureService;
 import org.springframework.http.MediaType;
 
@@ -26,6 +25,14 @@ public class StructureController {
     public StructureController(StructureService structureService, SensorService sensorService) {
         this.structureService = structureService;
         this.sensorService = sensorService;
+    }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<Object> editStructure(@PathVariable Long id, @RequestBody StructureRequestDTO structureRequestDTO) {
+        Objects.requireNonNull(structureRequestDTO);
+
+        var response = structureService.editStructure(id, structureRequestDTO);
+        return ResponseEntity.status(response.httpCode()).body(response.data());
     }
 
     @GetMapping("/{id}/sensors")

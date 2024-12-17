@@ -1,21 +1,17 @@
 package fr.uge.structsure.services;
 
-import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
-import fr.uge.structsure.dto.StructureDTO;
-import fr.uge.structsure.dto.structure.GetAllStructureRequest;
-import fr.uge.structsure.entities.Structure;
+import fr.uge.structsure.dto.ErrorDTO;
+import fr.uge.structsure.dto.structure.*;
 import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.OrderEnum;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 @Service
 public class StructureService {
@@ -29,25 +25,21 @@ public class StructureService {
         this.planRepository = planRepository;
     }
 
-    public Structure createStructure(StructureDTO structureDTO, boolean isArchived) {
-        Objects.requireNonNull(structureDTO);
+    public ApiResponseWrapper<?> editStructure(long id, StructureRequestDTO structureRequestDTO) {
+        Objects.requireNonNull(structureRequestDTO);
 
-        Structure structure = new Structure(structureDTO.name(), structureDTO.note(), isArchived);
-        return structureRepository.save(structure);
-    }
-
-    public Structure editStructure(long id, StructureDTO structureDTO) {
-        Objects.requireNonNull(structureDTO);
-
+        if (structureRequestDTO.name() == null || structureRequestDTO.name().isEmpty()) {
+            return new ApiResponseWrapper<>(new ErrorDTO("Le nom d’un ouvrage ne peut pas être vide"), 422);
+        }
         var structureEntityOptional = structureRepository.findById(id);
         if (structureEntityOptional.isEmpty()) {
-            return new Structure("", "", false);
+            return new ApiResponseWrapper<>(new ErrorDTO("Ouvrage introuvable"), 422);
         }
         var structureEntity = structureEntityOptional.get();
-        structureEntity.setName(structureDTO.name());
-        structureEntity.setNote(structureDTO.note());
-        structureEntity.setArchived(structureDTO.isArchived());
-        return structureRepository.save(structureEntity);
+        structureEntity.setName(structureRequestDTO.name());
+        structureEntity.setNote(structureRequestDTO.note());
+        var toto = structureRepository.save(structureEntity);
+        return new ApiResponseWrapper<>(new StructureAnswerDTO(toto.getId(), new Timestamp(System.currentTimeMillis()).toString()), 200);
     }
 
     public List<AllStructureResponseDTO> getAllStructure(GetAllStructureRequest getAllStructureRequest){
