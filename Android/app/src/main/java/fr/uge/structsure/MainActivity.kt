@@ -52,8 +52,8 @@ import fr.uge.structsure.retrofit.response.GetAllSensorsResponse
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
 import androidx.compose.ui.tooling.preview.Preview
-import com.csl.cs108library4a.Cs108Library4A
 import fr.uge.structsure.download_structure.presentation.HomePage
+import fr.uge.structsure.settings.presentation.SettingsPage
 import fr.uge.structsure.ui.theme.StructSureTheme
 
 class MainActivity : ComponentActivity() {
@@ -145,7 +145,6 @@ class MainActivity : ComponentActivity() {
                         }
                         , floatingActionButtonPosition = FabPosition.Start
                     )*/
-                    SettingsPage()
                 }
             }
 
@@ -154,7 +153,7 @@ class MainActivity : ComponentActivity() {
             var connexion = true  // false si pas de connexion
             var loggedIn = true  // true si déjà connecté
             val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePageNoCon"
-            NavHost(navController = navController, startDestination = homePage) {
+            NavHost(navController = navController, startDestination = "SettingsPage") {
                 /* Example code */
                 composable("ecran1") { Ecran1(navController)}
                 composable("ecran2") { Ecran2(navController)}
@@ -165,6 +164,7 @@ class MainActivity : ComponentActivity() {
                 composable("ScanPage"){ /*ScanPage(navController)*/ }
                 composable("AlerteOk"){ /*AlerteOk(navController)*/ }
                 composable("AlerteNok"){ /*AlerteNok(navController)*/ }
+                composable("SettingsPage"){ SettingsPage() }
             }
         }
 
