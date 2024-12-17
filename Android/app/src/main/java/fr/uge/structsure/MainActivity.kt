@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Scaffold(
+                    /*Scaffold(
                         modifier = Modifier.fillMaxSize(),
                         topBar = {
                             // Header
@@ -144,7 +144,8 @@ class MainActivity : ComponentActivity() {
                             BluetoothButton(connexion)
                         }
                         , floatingActionButtonPosition = FabPosition.Start
-                    )
+                    )*/
+                    SettingsPage()
                 }
             }
 

@@ -13,20 +13,13 @@ import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.download_structure.domain.StructureData
 import fr.uge.structsure.download_structure.domain.StructureDownloadState
-import fr.uge.structsure.download_structure.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
 
 @Composable
-fun StructureButtons(
-    viewModel: StructureViewModel,
-    data: StructureData = StructureData(
-        "Structure",
-        StructureDownloadState.downloading
-    )
-) {
-    when (data.state) {
+fun StructureButtons() {
+    /*when (data.state) {
         StructureDownloadState.downloadable -> {
             // Bouton de téléchargement
             DownloadButton(
@@ -44,7 +37,7 @@ fun StructureButtons(
             // Boutons "play" et "suppression"
             PlaySupButton()
         }
-    }
+    }*/
 }
 
 // @Preview(showBackground = true)

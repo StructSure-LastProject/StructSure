@@ -13,19 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.download_structure.domain.StructureData
 import fr.uge.structsure.download_structure.domain.StructureDownloadState
-import fr.uge.structsure.download_structure.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 
 @Composable
-fun Structure(
-    viewModel: StructureViewModel,
-    data: StructureData = StructureData(
-        name = "Structure",
-        state = StructureDownloadState.downloadable
-    )
-) {
+fun Structure() {
     Row(
         modifier = Modifier
             .background(color = White, shape = RoundedCornerShape(20.dp))
@@ -38,14 +31,14 @@ fun Structure(
         ) {
             Text(
                 style = Typography.headlineMedium,
-                text = data.name
+                text = "test"
             )
             Text(
                 style = Typography.bodyMedium,
                 color = Black.copy(alpha = 0.5f),
-                text = data.state.state
+                text = "test"
             )
         }
-        StructureButtons(viewModel = viewModel, data = data)
+        StructureButtons()
     }
 }

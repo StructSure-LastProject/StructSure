@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.download_structure.domain.StructureData
 import fr.uge.structsure.download_structure.domain.StructureDownloadState
-import fr.uge.structsure.download_structure.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Typography
 
 val STRUCTURE_LIST_TEMPORARY = listOf(
@@ -26,7 +25,7 @@ val STRUCTURE_LIST_TEMPORARY = listOf(
 )
 
 @Composable
-fun StructuresListView(viewModel: StructureViewModel) {
+fun StructuresListView() {
     Column(
         modifier = Modifier,
         verticalArrangement = Arrangement.spacedBy(15.dp)
@@ -39,9 +38,8 @@ fun StructuresListView(viewModel: StructureViewModel) {
         SearchBar()
         STRUCTURE_LIST_TEMPORARY.forEach { structureData ->
             Structure(
-                viewModel = viewModel,
-                data = structureData
-            )
+
+)
         }
     }
 }
