@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,7 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+//import com.csl.cs108library4a.Cs108Library4A
 import com.csl.cslibrary4a.Cs108Library4A
+//import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.bluetooth.cs108.Connexion
 import fr.uge.structsure.components.BluetoothButton
 import fr.uge.structsure.ui.theme.LightGray
@@ -48,6 +54,7 @@ class MainActivity : ComponentActivity() {
 
     private val isBluetoothEnabled: Boolean
         get() = bluetoothAdapter?.isEnabled == true
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,7 +130,28 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+
+            val navController = rememberNavController()
+
+            NavHost(navController = navController, startDestination = "home") {
+                var connexion = true  // false si pas de connexion
+                lateinit var homePage : String
+                if(connexion) {
+                    homePage = "HomePage"
+                } else {
+                    homePage = "HomePageNoCon"
+                }
+                composable(homePage) { /*HomePage(navController)*/ }
+                composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
+                composable("ScanPage"){ /*ScanPage(navController)*/ }
+                composable("AlerteOk"){ /*AlerteOk(navController)*/ }
+                composable("AlerteNok"){ /*AlerteNok(navController)*/ }
+            }
         }
+
+
+
+
     }
 
     override fun onRestart() {
