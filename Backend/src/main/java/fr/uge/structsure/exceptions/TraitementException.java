@@ -13,4 +13,9 @@ public class TraitementException extends Exception {
     public int getCode() {
         return code;
     }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        return this;
+    }
 }
