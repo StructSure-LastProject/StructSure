@@ -1,0 +1,36 @@
+.w-236px {
+    width: 236px;
+}
+
+.w-276px {
+    width: 276px;
+}
+
+.w-500px {
+    width: 500px;
+}
+
+
+.h-394px {
+    height: 394px;
+}
+
+.p-25px {
+    padding: 25px;
+}
+
+
+.px-25px {
+    padding-top: 25px;
+    padding-bottom: 25px;
+}
+
+.mb-35px {
+    margin-bottom: 35px;
+}
+
+
+
+.gap-x-25px {
+    column-gap: 25px;
+}
