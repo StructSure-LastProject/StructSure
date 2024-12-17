@@ -2,5 +2,13 @@ package fr.uge.structsure.repositories;
 
 import fr.uge.structsure.entities.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface AccountRepository extends JpaRepository<Account, String> {}
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface AccountRepository extends JpaRepository<Account, String> {
+
+    Optional<Account> findByLogin(String login);
+}
