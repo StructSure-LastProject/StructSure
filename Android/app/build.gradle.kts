@@ -58,6 +58,7 @@ dependencies {
         "dir" to "libs",
         "include" to listOf("*.aar", "*.jar")
     )))
+    implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

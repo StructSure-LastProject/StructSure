@@ -139,17 +139,16 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
 
-            NavHost(navController = navController, startDestination = "ecran1") {
-                var connexion = true  // false si pas de connexion
-                lateinit var homePage : String
-                if(connexion) {
-                    homePage = "HomePage"
-                } else {
-                    homePage = "HomePageNoCon"
-                }
+            var connexion = true  // false si pas de connexion
+            var loggedIn = true  // true si déjà connecté
+            val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePageNoCon"
+            NavHost(navController = navController, startDestination = homePage) {
+                /* Example code */
                 composable("ecran1") { Ecran1(navController)}
                 composable("ecran2") { Ecran2(navController)}
-                composable(homePage) { /*HomePage(navController)*/ }
+
+                /* Code à compléter */
+                composable("HomePage") { /*HomePage(navController)*/ }
                 composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
                 composable("ScanPage"){ /*ScanPage(navController)*/ }
                 composable("AlerteOk"){ /*AlerteOk(navController)*/ }
@@ -173,7 +172,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
+//Exemples  -- A retirer quand plus d'utilité
 @Composable
 fun Ecran1(navController: NavController){
     ButtonText(
