@@ -172,4 +172,6 @@ class ScanViewModel(private val scanDao: ScanDao, private val context: Context) 
         activeScanId = null
         lastProcessedSensorIndex = 0
     }
+    
+    
 }

@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import fr.uge.structsure.structuresPage.data.StructureDao
-import fr.uge.structsure.structuresPage.data.StructureData
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import fr.uge.structsure.dbTest.data.UserData
 import fr.uge.structsure.dbTest.data.UserDao
 import fr.uge.structsure.startScan.data.dao.ScanDao
@@ -20,7 +20,7 @@ import fr.uge.structsure.start_scan.data.dao.ScanDao
 )
 abstract class AppDatabase : RoomDatabase() {
 
-    companion object{
+    companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -32,7 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this){
+            return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
@@ -40,6 +40,8 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     .fallbackToDestructiveMigration()// Option qu'on peut utiliser pour éviter des erreurs de migration pendant le développement.
                     .allowMainThreadQueries()
+                    .fallbackToDestructiveMigration() // Option qu'on peut utiliser pour éviter des erreurs de migration pendant le développement.
+                    .addMigrations(MIGRATION_1_2)
                     .build()
                 INSTANCE = instance
                 instance
@@ -52,4 +54,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun sensorDao(): SensorDao
     abstract fun scanDao(): ScanDao
     abstract fun structureDao(): StructureDao
+    abstract fun structurePlanDao(): StructurePlanDao
 }
