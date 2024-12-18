@@ -4,11 +4,17 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import fr.uge.structsure.structuresPage.data.PlanDB
+import fr.uge.structsure.structuresPage.data.PlanDao
+import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.structuresPage.data.SensorDao
 import fr.uge.structsure.structuresPage.data.StructureDao
 import fr.uge.structsure.structuresPage.data.StructureData
+import fr.uge.structsure.structuresPage.data.StructureDetailsData
 
 @Database(
-    entities = [StructureData::class],
+    entities = [StructureData::class, SensorDB::class, PlanDB::class],
     version = 2,
     exportSchema = false // Désactive l'exportation des schémas c'est qu'un prototype
 )
@@ -35,4 +41,6 @@ abstract class AppDatabase : RoomDatabase() {
     }
 
     abstract fun structureDao(): StructureDao
+    abstract fun planDao(): PlanDao
+    abstract fun sensorDao(): SensorDao
 }

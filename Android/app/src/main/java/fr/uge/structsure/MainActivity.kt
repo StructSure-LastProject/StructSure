@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,7 +29,9 @@ import fr.uge.structsure.ui.theme.Black
 
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.settings.presentation.SettingsPage
-import fr.uge.structsure.structuresPage.domain.StructureRepository
+import fr.uge.structsure.structuresPage.data.StructureRepository
+import fr.uge.structsure.structuresPage.domain.StructureViewModel
+import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
 import fr.uge.structsure.ui.theme.StructSureTheme
 
@@ -37,9 +40,8 @@ class MainActivity : ComponentActivity() {
         lateinit var csLibrary4A: Cs108Library4A
     }
 
-    private val db by lazy {
-        AppDatabase.getDatabase(applicationContext)
-    }
+    private lateinit var db: AppDatabase
+    private lateinit var structureViewModel: StructureViewModel
 
     private val bluetoothManager by lazy {
         applicationContext.getSystemService(BluetoothManager::class.java)
@@ -52,11 +54,16 @@ class MainActivity : ComponentActivity() {
         get() = bluetoothAdapter?.isEnabled == true
 
 
+    private val viewModelFactory: StructureViewModelFactory by lazy {
+        StructureViewModelFactory(db)
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val structureRepository = StructureRepository(structureDao = db.structureDao())
-
+        db = AppDatabase.getDatabase(applicationContext)
+        structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
 
         val enableBluetoothLauncher = registerForActivityResult(
@@ -142,7 +149,7 @@ class MainActivity : ComponentActivity() {
                 composable("ecran2") { Ecran2(navController)}
 
                 /* Code à compléter */
-                composable("HomePage") { HomePage(navController, structureRepository) }
+                composable("HomePage") { HomePage(navController, structureViewModel) }
                 composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
                 composable("ScanPage"){ /*ScanPage(navController)*/ }
                 composable("AlerteOk"){ /*AlerteOk(navController)*/ }

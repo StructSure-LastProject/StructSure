@@ -9,15 +9,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import fr.uge.structsure.structuresPage.domain.StructureRepository
+import fr.uge.structsure.structuresPage.data.StructureData
+import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 
 @Composable
-fun Structure(name: String, state: StructureStates, structureRepository: StructureRepository) {
+fun Structure(structure: StructureData, state: MutableState<StructureStates>, structureViewModel: StructureViewModel) {
     Row(
         modifier = Modifier
             .background(color = White, shape = RoundedCornerShape(20.dp))
@@ -30,14 +32,14 @@ fun Structure(name: String, state: StructureStates, structureRepository: Structu
         ) {
             Text(
                 style = Typography.headlineMedium,
-                text =  name
+                text =  structure.name
             )
             Text(
                 style = Typography.bodyMedium,
                 color = Black.copy(alpha = 0.5f),
-                text = state.message
+                text = state.value.message
             )
         }
-        StructureButtons(name, state, structureRepository)
+        StructureButtons(structure, state, structureViewModel)
     }
 }

@@ -10,13 +10,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import fr.uge.structsure.components.Header
-import fr.uge.structsure.structuresPage.domain.StructureRepository
+import fr.uge.structsure.structuresPage.data.StructureRepository
+import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.presentation.components.AccountInformationsView
 import fr.uge.structsure.structuresPage.presentation.components.StructuresListView
 
 
 @Composable
-fun HomePage(navController: NavHostController, structureRepository: StructureRepository) {
+fun HomePage(navController: NavHostController, structureViewModel: StructureViewModel) {
     Column(
         modifier = Modifier
             .padding(start = 25.dp, top = 50.dp, end = 25.dp)
@@ -25,7 +26,7 @@ fun HomePage(navController: NavHostController, structureRepository: StructureRep
     ) {
         Header()
         AccountInformationsView()
-        StructuresListView(structureRepository)
+        StructuresListView(structureViewModel)
         // BluetoothButton()
     }
 

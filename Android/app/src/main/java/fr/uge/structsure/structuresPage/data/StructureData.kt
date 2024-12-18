@@ -12,6 +12,7 @@ data class StructureData(
     val numberOfSensors: Int,
     val numberOfPlan: Int,
     val url: String,
-    val state: Boolean
+    var state: Boolean,
+    var fileLocation: String
 
 )

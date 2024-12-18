@@ -8,6 +8,7 @@ import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.OrderEnum;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -187,4 +188,21 @@ public class StructureService {
 
     }
 
+  public StructureResponseDTO getStructureById(Long id) {
+      Objects.requireNonNull(id);
+      var structureOptional = structureRepository.findById(id);
+      if (structureOptional.isEmpty()){
+        throw new IllegalArgumentException("Structure n'existe pas");
+      }
+      var structure = structureOptional.get();
+      var plans = planRepository.findByStructure(structure);
+      var sensors = sensorRepository.findByStructureId(structure.getId());
+      return new StructureResponseDTO(
+          id,
+          structure.getName(),
+          structure.getNote(),
+          plans,
+          sensors
+      );
+  }
 }

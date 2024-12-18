@@ -6,25 +6,40 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
-import fr.uge.structsure.structuresPage.domain.StructureRepository
+import fr.uge.structsure.structuresPage.data.StructureData
+import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 @Composable
-fun StructureButtons(name: String, state: StructureStates, structureRepository: StructureRepository) {
-    when (state) {
+fun StructureButtons(structure: StructureData, state: MutableState<StructureStates>, structureViewModel: StructureViewModel) {
+    val coroutineScope = rememberCoroutineScope()
+
+    when (state.value) {
         StructureStates.ONLINE -> {
             // Bouton de téléchargement
             DownloadButton(
-                structureName = name,
+                structureName = structure.name,
                 onDownloadClick = {
-                    structureRepository.downloadStructure(name)
+                    state.value = StructureStates.DOWNLOADING
+
+                    // Launch a coroutine to call the download method
+                    coroutineScope.launch {
+                        structureViewModel.downloadStructure(structure)
+                        delay(2000)
+                        state.value = StructureStates.AVAILABLE
+                    }
                 }
             )
         }
@@ -36,7 +51,11 @@ fun StructureButtons(name: String, state: StructureStates, structureRepository: 
 
         StructureStates.AVAILABLE -> {
             // Boutons "play" et "suppression"
-            PlaySupButton()
+            PlaySupButton(state, structure, structureViewModel)
+        }
+
+        StructureStates.DOWNLOADING -> {
+            LoadingButton()
         }
     }
 }
@@ -68,9 +87,12 @@ fun LoadingButton() {
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun PlaySupButton() {
+fun PlaySupButton(
+    state: MutableState<StructureStates>,
+    structure: StructureData,
+    structureViewModel: StructureViewModel
+) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -86,7 +108,10 @@ fun PlaySupButton() {
             description = "Supprimer",
             color = Red,
             background = Red.copy(alpha = 0.05f),
-            onClick = { /* Logic de suppression */ }
+            onClick = {
+                structureViewModel.deleteStructure(structure)
+                state.value = StructureStates.ONLINE
+            }
         )
     }
 }

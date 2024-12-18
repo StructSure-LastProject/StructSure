@@ -15,7 +15,7 @@ public class Plan {
     @NotBlank(message = "Name is required")
     @Size(max = 32, message = "Name must be less than 32 characters")
     private String name;
-    private File file;
+    private String imageUrl;
     @NotBlank(message = "Section is required")
     @Size(max = 128, message = "Section must be less than 128 characters")
     private String section;
@@ -25,8 +25,8 @@ public class Plan {
 
     public Plan() {}
 
-    public Plan(File file, String name, String section) {
-        this.file = file;
+    public Plan(String imageUrl, String name, String section) {
+        this.imageUrl = imageUrl;
         this.name = name;
         this.section = section;
     }
@@ -39,12 +39,12 @@ public class Plan {
         this.name = name;
     }
 
-    public File getFile() {
-        return file;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setFile(File file) {
-        this.file = file;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public @NotBlank(message = "Section is required") @Size(max = 128, message = "Section must be less than 128 characters") String getSection() {
