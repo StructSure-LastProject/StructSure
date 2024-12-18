@@ -51,6 +51,7 @@ public class AccountService {
 
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) throws TraitementException {
         try {
+            System.err.println("Login requested for user : " + loginRequestDTO.login());
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequestDTO.login(),
                             loginRequestDTO.password())

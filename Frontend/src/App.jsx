@@ -1,33 +1,33 @@
-import { createSignal } from 'solid-js'
-I
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Router, Route, useNavigate } from "@solidjs/router";
+import Login from "../components/Login";
+import NeedsAuthentification from "../components/NeedsAuthentification";
+import { createEffect } from "solid-js";
+
+function RequireAuth(Component) {
+  return () => {
+    const navigate = useNavigate();
+
+    // Check if the token exists in localStorage
+    createEffect(() => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login", { replace: true }); // Redirect to login if no token
+      }
+    });
+
+    // Render the protected component if token exists
+    return <Component />;
+  };
+}
 
 function App() {
-  const [count, setCount] = createSignal(0)
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} class="logo" alt="Vite logo" />
-        </a>
-        <a href="https://solidjs.com" target="_blank">
-          <img src={solidLogo} class="logo solid" alt="Solid logo" />
-        </a>
-      </div>
-      <h1>Vite + Solid</h1>
-      <div class="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count()}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p class="read-the-docs">
-        Click on the Vite and Solid logos to learn more
-      </p>
+      <Router>
+        <Route path="/login" component={Login} />
+        <Route path="/header" component={RequireAuth(NeedsAuthentification)} />
+      </Router>
     </>
   )
 }
