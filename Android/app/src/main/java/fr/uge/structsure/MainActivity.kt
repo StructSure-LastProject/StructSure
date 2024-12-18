@@ -30,7 +30,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.bluetooth.cs108.Connexion
+import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.components.BluetoothButton
+import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.StructSureTheme
 
@@ -52,6 +54,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         csLibrary4A = Cs108Library4A(this, TextView(this))
+
 
         val enableBluetoothLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -103,6 +106,14 @@ class MainActivity : ComponentActivity() {
                                 horizontalAlignment = Alignment.Start,
                             ) {
                                 Text("Bonjour")
+                                ButtonText("Scanner", R.drawable.search) {
+                                    // InventoryMulti(context).startStopHandler(false)
+                                    Cs108Scanner { chip ->
+                                        if (chip.id.startsWith("E2806F12")) {
+                                            println("[TinyRfid] id:" + chip.id + ", attenuation: " + chip.attenuation)
+                                        }
+                                    }.toggle()
+                                }
                             }
                             if (visible) {
                                 // PopUp()
