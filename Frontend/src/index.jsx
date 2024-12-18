@@ -1,17 +1,13 @@
+import "./index.css"
+
 /* @refresh reload */
 import { render } from 'solid-js/web';
-import { Router } from "@solidjs/router";
-import './index.css';
-import Login from './pages/Login/Login';
+import { Router } from '@solidjs/router';
+import App from './App';
 
 const root = document.getElementById('root')
 
-
-const App = (props) => (
-    <>
-      <h1>Site Title</h1>
-      {props.children}
-    </>
-  );
-
-render(() => <Login />, root)
+render(() => (
+  <App />
+)
+, root)
