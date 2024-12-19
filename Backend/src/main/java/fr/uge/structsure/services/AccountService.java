@@ -42,7 +42,7 @@ public class AccountService {
      */
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) throws TraitementException {
         if (accountRepository.findByLogin(registerRequestDTO.login()).isPresent()) {
-            throw new TraitementException(ErrorIdentifier.USER_ALREADY_EXISTS);
+            throw new TraitementException(ErrorIdentifier.NO_USER);
         }
         Role role;
         try {
@@ -65,7 +65,6 @@ public class AccountService {
      */
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) throws TraitementException {
         try {
-            System.err.println("Login requested for user : " + loginRequestDTO.login());
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequestDTO.login(),
                             loginRequestDTO.password())

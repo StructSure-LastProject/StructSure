@@ -20,9 +20,4 @@ public class TraitementException extends Exception {
     public synchronized Throwable fillInStackTrace() {
         return this;
     }
-
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
-    }
 }

@@ -1,5 +1,6 @@
 package fr.uge.structsure.controllers;
 
+import fr.uge.structsure.config.JwtUtils;
 import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
