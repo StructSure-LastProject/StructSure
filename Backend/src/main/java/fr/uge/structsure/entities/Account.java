@@ -22,20 +22,16 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(nullable = false, length = 255)
-    private String mail;
-
     private Boolean enabled;
 
     public Account() {}
 
-    public Account(String login, String passwordEncrypted, String firstname, String lastname, Role role, String mail, boolean enabled) {
+    public Account(String login, String passwordEncrypted, String firstname, String lastname, Role role, boolean enabled) {
         this.login = Objects.requireNonNull(login);
         this.passwordEncrypted = Objects.requireNonNull(passwordEncrypted); // a modifier (spring security)
         this.firstname = Objects.requireNonNull(firstname);
         this.lastname = Objects.requireNonNull(lastname);
         this.role = Objects.requireNonNull(role);
-        this.mail = Objects.requireNonNull(mail);
         this.enabled = enabled;
     }
 
@@ -82,14 +78,6 @@ public class Account {
 
     public Role getRole() {
         return role;
-    }
-
-    public String getMail() {
-        return mail;
-    }
-
-    public void setMail(String mail) {
-        this.mail = mail;
     }
 
     public Boolean getEnabled() {

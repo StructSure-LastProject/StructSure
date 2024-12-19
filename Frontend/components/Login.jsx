@@ -15,7 +15,7 @@ function Login() {
         localStorage.setItem("role", response.role);
         localStorage.setItem("firstName", response.firstName);
         localStorage.setItem("lastName", response.lastName);
-        localStorage.setItem("mail", response.mail);
+        localStorage.setItem("login", response.login);
     };
 
     const loginFetchRequest = async (url) => {

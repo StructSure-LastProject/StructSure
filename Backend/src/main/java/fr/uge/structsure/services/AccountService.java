@@ -53,7 +53,7 @@ public class AccountService {
         }
         var account = new Account(registerRequestDTO.login(), new BCryptPasswordEncoder().encode(registerRequestDTO.password()),
                 registerRequestDTO.firstname(), registerRequestDTO.lastname(),
-                role, registerRequestDTO.mail(), true);
+                role, true);
         accountRepository.save(account);
         return new RegisterResponseDTO(account.getLogin());
     }
@@ -75,7 +75,7 @@ public class AccountService {
                 var accountDetails = account.orElseThrow(() -> new IllegalStateException("Account authenticated but not present"));
                 return new LoginResponseDTO(jwtUtils.generateToken(loginRequestDTO.login()), "Bearer",
                         accountDetails.getLogin(), accountDetails.getFirstname(), accountDetails.getLastname(),
-                        accountDetails.getMail(), accountDetails.getRole().toString());
+                        accountDetails.getRole().toString());
             }
             throw new TraitementException(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT);
         } catch (AuthenticationException e) {
