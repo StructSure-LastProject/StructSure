@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.retrofit.gson) // Converter JSON
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
+    implementation(libs.androidx.runtime.livedata)
 
 
     ksp(libs.androidx.room.compiler)

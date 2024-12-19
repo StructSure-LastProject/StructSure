@@ -11,6 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.structuresPage.data.StructureData
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun StructureButtons(structure: StructureData, state: MutableState<StructureStates>, structureViewModel: StructureViewModel) {
+fun StructureButtons(structure: StructureData, state: MutableState<StructureStates>, structureViewModel: StructureViewModel, navController: NavController) {
     val coroutineScope = rememberCoroutineScope()
 
     when (state.value) {
@@ -51,7 +52,7 @@ fun StructureButtons(structure: StructureData, state: MutableState<StructureStat
 
         StructureStates.AVAILABLE -> {
             // Boutons "play" et "suppression"
-            PlaySupButton(state, structure, structureViewModel)
+            PlaySupButton(state, structure, structureViewModel, navController)
         }
 
         StructureStates.DOWNLOADING -> {
@@ -91,7 +92,8 @@ fun LoadingButton() {
 fun PlaySupButton(
     state: MutableState<StructureStates>,
     structure: StructureData,
-    structureViewModel: StructureViewModel
+    structureViewModel: StructureViewModel,
+    navController: NavController
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -101,7 +103,9 @@ fun PlaySupButton(
             description = "Lire",
             color = Black,
             background = LightGray,
-            onClick = { /* Logic de lecture */ }
+            onClick = {
+                navController.navigate("startScan?structureId=${structure.id}")
+            }
         )
         Button(
             id = R.drawable.x,

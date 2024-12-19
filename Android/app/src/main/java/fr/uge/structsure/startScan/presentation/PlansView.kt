@@ -1,4 +1,4 @@
-package fr.uge.structsure.start_scan.presentation.components
+package fr.uge.structsure.startScan.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,25 +7,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.uge.structsure.R
+import fr.uge.structsure.ui.theme.*
 
-val poppinsFontFamily = FontFamily(
-    Font(R.font.poppins_regular, FontWeight.Normal),
-    Font(R.font.poppins_bold, FontWeight.Bold)
-)
 
 /**
  * This composable is used to display the plans of the structure.
@@ -33,13 +28,11 @@ val poppinsFontFamily = FontFamily(
 @Composable
 fun PlansView(modifier: Modifier = Modifier) {
     var isSensorListVisible by remember { mutableStateOf(true) }
-    val itemBackgroundColors = remember { mutableStateListOf(*Array(5) { Variables.White }) }
+    val itemBackgroundColors = remember { mutableStateListOf(*Array(5) { White }) }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(5.dp),
-        horizontalAlignment = Alignment.Start,
         modifier = modifier
-            .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
+            .padding(horizontal = 20.dp, vertical = 15.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -47,11 +40,7 @@ fun PlansView(modifier: Modifier = Modifier) {
         ) {
             Text(
                 text = "Plans",
-                style = TextStyle(
-                    fontSize = 25.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Variables.Black
-                )
+                style = MaterialTheme.typography.titleLarge
             )
         }
 
@@ -59,10 +48,9 @@ fun PlansView(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start,
             modifier = Modifier
-                .width(378.dp)
-                .height(433.dp)
-                .background(color = Variables.White, shape = RoundedCornerShape(size = 20.dp))
-                .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
+                .fillMaxWidth()
+                .background(color = White, shape = RoundedCornerShape(size = 20.dp))
+                .padding(horizontal = 20.dp, vertical = 15.dp)
         )  {
             Image(
                 painter = painterResource(id = R.drawable.oa_plan),
@@ -77,7 +65,7 @@ fun PlansView(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(Variables.LightGray)
+                    .background(LightGray)
             )
 
             Column(
@@ -90,7 +78,7 @@ fun PlansView(modifier: Modifier = Modifier) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { isSensorListVisible = !isSensorListVisible }
-                        .background(color = Variables.LightGray, shape = RoundedCornerShape(10.dp))
+                        .background(color = LightGray, shape = RoundedCornerShape(10.dp))
                         .padding(8.dp)
                 ) {
                     Image(
@@ -101,12 +89,7 @@ fun PlansView(modifier: Modifier = Modifier) {
                     )
                     Text(
                         text = "Section OA",
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                            fontFamily = poppinsFontFamily,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Variables.Black
-                        ),
+                        style = MaterialTheme.typography.headlineMedium,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -129,9 +112,9 @@ fun PlansView(modifier: Modifier = Modifier) {
                                     )
                                     .clickable {
                                         itemBackgroundColors[index - 1] =
-                                            if (itemBackgroundColors[index - 1] == Variables.White)
-                                                Variables.LightGray
-                                            else Variables.White
+                                            if (itemBackgroundColors[index - 1] == White)
+                                                LightGray
+                                            else White
                                     }
                                     .padding(12.dp)
                             ) {
@@ -140,7 +123,7 @@ fun PlansView(modifier: Modifier = Modifier) {
                                     style = TextStyle(
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Variables.Black
+                                        color = Black
                                     )
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -149,9 +132,9 @@ fun PlansView(modifier: Modifier = Modifier) {
                                     text = "Plan ${String.format("%02d", index)}",
                                     style = TextStyle(
                                         fontSize = 16.sp,
-                                        fontFamily = poppinsFontFamily,
+                                        fontFamily = fonts,
                                         fontWeight = FontWeight.Medium,
-                                        color = Variables.Black
+                                        color = Black
                                     )
                                 )
                             }
@@ -163,8 +146,3 @@ fun PlansView(modifier: Modifier = Modifier) {
     }
 }
 
-object Variables {
-    val Black: Color = Color(0xFF181818)
-    val LightGray: Color = Color(0xFFF2F2F4)
-    val White: Color = Color(0xFFFFFFFF)
-}

@@ -1,6 +1,5 @@
 package fr.uge.structsure.entities;
 
-import fr.uge.structsure.utils.converters.LocalTimeConverter;
 import jakarta.persistence.*;
 
 import java.sql.Time;
@@ -29,8 +28,8 @@ public class Sensor {
     private LocalTime installationDate;
      */
 
-    @Column(columnDefinition = "TIME")
-    private LocalTime installationDate;
+    @Column(columnDefinition = "TEXT")
+    private String installationDate;
 
     @Column(columnDefinition = "REAL")
     private Double x;
@@ -50,7 +49,7 @@ public class Sensor {
 
     }
 
-    public Sensor(String controlChip, String measureChip, String name, String note, LocalTime installationDate, Double x, Double y, Boolean archived, Structure structure) {
+    public Sensor(String controlChip, String measureChip, String name, String note, String installationDate, Double x, Double y, Boolean archived, Structure structure) {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
         Objects.requireNonNull(name);
@@ -99,11 +98,11 @@ public class Sensor {
         this.note = note;
     }
 
-    public LocalTime getInstallationDate() {
+    public String getInstallationDate() {
         return installationDate;
     }
 
-    public void setInstallationDate(LocalTime installationDate) {
+    public void setInstallationDate(String installationDate) {
         this.installationDate = installationDate;
     }
 

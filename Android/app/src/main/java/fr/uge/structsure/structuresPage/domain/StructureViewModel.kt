@@ -25,7 +25,6 @@ class StructureViewModel(private val structureRepository: StructureRepository): 
     private val _getAllStructures = MutableLiveData<List<StructureData>>()
     val getAllStructures: LiveData<List<StructureData>> = _getAllStructures
 
-
     fun getAllStructures() {
         viewModelScope.launch {
             val structures = structureRepository.getAllStructures()

@@ -1,4 +1,4 @@
-package fr.uge.structsure.start_scan.presentation.components
+package fr.uge.structsure.startScan.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,7 +12,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 
 /**
  * Composant CustomToast for displaying a custom toast message.

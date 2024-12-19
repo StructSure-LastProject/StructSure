@@ -1,4 +1,4 @@
-package fr.uge.structsure.start_scan.presentation.components
+package fr.uge.structsure.startScan.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,7 +12,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
-import fr.uge.structsure.start_scan.domain.ScanState
+import fr.uge.structsure.startScan.domain.ScanState
+import fr.uge.structsure.ui.theme.*
 
 /**
  * Component for the ToolBar.
@@ -44,7 +45,7 @@ fun ToolBar(
             modifier = Modifier
                 .width(77.dp)
                 .height(58.dp)
-                .background(color = Variables.White, shape = RoundedCornerShape(size = 50.dp))
+                .background(color = White, shape = RoundedCornerShape(size = 50.dp))
                 .padding(15.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -107,7 +108,7 @@ fun ToolBar(
             modifier = Modifier
                 .width(75.dp)
                 .height(58.dp)
-                .background(color = Variables.White, shape = RoundedCornerShape(size = 50.dp))
+                .background(color = White, shape = RoundedCornerShape(size = 50.dp))
                 .padding(15.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -134,7 +135,7 @@ fun ActionButton(iconRes: Int, description: String, onClick: () -> Unit) {
         modifier = Modifier
             .width(72.dp)
             .height(72.dp)
-            .background(color = Variables.Black, shape = RoundedCornerShape(50.dp))
+            .background(color = Black, shape = RoundedCornerShape(50.dp))
             .padding(20.dp)
             .clickable { onClick() },
         horizontalArrangement = Arrangement.Center,

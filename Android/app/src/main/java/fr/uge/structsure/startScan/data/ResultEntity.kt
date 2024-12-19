@@ -1,4 +1,4 @@
-package fr.uge.structsure.start_scan.data
+package fr.uge.structsure.startScan.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -18,6 +18,7 @@ import fr.uge.structsure.structuresPage.presentation.components.StructuresListVi
 
 @Composable
 fun HomePage(navController: NavHostController, structureViewModel: StructureViewModel) {
+
     Column(
         modifier = Modifier
             .padding(start = 25.dp, top = 50.dp, end = 25.dp)
@@ -26,9 +27,8 @@ fun HomePage(navController: NavHostController, structureViewModel: StructureView
     ) {
         Header()
         AccountInformationsView()
-        StructuresListView(structureViewModel)
+        StructuresListView(structureViewModel, navController)
         ConnectivityStatus()
-
     }
 
 }

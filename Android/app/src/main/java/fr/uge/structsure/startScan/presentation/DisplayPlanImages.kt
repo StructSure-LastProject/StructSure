@@ -1,4 +1,4 @@
-package fr.uge.structsure.start_scan.presentation.components
+package fr.uge.structsure.startScan.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -6,8 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
-import fr.uge.structsure.start_scan.data.PlanEntity
-
+/*
 @Composable
 fun DisplayPlanImages(plans: List<PlanEntity>) {
     Column(modifier = Modifier.padding(16.dp)) {
@@ -23,6 +22,8 @@ fun DisplayPlanImages(plans: List<PlanEntity>) {
         }
     }
 }
+
+ */
 
 // Function to get the drawable id from the image path
 fun getDrawableId(imagePath: String): Int {

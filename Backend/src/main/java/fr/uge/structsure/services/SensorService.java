@@ -43,11 +43,6 @@ public class SensorService {
                     }
                     return true; // Aucun filtre
                 })
-                .filter(sensor -> {
-                    LocalTime installationTime = sensor.getInstallationDate();
-                    return (dateInstallationMin == null || !installationTime.isBefore(dateInstallationMin)) &&
-                            (dateInstallationMax == null || !installationTime.isAfter(dateInstallationMax));
-                })
                 .collect(Collectors.toList());
 
         // Application du tri avec le design pattern Strategy

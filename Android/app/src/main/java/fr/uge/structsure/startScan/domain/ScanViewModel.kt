@@ -1,15 +1,14 @@
-package fr.uge.structsure.start_scan.domain
+package fr.uge.structsure.startScan.domain
 
-import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.retrofit.response.GetAllSensorsResponse
-import fr.uge.structsure.start_scan.data.ScanEntity
-import fr.uge.structsure.start_scan.data.SensorEntity
-import fr.uge.structsure.start_scan.data.dao.ScanDao
+import fr.uge.structsure.startScan.data.ScanEntity
+import fr.uge.structsure.startScan.data.dao.ScanDao
+import fr.uge.structsure.structuresPage.data.SensorDB
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -30,9 +29,8 @@ enum class ScanState {
 /**
  * ViewModel for the ScanFragment.
  * @param scanDao Data access object for the ScanEntity and SensorEntity classes.
- * @param context Application context.
  */
-class ScanViewModel(private val scanDao: ScanDao, private val context: Context) : ViewModel() {
+class ScanViewModel(private val scanDao: ScanDao) : ViewModel() {
 
     // state for the current scan
     val currentScanState = mutableStateOf(ScanState.NOT_STARTED)
@@ -55,24 +53,10 @@ class ScanViewModel(private val scanDao: ScanDao, private val context: Context) 
      * @param structureId ID of the structure.
      */
     fun fetchSensorsAndStartScan(structureId: Long) {
-        RetrofitInstance.sensorApi.getAllSensors(structureId).enqueue(object :
-            Callback<List<GetAllSensorsResponse>> {
-            override fun onResponse(
-                call: Call<List<GetAllSensorsResponse>>,
-                response: Response<List<GetAllSensorsResponse>>
-            ) {
-                if (response.isSuccessful) {
-                    val sensors = response.body()
-                    sensors?.let { sensorList ->
-                        insertSensorsAndStartScan(sensorList)
-                    }
-                }
-            }
+        viewModelScope.launch {
+            scanDao.getAllSensors(structureId)
+        }
 
-            override fun onFailure(call: Call<List<GetAllSensorsResponse>>, t: Throwable) {
-                println(" failure  : ${t.localizedMessage}")
-            }
-        })
     }
 
 
@@ -83,22 +67,23 @@ class ScanViewModel(private val scanDao: ScanDao, private val context: Context) 
     private fun insertSensorsAndStartScan(sensors: List<GetAllSensorsResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
             val newScan = ScanEntity(structureId = 1, date = System.currentTimeMillis())
-            val scanId = scanDao.insertScan(newScan)
 
             // filter out duplicate sensors
             val uniqueSensors = sensors.distinctBy { it.controlChip to it.measureChip }
 
             val sensorEntities = uniqueSensors.map { sensor ->
-                SensorEntity(
-                    controlChip = sensor.controlChip,
-                    measureChip = sensor.measureChip,
-                    name = sensor.name,
-                    note = sensor.note,
-                    state = "UNSCAN",
-                    installationDate = sensor.installationDate,
-                    x = sensor.x,
-                    y = sensor.y
-                )
+              SensorDB(
+                  sensorId = "${sensor.controlChip}-${sensor.measureChip}",
+                  controlChip = sensor.controlChip,
+                  measureChip = sensor.measureChip,
+                  name = sensor.name,
+                  note = sensor.note,
+                  installationDate = sensor.installationDate,
+                  state = "NOK",
+                  x = sensor.x,
+                  y = sensor.y,
+                  structureId = 1
+              )
             }
 
             scanDao.insertSensors(sensorEntities)
@@ -116,7 +101,7 @@ class ScanViewModel(private val scanDao: ScanDao, private val context: Context) 
      * Starts the interrogation of the sensors.
      * @param sensors List of sensors to interrogate.
      */
-    private fun startSensorInterrogation(sensors: List<SensorEntity>) {
+    private fun startSensorInterrogation(sensors: List<SensorDB>) {
         continueScanning = true // Controle variable pour le scan
         viewModelScope.launch(Dispatchers.IO) {
             for (i in lastProcessedSensorIndex until sensors.size) {
@@ -154,14 +139,6 @@ class ScanViewModel(private val scanDao: ScanDao, private val context: Context) 
     fun pauseScan() {
         currentScanState.value = ScanState.PAUSED
         continueScanning = false
-    }
-
-    /**
-     * Reprend le scan après une pause.
-     */
-    fun resumeScan(sensors: List<SensorEntity>) {
-        currentScanState.value = ScanState.STARTED
-        startSensorInterrogation(sensors)
     }
 
     /**

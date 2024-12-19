@@ -29,6 +29,8 @@ import fr.uge.structsure.ui.theme.Black
 
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.settings.presentation.SettingsPage
+import fr.uge.structsure.startScan.domain.ScanViewModel
+import fr.uge.structsure.startScan.presentation.MainScreenStartSensor
 import fr.uge.structsure.structuresPage.data.StructureRepository
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
@@ -63,6 +65,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         db = AppDatabase.getDatabase(applicationContext)
+        val scanDao = db.scanDao()
+        val scanViewModel = ScanViewModel(scanDao)
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
 
@@ -140,16 +144,17 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
 
+
             var connexion = true  // false si pas de connexion
             var loggedIn = true  // true si déjà connecté
-            val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePageNoCon"
-            NavHost(navController = navController, startDestination = "HomePage") {
-                /* Example code */
-                composable("ecran1") { Ecran1(navController)}
-                composable("ecran2") { Ecran2(navController)}
-
-                /* Code à compléter */
+            val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
+            NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") { HomePage(navController, structureViewModel) }
+
+                composable("startScan?structureId={structureId}") { backStackEntry ->
+                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                    MainScreenStartSensor(scanViewModel, structureId)
+                }
                 composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
                 composable("ScanPage"){ /*ScanPage(navController)*/ }
                 composable("AlerteOk"){ /*AlerteOk(navController)*/ }

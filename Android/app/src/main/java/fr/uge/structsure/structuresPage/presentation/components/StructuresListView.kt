@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Typography
 
@@ -22,7 +23,7 @@ private fun StateMapper(state: Boolean): StructureStates {
 }
 
 @Composable
-fun StructuresListView(structureViewModel: StructureViewModel) {
+fun StructuresListView(structureViewModel: StructureViewModel, navController: NavController) {
     val structures = structureViewModel.getAllStructures.observeAsState()
     structureViewModel.getAllStructures()
 
@@ -40,7 +41,7 @@ fun StructuresListView(structureViewModel: StructureViewModel) {
         SearchBar(input = searchByName)
         structures.value?.filter { it.name.contains(searchByName.value) }?.forEach {
             val state = mutableStateOf(StateMapper(it.state))
-            Structure(it, state, structureViewModel)
+            Structure(it, state, structureViewModel, navController)
         }
     }
 }

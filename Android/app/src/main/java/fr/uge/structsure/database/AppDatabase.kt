@@ -6,21 +6,34 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import fr.uge.structsure.dbTest.data.UserData
-import fr.uge.structsure.dbTest.data.UserDao
-import fr.uge.structsure.start_scan.data.PlanEntity
-import fr.uge.structsure.start_scan.data.ScanEntity
-import fr.uge.structsure.start_scan.data.SensorEntity
-import fr.uge.structsure.start_scan.data.StructureEntity
-import fr.uge.structsure.start_scan.data.dao.ScanDao
-import fr.uge.structsure.start_scan.data.dao.StructurePlanDao
+import fr.uge.structsure.startScan.data.ScanEntity
+import fr.uge.structsure.startScan.data.StructureEntity
+import fr.uge.structsure.startScan.data.dao.ScanDao
+import fr.uge.structsure.startScan.data.dao.StructurePlanDao
+import fr.uge.structsure.structuresPage.data.PlanDB
+import fr.uge.structsure.structuresPage.data.PlanDao
+import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.structuresPage.data.SensorDao
+import fr.uge.structsure.structuresPage.data.StructureDao
+import fr.uge.structsure.structuresPage.data.StructureData
 
-// Add entities to the database
+/**
+ * BDD Room for StructSure app.
+ * - UserData: User data for authentication.
+ * - ScanEntity: Scan data.
+ * - SensorEntity: Sensor data.
+ * - StructureEntity: Structure data.
+ * - PlanEntity: Plan data.
+ */
 @Database(
-    entities = [UserData::class, ScanEntity::class, SensorEntity::class, StructureEntity::class, PlanEntity::class],
+    entities = [ScanEntity::class, StructureEntity::class,
+        StructureData::class, SensorDB::class, PlanDB::class],
     version = 2,
-    exportSchema = false // Désactive l'exportation des schémas c'est qu'un prototype
+    exportSchema = false
 )
+/**
+ * AppDatabase class for Room database.
+ */
 abstract class AppDatabase : RoomDatabase() {
 
     companion object {
@@ -42,6 +55,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "STRUCTSURE_DB"
                 )
                     .fallbackToDestructiveMigration() // Option when the database version is changed.
+                    .allowMainThreadQueries()
                     .build()
                 INSTANCE = instance
                 instance
@@ -52,8 +66,9 @@ abstract class AppDatabase : RoomDatabase() {
     /**
      * DAOs for the database.
      */
-    abstract fun userDao(): UserDao
     abstract fun scanDao(): ScanDao
     abstract fun structureDao(): StructureDao
     abstract fun structurePlanDao(): StructurePlanDao
+    abstract fun planDao(): PlanDao
+    abstract fun sensorDao(): SensorDao
 }

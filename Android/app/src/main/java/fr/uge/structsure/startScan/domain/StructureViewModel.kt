@@ -1,16 +1,15 @@
-package fr.uge.structsure.start_scan.domain
+package fr.uge.structsure.startScan.domain
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.database.AppDatabase
-import fr.uge.structsure.start_scan.data.PlanEntity
-import fr.uge.structsure.start_scan.data.StructureEntity
+import fr.uge.structsure.startScan.data.StructureEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class StructureViewModel(private val db: AppDatabase) : ViewModel() {
-
+/*
     /**
      * function to insert sample data into the database.
      */
@@ -66,4 +65,6 @@ class StructureViewModel(private val db: AppDatabase) : ViewModel() {
         }
     }
 
+
+ */
 }

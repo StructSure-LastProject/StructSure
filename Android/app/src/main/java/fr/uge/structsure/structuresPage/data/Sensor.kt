@@ -24,6 +24,7 @@ data class SensorDB(
     val name: String,
     val note: String,
     val installationDate: String,
+    val state: String,
     val x: Double,
     val y: Double,
     val structureId: Long

@@ -1,4 +1,4 @@
-package fr.uge.structsure.start_scan.presentation.components.sensors.list
+package fr.uge.structsure.startScan.presentation.sensors.list
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background

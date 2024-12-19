@@ -1,4 +1,4 @@
-package fr.uge.structsure.start_scan.presentation.components.sensors.list
+package fr.uge.structsure.startScan.presentation.sensors.list
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -10,9 +10,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
-import fr.uge.structsure.start_scan.presentation.components.Variables
-import fr.uge.structsure.start_scan.presentation.components.sensors.status.SensorState
+import fr.uge.structsure.startScan.presentation.sensors.status.SensorState
 import fr.uge.structsure.ui.theme.Typography
+import fr.uge.structsure.ui.theme.*
 
 // Temporary variables for the sensors list
 const val SENSORS_NUMBER = 30
@@ -24,7 +24,7 @@ fun SensorsListView(
     modifier: Modifier = Modifier
 ) {
     var isSensorListVisible by remember { mutableStateOf(true) }
-    val sensorBackgroundColors = remember { mutableStateListOf(*Array(5) { Variables.White }) }
+    val sensorBackgroundColors = remember { mutableStateListOf(*Array(5) { White }) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),

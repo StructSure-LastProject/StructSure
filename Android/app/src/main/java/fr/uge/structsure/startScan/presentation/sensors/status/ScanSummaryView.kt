@@ -1,7 +1,6 @@
-package fr.uge.structsure.start_scan.presentation.components
+package fr.uge.structsure.startScan.presentation.components
 
 
-import android.text.TextUtils.EllipsizeCallback
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,14 +16,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import fr.uge.structsure.R
-import fr.uge.structsure.start_scan.domain.ScanViewModel
-
-import fr.uge.structsure.start_scan.presentation.components.StatsView
-import fr.uge.structsure.start_scan.presentation.components.Variables
-import fr.uge.structsure.start_scan.presentation.components.poppinsFontFamily
-import fr.uge.structsure.start_scan.presentation.components.sensors.status.SensorState
+import fr.uge.structsure.startScan.domain.ScanViewModel
+import fr.uge.structsure.startScan.presentation.sensors.status.SensorState
+import fr.uge.structsure.ui.theme.*
 
 @Composable
 fun StructureSummaryView(viewModel: ScanViewModel) {
@@ -45,9 +40,9 @@ fun StructureSummaryView(viewModel: ScanViewModel) {
                 text = "Viaduc de Sylans",
                 style = TextStyle(
                     fontSize = 20.sp,
-                    fontFamily = poppinsFontFamily,
+                    fontFamily = fonts,
                     fontWeight = FontWeight(600),
-                    color = Variables.Black,
+                    color = Black,
                 )
             )
 
@@ -55,7 +50,7 @@ fun StructureSummaryView(viewModel: ScanViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .background(color = Variables.White, shape = RoundedCornerShape(size = 50.dp))
+                    .background(color = White, shape = RoundedCornerShape(size = 50.dp))
                     .padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 10.dp)
             ) {
                 Image(
@@ -69,7 +64,6 @@ fun StructureSummaryView(viewModel: ScanViewModel) {
                 )
             }
         }
-        StatsView()
         Spacer(modifier = Modifier.height(16.dp))
         SensorStatusColumn()
     }

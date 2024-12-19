@@ -114,6 +114,7 @@ class StructureRepository(
                             sensor.name,
                             sensor.note,
                             sensor.installationDate,
+                            state = "",
                             sensor.x,
                             sensor.y,
                             structure.id
