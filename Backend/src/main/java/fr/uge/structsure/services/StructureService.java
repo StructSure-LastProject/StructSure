@@ -8,10 +8,8 @@ import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.OrderEnum;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +29,7 @@ public class StructureService {
     }
 
     public StructureResponseDTO createStructure(StructureDTO structureDTO) {
-        Structure structure = new Structure(structureDTO.name(), structureDTO.note(), structureDTO.isArchived());
+        Structure structure = new Structure(structureDTO.name(), structureDTO.note());
         return structureMapper.toResponseDTO(structureRepository.save(structure));
     }
 
@@ -45,6 +43,24 @@ public class StructureService {
         structureEntity.setNote(structureDTO.note());
         var savedStructure = structureRepository.save(structureEntity);
         return structureMapper.toResponseDTO(savedStructure);
+    }
+
+    public StructureResponseDTO getStructureById(long id) {
+        var structureEntityOptional = structureRepository.findById(id);
+        if (structureEntityOptional.isEmpty()) {
+            return new StructureResponseDTO(null, "", "", false);
+        }
+        var structureEntity = structureEntityOptional.get();
+        return structureMapper.toResponseDTO(structureEntity);
+    }
+
+    public StructureResponseDTO getStructureByName(String name) {
+        var structureEntityOptional = structureRepository.findByName(name);
+        if (structureEntityOptional.isEmpty()) {
+            return new StructureResponseDTO(null, "", "", false);
+        }
+        var structureEntity = structureEntityOptional.get();
+        return structureMapper.toResponseDTO(structureEntity);
     }
 
     public List<AllStructureResponseDTO> getAllStructure(GetAllStructureRequest getAllStructureRequest){

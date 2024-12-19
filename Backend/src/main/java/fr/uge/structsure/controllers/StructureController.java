@@ -35,8 +35,18 @@ public class StructureController {
         return ResponseEntity.ok(structureService.createStructure(structureDTO));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<StructureResponseDTO> getStructureById(@PathVariable long id) {
+        return ResponseEntity.ok((structureService.getStructureById(id)));
+    }
+
+    @GetMapping("/name/{structureName}")
+    public ResponseEntity<StructureResponseDTO> getStructureByName(@PathVariable String structureName) {
+        return ResponseEntity.ok(structureService.getStructureByName(structureName));
+    }
+
     @PostMapping("/{id}")
-    public ResponseEntity<StructureResponseDTO> editStructure(@PathVariable Long id, @RequestBody StructureDTO structureDTO) {
+    public ResponseEntity<StructureResponseDTO> editStructure(@PathVariable long id, @RequestBody StructureDTO structureDTO) {
         Objects.requireNonNull(structureDTO);
 
         return ResponseEntity.ok(structureService.editStructure(id, structureDTO));
@@ -68,7 +78,7 @@ public class StructureController {
      * @param getAllStructureRequest Object that represents the request
      * @return List of structures
      */
-    //??? get ???
+    //get?
 //    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @GetMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<AllStructureResponseDTO> getAllStructure(@RequestBody GetAllStructureRequest getAllStructureRequest){
