@@ -1,17 +1,19 @@
 package fr.uge.structsure.exceptions;
 
-public class TraitementException extends Exception {
-    private final int code;
+import java.util.Objects;
 
-    public TraitementException(int code) {
-        if (code < 0) {
-            throw new IllegalArgumentException("code < 0");
-        }
-        this.code = code;
+/**
+ * This is the centralized exception that will be used
+ */
+public class TraitementException extends Exception {
+    private final ErrorIdentifier errorIdentifier;
+
+    public TraitementException(ErrorIdentifier errorIdentifier) {
+        this.errorIdentifier = Objects.requireNonNull(errorIdentifier);
     }
 
-    public int getCode() {
-        return code;
+    public ErrorIdentifier getErrorIdentifier() {
+        return errorIdentifier;
     }
 
     @Override
