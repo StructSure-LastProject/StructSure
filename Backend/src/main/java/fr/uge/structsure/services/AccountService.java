@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +52,7 @@ public class AccountService {
         }
         var account = new Account(registerRequestDTO.login(), new BCryptPasswordEncoder().encode(registerRequestDTO.password()),
                 registerRequestDTO.firstname(), registerRequestDTO.lastname(),
-                role, true);
+                role, registerRequestDTO.mail(), true);
         accountRepository.save(account);
         return new RegisterResponseDTO(account.getLogin());
     }
@@ -64,12 +65,16 @@ public class AccountService {
      */
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) throws TraitementException {
         try {
-            Authentication authentication = authenticationManager.authenticate(
+            var authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequestDTO.login(),
                             loginRequestDTO.password())
             );
             if (authentication.isAuthenticated()) {
-                return new LoginResponseDTO(jwtUtils.generateToken(loginRequestDTO.login()), "Bearer");
+                var account = accountRepository.findByLogin(loginRequestDTO.login());
+                var accountDetails = account.orElseThrow(() -> new IllegalStateException("Account authenticated but not present"));
+                return new LoginResponseDTO(jwtUtils.generateToken(loginRequestDTO.login()), "Bearer",
+                        accountDetails.getLogin(), accountDetails.getFirstname(), accountDetails.getLastname(),
+                        accountDetails.getMail(), accountDetails.getRole().toString());
             }
             throw new TraitementException(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT);
         } catch (AuthenticationException e) {

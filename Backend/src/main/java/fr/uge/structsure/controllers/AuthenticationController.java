@@ -51,5 +51,10 @@ public class AuthenticationController {
             return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
         }
     }
+
+    @GetMapping("/test")
+    public ResponseEntity<?> login() {
+        return ResponseEntity.status(200).body("test");
+    }
 }
 

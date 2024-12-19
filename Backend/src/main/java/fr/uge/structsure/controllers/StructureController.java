@@ -84,4 +84,6 @@ public class StructureController {
         Objects.requireNonNull(order);
         return structureService.getAllStructure(new GetAllStructureRequest(searchByName, sort, order));
     }
+
+
 }
