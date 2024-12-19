@@ -51,6 +51,7 @@ public class StructureController {
      *           <li>An error response with the appropriate HTTP status and error details in case of a {@link TraitementException}.</li>
      *         </ul>
      */
+    @PostMapping()
     public ResponseEntity<?> addStructure(@RequestBody AddStructureRequestDTO request) {
         try {
             var structure = structureService.createStructure(request);
