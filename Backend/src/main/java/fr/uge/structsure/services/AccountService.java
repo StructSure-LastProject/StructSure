@@ -4,6 +4,7 @@ import fr.uge.structsure.config.JwtUtils;
 import fr.uge.structsure.dto.*;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
+import fr.uge.structsure.exceptions.ErrorIdentifier;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
 import org.springframework.http.ResponseEntity;
@@ -32,15 +33,21 @@ public class AccountService {
         this.jwtUtils = Objects.requireNonNull(jwtUtils);
     }
 
+    /**
+     * Service that will do the register of new client
+     * @param registerRequestDTO The request dto
+     * @return RegisterResponseDTO the response dto
+     * @throws TraitementException Thrown if no user is found or the role does not exist
+     */
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) throws TraitementException {
         if (accountRepository.findByLogin(registerRequestDTO.login()).isPresent()) {
-            throw new TraitementException(1);
+            throw new TraitementException(ErrorIdentifier.NO_USER);
         }
         Role role;
         try {
             role = Role.valueOf(registerRequestDTO.role());
         } catch (IllegalArgumentException e) {
-            throw new TraitementException(2);
+            throw new TraitementException(ErrorIdentifier.ROLE_NOT_EXISTS);
         }
         var account = new Account(registerRequestDTO.login(), new BCryptPasswordEncoder().encode(registerRequestDTO.password()),
                 registerRequestDTO.firstname(), registerRequestDTO.lastname(),
@@ -49,9 +56,14 @@ public class AccountService {
         return new RegisterResponseDTO(account.getLogin());
     }
 
+    /**
+     * Service that will do the login of a user
+     * @param loginRequestDTO the request dto
+     * @return LoginResponseDTO the response dto
+     * @throws TraitementException thrown if login or password not correct
+     */
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) throws TraitementException {
         try {
-            System.err.println("Login requested for user : " + loginRequestDTO.login());
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequestDTO.login(),
                             loginRequestDTO.password())
@@ -59,9 +71,9 @@ public class AccountService {
             if (authentication.isAuthenticated()) {
                 return new LoginResponseDTO(jwtUtils.generateToken(loginRequestDTO.login()), "Bearer");
             }
-            throw new TraitementException(3);
+            throw new TraitementException(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT);
         } catch (AuthenticationException e) {
-            throw new TraitementException(3);
+            throw new TraitementException(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT);
         }
     }
 }

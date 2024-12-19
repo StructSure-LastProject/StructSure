@@ -1,5 +1,5 @@
 import logo from '/src/assets/logo.svg';
-import loginIcon from '/src/assets/loginIcon.svg';
+import log_in from '/src/assets/log_in.svg';
 import { createSignal } from "solid-js";
 import { useNavigate } from '@solidjs/router';
 
@@ -86,7 +86,7 @@ function Login() {
                     <div class="flex justify-end">
                         <button type="submit" class="w-156px bg-black flex justify-between rounded-50px pb-2 pt-2 pl-4 pr-4" >
                             <p class="text-sm text-white">Se connecter</p>
-                            <img src={loginIcon} class="w-20px" alt="Login Icon" />
+                            <img src={log_in} class="w-20px" alt="Login Icon" />
                         </button>
                     </div>
                 </form>

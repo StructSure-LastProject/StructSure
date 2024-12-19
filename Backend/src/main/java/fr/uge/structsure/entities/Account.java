@@ -11,7 +11,7 @@ public class Account {
     private String login;
 
     @Column(nullable = false, length = 64)
-    private String passwordCrypted; // pensez à utiliser Spring Security !
+    private String passwordEncrypted; // pensez à utiliser Spring Security !
 
     @Column(nullable = false, length = 64)
     private String firstname;
@@ -26,9 +26,9 @@ public class Account {
 
     public Account() {}
 
-    public Account(String login, String passwordCrypted, String firstname, String lastname, Role role, boolean enabled) {
+    public Account(String login, String passwordEncrypted, String firstname, String lastname, Role role, boolean enabled) {
         this.login = Objects.requireNonNull(login);
-        this.passwordCrypted = Objects.requireNonNull(passwordCrypted); // a modifier (spring security)
+        this.passwordEncrypted = Objects.requireNonNull(passwordEncrypted); // a modifier (spring security)
         this.firstname = Objects.requireNonNull(firstname);
         this.lastname = Objects.requireNonNull(lastname);
         this.role = Objects.requireNonNull(role);
@@ -39,9 +39,6 @@ public class Account {
         this.login = login;
     }
 
-    public void setPasswordCrypted(String passwordCrypted) {
-        this.passwordCrypted = passwordCrypted;
-    }
 
     public void setFirstname(String firstname) {
         this.firstname = firstname;
@@ -63,8 +60,12 @@ public class Account {
         return login;
     }
 
-    public String getPasswordCrypted() {
-        return passwordCrypted;
+    public String getPasswordEncrypted() {
+        return passwordEncrypted;
+    }
+
+    public void setPasswordEncrypted(String passwordEncrypted) {
+        this.passwordEncrypted = passwordEncrypted;
     }
 
     public String getFirstname() {

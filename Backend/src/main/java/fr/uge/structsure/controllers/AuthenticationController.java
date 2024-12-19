@@ -1,6 +1,5 @@
 package fr.uge.structsure.controllers;
 
-import fr.uge.User;
 import fr.uge.structsure.config.JwtUtils;
 import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.LoginRequestDTO;
@@ -25,19 +24,11 @@ import java.util.Objects;
 @RequestMapping("/api/auth")
 public class AuthenticationController {
 
-    private final PasswordEncoder passwordEncoder;
-
-    private final AccountRepository accountRepository;
-
     private final AccountService accountService;
 
 
     @Autowired
-    public AuthenticationController(PasswordEncoder passwordEncoder,
-                                    AccountRepository accountRepository,
-                                    AccountService accountService) {
-        this.passwordEncoder = Objects.requireNonNull(passwordEncoder);
-        this.accountRepository = Objects.requireNonNull(accountRepository);
+    public AuthenticationController(AccountService accountService) {
         this.accountService = Objects.requireNonNull(accountService);
     }
 
@@ -46,7 +37,7 @@ public class AuthenticationController {
         try {
             return ResponseEntity.status(200).body(accountService.register(registerRequestDTO));
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getCode());
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
             return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
         }
     }
@@ -56,14 +47,9 @@ public class AuthenticationController {
         try {
             return ResponseEntity.status(200).body(accountService.login(loginRequestDTO));
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getCode());
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
             return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
         }
-    }
-
-    @GetMapping("/tests")
-    public ResponseEntity<?> testLogin() {
-        return ResponseEntity.ok().body("Login");
     }
 }
 

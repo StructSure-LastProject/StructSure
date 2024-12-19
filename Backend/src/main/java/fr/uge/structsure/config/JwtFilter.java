@@ -14,6 +14,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * This is a filter that will be called before any request. Its role is to check
+ * if the client is authorized to access the API.
+ */
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -27,6 +31,15 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtUtils = jwtUtils;
     }
 
+    /**
+     * This is the main function that will check if the user is authorized
+     * by verifying if there is a token in the request and if it is valid.
+     * @param request the request of the client
+     * @param response the response for the client
+     * @param filterChain the filter
+     * @throws ServletException
+     * @throws IOException
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
@@ -50,6 +63,12 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    /**
+     * Defines the endpoints that should not be filtered because they are allowed without authentication
+     * @param request the request of the user
+     * @return boolean true if request should not be filtered by the filter, and false if not
+     * @throws ServletException
+     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         return request.getServletPath().startsWith("/api/auth/login") ||
