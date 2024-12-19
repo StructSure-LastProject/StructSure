@@ -128,8 +128,12 @@ class StructureRepository(
 
     fun deleteStructure(structure: StructureData){
         CoroutineScope(Dispatchers.IO).launch {
-            planDao.deletePlansByStructureId(structure.id)
             sensorDao.deleteSensorsByStructureId(structure.id)
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            planDao.deletePlansByStructureId(structure.id)
+        }
+        CoroutineScope(Dispatchers.IO).launch {
             structureDao.deleteStructure(structure)
         }
     }
