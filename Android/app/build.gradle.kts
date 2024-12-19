@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -49,16 +50,37 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(fileTree(mapOf(
-        "dir" to "libs",
-        "include" to listOf("*.aar", "*.jar"),
-    )))
-    implementation(libs.androidx.ui.test.android)
+
     implementation(fileTree(mapOf(
         "dir" to "libs",
         "include" to listOf("*.aar", "*.jar")
     )))
     implementation(libs.androidx.navigation.compose)
+
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.material)
+    implementation(libs.ui)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.androidx.foundation.android)
+    implementation(libs.androidx.room)
+    implementation(libs.androidx.room.ktx)
+
+    // ViewModel for Jetpack Compose
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    //Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson) // Converter JSON
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+    implementation(libs.androidx.runtime.livedata)
+
+
+    ksp(libs.androidx.room.compiler)
+    annotationProcessor(libs.androidx.room.compiler)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

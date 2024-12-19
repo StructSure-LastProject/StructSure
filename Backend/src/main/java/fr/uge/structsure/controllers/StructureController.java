@@ -4,6 +4,7 @@ import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.GetAllStructureRequest;
+import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.SensorService;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
 import fr.uge.structsure.services.StructureService;
+
 import org.springframework.http.MediaType;
 
 import java.util.Objects;
@@ -143,6 +145,16 @@ public class StructureController {
         Objects.requireNonNull(sort);
         Objects.requireNonNull(order);
         return structureService.getAllStructure(new GetAllStructureRequest(searchByName, sort, order));
+    }
+
+    @GetMapping(value = "/android", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AllStructureResponseDTO> getAllStructure(){
+        return structureService.getAllStructure();
+    }
+
+    @GetMapping(value = "/android/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public StructureResponseDTO getStructureById(@PathVariable("id") Long id){
+        return structureService.getStructureById(id);
     }
 
 

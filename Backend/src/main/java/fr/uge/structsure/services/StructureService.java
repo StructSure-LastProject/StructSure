@@ -139,6 +139,22 @@ public class StructureService {
         }
     }
 
+    public List<AllStructureResponseDTO> getAllStructure(){
+        return structureRepository.findAll().stream()
+            .map(structure -> {
+                    var numberOfPlans = planRepository.countByStructureId(structure.getId());
+                    var numberOfSensors = sensorRepository.findByStructureId(structure.getId()).size();
+                    return new AllStructureResponseDTO(
+                        structure.getId(),
+                        structure.getName(),
+                        numberOfSensors,
+                        numberOfPlans,
+                        String.format("/api/structure/%d", structure.getId())
+                    );
+                }
+            ).toList();
+    }
+
     public List<AllStructureResponseDTO> getAllStructure(GetAllStructureRequest getAllStructureRequest){
         Objects.requireNonNull(getAllStructureRequest);
         var result = structureRepository
@@ -171,4 +187,21 @@ public class StructureService {
 
     }
 
+  public StructureResponseDTO getStructureById(Long id) {
+      Objects.requireNonNull(id);
+      var structureOptional = structureRepository.findById(id);
+      if (structureOptional.isEmpty()){
+        throw new IllegalArgumentException("Structure n'existe pas");
+      }
+      var structure = structureOptional.get();
+      var plans = planRepository.findByStructure(structure);
+      var sensors = sensorRepository.findByStructureId(structure.getId());
+      return new StructureResponseDTO(
+          id,
+          structure.getName(),
+          structure.getNote(),
+          plans,
+          sensors
+      );
+  }
 }
