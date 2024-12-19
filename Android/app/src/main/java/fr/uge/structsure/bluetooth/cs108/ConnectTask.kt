@@ -3,10 +3,17 @@ package fr.uge.structsure.bluetooth.cs108
 import android.os.AsyncTask
 import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.MainActivity
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.concurrent.CancellationException
 
 class ConnectTask(private var connectingDevice: ReaderDevice, private val callback: (d: ReaderDevice?) -> Unit) : AsyncTask<Void, String, Int>() {
     private var waitTime: Int = 30
     private var setting = -1
+    private var task: Job? = null
 
     override fun onPreExecute() {
         super.onPreExecute()
@@ -37,7 +44,9 @@ class ConnectTask(private var connectingDevice: ReaderDevice, private val callba
     }
 
     override fun onProgressUpdate(vararg output: String?) {
-        println(output)
+        for (o in output) {
+            println(o)
+        }
     }
 
     override fun onCancelled(result: Int?) {
@@ -58,6 +67,22 @@ class ConnectTask(private var connectingDevice: ReaderDevice, private val callba
         //        readerListAdapter.notifyDataSetChanged();
         println("TOAST - BLE is connected")
         callback(connectingDevice)
+        if (task == null) watchReadyState()
         super.onPostExecute(result)
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun watchReadyState() {
+        task = GlobalScope.launch {
+            try {
+                while (task!!.isActive && MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
+                    delay(500L)
+                }
+            } catch (e: CancellationException) {
+                // Interrupted
+            }
+            println("[ConnectTask] Device is ready!")
+            task = null
+        }
     }
 }
