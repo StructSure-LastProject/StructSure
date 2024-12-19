@@ -27,6 +27,9 @@ val poppinsFontFamily = FontFamily(
     Font(R.font.poppins_bold, FontWeight.Bold)
 )
 
+/**
+ * This composable is used to display the plans of the structure.
+ */
 @Composable
 fun PlansView(modifier: Modifier = Modifier) {
     var isSensorListVisible by remember { mutableStateOf(true) }

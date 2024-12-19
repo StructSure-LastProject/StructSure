@@ -12,18 +12,18 @@ import kotlinx.coroutines.launch
 class StructureViewModel(private val db: AppDatabase) : ViewModel() {
 
     /**
-     * Fonction pour insérer des données d'exemple dans la BDD Room.
+     * function to insert sample data into the database.
      */
     fun insertSampleData() {
         viewModelScope.launch(Dispatchers.IO) {
             val dao = db.structurePlanDao()
 
-            // Insertion d'une structure (ouvrage)
+            // Insert a structure with a name and a note
             val structureId = dao.insertStructure(
                 StructureEntity(name = "Pont Syllan", note = "Ouvrage principal nord")
             )
 
-            // Liste de plans avec des images dans drawable
+            // Insert plans for the structure
             val plans = listOf(
                 PlanEntity(structureId = structureId, name = "Plan P1", section = "Nord/P1", imagePath = "drawable/plan_p1"),
                 PlanEntity(structureId = structureId, name = "Plan P2", section = "Nord/P2", imagePath = "drawable/plan_p2"),
@@ -37,20 +37,19 @@ class StructureViewModel(private val db: AppDatabase) : ViewModel() {
 
             dao.insertPlans(plans)
 
-            Log.d("DB_INSERT", "Structure et plans insérés avec succès")
+            Log.d("DB_INSERT", "Strcuture and plans inserted.")
         }
     }
 
-
     /**
-     * Fonction pour récupérer les plans pour une structure donnée et les loguer.
+     * function to fetch all structures from the database.
      */
     fun fetchPlansForStructure(structureId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val dao = db.structurePlanDao()
             val plans = dao.getPlansByStructureId(structureId)
             plans.forEach { plan ->
-                Log.d("PLAN_INFO", "Nom: ${plan.name}, Section: ${plan.section}, Image: ${plan.imagePath}")
+                Log.d("PLAN_INFO", "Name: ${plan.name}, Section: ${plan.section}, Image: ${plan.imagePath}")
             }
         }
     }

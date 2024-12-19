@@ -4,6 +4,12 @@ import androidx.room.*
 import fr.uge.structsure.start_scan.data.PlanEntity
 import fr.uge.structsure.start_scan.data.StructureEntity
 
+/**
+ * DAO for the StructureEntity class.
+ * This class provides methods for accessing the StructureEntity table in the database.
+ * @see StructureEntity
+ * @see PlanEntity
+ */
 @Dao
 interface StructurePlanDao {
 

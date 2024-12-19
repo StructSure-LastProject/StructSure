@@ -5,7 +5,10 @@ import fr.uge.structsure.start_scan.data.ScanEntity
 import fr.uge.structsure.start_scan.data.SensorEntity
 
 /**
- * DAO pour gérer les opérations sur les scans et capteurs dans la base de données.
+ * DAO for the ScanEntity class.
+ * This class provides methods for accessing the ScanEntity table in the database.
+ * @see ScanEntity
+ * @see SensorEntity
  */
 @Dao
 interface ScanDao {

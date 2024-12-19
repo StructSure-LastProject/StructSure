@@ -5,17 +5,24 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Représentation d'un capteur dans la base de données locale Room.
- * Utilise une clé composite composée de "controlChip" et "measureChip".
+ * Entity class for the Sensor table.
+ * @param controlChip Control chip identifier.
+ * @param measureChip Measure chip identifier.
+ * @param name Name of the sensor.
+ * @param note Note associated with the sensor.
+ * @param state Initial state of the sensor.
+ * @param installationDate Installation date.
+ * @param x X coordinate.
+ * @param y Y coordinate.
  */
 @Entity(tableName = "sensors", primaryKeys = ["control_chip", "measure_chip"])
 data class SensorEntity(
-    @ColumnInfo(name = "control_chip") val controlChip: String, // Clé composite (partie 1)
-    @ColumnInfo(name = "measure_chip") val measureChip: String, // Clé composite (partie 2)
-    val name: String,         // Nom du capteur
-    val note: String,         // Note associée au capteur
-    val state: String = "UNSCAN", // État initial du capteur
-    @ColumnInfo(name = "installation_date") val installationDate: String, // Date d'installation
-    val x: Double,            // Coordonnée X
-    val y: Double             // Coordonnée Y
+    @ColumnInfo(name = "control_chip") val controlChip: String,
+    @ColumnInfo(name = "measure_chip") val measureChip: String,
+    val name: String,
+    val note: String,
+    val state: String = "UNSCAN",
+    @ColumnInfo(name = "installation_date") val installationDate: String,
+    val x: Double,
+    val y: Double
 )

@@ -24,7 +24,7 @@ fun DisplayPlanImages(plans: List<PlanEntity>) {
     }
 }
 
-// Fonction pour obtenir l'ID de drawable à partir du nom
+// Function to get the drawable id from the image path
 fun getDrawableId(imagePath: String): Int {
     val resourceName = imagePath.substringAfterLast("/")
     return when (resourceName) {

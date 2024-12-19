@@ -8,14 +8,17 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import fr.uge.structsure.dbTest.data.UserData
 import fr.uge.structsure.dbTest.data.UserDao
+import fr.uge.structsure.start_scan.data.PlanEntity
 import fr.uge.structsure.start_scan.data.ScanEntity
 import fr.uge.structsure.start_scan.data.SensorEntity
+import fr.uge.structsure.start_scan.data.StructureEntity
 import fr.uge.structsure.start_scan.data.dao.ScanDao
+import fr.uge.structsure.start_scan.data.dao.StructurePlanDao
 
 // Add entities to the database
 @Database(
-    entities = [ScanEntity::class, SensorEntity::class, StructureData::class],
-    version = 1,
+    entities = [UserData::class, ScanEntity::class, SensorEntity::class, StructureEntity::class, PlanEntity::class],
+    version = 2,
     exportSchema = false // Désactive l'exportation des schémas c'est qu'un prototype
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -38,8 +41,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "STRUCTSURE_DB"
                 )
-                    .fallbackToDestructiveMigration() // Option qu'on peut utiliser pour éviter des erreurs de migration pendant le développement.
-                    .addMigrations(MIGRATION_1_2)
+                    .fallbackToDestructiveMigration() // Option when the database version is changed.
                     .build()
                 INSTANCE = instance
                 instance
@@ -47,6 +49,9 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 
+    /**
+     * DAOs for the database.
+     */
     abstract fun userDao(): UserDao
     abstract fun scanDao(): ScanDao
     abstract fun structureDao(): StructureDao

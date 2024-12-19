@@ -28,31 +28,31 @@ enum class ScanState {
 }
 
 /**
- * ViewModel pour gérer la logique métier du scan.
- * - Récupère les capteurs depuis le backend Spring.
- * - Insère les capteurs dans la base de données Room.
- * - Démarre et gère le processus de scan.
+ * ViewModel for the ScanFragment.
+ * @param scanDao Data access object for the ScanEntity and SensorEntity classes.
+ * @param context Application context.
  */
 class ScanViewModel(private val scanDao: ScanDao, private val context: Context) : ViewModel() {
 
-    // État actuel du scan
+    // state for the current scan
     val currentScanState = mutableStateOf(ScanState.NOT_STARTED)
 
-    // ID du scan en cours
+    // ID for the active scan
     var activeScanId: Long? = null
         private set
 
-    // Messages observables pour les capteurs avec état "OK"
+    // Messages for the sensors
     val sensorMessages = mutableStateListOf<String>()
 
-    // Contrôle la progression du scan
+    // control variable for the scan
     private var continueScanning = true
 
-    // Dernier capteur traité
+    // last processed sensor index
     private var lastProcessedSensorIndex = 0
 
     /**
-     * Récupère les capteurs depuis le backend et les insère dans Room.
+     * Fetches the sensors for the given structure and starts the scan.
+     * @param structureId ID of the structure.
      */
     fun fetchSensorsAndStartScan(structureId: Long) {
         RetrofitInstance.sensorApi.getAllSensors(structureId).enqueue(object :
@@ -70,20 +70,22 @@ class ScanViewModel(private val scanDao: ScanDao, private val context: Context) 
             }
 
             override fun onFailure(call: Call<List<GetAllSensorsResponse>>, t: Throwable) {
-                println("Erreur réseau : ${t.localizedMessage}")
+                println(" failure  : ${t.localizedMessage}")
             }
         })
     }
 
+
     /**
-     * Convertit la réponse par Retrofit en SensorEntity et démarre le scan.
+     * Inserts the sensors into the database and starts the scan.
+     * @param sensors List of sensors to insert.
      */
     private fun insertSensorsAndStartScan(sensors: List<GetAllSensorsResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
             val newScan = ScanEntity(structureId = 1, date = System.currentTimeMillis())
             val scanId = scanDao.insertScan(newScan)
 
-            // Filtrer les doublons
+            // filter out duplicate sensors
             val uniqueSensors = sensors.distinctBy { it.controlChip to it.measureChip }
 
             val sensorEntities = uniqueSensors.map { sensor ->
@@ -102,41 +104,41 @@ class ScanViewModel(private val scanDao: ScanDao, private val context: Context) 
             scanDao.insertSensors(sensorEntities)
             currentScanState.value = ScanState.STARTED
 
-            // LOG pour vérifier les capteurs insérés
+            // LOG for the number of sensors inserted
             println("Capteurs insérés : ${sensorEntities.size}")
 
-            // Démarre l'interrogation des capteurs
+            // start the sensor interrogation
             startSensorInterrogation(sensorEntities)
         }
     }
 
     /**
-     * Lance l'interrogation progressive des capteurs.
-     * Met à jour leur état dans la base de données et affiche un message pour les capteurs "OK".
+     * Starts the interrogation of the sensors.
+     * @param sensors List of sensors to interrogate.
      */
     private fun startSensorInterrogation(sensors: List<SensorEntity>) {
-        continueScanning = true // Contrôle le déroulement du scan
+        continueScanning = true // Controle variable pour le scan
         viewModelScope.launch(Dispatchers.IO) {
             for (i in lastProcessedSensorIndex until sensors.size) {
                 if (!continueScanning) {
-                    lastProcessedSensorIndex = i // Sauvegarde l'index pour reprendre plus tard
+                    lastProcessedSensorIndex = i // Saving the last processed sensor index
                     return@launch
                 }
 
                 val sensor = sensors[i]
-                delay(2000) // Simule un délai d'interrogation (2 secondes)
+                delay(2000) // Simulate the time taken to interrogate a sensor
 
-                // Détermine un état aléatoire pour le capteur
+                // Randomly change the state of the sensor
                 val newState = when ((1..3).random()) {
                     1 -> "OK"
                     2 -> "DEFECTIVE"
                     else -> "NOK"
                 }
 
-                // Met à jour l'état du capteur dans la base de données
+                // Update the state of the sensor in the database
                 scanDao.updateSensorState(sensor.controlChip, sensor.measureChip, newState)
 
-                // Si le capteur passe à l'état "OK", ajoute un message pour l'affichage
+                // Add a message to the sensorMessages list
                 if (newState == "OK") {
                     viewModelScope.launch(Dispatchers.Main) {
                         sensorMessages.add("Capteur ${sensor.name} is OK!")
@@ -173,5 +175,5 @@ class ScanViewModel(private val scanDao: ScanDao, private val context: Context) 
         lastProcessedSensorIndex = 0
     }
     
-    
+
 }

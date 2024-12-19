@@ -22,7 +22,7 @@ fun SensorGridView(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val screenHeight = configuration.screenHeightDp.dp
 
-    // LazyVerticalGrid -> s'afficher en grille en fonction de l'orientation
+    // LazyVerticalGrid -> orientation-dependent grid display
     LazyColumn (
         modifier = modifier
             .fillMaxWidth()
@@ -31,7 +31,7 @@ fun SensorGridView(
             .padding(4.dp)
     ) {
         items(SENSORS_NUMBER) { index ->
-            // Affichage de chaque capteur
+            // SensorItem -> display of a sensor
             SensorItem(sensorName = "Capteur $index", state = SENSORS_STATES_LIST[index])
         }
     }

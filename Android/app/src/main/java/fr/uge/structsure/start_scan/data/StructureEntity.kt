@@ -4,11 +4,14 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Entité représentant une Structure (ouvrage d'art).
+ * Entity class for the Structure table.
+ * @param id Unique ID.
+ * @param name Name of the structure.
+ * @param note Descriptive note associated with the structure.
  */
 @Entity(tableName = "structures")
 data class StructureEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val name: String, // Nom de l'ouvrage
-    val note: String? = null // Note descriptive associée à l'ouvrage
+    val name: String,
+    val note: String? = null
 )

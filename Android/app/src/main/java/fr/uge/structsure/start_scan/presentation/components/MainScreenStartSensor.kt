@@ -15,11 +15,17 @@ import fr.uge.structsure.start_scan.presentation.components.sensors.list.Sensors
 import kotlinx.coroutines.launch
 
 /**
- * Écran principal de l'application pour gérer le scan d'une structure.
- * - Affiche les plans, les capteurs et l'état du scan.
- * - Contrôle les actions du scan via la ToolBar.
+ * Home screen of the application when the user starts a scan.
+ * It displays the header, the summary of the scanned structure, the plans and the list of sensors.
+ * It also displays a toast for each sensor with an "OK" state.
+ * @param scanViewModel ViewModel containing the data of the scan.
+ * @see HeaderView
+ * @see StructureSummaryView
+ * @see PlansView
+ * @see SensorsListView
+ * @see CustomToast
+ * @see ToolBar
  *
- * @param scanViewModel ViewModel responsable de la logique métier du scan.
  */
 @Composable
 fun MainScreenStartSensor(scanViewModel: ScanViewModel) {
@@ -39,15 +45,15 @@ fun MainScreenStartSensor(scanViewModel: ScanViewModel) {
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState()) // Rend le contenu défilable verticalement
+                .verticalScroll(rememberScrollState())
         ) {
             HeaderView()
-            StructureSummaryView(viewModel = scanViewModel) // Résumé de la structure scannée
-            PlansView(modifier = Modifier.fillMaxWidth()) // Affiche les plans liés à la structure
-            SensorsListView(modifier = Modifier.fillMaxWidth()) // Liste des capteurs scannés
+            StructureSummaryView(viewModel = scanViewModel)
+            PlansView(modifier = Modifier.fillMaxWidth())
+            SensorsListView(modifier = Modifier.fillMaxWidth())
         }
 
-        // Affiche un toast pour chaque capteur avec un état "OK"
+        // Print a toast for each sensor with an "OK" state
         if (scanViewModel.currentScanState.value == ScanState.STARTED) {
             scanViewModel.sensorMessages.lastOrNull()?.let { message ->
                 CustomToast(

@@ -4,7 +4,10 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Entité représentant le Résultat d'un capteur pour un scan donné.
+ * Entity class for the Result table.
+ * @param id Unique ID.
+ * @param sensorId ID of the sensor.
+ * @param state Final state after interrogation (OK, NOK, etc.).
  */
 @Entity(tableName = "result")
 data class ResultEntity(

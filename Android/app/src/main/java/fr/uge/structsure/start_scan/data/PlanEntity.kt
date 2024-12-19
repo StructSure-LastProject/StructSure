@@ -4,6 +4,14 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
+/**
+ * Entity class for the Plan table.
+ * @param id Unique ID.
+ * @param structureId Reference to the structure.
+ * @param name Name of the plan.
+ * @param section Section of the plan.
+ * @param imagePath Local path or URL of the image.
+ */
 @Entity(
     tableName = "plans",
     foreignKeys = [

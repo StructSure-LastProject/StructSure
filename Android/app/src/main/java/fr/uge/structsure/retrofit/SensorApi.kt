@@ -6,7 +6,9 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.Call
 
-
+/**
+ * SensorApi is an interface that provides methods for making API calls to the server.
+ */
 interface SensorApi {
     @GET("api/structure/{id}/sensors")
     fun getAllSensors(

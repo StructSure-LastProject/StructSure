@@ -4,7 +4,11 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Entité représentant un scan dans la base de données.
+ * Entity class for the Scan table.
+ * @param id Unique scan ID.
+ * @param structureId ID of the associated structure.
+ * @param date Scan date (timestamp).
+ * @param note Note associated with the scan.
  */
 @Entity(tableName = "scans")
 data class ScanEntity(

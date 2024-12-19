@@ -15,7 +15,11 @@ import fr.uge.structsure.R
 import fr.uge.structsure.start_scan.domain.ScanState
 
 /**
- * Composant ToolBar pour gérer les actions liées à l'état du scan.
+ * Component for the ToolBar.
+ * - The ToolBar contains the buttons to control the scan.
+ * - The buttons change depending on the current state of the scan.
+ * - The buttons are Play, Pause, Stop, Sync and Content.
+ * - The buttons are displayed in a row.
  */
 @Composable
 fun ToolBar(
@@ -35,7 +39,7 @@ fun ToolBar(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Bouton Undo
+        // Button Undo
         Column(
             modifier = Modifier
                 .width(77.dp)
@@ -52,7 +56,7 @@ fun ToolBar(
             )
         }
 
-        // Boutons dynamiques en fonction de l'état actuel du scan
+        // Button Sync (Synchronisation)
         when (currentState) {
             ScanState.NOT_STARTED -> {
                 ActionButton(
@@ -91,14 +95,14 @@ fun ToolBar(
             }
             ScanState.STOPPED -> {
                 ActionButton(
-                    iconRes = R.drawable.play, //  redémarrer un scan
+                    iconRes = R.drawable.play,
                     description = "Play",
                     onClick = onPlayClick
                 )
             }
         }
 
-        // Bouton Notes
+        // Button Notes
         Column(
             modifier = Modifier
                 .width(75.dp)
@@ -117,10 +121,12 @@ fun ToolBar(
     }
 }
 
-
 /**
- * Bouton d'action générique utilisé dans la ToolBar.
- * - Chaque bouton a une icône et une description.
+ * Component for the ActionButton.
+ * - The ActionButton is a button with an icon.
+ * - The ActionButton is clickable.
+ * - The ActionButton has a background color.
+ * - The ActionButton has a rounded corner shape.
  */
 @Composable
 fun ActionButton(iconRes: Int, description: String, onClick: () -> Unit) {

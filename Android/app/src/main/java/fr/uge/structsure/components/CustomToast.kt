@@ -15,9 +15,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 
 /**
- * Composant personnalisé pour afficher un toast sous forme de bulle noire.
- * @param message Le message à afficher dans la bulle.
- * @param modifier Modificateur pour personnaliser l'apparence.
+ * Composant CustomToast for displaying a custom toast message.
+ * @param message The message to display.
+ * @param modifier The modifier to apply to the toast.
+ *
  */
 @Composable
 fun CustomToast(
