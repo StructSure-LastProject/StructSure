@@ -1,5 +1,6 @@
 package fr.uge.structsure.controllers;
 
+import fr.uge.structsure.dto.StructureDTO;
 import fr.uge.structsure.dto.structure.*;
 import fr.uge.structsure.dto.sensors.SensorFilterDTO;
 import fr.uge.structsure.services.SensorService;
@@ -16,7 +17,7 @@ import org.springframework.http.MediaType;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api/structure")
+@RequestMapping("/api/structures")
 public class StructureController {
 
     private final StructureService structureService;
@@ -27,12 +28,18 @@ public class StructureController {
         this.sensorService = sensorService;
     }
 
-    @PostMapping("/{id}")
-    public ResponseEntity<Object> editStructure(@PathVariable Long id, @RequestBody StructureRequestDTO structureRequestDTO) {
-        Objects.requireNonNull(structureRequestDTO);
+    @PostMapping("")
+    public ResponseEntity<StructureResponseDTO> createStructure(@RequestBody StructureDTO structureDTO) {
+        Objects.requireNonNull(structureDTO);
 
-        var response = structureService.editStructure(id, structureRequestDTO);
-        return ResponseEntity.status(response.httpCode()).body(response.data());
+        return ResponseEntity.ok(structureService.createStructure(structureDTO));
+    }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<StructureResponseDTO> editStructure(@PathVariable Long id, @RequestBody StructureDTO structureDTO) {
+        Objects.requireNonNull(structureDTO);
+
+        return ResponseEntity.ok(structureService.editStructure(id, structureDTO));
     }
 
     @GetMapping("/{id}/sensors")
@@ -61,7 +68,9 @@ public class StructureController {
      * @param getAllStructureRequest Object that represents the request
      * @return List of structures
      */
-    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    //??? get ???
+//    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<AllStructureResponseDTO> getAllStructure(@RequestBody GetAllStructureRequest getAllStructureRequest){
         Objects.requireNonNull(getAllStructureRequest);
         return structureService.getAllStructure(getAllStructureRequest);

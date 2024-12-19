@@ -1,11 +1,14 @@
 package fr.uge.structsure.services;
 
-import fr.uge.structsure.dto.ErrorDTO;
+import fr.uge.structsure.dto.StructureDTO;
 import fr.uge.structsure.dto.structure.*;
+import fr.uge.structsure.entities.Structure;
+import fr.uge.structsure.mapper.StructureMapper;
 import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.OrderEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -18,28 +21,30 @@ public class StructureService {
     private final StructureRepository structureRepository;
     private final PlanRepository planRepository;
     private final SensorRepository sensorRepository;
+    private final StructureMapper structureMapper;
 
-    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository ,PlanRepository planRepository) {
-        this.sensorRepository = sensorRepository;
+    public StructureService(StructureRepository structureRepository, PlanRepository planRepository, SensorRepository sensorRepository, StructureMapper structureMapper) {
         this.structureRepository = structureRepository;
         this.planRepository = planRepository;
+        this.sensorRepository = sensorRepository;
+        this.structureMapper = structureMapper;
     }
 
-    public ApiResponseWrapper<?> editStructure(long id, StructureRequestDTO structureRequestDTO) {
-        Objects.requireNonNull(structureRequestDTO);
+    public StructureResponseDTO createStructure(StructureDTO structureDTO) {
+        Structure structure = new Structure(structureDTO.name(), structureDTO.note(), structureDTO.isArchived());
+        return structureMapper.toResponseDTO(structureRepository.save(structure));
+    }
 
-        if (structureRequestDTO.name() == null || structureRequestDTO.name().isEmpty()) {
-            return new ApiResponseWrapper<>(new ErrorDTO("Le nom d’un ouvrage ne peut pas être vide"), 422);
-        }
+    public StructureResponseDTO editStructure(long id, StructureDTO structureDTO) {
         var structureEntityOptional = structureRepository.findById(id);
         if (structureEntityOptional.isEmpty()) {
-            return new ApiResponseWrapper<>(new ErrorDTO("Ouvrage introuvable"), 422);
+            return new StructureResponseDTO(null, "", "", false);
         }
         var structureEntity = structureEntityOptional.get();
-        structureEntity.setName(structureRequestDTO.name());
-        structureEntity.setNote(structureRequestDTO.note());
-        var toto = structureRepository.save(structureEntity);
-        return new ApiResponseWrapper<>(new StructureAnswerDTO(toto.getId(), new Timestamp(System.currentTimeMillis()).toString()), 200);
+        structureEntity.setName(structureDTO.name());
+        structureEntity.setNote(structureDTO.note());
+        var savedStructure = structureRepository.save(structureEntity);
+        return structureMapper.toResponseDTO(savedStructure);
     }
 
     public List<AllStructureResponseDTO> getAllStructure(GetAllStructureRequest getAllStructureRequest){
@@ -72,5 +77,4 @@ public class StructureService {
         return resultList;
 
     }
-
 }
