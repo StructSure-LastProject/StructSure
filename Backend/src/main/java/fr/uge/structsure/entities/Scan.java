@@ -15,8 +15,7 @@ public class Scan {
     private Structure structure;
 
     @Column(columnDefinition = "TEXT")
-    @Temporal(TemporalType.TIME)
-    private Time date;
+    private String date;
 
     private String note;
 
@@ -25,7 +24,7 @@ public class Scan {
 
     public Scan() {}
 
-    public Scan(Structure structure, Time date, String note, Account author) {
+    public Scan(Structure structure, String date, String note, Account author) {
         this.structure = Objects.requireNonNull(structure);
         this.date = Objects.requireNonNull(date);
         this.note = Objects.requireNonNull(note);

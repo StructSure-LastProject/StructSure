@@ -10,4 +10,5 @@ import java.util.List;
 
 @Repository
 public interface StructureRepository extends JpaRepository<Structure, Long> {
+  List<Structure> findByArchivedFalse();
 }

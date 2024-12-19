@@ -8,13 +8,12 @@ import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.OrderEnum;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
@@ -57,7 +56,7 @@ public class StructureService {
                 .stream()
                 .map(structure -> {
                         var numberOfPlans = planRepository.countByStructureId(structure.getId());
-                        var numberOfSensors = sensorRepository.findByStructureId(structure.getId()).size();
+                        var numberOfSensors = sensorRepository.findByStructureId(structure.getId()).size(); // NUMBER OF SENSORS TODO
                         return new AllStructureResponseDTO(
                                 structure.getId(),
                                 structure.getName(),
@@ -68,18 +67,24 @@ public class StructureService {
                     }
                 );
 
-        // TODO Filters
         var resultList = switch (getAllStructureRequest.sort()){
             case NUMBEROFSENSORS -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
             case NAME -> result.sorted(Comparator.comparing(AllStructureResponseDTO::name)).toList();
             case WORSTSTATE -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
         };
 
-        if (getAllStructureRequest.order() == OrderEnum.DESC) {
-            resultList = resultList.reversed();
+        if (getAllStructureRequest.order().equals(OrderEnum.DESC)){
+            return resultList.reversed();
         }
         return resultList;
+    }
 
+    public List<Structure> getAllActiveStructures() {
+        return structureRepository.findByArchivedFalse();
+    }
+
+    public Optional<Structure> getStructureById(long id) {
+        return structureRepository.findById(id);
     }
 
 }

@@ -26,4 +26,8 @@ public class Result {
         this.sensor = Objects.requireNonNull(sensor);
         this.scan = Objects.requireNonNull(scan);
     }
+
+    public State getState() {
+        return state;
+    }
 }

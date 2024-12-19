@@ -1,14 +1,10 @@
 package fr.uge.structsure.entities;
 
-import fr.uge.structsure.utils.converters.LocalTimeConverter;
 import jakarta.persistence.*;
 
 import java.sql.Time;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Objects;
 
 @Entity
@@ -25,12 +21,18 @@ public class Sensor {
     private String note;
 
     /*
-    @Convert(converter = LocalTimeConverter.class)
-    private LocalTime installationDate;
+    @Column(columnDefinition = "TEXT")
+    @Temporal(TemporalType.TIME)
+    private Time installationDate;
      */
 
-    @Column(columnDefinition = "TIME")
-    private LocalTime installationDate;
+    @Column(columnDefinition = "TEXT")
+    private String installationDate;
+
+    /*
+    @Convert(converter = TimeConverter.class)
+    private Time installationDate;
+     */
 
     @Column(columnDefinition = "REAL")
     private Double x;
@@ -45,18 +47,22 @@ public class Sensor {
     @JoinColumn(name = "structure_id", nullable = false)
     private Structure structure;
 
+    @ManyToOne
+    private Plan plan;
+
     //constructeurs nécéssaire
     public Sensor(){
 
     }
 
-    public Sensor(String controlChip, String measureChip, String name, String note, LocalTime installationDate, Double x, Double y, Boolean archived, Structure structure) {
+    public Sensor(String controlChip, String measureChip, String name, String note, String installationDate, Double x, Double y, Boolean archived, Structure structure, Plan plan) {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
         Objects.requireNonNull(name);
         Objects.requireNonNull(note);
         Objects.requireNonNull(installationDate);
         Objects.requireNonNull(structure);
+        Objects.requireNonNull(plan);
         this.sensorId = new SensorId(controlChip, measureChip);
         this.name = name;
         this.note = note;
@@ -65,6 +71,7 @@ public class Sensor {
         this.y = y;
         this.archived = archived;
         this.structure = structure;
+        this.plan = plan;
     }
     @Override
     public String toString() {
@@ -99,11 +106,11 @@ public class Sensor {
         this.note = note;
     }
 
-    public LocalTime getInstallationDate() {
+    public String getInstallationDate() {
         return installationDate;
     }
 
-    public void setInstallationDate(LocalTime installationDate) {
+    public void setInstallationDate(String installationDate) {
         this.installationDate = installationDate;
     }
 
@@ -138,5 +145,7 @@ public class Sensor {
     public void setStructure(Structure structure) {
         this.structure = structure;
     }
+
+    public void setPlan(Plan plan) {this.plan = plan;}
 }
     
