@@ -1,10 +1,10 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.config.JwtUtils;
-import fr.uge.structsure.dto.auth.LoginRequestDTO;
-import fr.uge.structsure.dto.auth.LoginResponseDTO;
-import fr.uge.structsure.dto.auth.RegisterRequestDTO;
-import fr.uge.structsure.dto.auth.RegisterResponseDTO;
+import fr.uge.structsure.dto.LoginRequestDTO;
+import fr.uge.structsure.dto.LoginResponseDTO;
+import fr.uge.structsure.dto.RegisterRequestDTO;
+import fr.uge.structsure.dto.RegisterResponseDTO;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
@@ -13,9 +13,7 @@ import fr.uge.structsure.repositories.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +41,7 @@ public class AccountService {
      */
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) throws TraitementException {
         if (accountRepository.findByLogin(registerRequestDTO.login()).isPresent()) {
-            throw new TraitementException(ErrorIdentifier.NO_USER);
+            throw new TraitementException(ErrorIdentifier.USER_ALREADY_EXISTS);
         }
         Role role;
         try {
