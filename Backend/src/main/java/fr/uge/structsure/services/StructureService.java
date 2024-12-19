@@ -3,7 +3,6 @@ package fr.uge.structsure.services;
 import fr.uge.structsure.dto.structure.AddStructureAnswerDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
-import fr.uge.structsure.dto.StructureDTO;
 import fr.uge.structsure.dto.structure.GetAllStructureRequest;
 import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
@@ -56,11 +55,11 @@ public class StructureService {
     public AddStructureAnswerDTO createStructure(AddStructureRequestDTO addStructureRequestDTO) throws TraitementException {
         Objects.requireNonNull(addStructureRequestDTO);
         if (addStructureRequestDTO.name() == null || addStructureRequestDTO.name().isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.ARCHITECTURE_NAME_IS_EMPTY);
+            throw new TraitementException(ErrorIdentifier.STRUCTURE_NAME_IS_EMPTY);
         }
         var exists = structureRepository.findByName(addStructureRequestDTO.name());
         if (exists.isPresent()) {
-            throw new TraitementException(ErrorIdentifier.ARCHITECTURE_NAME_ALREADY_EXISTS);
+            throw new TraitementException(ErrorIdentifier.STRUCTURE_NAME_ALREADY_EXISTS);
         }
         var structure = new Structure(addStructureRequestDTO.name(), addStructureRequestDTO.note(), false);
         var result = structureRepository.save(structure);
