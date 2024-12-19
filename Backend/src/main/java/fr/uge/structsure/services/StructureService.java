@@ -1,5 +1,6 @@
 package fr.uge.structsure.services;
 
+import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
 import fr.uge.structsure.dto.StructureDTO;
 import fr.uge.structsure.dto.structure.AddStructureAnswerDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
@@ -10,15 +11,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+
+import fr.uge.structsure.dto.structure.GetAllStructureRequest;
+import fr.uge.structsure.entities.Structure;
+import fr.uge.structsure.repositories.PlanRepository;
+import fr.uge.structsure.repositories.SensorRepository;
+import fr.uge.structsure.utils.OrderEnum;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.Sort;
+
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 @Service
 public class StructureService {
     private final StructureRepository structureRepository;
+    private final PlanRepository planRepository;
+    private final SensorRepository sensorRepository;
 
     @Autowired
-    public StructureService(StructureRepository structureRepository) {
+    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository ,PlanRepository planRepository) {
+        this.sensorRepository = sensorRepository;
         this.structureRepository = structureRepository;
+        this.planRepository = planRepository;
     }
 
     public AddStructureAnswerDTO createStructure(AddStructureRequestDTO addStructureRequestDTO) throws TraitementException {
@@ -48,4 +65,37 @@ public class StructureService {
         structureEntity.setArchived(structureDTO.isArchived());
         return structureRepository.save(structureEntity);
     }
+
+    public List<AllStructureResponseDTO> getAllStructure(GetAllStructureRequest getAllStructureRequest){
+        Objects.requireNonNull(getAllStructureRequest);
+        var result = structureRepository
+                .findAll()
+                .stream()
+                .map(structure -> {
+                        var numberOfPlans = planRepository.countByStructureId(structure.getId());
+                        var numberOfSensors = sensorRepository.findByStructureId(structure.getId()).size();
+                        return new AllStructureResponseDTO(
+                                structure.getId(),
+                                structure.getName(),
+                                numberOfSensors,
+                                numberOfPlans,
+                                String.format("/api/structure/%d", structure.getId())
+                                );
+                    }
+                );
+
+        // TODO Filters
+        var resultList = switch (getAllStructureRequest.sort()){
+            case NUMBEROFSENSORS -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
+            case NAME -> result.sorted(Comparator.comparing(AllStructureResponseDTO::name)).toList();
+            case WORSTSTATE -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
+        };
+
+        if (getAllStructureRequest.order() == OrderEnum.DESC) {
+            resultList = resultList.reversed();
+        }
+        return resultList;
+
+    }
+
 }

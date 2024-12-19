@@ -1,10 +1,14 @@
 package fr.uge.structsure.entities;
 
+import fr.uge.structsure.utils.converters.LocalTimeConverter;
 import jakarta.persistence.*;
 
 import java.sql.Time;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 @Entity
@@ -20,9 +24,13 @@ public class Sensor {
     private String name;
     private String note;
 
-    @Column(columnDefinition = "TEXT")
-    @Temporal(TemporalType.TIME)
-    private Time installationDate;
+    /*
+    @Convert(converter = LocalTimeConverter.class)
+    private LocalTime installationDate;
+     */
+
+    @Column(columnDefinition = "TIME")
+    private LocalTime installationDate;
 
     @Column(columnDefinition = "REAL")
     private Double x;
@@ -33,7 +41,8 @@ public class Sensor {
     @Column(columnDefinition = "INTEGER")
     private Boolean archived;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "structure_id", nullable = false)
     private Structure structure;
 
     //constructeurs nécéssaire
@@ -41,7 +50,7 @@ public class Sensor {
 
     }
 
-    public Sensor(String controlChip, String measureChip, String name, String note, Time installationDate, Double x, Double y, Boolean archived, Structure structure) {
+    public Sensor(String controlChip, String measureChip, String name, String note, LocalTime installationDate, Double x, Double y, Boolean archived, Structure structure) {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
         Objects.requireNonNull(name);
@@ -60,6 +69,74 @@ public class Sensor {
     @Override
     public String toString() {
         return sensorId.toString();
+    }
+
+
+    // Getter and Setter
+
+
+    public SensorId getSensorId() {
+        return sensorId;
+    }
+
+    public void setSensorId(SensorId sensorId) {
+        this.sensorId = sensorId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public LocalTime getInstallationDate() {
+        return installationDate;
+    }
+
+    public void setInstallationDate(LocalTime installationDate) {
+        this.installationDate = installationDate;
+    }
+
+    public Double getX() {
+        return x;
+    }
+
+    public void setX(Double x) {
+        this.x = x;
+    }
+
+    public Double getY() {
+        return y;
+    }
+
+    public void setY(Double y) {
+        this.y = y;
+    }
+
+    public Boolean getArchived() {
+        return archived;
+    }
+
+    public void setArchived(Boolean archived) {
+        this.archived = archived;
+    }
+
+    public Structure getStructure() {
+        return structure;
+    }
+
+    public void setStructure(Structure structure) {
+        this.structure = structure;
     }
 }
     

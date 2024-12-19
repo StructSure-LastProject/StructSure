@@ -8,7 +8,7 @@ import java.util.Objects;
 public class Result {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @ManyToOne
     private Sensor sensor;
