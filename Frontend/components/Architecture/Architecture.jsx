@@ -24,7 +24,7 @@ const Ouvrages = () => {
                 <h1 class={"text-2xl font-bold"}>Ouvrages</h1>
                 <div class={"flex space-x-4"}>
                     <button class={"p-2 bg-gray-200 rounded-full hover:bg-grey-300"}>ASC/DESC</button>
-                    <button class={"p-2 bg-gray-200 rounded-full hover:bg-grey-300"}>n</button>
+                    <button class={"p-2 bg-gray-200 rounded-full hover:bg-grey-300"}>SORT</button>
                     <button class={"p-2 bg-gray-200 rounded-full hover:bg-grey-300"}>ADD</button>
                 </div>
             </header>
