@@ -8,7 +8,7 @@ import java.util.Objects;
 public class Result {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @ManyToOne
     private Sensor sensor;
@@ -25,5 +25,9 @@ public class Result {
         this.state = Objects.requireNonNull(state);
         this.sensor = Objects.requireNonNull(sensor);
         this.scan = Objects.requireNonNull(scan);
+    }
+
+    public State getState() {
+        return state;
     }
 }

@@ -7,7 +7,7 @@ import java.util.Objects;
 public class Structure {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @Column(nullable = false, length = 64, unique = true)
     private String name;
@@ -20,5 +20,33 @@ public class Structure {
         this.note = Objects.requireNonNull(note);
         this.archived = archived;
 
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public void setArchived(Boolean archived) {
+        this.archived = archived;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public Boolean getArchived() {
+        return archived;
     }
 }

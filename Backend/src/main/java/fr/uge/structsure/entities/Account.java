@@ -34,4 +34,13 @@ public class Account {
         this.role = Objects.requireNonNull(role);
         this.enabled = enabled;
     }
+
+    public String getPasswordCrypted() {
+        return passwordCrypted;
+    }
+
+    public void setPasswordCrypted(String passwordCrypted) {
+        this.passwordCrypted = passwordCrypted;
+    }
+
 }
