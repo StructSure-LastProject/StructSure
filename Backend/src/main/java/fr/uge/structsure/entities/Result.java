@@ -30,4 +30,12 @@ public class Result {
     public State getState() {
         return state;
     }
+
+    public void setSensor(Sensor mockSensor) {
+        this.sensor = mockSensor;
+    }
+
+    public void setState(String active) {
+        this.state = State.valueOf(active);
+    }
 }

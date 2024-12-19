@@ -1,14 +1,16 @@
 package fr.uge.structsure.services;
 
+import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.dto.sensors.SensorFilterDTO;
 import fr.uge.structsure.dto.sensors.SensorResponseDTO;
-import fr.uge.structsure.entities.Plan;
 import fr.uge.structsure.entities.Sensor;
-import fr.uge.structsure.entities.SensorId;
+import fr.uge.structsure.entities.State;
 import fr.uge.structsure.repositories.SensorRepository;
+import fr.uge.structsure.utils.sort.SortStrategyFactory;
 import org.springframework.stereotype.Service;
 
 import java.awt.Point;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,6 +67,31 @@ public class SensorService {
             return response;
         }).collect(Collectors.toList());
     }
+
+    public List<SensorDTO> getSensorDTOsByStructure(
+            Long structureId,
+            String tri,
+            String ordre,
+            String filtreEtat,
+            LocalTime dateInstallationMin,
+            LocalTime dateInstallationMax) {
+
+        var sensors = sensorRepository.findByStructureId(structureId);
+        if (sensors.isEmpty()) {
+            throw new RuntimeException("Ouvrage introuvable");
+        }
+        // Application du tri avec le design pattern Strategy
+        var comparator = SortStrategyFactory.getStrategy(tri).getComparator();
+        if ("desc".equalsIgnoreCase(ordre)) {
+            comparator = comparator.reversed();
+        }
+
+        return sensors.stream()
+                .sorted(comparator)
+                .map(SensorDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     public List<Sensor> getSensorsByStructure(Long structureId) {
         return sensorRepository.findByStructureIdAndArchivedFalse(structureId);
     }

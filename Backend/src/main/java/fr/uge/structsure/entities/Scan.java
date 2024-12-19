@@ -30,4 +30,8 @@ public class Scan {
         this.note = Objects.requireNonNull(note);
         this.author = Objects.requireNonNull(author);
     }
+
+    public void setName(String s) {
+        this.note = s;
+    }
 }

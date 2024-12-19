@@ -5,11 +5,11 @@ import fr.uge.structsure.dto.structure.GetAllStructureRequest;
 import fr.uge.structsure.services.SensorService;
 import fr.uge.structsure.utils.OrderEnum;
 import fr.uge.structsure.utils.SortEnum;
+import org.springframework.context.annotation.Bean;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -30,6 +30,8 @@ public class StructureController {
         this.structureService = structureService;
         this.sensorService = sensorService;
     }
+
+
 
     /**
      * Endpoint pour récupérer la liste des capteurs d'un ouvrage donné avec options de tri et filtre.
@@ -64,8 +66,8 @@ public class StructureController {
         }
     }
 
-
     public record ErrorResponse(String code, String message) {
+    
     }
 
     /**
@@ -84,4 +86,7 @@ public class StructureController {
         Objects.requireNonNull(order);
         return structureService.getAllStructure(new GetAllStructureRequest(searchByName, sort, order));
     }
+
+
+
 }

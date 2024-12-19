@@ -1,9 +1,6 @@
 package fr.uge.structsure.services;
 
-import fr.uge.structsure.entities.Result;
-import fr.uge.structsure.entities.Scan;
-import fr.uge.structsure.entities.Sensor;
-import fr.uge.structsure.entities.State;
+import fr.uge.structsure.entities.*;
 import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.ScanRepository;
 import org.springframework.stereotype.Service;
@@ -24,8 +21,8 @@ public class ResultService {
     this.scanRepository = scanRepository;
   }
 
-  public State getLatestStateByChip(Sensor sensor) {
-    var result = resultRepository.findLatestStateBySensor(sensor);
+  public State getLatestStateByChip(SensorId sensorId) {
+    var result = resultRepository.findLatestStateBySensorId(sensorId);
     return result.getState();
   }
 
