@@ -1,13 +1,8 @@
-import "./index.css"
-
 /* @refresh reload */
-import { render } from 'solid-js/web';
-import { Router } from '@solidjs/router';
-import App from './App';
+import { render } from 'solid-js/web'
+import './index.css'
+import App from './App.jsx'
 
 const root = document.getElementById('root')
 
-render(() => (
-  <App />
-)
-, root)
+render(() => <App />, root)
