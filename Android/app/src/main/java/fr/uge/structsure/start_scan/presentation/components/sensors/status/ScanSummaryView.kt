@@ -24,6 +24,7 @@ import fr.uge.structsure.start_scan.domain.ScanViewModel
 import fr.uge.structsure.start_scan.presentation.components.StatsView
 import fr.uge.structsure.start_scan.presentation.components.Variables
 import fr.uge.structsure.start_scan.presentation.components.poppinsFontFamily
+import fr.uge.structsure.start_scan.presentation.components.sensors.status.SensorState
 
 @Composable
 fun StructureSummaryView(viewModel: ScanViewModel) {
@@ -116,11 +117,4 @@ fun SensorStatusCircle(sensorNumber: Int, sensorState: SensorState) {
             )
         }
     }
-}
-
-enum class SensorState(val color: Color) {
-    GREEN(Color.Green),
-    RED(Color.Red),
-    ORANGE(Color(0xFFFFA500)), // Orange color
-    GRAY(Color.Gray)
 }

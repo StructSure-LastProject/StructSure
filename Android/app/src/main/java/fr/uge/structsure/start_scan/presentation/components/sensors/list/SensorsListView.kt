@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import fr.uge.structsure.R
-import fr.uge.structsure.bluetoothConnection.presentation.SmallButton
+import fr.uge.structsure.components.Button
 import fr.uge.structsure.start_scan.presentation.components.Variables
 import fr.uge.structsure.start_scan.presentation.components.sensors.status.SensorState
 import fr.uge.structsure.ui.theme.Typography
@@ -47,9 +47,9 @@ fun SensorsListView(
                 horizontalArrangement = Arrangement.spacedBy(20.dp),
                 modifier = Modifier
             ) {
-                SmallButton(R.drawable.arrow_down_narrow_wide, "Sort")
-                SmallButton(R.drawable.filter, "Filter")
-                SmallButton(R.drawable.plus, "Add", Color.White, Color.Black)
+                Button(R.drawable.arrow_down_narrow_wide, "Sort")
+                Button(R.drawable.filter, "Filter")
+                Button(R.drawable.plus, "Add", Color.White, Color.Black)
             }
         }
         if (isSensorListVisible) {
