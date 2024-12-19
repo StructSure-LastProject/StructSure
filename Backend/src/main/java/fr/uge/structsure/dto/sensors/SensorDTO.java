@@ -1,7 +1,9 @@
 package fr.uge.structsure.dto.sensors;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.uge.structsure.entities.Sensor;
 
+@JsonSerialize
 public record SensorDTO(
         long id,
         String controlChip,

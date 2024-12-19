@@ -1,11 +1,17 @@
 package fr.uge.structsure.controllers;
 
+import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
+import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.GetAllStructureRequest;
+import fr.uge.structsure.exceptions.ErrorMessages;
+import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.SensorService;
 import fr.uge.structsure.utils.OrderEnum;
 import fr.uge.structsure.utils.SortEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,9 +32,34 @@ public class StructureController {
     private final StructureService structureService;
     private final SensorService sensorService;
 
+    @Autowired
     public StructureController(StructureService structureService, SensorService sensorService) {
-        this.structureService = structureService;
-        this.sensorService = sensorService;
+        this.structureService = Objects.requireNonNull(structureService);
+        this.sensorService = Objects.requireNonNull(sensorService);
+    }
+
+    /**
+     * Handles the addition of a new structure.
+     * This method processes a request to create a new structure by invoking the appropriate service method.
+     * If the operation is successful, it returns a response with the details of the created structure.
+     * In case of a business exception, it returns an appropriate error response.
+     *
+     * @param request the {@link AddStructureRequestDTO} containing the details of the structure to be added.
+     *
+     * @return a {@link ResponseEntity} containing:
+     *         <ul>
+     *           <li>The details of the created structure with an HTTP status of {@code 201 Created}, if successful.</li>
+     *           <li>An error response with the appropriate HTTP status and error details in case of a {@link TraitementException}.</li>
+     *         </ul>
+     */
+    public ResponseEntity<?> addStructure(@RequestBody AddStructureRequestDTO request) {
+        try {
+            var structure = structureService.createStructure(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(structure);
+        } catch (TraitementException e) {
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
+            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        }
     }
 
     /**
