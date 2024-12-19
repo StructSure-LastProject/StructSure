@@ -28,13 +28,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.R
-import fr.uge.structsure.bluetooth.cs108.Connexion
+import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.ui.theme.White
 
 @Composable
-fun BluetoothPage(bleConnexion: Connexion, onClose: () -> Unit) {
-    bleConnexion.startScan()
+fun BluetoothPage(bleConnexion: Cs108Connector, onClose: () -> Unit) {
+    bleConnexion.start()
 
     Column( // PopUp
         verticalArrangement = Arrangement.spacedBy(0.dp, Alignment.Bottom),
@@ -54,13 +54,13 @@ fun BluetoothPage(bleConnexion: Connexion, onClose: () -> Unit) {
                 .padding(start = 25.dp, top = 25.dp, end = 25.dp, bottom = 25.dp)
         ) {
             PaneHeader({
-                bleConnexion.onStop()
+                bleConnexion.stop()
                 onClose.invoke()
             })
 
-            val devices = remember { bleConnexion.readersList }
-            DevicesList(devices) {device ->
-                bleConnexion.onItemClick(device)
+            val devices = remember { Cs108Connector.devices }
+            DevicesList(devices) { device ->
+                if (!device.isConnected) bleConnexion.connect(device) else bleConnexion.disconnect()
             }
         }
     }

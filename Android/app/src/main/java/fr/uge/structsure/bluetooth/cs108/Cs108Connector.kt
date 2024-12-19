@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.ActivityCompat
 import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.MainActivity
@@ -17,10 +18,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CancellationException
 
-class Cs108Connector(private val context: Context, private var devices: MutableList<ReaderDevice>) {
+class Cs108Connector(private val context: Context) {
     companion object {
         private var scanTask: Job? = null
         private var pairTask: Job? = null
+        var devices: MutableList<ReaderDevice> = mutableStateListOf()
+            private set
         var device: ReaderDevice? = null
             private set
         var isReady: Boolean = false
@@ -42,7 +45,7 @@ class Cs108Connector(private val context: Context, private var devices: MutableL
         if (scanTask != null) return
         MainActivity.csLibrary4A.scanLeDevice(true)
         scanTask = GlobalScope.launch { pollDevices() }
-        println("[TinyRfid] Scan started")
+        println("[DeviceConnector] Scan started")
     }
 
     /**
@@ -70,13 +73,8 @@ class Cs108Connector(private val context: Context, private var devices: MutableL
             var bleConnected: Boolean? = null
             try {
                 MainActivity.csLibrary4A.connect(device)
-                bleConnected = waitForBleConnection()
-                if (!bleConnected) {
-                    onBleConnected(false)
-                    return@launch
-                }
-                Cs108Connector.device = device
-                onBleConnected(true)
+                bleConnected = waitForBleConnection(device)
+                if (!bleConnected) return@launch
                 waitForDeviceReady()
                 onDeviceReady()
                 isReady = true
@@ -101,15 +99,50 @@ class Cs108Connector(private val context: Context, private var devices: MutableL
     }
 
     /**
+     * Sets the hook of device bluetooth pairing. The hook receives a
+     * boolean that tells whether or not the connection is successful
+     * or not.
+     * Note that this step is just before isReady, and that isReady
+     * must be waited for before calling scanning operations
+     * @param onBleConnected the function to attach to the hook
+     */
+    fun onBleConnected(onBleConnected: (success: Boolean) -> Unit = {}) {
+        this.onBleConnected = onBleConnected
+    }
+
+    /**
+     * Sets the hook of device being ready. The hook is called as soon
+     * as the freshly connected device is fully initialized and ready
+     * to scan for chips.
+     * @param onReady the function to attach to the hook
+     */
+    fun onReady(onReady: () -> Unit = {}) {
+        onDeviceReady = onReady
+    }
+
+    /**
      * Wait for the latest bluetooth pairing request to be completed.
+     * This function also handle device.connected update and BLE
+     * hook response.
+     * @param device the device to connect to
      * @return true in case of success, false after timeout
      */
-    private suspend fun waitForBleConnection(): Boolean {
+    private suspend fun waitForBleConnection(device: ReaderDevice): Boolean {
         var retry = 30
         while (pairTask!!.isActive && retry-- > 0) {
-            if (MainActivity.csLibrary4A.isBleConnected) return true
+            if (MainActivity.csLibrary4A.isBleConnected) {
+                Cs108Connector.device = device
+                devices.remove(device)
+                device.isConnected = true
+                devices.add(device)
+                onBleConnected(true)
+                println("[DeviceConnector] BLE connected")
+                return true
+            }
             delay(500L)
         }
+        onBleConnected(false)
+        println("[DeviceConnector] BLE timeout")
         return false
     }
 
@@ -120,6 +153,7 @@ class Cs108Connector(private val context: Context, private var devices: MutableL
         while (pairTask!!.isActive && MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
             delay(500L)
         }
+        println("[DeviceConnector] Device Ready")
     }
 
     /**

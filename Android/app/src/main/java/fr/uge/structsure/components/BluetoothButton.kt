@@ -29,7 +29,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import fr.uge.structsure.MainActivity.Companion.csLibrary4A
 import fr.uge.structsure.R
-import fr.uge.structsure.bluetooth.cs108.Connexion
+import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.presentation.BluetoothPage
 
 
@@ -39,7 +39,7 @@ import fr.uge.structsure.bluetooth.presentation.BluetoothPage
  * This button shows the bluetooth state
  */
 @Composable
-fun BluetoothButton(connexion: Connexion) {
+fun BluetoothButton(connexion: Cs108Connector) {
     val isBluetoothConnected = csLibrary4A.isBleConnected
     csLibrary4A.setBatteryDisplaySetting(1)
     val batteryLevel = getBatteryLevel()
