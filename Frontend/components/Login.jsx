@@ -43,7 +43,7 @@ function Login() {
 
     const handlSubmit = async (e) => {
         e.preventDefault();
-        const req = await loginFetchRequest("http://localhost:8080/api/auth/login");
+        const req = await loginFetchRequest("http://localhost:8080/api/login");
     };
     
 
