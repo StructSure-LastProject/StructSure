@@ -31,7 +31,6 @@ import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.settings.presentation.SettingsPage
 import fr.uge.structsure.startScan.domain.ScanViewModel
 import fr.uge.structsure.startScan.presentation.MainScreenStartSensor
-import fr.uge.structsure.structuresPage.data.StructureRepository
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
@@ -99,7 +98,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             StructSureTheme {
-                val connexion = Connexion(LocalContext.current)
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
@@ -140,27 +138,27 @@ class MainActivity : ComponentActivity() {
                         , floatingActionButtonPosition = FabPosition.Start
                     )*/
                 }
-            }
 
-            val navController = rememberNavController()
+                val navController = rememberNavController()
+                val connexionCS108 = Connexion(LocalContext.current)
+                var connexion = true  // false si pas de connexion
+                var loggedIn = true  // true si déjà connecté
+                val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
+                NavHost(navController = navController, startDestination = homePage) {
+                    composable("HomePage") { HomePage(connexionCS108, navController, structureViewModel) }
 
-
-            var connexion = true  // false si pas de connexion
-            var loggedIn = true  // true si déjà connecté
-            val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
-            NavHost(navController = navController, startDestination = homePage) {
-                composable("HomePage") { HomePage(navController, structureViewModel) }
-
-                composable("startScan?structureId={structureId}") { backStackEntry ->
-                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                    MainScreenStartSensor(scanViewModel, structureId)
+                    composable("startScan?structureId={structureId}") { backStackEntry ->
+                        val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                        MainScreenStartSensor(scanViewModel, structureId, navController)
+                    }
+                    composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
+                    composable("ScanPage"){ /*ScanPage(navController)*/ }
+                    composable("AlerteOk"){ /*AlerteOk(navController)*/ }
+                    composable("AlerteNok"){ /*AlerteNok(navController)*/ }
+                    composable("SettingsPage"){ SettingsPage() }
                 }
-                composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
-                composable("ScanPage"){ /*ScanPage(navController)*/ }
-                composable("AlerteOk"){ /*AlerteOk(navController)*/ }
-                composable("AlerteNok"){ /*AlerteNok(navController)*/ }
-                composable("SettingsPage"){ SettingsPage() }
             }
+
         }
 
 

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import fr.uge.structsure.R
 import fr.uge.structsure.startScan.domain.ScanState
 import fr.uge.structsure.ui.theme.*
@@ -30,7 +31,8 @@ fun ToolBar(
     onStopClick: () -> Unit,
     onSyncClick: () -> Unit,
     onContentClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController
 ) {
     Row(
         modifier = Modifier
@@ -54,6 +56,8 @@ fun ToolBar(
                 contentDescription = "Undo",
                 contentScale = ContentScale.None,
                 modifier = Modifier.size(22.dp)
+                    .clickable { navController.navigate("HomePage") }
+
             )
         }
 

@@ -5,8 +5,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import fr.uge.structsure.components.Header
 import fr.uge.structsure.startScan.domain.ScanState
 import fr.uge.structsure.startScan.domain.ScanViewModel
@@ -26,62 +30,25 @@ import fr.uge.structsure.startScan.presentation.sensors.list.SensorsListView
  * @see ToolBar
  *
  */
-/*
-@Composable
-fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long) {
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            ToolBar(
-                currentState = scanViewModel.currentScanState.value,
-                onPlayClick = { scanViewModel.fetchSensorsAndStartScan(structureId) },
-                onPauseClick = { scanViewModel.pauseScan() },
-                onStopClick = { scanViewModel.stopScan() },
-                onSyncClick = { /* À implémenter */ },
-                onContentClick = { /* À implémenter */ }
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Header()
-            StructureSummaryView(viewModel = scanViewModel)
-            PlansView(modifier = Modifier.fillMaxWidth())
-            SensorsListView(modifier = Modifier.fillMaxWidth())
-        }
 
-        // Print a toast for each sensor with an "OK" state
-        if (scanViewModel.currentScanState.value == ScanState.STARTED) {
-            scanViewModel.sensorMessages.lastOrNull()?.let { message ->
-                CustomToast(
-                    message = message,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 150.dp)
-                )
-            }
-        }
+@Composable
+fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long, navController: NavController) {
+
+    SideEffect {
+        scanViewModel.fetchSensorsAndStartScan(structureId)
     }
-}
 
-
- */
-
-@Composable
-fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             ToolBar(
                 currentState = scanViewModel.currentScanState.value,
-                onPlayClick = { scanViewModel.fetchSensorsAndStartScan(structureId) },
+                onPlayClick = {  },
                 onPauseClick = { scanViewModel.pauseScan() },
                 onStopClick = { scanViewModel.stopScan() },
                 onSyncClick = { /* À implémenter */ },
-                onContentClick = { /* À implémenter */ }
+                onContentClick = { /* À implémenter */ },
+                navController = navController
             )
         }
     ) { innerPadding ->
