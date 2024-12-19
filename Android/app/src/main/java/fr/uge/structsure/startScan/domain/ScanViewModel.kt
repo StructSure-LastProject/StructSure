@@ -34,19 +34,22 @@ class ScanViewModel(private val scanDao: ScanDao) : ViewModel() {
 
     // state for the current scan
     val currentScanState = mutableStateOf(ScanState.NOT_STARTED)
+    val sensorMessages = mutableStateListOf<String>()
 
     // ID for the active scan
     var activeScanId: Long? = null
         private set
-
-    // Messages for the sensors
-    val sensorMessages = mutableStateListOf<String>()
 
     // control variable for the scan
     private var continueScanning = true
 
     // last processed sensor index
     private var lastProcessedSensorIndex = 0
+
+
+    fun addSensorMessage(message: String) {
+        sensorMessages.add(message)
+    }
 
     /**
      * Fetches the sensors for the given structure and starts the scan.
@@ -133,6 +136,7 @@ class ScanViewModel(private val scanDao: ScanDao) : ViewModel() {
         }
     }
 
+
     /**
      * Met le scan en pause.
      */
@@ -151,6 +155,6 @@ class ScanViewModel(private val scanDao: ScanDao) : ViewModel() {
         activeScanId = null
         lastProcessedSensorIndex = 0
     }
-    
+
 
 }

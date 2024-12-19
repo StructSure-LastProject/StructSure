@@ -2,6 +2,7 @@ package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
+import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.GetAllStructureRequest;
 import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.ErrorMessages;
@@ -9,20 +10,18 @@ import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.SensorService;
 import fr.uge.structsure.utils.OrderEnum;
 import fr.uge.structsure.utils.SortEnum;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalTime;
 import java.util.List;
 
-import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
 import fr.uge.structsure.services.StructureService;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.util.Objects;
