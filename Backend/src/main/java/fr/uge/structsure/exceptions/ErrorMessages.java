@@ -15,6 +15,9 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT, new Error(404, "Login ou mot de passe incorrect"));
         messages.put(ErrorIdentifier.STRUCTURE_NAME_ALREADY_EXISTS, new Error(422, "Nom d'ouvrage déjà existant"));
         messages.put(ErrorIdentifier.STRUCTURE_NAME_IS_EMPTY, new Error(422, "Le nom d'un ouvrage ne peut pas être vide"));
+        messages.put(ErrorIdentifier.STRUCTURE_ID_NOT_FOUND, new Error(404, "Id de l'ouvrage est introuvable"));
+        messages.put(ErrorIdentifier.STRUCTURE_NAME_EXCEED_LIMIT, new Error(422, "Le nom d'un ouvrage ne peut pas dépasser 64 caractères"));
+        messages.put(ErrorIdentifier.STRUCTURE_NOTE_EXCEED_LIMIT, new Error(422, "La note d'un ouvrage ne peut pas dépasser 1000 caractères"));
     }
 
     /**

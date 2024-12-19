@@ -63,6 +63,35 @@ public class StructureController {
     }
 
     /**
+     * Updates an existing structure in the system.
+     * This method handles HTTP PUT requests to update the name and/or note of a structure
+     * identified by its ID. It delegates the update operation to the service layer.
+     * If the update is successful, it returns the details of the updated structure.
+     * If a business exception occurs, it returns an appropriate error response.
+     *
+     * @param id      the ID of the structure to be updated, provided as a path variable.
+     * @param request the {@link AddStructureRequestDTO} containing the updated details
+     *                for the structure. The name must not be null, empty, or exceed 64 characters.
+     *                The note must not exceed 1000 characters.
+     *
+     * @return a {@link ResponseEntity} containing:
+     *         <ul>
+     *           <li>The details of the updated structure with an HTTP status of {@code 201 Created}, if successful.</li>
+     *           <li>An error response with the appropriate HTTP status and error details in case of a {@link TraitementException}.</li>
+     *         </ul>
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> editStructure(@PathVariable("id") Long id, AddStructureRequestDTO request) {
+        try {
+            var structure = structureService.editStructure(id, request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(structure);
+        } catch (TraitementException e) {
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
+            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        }
+    }
+
+    /**
      * Endpoint pour récupérer la liste des capteurs d'un ouvrage donné avec options de tri et filtre.
      *
      * @param id               L'ID de l'ouvrage
