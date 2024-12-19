@@ -2,9 +2,7 @@ package fr.uge.structsure.entities;
 
 import jakarta.persistence.*;
 
-import java.sql.Time;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Objects;
 
 @Entity

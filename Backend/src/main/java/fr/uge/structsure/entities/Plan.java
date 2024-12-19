@@ -25,10 +25,11 @@ public class Plan {
 
     public Plan() {}
 
-    public Plan(File file, String name, String section) {
+    public Plan(File file, String name, String section, Structure structure) {
         this.file = file;
         this.name = name;
         this.section = section;
+        this.structure = structure;
     }
 
     public @NotBlank(message = "Name is required") @Size(max = 32, message = "Name must be less than 32 characters") String getName() {
@@ -53,5 +54,9 @@ public class Plan {
 
     public void setSection(@NotBlank(message = "Section is required") @Size(max = 128, message = "Section must be less than 128 characters") String section) {
         this.section = section;
+    }
+
+    public long getId() {
+        return id;
     }
 }
