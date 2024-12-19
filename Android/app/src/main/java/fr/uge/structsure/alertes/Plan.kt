@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.ui.theme.Black
+import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.White
 
 @Composable
@@ -37,7 +39,9 @@ fun Plan(){
 
         //Plan image
         Image(
-            modifier = Modifier.border(width = 5.dp, color = Black, shape = RoundedCornerShape(size = 15.dp)),
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(size = 15.dp))
+                .border(width = 5.dp, color = LightGray, shape = RoundedCornerShape(size = 15.dp)),
             painter = painterResource(id = R.drawable.plan_glaciere),
             contentDescription = "Plan", //nom du plan peut être
 
