@@ -1,10 +1,10 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.config.JwtUtils;
-import fr.uge.structsure.dto.auth.LoginRequestDTO;
-import fr.uge.structsure.dto.auth.LoginResponseDTO;
-import fr.uge.structsure.dto.auth.RegisterRequestDTO;
-import fr.uge.structsure.dto.auth.RegisterResponseDTO;
+import fr.uge.structsure.dto.LoginRequestDTO;
+import fr.uge.structsure.dto.LoginResponseDTO;
+import fr.uge.structsure.dto.RegisterRequestDTO;
+import fr.uge.structsure.dto.RegisterResponseDTO;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
@@ -13,7 +13,6 @@ import fr.uge.structsure.repositories.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -65,12 +64,16 @@ public class AccountService {
      */
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) throws TraitementException {
         try {
-            Authentication authentication = authenticationManager.authenticate(
+            var authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequestDTO.login(),
                             loginRequestDTO.password())
             );
             if (authentication.isAuthenticated()) {
-                return new LoginResponseDTO(jwtUtils.generateToken(loginRequestDTO.login()), "Bearer");
+                var account = accountRepository.findByLogin(loginRequestDTO.login());
+                var accountDetails = account.orElseThrow(() -> new IllegalStateException("Account authenticated but not present"));
+                return new LoginResponseDTO(jwtUtils.generateToken(loginRequestDTO.login()), "Bearer",
+                        accountDetails.getLogin(), accountDetails.getFirstname(), accountDetails.getLastname(),
+                        accountDetails.getRole().toString());
             }
             throw new TraitementException(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT);
         } catch (AuthenticationException e) {
