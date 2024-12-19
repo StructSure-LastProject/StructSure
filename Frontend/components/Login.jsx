@@ -10,6 +10,14 @@ function Login() {
     const [error, setError] = createSignal("");
     const navigate = useNavigate();
 
+    const fillLocalStorage = (response) => {
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("role", response.role);
+        localStorage.setItem("firstName", response.firstName);
+        localStorage.setItem("lastName", response.lastName);
+        localStorage.setItem("mail", response.mail);
+    };
+
     const loginFetchRequest = async (url) => {
         const requestBody = JSON.stringify({
             login: login(),
@@ -24,7 +32,7 @@ function Login() {
         });
         if (request.status == 200) {
             const response = await request.json();
-            localStorage.setItem("token", response.token);
+            fillLocalStorage(response);
             navigate("/");
         } else if (request.status == 404) {
             const response = await request.json();

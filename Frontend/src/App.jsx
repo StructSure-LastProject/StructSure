@@ -1,21 +1,18 @@
 import { Router, Route, useNavigate } from "@solidjs/router";
 import Login from "../components/Login";
-import NeedsAuthentification from "../components/NeedsAuthentification";
 import { createEffect } from "solid-js";
+import Header from "../components/Header";
+import Account from "./pages/Account";
 
 function RequireAuth(Component) {
   return () => {
     const navigate = useNavigate();
-
-    // Check if the token exists in localStorage
     createEffect(() => {
       const token = localStorage.getItem("token");
       if (!token) {
-        navigate("/login", { replace: true }); // Redirect to login if no token
+        navigate("/login", { replace: true });
       }
     });
-
-    // Render the protected component if token exists
     return <Component />;
   };
 }
@@ -26,7 +23,8 @@ function App() {
     <>
       <Router>
         <Route path="/login" component={Login} />
-        <Route path="/header" component={RequireAuth(NeedsAuthentification)} />
+        <Route path="/" component={RequireAuth(Header)} />
+        <Route path="/account" component={RequireAuth(Account)} />
       </Router>
     </>
   )
