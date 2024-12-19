@@ -8,14 +8,11 @@ import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.OrderEnum;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 @Service
 public class StructureService {
@@ -80,6 +77,10 @@ public class StructureService {
         }
         return resultList;
 
+    }
+
+    public boolean checkIfStructureExists(long id) {
+        return structureRepository.existsById(id);
     }
 
 }

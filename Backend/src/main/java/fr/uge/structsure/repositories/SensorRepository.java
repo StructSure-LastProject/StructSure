@@ -13,4 +13,8 @@ import java.util.List;
 public interface SensorRepository extends JpaRepository<Sensor, Long> {
     @Query("SELECT s FROM Sensor s WHERE s.structure.id = :structureId")
     List<Sensor> findByStructureId(Long structureId);
+
+    int countBySensorId(SensorId measurementId);
+
+    List<Sensor> findAllByName(String name);
 }
