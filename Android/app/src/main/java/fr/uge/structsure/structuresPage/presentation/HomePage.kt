@@ -27,7 +27,8 @@ fun HomePage(navController: NavHostController, structureViewModel: StructureView
         Header()
         AccountInformationsView()
         StructuresListView(structureViewModel)
-        // BluetoothButton()
+        ConnectivityStatus()
+
     }
 
 }
