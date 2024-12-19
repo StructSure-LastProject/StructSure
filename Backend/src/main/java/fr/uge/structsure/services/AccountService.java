@@ -1,10 +1,10 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.config.JwtUtils;
-import fr.uge.structsure.dto.LoginRequestDTO;
-import fr.uge.structsure.dto.LoginResponseDTO;
-import fr.uge.structsure.dto.RegisterRequestDTO;
-import fr.uge.structsure.dto.RegisterResponseDTO;
+import fr.uge.structsure.dto.auth.LoginRequestDTO;
+import fr.uge.structsure.dto.auth.LoginResponseDTO;
+import fr.uge.structsure.dto.auth.RegisterRequestDTO;
+import fr.uge.structsure.dto.auth.RegisterResponseDTO;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
