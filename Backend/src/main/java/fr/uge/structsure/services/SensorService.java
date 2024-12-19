@@ -4,6 +4,7 @@ import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.utils.sort.SortStrategyFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
@@ -12,9 +13,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class SensorService {
-
     private final SensorRepository sensorRepository;
 
+    @Autowired
     public SensorService(SensorRepository sensorRepository) {
         this.sensorRepository = sensorRepository;
     }

@@ -5,6 +5,8 @@ package fr.uge.structsure.dto.structure;
 import fr.uge.structsure.utils.OrderEnum;
 import fr.uge.structsure.utils.SortEnum;
 
+import java.util.Objects;
+
 /**
  * This record represents the request format of get all structure
  * @param searchByName Search by name filter
@@ -12,4 +14,9 @@ import fr.uge.structsure.utils.SortEnum;
  * @param order Order options
  */
 public record GetAllStructureRequest(String searchByName, SortEnum sort, OrderEnum order) {
+    public  GetAllStructureRequest {
+        Objects.requireNonNull(searchByName);
+        Objects.requireNonNull(sort);
+        Objects.requireNonNull(order);
+    }
 }

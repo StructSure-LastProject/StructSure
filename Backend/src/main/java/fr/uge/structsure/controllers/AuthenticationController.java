@@ -1,21 +1,13 @@
 package fr.uge.structsure.controllers;
 
-import fr.uge.structsure.config.JwtUtils;
 import fr.uge.structsure.dto.ErrorDTO;
-import fr.uge.structsure.dto.LoginRequestDTO;
-import fr.uge.structsure.dto.LoginResponseDTO;
-import fr.uge.structsure.dto.RegisterRequestDTO;
+import fr.uge.structsure.dto.auth.LoginRequestDTO;
+import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
-import fr.uge.structsure.repositories.AccountRepository;
 import fr.uge.structsure.services.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
