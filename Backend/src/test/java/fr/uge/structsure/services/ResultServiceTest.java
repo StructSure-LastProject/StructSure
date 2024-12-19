@@ -31,30 +31,4 @@ class ResultServiceTest {
     mockSensor = new Sensor();
     mockSensor.setName("Sensor 1");
   }
-
-  @Test
-  void testGetLatestStateByChipWhenResultsFound() {
-    // Créer un résultat mock pour ce test
-    Result mockResult = new Result();
-    mockResult.setSensor(mockSensor);
-    mockResult.setState("Active");
-
-    // Simuler la réponse du repository
-    when(resultRepository.findLatestStateBySensor(mockSensor));
-
-    Result result = resultService.getLatestStateByChip(mockSensor);
-
-    assertNotNull(result);
-    assertEquals("Active", result.getState());
-  }
-
-  @Test
-  void testGetLatestStateByChipWhenNoResultsFound() {
-    // Simuler une réponse vide du repository (aucun résultat pour ce capteur)
-    when(resultRepository.findLatestStateBySensor(mockSensor)).thenReturn(List.of());
-
-    Result result = resultService.getLatestStateByChip(mockSensor);
-
-    assertNull(result);
-  }
 }

@@ -43,4 +43,15 @@ public class Account {
         this.passwordCrypted = passwordCrypted;
     }
 
+    public void setLogin(String user) {
+        this.login = user;
+    }
+
+    public void setEnabled(boolean b) {
+        this.enabled = b;
+    }
+
+    public String getLogin() {
+        return login;
+    }
 }
