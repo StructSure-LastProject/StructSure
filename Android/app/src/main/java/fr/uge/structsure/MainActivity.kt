@@ -26,6 +26,9 @@ import androidx.navigation.compose.rememberNavController
 import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.alertes.Nok
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
+import fr.uge.structsure.alertes.Alerte
+import fr.uge.structsure.bluetooth.cs108.Connexion
+import fr.uge.structsure.components.BluetoothButton
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.settings.presentation.SettingsPage
@@ -149,7 +152,7 @@ class MainActivity : ComponentActivity() {
                 var connexion = true  // false si pas de connexion
                 var loggedIn = true  // true si déjà connecté
                 val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
-                NavHost(navController = navController, startDestination = "AlerteNok") {
+                NavHost(navController = navController, startDestination = "Alerte") {
                     composable("HomePage") { HomePage(connexionCS108, navController, structureViewModel) }
 
                     composable("startScan?structureId={structureId}") { backStackEntry ->
@@ -158,12 +161,11 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
                     composable("ScanPage"){ /*ScanPage(navController)*/ }
-                    composable("AlerteOk"){ /*AlerteOk(navController)*/ }
-                    composable("AlerteNok"){ Nok(navController,"Sensor","Ok") }
+                    //composable("AlerteOk"){ /*AlerteOk(navController)*/ }
+                    composable("Alerte"){ Alerte(navController,false,"Sensor","Ok") }
                     composable("SettingsPage"){ SettingsPage() }
                 }
             }
-
         }
     }
 
