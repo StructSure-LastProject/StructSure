@@ -1,5 +1,8 @@
 package fr.uge.structsure
 
+//import com.csl.cs108library4a.Cs108Library4A
+//import com.csl.cslibrary4a.Cs108Library4A
+
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -7,6 +10,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,21 +23,18 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-//import com.csl.cs108library4a.Cs108Library4A
 import com.csl.cslibrary4a.Cs108Library4A
-//import com.csl.cslibrary4a.Cs108Library4A
-import fr.uge.structsure.bluetooth.cs108.Connexion
+import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.database.AppDatabase
-import fr.uge.structsure.ui.theme.Black
-
-import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.settings.presentation.SettingsPage
 import fr.uge.structsure.startScan.domain.ScanViewModel
 import fr.uge.structsure.startScan.presentation.MainScreenStartSensor
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
+import fr.uge.structsure.ui.theme.Black
+import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.StructSureTheme
 
 class MainActivity : ComponentActivity() {
@@ -139,8 +140,11 @@ class MainActivity : ComponentActivity() {
                     )*/
                 }
 
+                val context = LocalContext.current
                 val navController = rememberNavController()
-                val connexionCS108 = Connexion(LocalContext.current)
+                val connexionCS108 = Cs108Connector(context)
+                connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
+                connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
                 var connexion = true  // false si pas de connexion
                 var loggedIn = true  // true si déjà connecté
                 val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"

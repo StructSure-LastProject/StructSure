@@ -44,7 +44,6 @@ class Cs108Scanner(private val callback: (RfidChip) -> Unit) {
             task!!.cancelAndJoin()
         }
         clearEventsBuffer()
-        task = null
     }
 
     fun toggle() {

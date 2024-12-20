@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import fr.uge.structsure.bluetooth.cs108.Connexion
+import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.BluetoothButton
 import fr.uge.structsure.components.Header
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
@@ -19,7 +19,7 @@ import fr.uge.structsure.structuresPage.presentation.components.StructuresListVi
 
 @Composable
 fun HomePage(
-    connexionCS108: Connexion,
+    connexionCS108: Cs108Connector,
     navController: NavHostController,
     structureViewModel: StructureViewModel
 ) {
