@@ -17,8 +17,8 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 object RetrofitInstance {
 
-    private const val BASE_URL = "http://192.168.137.46:8080"
-    private const val TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhdXJlbCIsImlhdCI6MTczNDYzOTM3MCwiZXhwIjoxNzM0NjQwMjcwfQ.J5aMLDoCPwhlQcXdlA4kVkBeEIaIN8uu5vzVc-a3tVI"
+    private const val BASE_URL = "http://192.168.137.82:8080"
+    private const val TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhdXJlbCIsImlhdCI6MTczNDY4NjA3NiwiZXhwIjoxNzM0Njg2OTc2fQ.jM-YdxbUsjiXelBq6HhEovFhko7wrrmzqzdf4jBFWp0"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -51,6 +51,15 @@ object RetrofitInstance {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(StructureApi::class.java)
+    }
+
+    val loginApi: LoginApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(LoginApi::class.java)
     }
 
     val serverStatus: ServerStatusApi by lazy {

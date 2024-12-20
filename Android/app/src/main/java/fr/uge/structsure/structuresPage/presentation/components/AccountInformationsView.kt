@@ -9,16 +9,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.White
 
-@Preview(showBackground = true)
 @Composable
-fun AccountInformationsView(modifier: Modifier = Modifier) {
+fun AccountInformationsView(navController: NavController) {
     Box(
         modifier = Modifier
             .background(color = Black, shape = RoundedCornerShape(20.dp))
@@ -31,7 +30,8 @@ fun AccountInformationsView(modifier: Modifier = Modifier) {
                 Button(
                     id = R.drawable.log_out,
                     background = White,
-                    description = "Log out button that disconnect users who click on it."
+                    description = "Log out button that disconnect users who click on it.",
+                    onClick = { navController.navigate("ConnexionPage") }
                 )
             }
         }

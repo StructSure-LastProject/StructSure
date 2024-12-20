@@ -32,7 +32,7 @@ fun HomePage(
     ) {
         Header()
         BluetoothButton(connexionCS108)
-        AccountInformationsView()
+        AccountInformationsView(navController)
         StructuresListView(structureViewModel, navController)
         ConnectivityStatus()
     }
