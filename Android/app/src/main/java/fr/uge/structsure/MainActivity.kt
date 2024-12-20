@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
 
         db = AppDatabase.getDatabase(applicationContext)
         val scanDao = db.scanDao()
+        val accountDao = db.accountDao()
         val scanViewModel = ScanViewModel(scanDao)
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
@@ -147,16 +148,16 @@ class MainActivity : ComponentActivity() {
                 connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
                 connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
                 var connexion = true  // false si pas de connexion
-                var loggedIn = false  // true si déjà connecté
+                var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
                 val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
                 NavHost(navController = navController, startDestination = homePage) {
-                    composable("HomePage") { HomePage(connexionCS108, navController, structureViewModel) }
+                    composable("HomePage") { HomePage(connexionCS108, navController, accountDao, structureViewModel) }
 
                     composable("startScan?structureId={structureId}") { backStackEntry ->
                         val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
                         MainScreenStartSensor(scanViewModel, structureId, navController)
                     }
-                    composable("ConnexionPage") { ConnexionCard(navController) }
+                    composable("ConnexionPage") { ConnexionCard(navController, accountDao) }
                     composable("ScanPage"){ /*ScanPage(navController)*/ }
                     composable("AlerteOk"){ /*AlerteOk(navController)*/ }
                     composable("AlerteNok"){ /*AlerteNok(navController)*/ }
