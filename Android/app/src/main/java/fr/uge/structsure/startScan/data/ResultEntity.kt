@@ -9,9 +9,10 @@ import androidx.room.PrimaryKey
  * @param sensorId ID of the sensor.
  * @param state Final state after interrogation (OK, NOK, etc.).
  */
-@Entity(tableName = "result")
+//@Entity(tableName = "result")
 data class ResultEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val sensorId: Int, // ID du capteur
-    val state: String // État final après interrogation (OK, NOK, etc.)
+    val structureId: Long,
+    val scanId: Long,
+    // val scanEntity: ScanEntity,
+    val results: ResultSensors
 )

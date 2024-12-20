@@ -114,10 +114,8 @@ fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long, navCo
             ToolBar(
                 currentState = scanViewModel.currentScanState.value,
                 onPlayClick = {
-                    println("before scan state " + scanViewModel.currentScanState.value)
                     cs108Scanner.value.start()
                     scanViewModel.currentScanState.value = ScanState.STARTED
-                    println("after scan state " + scanViewModel.currentScanState.value)
                 },
                 onPauseClick = {
                     cs108Scanner.value.stop()

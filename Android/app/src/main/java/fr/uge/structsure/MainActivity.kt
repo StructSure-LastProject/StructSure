@@ -66,7 +66,8 @@ class MainActivity : ComponentActivity() {
 
         db = AppDatabase.getDatabase(applicationContext)
         val scanDao = db.scanDao()
-        val scanViewModel = ScanViewModel(scanDao)
+        val resultDao = db.resultDao()
+        val scanViewModel = ScanViewModel(scanDao, resultDao)
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
 

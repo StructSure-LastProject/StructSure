@@ -6,7 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.retrofit.response.GetAllSensorsResponse
+import fr.uge.structsure.startScan.data.ResultEntity
+import fr.uge.structsure.startScan.data.ResultSensors
 import fr.uge.structsure.startScan.data.ScanEntity
+import fr.uge.structsure.startScan.data.dao.ResultDao
 import fr.uge.structsure.startScan.data.dao.ScanDao
 import fr.uge.structsure.structuresPage.data.SensorDB
 import kotlinx.coroutines.Dispatchers
@@ -15,6 +18,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.sql.Timestamp
 
 /**
  * États possibles pour le déroulement du scan.
@@ -30,7 +34,7 @@ enum class ScanState {
  * ViewModel for the ScanFragment.
  * @param scanDao Data access object for the ScanEntity and SensorEntity classes.
  */
-class ScanViewModel(private val scanDao: ScanDao) : ViewModel() {
+class ScanViewModel(private val scanDao: ScanDao, private val resultDao: ResultDao) : ViewModel() {
 
     // state for the current scan
     val currentScanState = mutableStateOf(ScanState.NOT_STARTED)
@@ -69,8 +73,6 @@ class ScanViewModel(private val scanDao: ScanDao) : ViewModel() {
      */
     private fun insertSensorsAndStartScan(sensors: List<GetAllSensorsResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
-            val newScan = ScanEntity(structureId = 1, date = System.currentTimeMillis())
-
             // filter out duplicate sensors
             val uniqueSensors = sensors.distinctBy { it.controlChip to it.measureChip }
 
@@ -106,6 +108,13 @@ class ScanViewModel(private val scanDao: ScanDao) : ViewModel() {
      */
     private fun startSensorInterrogation(sensors: List<SensorDB>) {
         continueScanning = true // Controle variable pour le scan
+        val startTimestamp = Timestamp(System.currentTimeMillis()).toString()
+        var resultSensors: List<ResultSensors> = mutableListOf()
+
+        val newScan = ScanEntity(start_timestamp = startTimestamp, end_timestamp = startTimestamp, technician_id = 1,
+            structureId = sensors.get(1).structureId
+        )
+
         viewModelScope.launch(Dispatchers.IO) {
             for (i in lastProcessedSensorIndex until sensors.size) {
                 if (!continueScanning) {
@@ -122,16 +131,26 @@ class ScanViewModel(private val scanDao: ScanDao) : ViewModel() {
                     2 -> "DEFECTIVE"
                     else -> "NOK"
                 }
+                scanDao.insertScan(newScan)
+                // insert ResultSet
+                // Insert ResultEntity
+                // Insert ResultEntity
+                val resultSensor = ResultSensors(
+                    timestamp = Timestamp(System.currentTimeMillis()).toString(),
+                    state = newState,
+                    scanId = scanDao.getScanByStructureId(sensor.structureId),
+                    controlChip = sensor.controlChip,
+                    measureChip = sensor.measureChip
+                )
+
+                resultSensors = resultSensors + resultSensor
+                resultDao.insertResult(resultSensor)
 
                 // Update the state of the sensor in the database
-                scanDao.updateSensorState(sensor.controlChip, sensor.measureChip, newState)
+                //scanDao.updateSensorState(sensor.controlChip, sensor.measureChip, newState)
 
-                // Add a message to the sensorMessages list
-                if (newState == "OK") {
-                    viewModelScope.launch(Dispatchers.Main) {
-                        sensorMessages.add("Capteur ${sensor.name} is OK!")
-                    }
-                }
+                // Update the state of the sensor in the database
+                //scanDao.updateSensorState(sensor.controlChip, sensor.measureChip, newState)
             }
         }
     }
