@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.ActivityCompat
 import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.MainActivity
+import fr.uge.structsure.MainActivity.Companion.csLibrary4A
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -22,6 +23,9 @@ class Cs108Connector(private val context: Context) {
     companion object {
         private var scanTask: Job? = null
         private var pairTask: Job? = null
+        private var batteryTask: Job? = null
+        var battery: Int = -1
+            private set
         var devices: MutableList<ReaderDevice> = mutableStateListOf()
             private set
         var device: ReaderDevice? = null
@@ -35,6 +39,13 @@ class Cs108Connector(private val context: Context) {
 
     /** Hook used just after device initialization completed */
     private var onDeviceReady: () -> Unit = {}
+
+    /** Hook used when the battery level change */
+    private var onBatteryChange: (level: Int) -> Unit = {}
+
+    init {
+        csLibrary4A.setBatteryDisplaySetting(1)
+    }
 
     /**
      * Start scanning for any nearby compatible Bluetooth Low Energy
@@ -92,7 +103,11 @@ class Cs108Connector(private val context: Context) {
      */
     fun disconnect() {
         if (device != null) {
+            println("[DeviceConnector] Disconnected from device")
             MainActivity.csLibrary4A.disconnect(false)
+            devices.remove(device)
+            device!!.isConnected = false
+            devices.add(device!!)
             device = null
             isReady = false
         }
@@ -118,6 +133,15 @@ class Cs108Connector(private val context: Context) {
      */
     fun onReady(onReady: () -> Unit = {}) {
         onDeviceReady = onReady
+    }
+
+    /**
+     * Sets the hook of the device battery level. The hook is called
+     * each time the battery level change
+     * @param onBatteryChange the function to attach to the hook
+     */
+    fun onBatteryChange(onBatteryChange: (level: Int) -> Unit = {}) {
+        this.onBatteryChange = onBatteryChange
     }
 
     /**
@@ -153,6 +177,7 @@ class Cs108Connector(private val context: Context) {
         while (pairTask!!.isActive && MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
             delay(500L)
         }
+        if (batteryTask == null) batteryTask = GlobalScope.launch { pollBattery() }
         println("[DeviceConnector] Device Ready")
     }
 
@@ -188,6 +213,34 @@ class Cs108Connector(private val context: Context) {
         }
         println("[DeviceConnector] Scan stopped")
         scanTask = null
+    }
+
+    /**
+     * Ask continuously the cs108 library for the updated battery
+     * level and updates the battery field
+     */
+    private suspend fun pollBattery() {
+        try {
+            while (batteryTask!!.isActive) {
+                if (MainActivity.csLibrary4A.isBleConnected) {
+                    val lvl = MainActivity.csLibrary4A.getBatteryDisplay(false)
+                    val pos = lvl.indexOf('%')
+                    val level = if (pos == -1) 0 else lvl.substring(0, lvl.indexOf('%')).toInt()
+                    if (level != battery) {
+                        battery = level
+                        onBatteryChange(battery)
+                    }
+                } else if (battery !=  -1) {
+                    battery = -1
+                    onBatteryChange(battery)
+                }
+                delay(2000L)
+            }
+        } catch (e: CancellationException) {
+            // Interrupted
+        }
+        println("[DeviceConnector] Battery poll stopped")
+        batteryTask = null
     }
 
     /**

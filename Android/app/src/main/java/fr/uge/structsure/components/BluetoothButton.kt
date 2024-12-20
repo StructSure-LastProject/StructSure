@@ -11,6 +11,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,6 +32,8 @@ import fr.uge.structsure.MainActivity.Companion.csLibrary4A
 import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.presentation.BluetoothPage
+import fr.uge.structsure.ui.theme.Black
+import fr.uge.structsure.ui.theme.Red
 
 
 /**
@@ -41,12 +44,14 @@ import fr.uge.structsure.bluetooth.presentation.BluetoothPage
 @Composable
 fun BluetoothButton(connexion: Cs108Connector) {
     val isBluetoothConnected = csLibrary4A.isBleConnected
-    csLibrary4A.setBatteryDisplaySetting(1)
-    val batteryLevel = getBatteryLevel()
+
+    var batteryLevel by remember { mutableIntStateOf(Cs108Connector.battery) }
     var showPopUp by remember { mutableStateOf(false) }
 
     // Determine color based on battery level
-    val color = if (batteryLevel <= 20) Color.Red else Color.Black
+    val color = if (batteryLevel <= 20) Red else Black
+
+    connexion.onBatteryChange { battery -> batteryLevel = battery }
 
     IconButton(
         modifier = Modifier
