@@ -48,7 +48,7 @@ function Login() {
     
 
     return (
-        <div class="bg-gray-50 h-screen">
+        <div class="bg-gray-100 h-screen">
             <div class="p-25px mb-35px">
                 <div class="flex justify-center">
                     <img src={logo} class="w-236px" alt="Vite logo" />

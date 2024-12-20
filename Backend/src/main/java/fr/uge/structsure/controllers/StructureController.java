@@ -27,7 +27,7 @@ import org.springframework.http.MediaType;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api/structure")
+@RequestMapping("/api/structures")
 public class StructureController {
 
     private final StructureService structureService;
@@ -156,6 +156,7 @@ public class StructureController {
     public StructureResponseDTO getStructureById(@PathVariable("id") Long id){
         return structureService.getStructureById(id);
     }
+
 
 
 }

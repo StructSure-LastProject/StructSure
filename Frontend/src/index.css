@@ -10,6 +10,22 @@
     width: 276px;
 }
 
+.w-161px {
+    width: 161px;
+}
+
+.w-1250px {
+    width: 1250px;
+}
+
+.w-300px {
+    width: 300px;
+}
+
+.w-388px {
+    width: 388px;
+}
+
 .w-500px {
     width: 500px;
 }
@@ -21,6 +37,11 @@
 .h-394px {
     height: 394px;
 }
+
+.h-37px {
+    height: 37px;
+}
+
 
 .p-25px {
     padding: 25px;
@@ -40,12 +61,28 @@
     margin-bottom: 35px;
 }
 
+.gap-y-5px {
+    row-gap: 5px;
+}
+
+.gap-y-15px {
+    row-gap: 15px;
+}
+
 .gap-y-25px {
     row-gap: 25px;
 }
 
+.gap-x-20px {
+    column-gap: 20px;
+}
+
 .gap-x-25px {
     column-gap: 25px;
+}
+
+.rounded-10px {
+    border-radius: 10px;
 }
 
 .rounded-20px {
