@@ -51,6 +51,7 @@ public class SensorService {
             comparator = comparator.reversed();
         }
 
+
         return sensors.stream()
                 .sorted(comparator)
                 .map(SensorDTO::fromEntity)

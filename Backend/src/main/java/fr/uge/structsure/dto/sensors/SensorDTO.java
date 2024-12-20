@@ -5,7 +5,6 @@ import fr.uge.structsure.entities.Sensor;
 
 @JsonSerialize
 public record SensorDTO(
-        long id,
         String controlChip,
         String measureChip,
         String name,
@@ -17,7 +16,6 @@ public record SensorDTO(
 ) {
     public static SensorDTO fromEntity(Sensor sensor) {
         return new SensorDTO(
-                sensor.getSensorId().hashCode(),
                 sensor.getSensorId().getControlChip(),
                 sensor.getSensorId().getMeasureChip(),
                 sensor.getName(),

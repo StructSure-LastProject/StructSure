@@ -1,10 +1,12 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.structure.*;
+import fr.uge.structsure.entities.Scan;
 import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.PlanRepository;
+import fr.uge.structsure.repositories.ScanRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.OrderEnum;
@@ -22,11 +24,14 @@ public class StructureService {
     private final PlanRepository planRepository;
     private final SensorRepository sensorRepository;
 
+    private final ScanRepository scanRepository;
+
     @Autowired
-    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository ,PlanRepository planRepository) {
+    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository ,PlanRepository planRepository, ScanRepository scanRepository) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.planRepository = Objects.requireNonNull(planRepository);
+        this.scanRepository = Objects.requireNonNull(scanRepository);
     }
 
     /**
@@ -204,4 +209,8 @@ public class StructureService {
           sensors
       );
   }
+
+    public List<Long> getScansByStructure(Long structureId) {
+        return scanRepository.findByStructure(structureRepository.findStructureById(structureId).getFirst()).stream().map(s->s.getId()).toList();
+    }
 }

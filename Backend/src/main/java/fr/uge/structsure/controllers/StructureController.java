@@ -5,8 +5,10 @@ import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.GetAllStructureRequest;
 import fr.uge.structsure.dto.structure.StructureResponseDTO;
+import fr.uge.structsure.entities.SensorId;
 import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
+import fr.uge.structsure.services.ResultService;
 import fr.uge.structsure.services.SensorService;
 import fr.uge.structsure.utils.OrderEnum;
 import fr.uge.structsure.utils.SortEnum;
@@ -33,10 +35,13 @@ public class StructureController {
     private final StructureService structureService;
     private final SensorService sensorService;
 
+    private final ResultService resultService;
+
     @Autowired
-    public StructureController(StructureService structureService, SensorService sensorService) {
+    public StructureController(StructureService structureService, SensorService sensorService, ResultService resultService) {
         this.structureService = Objects.requireNonNull(structureService);
         this.sensorService = Objects.requireNonNull(sensorService);
+        this.resultService = Objects.requireNonNull(resultService);
     }
 
     /**
@@ -157,5 +162,9 @@ public class StructureController {
         return structureService.getStructureById(id);
     }
 
+    @GetMapping("/{id}/scans")
+    public ResponseEntity<?> getScansByStructureId(@PathVariable("id") Long id){
+        return ResponseEntity.status(HttpStatus.OK).body(structureService.getScansByStructure(id));
+    }
 
 }

@@ -30,4 +30,6 @@ public class Scan {
         this.note = Objects.requireNonNull(note);
         this.author = Objects.requireNonNull(author);
     }
+
+    public long getId() {return id;}
 }
