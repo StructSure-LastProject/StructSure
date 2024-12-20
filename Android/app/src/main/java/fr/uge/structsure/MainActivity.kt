@@ -41,9 +41,10 @@ import fr.uge.structsure.ui.theme.StructSureTheme
 class MainActivity : ComponentActivity() {
     companion object {
         lateinit var csLibrary4A: Cs108Library4A
+        lateinit var db: AppDatabase
+            private set
     }
 
-    private lateinit var db: AppDatabase
     private lateinit var structureViewModel: StructureViewModel
 
     private val bluetoothManager by lazy {
