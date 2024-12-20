@@ -19,6 +19,10 @@ interface ScanDao {
     @Insert
     suspend fun insertScan(scan: ScanEntity): Long
 
+    @Query("SELECT id from scan WHERE scan.structureId = :structureId")
+    suspend fun getScanByStructureId(structureId: Long):Long
+
+
     @Query("UPDATE sensor SET state = :newState WHERE controlChip = :controlChip AND measureChip = :measureChip")
     suspend fun updateSensorState(controlChip: String, measureChip: String, newState: String)
 
