@@ -174,7 +174,7 @@ class Cs108Connector(private val context: Context) {
      * Wait for the latest device to be ready for other operations.
      */
     private suspend fun waitForDeviceReady() {
-        while (pairTask!!.isActive && MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
+        while (pairTask != null && pairTask!!.isActive && MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
             delay(500L)
         }
         if (batteryTask == null) batteryTask = GlobalScope.launch { pollBattery() }

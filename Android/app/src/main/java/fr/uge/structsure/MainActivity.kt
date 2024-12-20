@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
         db = AppDatabase.getDatabase(applicationContext)
         val scanDao = db.scanDao()
         val resultDao = db.resultDao()
-        val scanViewModel = ScanViewModel(scanDao, resultDao)
+        //val scanViewModel = ScanViewModel(scanDao, resultDao)
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
 
@@ -154,7 +154,8 @@ class MainActivity : ComponentActivity() {
 
                     composable("startScan?structureId={structureId}") { backStackEntry ->
                         val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                        MainScreenStartSensor(scanViewModel, structureId, navController)
+
+                        MainScreenStartSensor(applicationContext,ScanViewModel(scanDao, resultDao, structureId), structureId, navController)
                     }
                     composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
                     composable("ScanPage"){ /*ScanPage(navController)*/ }
