@@ -16,7 +16,7 @@ fun UserInformations(
     id: String = "user.name@mail.service.com"
 ) {
     Column(modifier = Modifier) {
-        Text(style = Typography.titleMedium,
+        Text(style = Typography.titleLarge,
             color = Color.White,
             text = name)
         Text(style = Typography.titleSmall,

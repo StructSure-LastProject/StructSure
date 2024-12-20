@@ -26,6 +26,7 @@ import androidx.navigation.compose.rememberNavController
 import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.ButtonText
+import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.settings.presentation.SettingsPage
 import fr.uge.structsure.startScan.domain.ScanViewModel
@@ -40,9 +41,10 @@ import fr.uge.structsure.ui.theme.StructSureTheme
 class MainActivity : ComponentActivity() {
     companion object {
         lateinit var csLibrary4A: Cs108Library4A
+        lateinit var db: AppDatabase
+            private set
     }
 
-    private lateinit var db: AppDatabase
     private lateinit var structureViewModel: StructureViewModel
 
     private val bluetoothManager by lazy {
@@ -66,6 +68,7 @@ class MainActivity : ComponentActivity() {
 
         db = AppDatabase.getDatabase(applicationContext)
         val scanDao = db.scanDao()
+        val accountDao = db.accountDao()
         val scanViewModel = ScanViewModel(scanDao)
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
@@ -146,16 +149,16 @@ class MainActivity : ComponentActivity() {
                 connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
                 connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
                 var connexion = true  // false si pas de connexion
-                var loggedIn = true  // true si déjà connecté
+                var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
                 val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
                 NavHost(navController = navController, startDestination = homePage) {
-                    composable("HomePage") { HomePage(connexionCS108, navController, structureViewModel) }
+                    composable("HomePage") { HomePage(connexionCS108, navController, accountDao, structureViewModel) }
 
                     composable("startScan?structureId={structureId}") { backStackEntry ->
                         val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
                         MainScreenStartSensor(scanViewModel, structureId, navController)
                     }
-                    composable("ConnexionPage") { /*ConnexionCard(navController)*/ }
+                    composable("ConnexionPage") { ConnexionCard(navController, accountDao) }
                     composable("ScanPage"){ /*ScanPage(navController)*/ }
                     composable("AlerteOk"){ /*AlerteOk(navController)*/ }
                     composable("AlerteNok"){ /*AlerteNok(navController)*/ }
