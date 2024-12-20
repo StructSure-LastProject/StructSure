@@ -39,7 +39,7 @@ function StructSureHead() {
             body: requestBody
         });
         if (request.status == 201) {
-            navigate("/");
+            location.reload();
         } else if (request.status == 401) {
             console.log("not autorized");
             navigate("/login");
