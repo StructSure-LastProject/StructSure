@@ -10,6 +10,14 @@
     width: 276px;
 }
 
+.w-1250px {
+    width: 1250px;
+}
+
+.w-300px {
+    width: 300px;
+}
+
 .w-500px {
     width: 500px;
 }
@@ -40,8 +48,16 @@
     margin-bottom: 35px;
 }
 
+.gap-y-15px {
+    row-gap: 15px;
+}
+
 .gap-y-25px {
     row-gap: 25px;
+}
+
+.gap-x-20px {
+    column-gap: 20px;
 }
 
 .gap-x-25px {
