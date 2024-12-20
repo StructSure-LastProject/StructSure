@@ -1,5 +1,6 @@
 package fr.uge.structsure.retrofit
 
+import fr.uge.structsure.MainActivity
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -18,7 +19,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitInstance {
 
     private const val BASE_URL = "http://172.20.10.4:8080"
-    private const val TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhdXJlbCIsImlhdCI6MTczNDY5MDQwNCwiZXhwIjoxNzM0NjkxMzA0fQ.zZDrU9_2J-Jq-KVivd0ASrgLv4kxmqFh1PzhKn__KSU"
+    private var tokenProvider: () -> String = {
+        val account = MainActivity.db.accountDao().get()
+        if (account == null) "" else account.token?: ""
+    }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -26,7 +30,7 @@ object RetrofitInstance {
 
     private val tokenInjector = { chain: Interceptor.Chain ->
         chain.proceed(chain.request().newBuilder().apply {
-            header("Authorization", "Bearer  $TOKEN")
+            header("Authorization", "Bearer " + tokenProvider())
         }.build())
     }
 
