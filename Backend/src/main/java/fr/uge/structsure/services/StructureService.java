@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class StructureService {
@@ -99,6 +100,10 @@ public class StructureService {
         exists.get().setName(editStructureRequestDTO.name());
         var result = structureRepository.save(exists.get());
         return new EditStructureResponseDTO(result.getId(), new Timestamp(System.currentTimeMillis()).toString());
+    }
+
+    public Optional<Structure> existStructure(Long id) {
+        return structureRepository.findById(id);
     }
 
     /**

@@ -1,12 +1,14 @@
 package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.ErrorDTO;
+import fr.uge.structsure.dto.plan.AddPlanRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.GetAllStructureRequest;
 import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
+import fr.uge.structsure.services.PlanService;
 import fr.uge.structsure.services.SensorService;
 import fr.uge.structsure.utils.OrderEnum;
 import fr.uge.structsure.utils.SortEnum;
@@ -23,6 +25,7 @@ import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
 import fr.uge.structsure.services.StructureService;
 
 import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
 
@@ -32,11 +35,13 @@ public class StructureController {
 
     private final StructureService structureService;
     private final SensorService sensorService;
+    private final PlanService planService;
 
     @Autowired
-    public StructureController(StructureService structureService, SensorService sensorService) {
+    public StructureController(StructureService structureService, SensorService sensorService, PlanService planService) {
         this.structureService = Objects.requireNonNull(structureService);
         this.sensorService = Objects.requireNonNull(sensorService);
+        this.planService = planService;
     }
 
     /**
@@ -53,7 +58,7 @@ public class StructureController {
      *           <li>An error response with the appropriate HTTP status and error details in case of a {@link TraitementException}.</li>
      *         </ul>
      */
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<?> addStructure(@RequestBody AddStructureRequestDTO request) {
         try {
             var structure = structureService.createStructure(request);
@@ -83,9 +88,21 @@ public class StructureController {
      *         </ul>
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> editStructure(@PathVariable("id") Long id, AddStructureRequestDTO request) {
+    public ResponseEntity<?> editStructure(@PathVariable("id") Long id, @RequestBody AddStructureRequestDTO request) {
         try {
             var structure = structureService.editStructure(id, request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(structure);
+        } catch (TraitementException e) {
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
+            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        }
+    }
+
+
+    @PostMapping("/{id}/plans")
+    public ResponseEntity<?> addPlan(@PathVariable("id") Long id, @RequestPart("metadata") AddPlanRequestDTO request, @RequestPart("file") MultipartFile file) {
+        try {
+            var structure = planService.createPlan(id, request, file);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
             var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
