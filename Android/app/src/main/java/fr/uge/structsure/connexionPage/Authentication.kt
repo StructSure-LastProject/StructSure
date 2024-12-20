@@ -1,5 +1,7 @@
 import android.util.Log
 import androidx.navigation.NavController
+import fr.uge.structsure.connexionPage.data.AccountDao
+import fr.uge.structsure.connexionPage.data.AccountEntity
 import fr.uge.structsure.retrofit.LoginApi
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.retrofit.response.Datamodel
@@ -9,7 +11,7 @@ import kotlinx.coroutines.withContext
 import java.util.Optional
 
 
-suspend fun auth(login:String, password:String, navController: NavController): String {
+suspend fun auth(login:String, password:String, dao: AccountDao, navController: NavController): String {
     if (login.isEmpty()){
         return "Veuillez renseigner votre identifiant"
     } else if (password.isEmpty()){
@@ -18,8 +20,10 @@ suspend fun auth(login:String, password:String, navController: NavController): S
 
     val response = getFromApi(login, password)
     if (response.isPresent){ //si la paire (login,password) est dans la bdd
-        val token = response.get().token
-        println(token)
+        val account = response.get()
+        val entity = AccountEntity(account.login, account.token, account.type, account.firstName, account.lastName, account.role)
+        val out = dao.upsertAccount(entity)
+        // TODO clear all data from the DB if dap.upsertAccount return false
         navController.navigate("HomePage");
         return ""
     }

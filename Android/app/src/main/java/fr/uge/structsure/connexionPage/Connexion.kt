@@ -28,6 +28,7 @@ import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.components.Header
 import fr.uge.structsure.components.InputPassword
 import fr.uge.structsure.components.InputText
+import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
@@ -35,7 +36,7 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun ConnexionCard(navController: NavController) {
+fun ConnexionCard(navController: NavController, accountDao: AccountDao) {
     Column (
         verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
         //horizontalAlignment = Alignment.End,
@@ -113,7 +114,7 @@ fun ConnexionCard(navController: NavController) {
                     coroutineScope.launch {
                         try {
                             // Assuming auth is a suspend function
-                            val result = auth(login, password, navController)
+                            val result = auth(login, password, accountDao, navController)
                             if (result.isEmpty()) {
                                 // Handle successful authentication (e.g., navigate)
                             } else {

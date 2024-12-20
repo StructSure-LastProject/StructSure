@@ -17,8 +17,8 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 object RetrofitInstance {
 
-    private const val BASE_URL = "http://192.168.137.82:8080"
-    private const val TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhdXJlbCIsImlhdCI6MTczNDY4NjA3NiwiZXhwIjoxNzM0Njg2OTc2fQ.jM-YdxbUsjiXelBq6HhEovFhko7wrrmzqzdf4jBFWp0"
+    private const val BASE_URL = "http://172.20.10.4:8080"
+    private const val TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhdXJlbCIsImlhdCI6MTczNDY5MDQwNCwiZXhwIjoxNzM0NjkxMzA0fQ.zZDrU9_2J-Jq-KVivd0ASrgLv4kxmqFh1PzhKn__KSU"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
