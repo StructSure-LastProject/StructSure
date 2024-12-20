@@ -1,13 +1,18 @@
 package fr.uge.structsure.startScan.presentation
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
@@ -17,6 +22,7 @@ import fr.uge.structsure.startScan.domain.ScanViewModel
 import fr.uge.structsure.startScan.presentation.components.CustomToast
 import fr.uge.structsure.startScan.presentation.components.SensorsList
 import fr.uge.structsure.startScan.presentation.components.StructureWeather
+import kotlinx.coroutines.launch
 
 /**
  * Home screen of the application when the user starts a scan.
@@ -29,10 +35,14 @@ import fr.uge.structsure.startScan.presentation.components.StructureWeather
  * @param navController to navigate to other screens
  */
 @Composable
-fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long, connexionCS108: Cs108Connector, navController: NavController) {
+fun MainScreenStartSensor(context: Context, scanViewModel: ScanViewModel, structureId: Long, connexionCS108: Cs108Connector, navController: NavController) {
 
     val cs108Scanner = remember { mutableStateOf(Cs108Scanner { chip ->
-        scanViewModel.addSensorMessage("Capteur : ${chip.id}")
+        println(chip)
+        scanViewModel.viewModelScope.launch {
+            scanViewModel.startSensorInterrogation(chip)
+            Toast.makeText(context, "Capteur : ${chip.id}" + "is Ok !", Toast.LENGTH_SHORT).show()
+        }
     }) }
 
     SideEffect {
@@ -45,8 +55,10 @@ fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long, conne
             ToolBar(
                 currentState = scanViewModel.currentScanState.value,
                 onPlayClick = {
+                    println("before scan state " + scanViewModel.currentScanState.value)
                     cs108Scanner.value.start()
                     scanViewModel.currentScanState.value = ScanState.STARTED
+                    println("after scan state " + scanViewModel.currentScanState.value)
                 },
                 onPauseClick = {
                     cs108Scanner.value.stop()
@@ -70,7 +82,7 @@ fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long, conne
 
         println("toast " + scanViewModel.currentScanState.value)
         if (scanViewModel.currentScanState.value == ScanState.STARTED) {
-            scanViewModel.sensorMessages.lastOrNull()?.let { message ->
+           scanViewModel.sensorMessages.observeAsState().value?.let { message ->
                 CustomToast(
                     message = message,
                     modifier = Modifier

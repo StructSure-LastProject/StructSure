@@ -1,6 +1,5 @@
 package fr.uge.structsure.retrofit
 
-import fr.uge.structsure.MainActivity
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -62,15 +61,6 @@ object RetrofitInstance {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(StructureApi::class.java)
-    }
-
-    val loginApi: LoginApi by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(LoginApi::class.java)
     }
 
     val serverStatus: ServerStatusApi by lazy {
