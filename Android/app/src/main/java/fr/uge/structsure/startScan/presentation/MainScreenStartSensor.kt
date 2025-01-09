@@ -110,6 +110,7 @@ fun MainScreenStartSensor(context: Context, scanViewModel: ScanViewModel, struct
         scanViewModel.viewModelScope.launch {
             scanViewModel.startSensorInterrogation(chip)
             Toast.makeText(context, "Capteur : ${chip.id}" + "is Ok !", Toast.LENGTH_SHORT).show()
+            scanViewModel.stopScan()
         }
     }) }
 
