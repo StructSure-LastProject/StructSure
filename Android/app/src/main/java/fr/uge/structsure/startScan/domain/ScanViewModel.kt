@@ -126,7 +126,6 @@ class ScanViewModel(private val scanDao: ScanDao, private val resultDao: ResultD
      * Starts the interrogation of the sensors.
      * @param sensors List of sensors to interrogate.
      */
-
     suspend fun startSensorInterrogation(rfidChip: RfidChip) {
         val sensors = scanDao.getAllSensors(structureId)
 
@@ -156,18 +155,22 @@ class ScanViewModel(private val scanDao: ScanDao, private val resultDao: ResultD
                     measureChip = sensor.measureChip
                 )
 
-                //resultSensors = resultSensors + resultSensor
                 resultDao.insertResult(resultSensor)
 
                 // LOG for the number of sensors inserted
                 println("result Dao : ${resultSensor.toString()}")
+
+                // Vérifiez si continueScanning est false après l'insertion
+                if (!continueScanning) {
+                    lastProcessedSensorIndex = i // Saving the last processed sensor index
+                    return@launch
+                }
 
                 // Update the state of the sensor in the database
                 // scanDao.updateSensorState(sensor.controlChip, sensor.measureChip, newState)
             }
         }
     }
-
 
     /*
 

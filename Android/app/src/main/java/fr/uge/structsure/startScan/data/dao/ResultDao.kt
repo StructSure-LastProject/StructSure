@@ -10,4 +10,6 @@ import fr.uge.structsure.startScan.data.ResultSensors
 interface ResultDao {
     @Insert
     suspend fun insertResult(resultSensor : ResultSensors)
+
+
 }
