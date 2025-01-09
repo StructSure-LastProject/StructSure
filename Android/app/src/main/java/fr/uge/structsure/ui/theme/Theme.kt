@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
+
 private val LightColorScheme = lightColorScheme(
     primary = Red,
     onPrimary = White,

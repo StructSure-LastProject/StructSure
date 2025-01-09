@@ -1,34 +1,37 @@
 package fr.uge.structsure
 
-//import com.csl.cs108library4a.Cs108Library4A
-//import com.csl.cslibrary4a.Cs108Library4A
+// import com.csl.cs108library4a.Cs108Library4A
+// import com.csl.cslibrary4a.Cs108Library4A
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.csl.cslibrary4a.Cs108Library4A
-import fr.uge.structsure.alertes.Nok
-import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.alertes.Alerte
-import fr.uge.structsure.bluetooth.cs108.Connexion
-import fr.uge.structsure.components.BluetoothButton
+import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
@@ -38,9 +41,10 @@ import fr.uge.structsure.startScan.presentation.MainScreenStartSensor
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
-import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.StructSureTheme
+import fr.uge.structsure.ui.theme.White
+
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -145,28 +149,37 @@ class MainActivity : ComponentActivity() {
                         }
                         , floatingActionButtonPosition = FabPosition.Start
                     )*/
-                }
 
-                val context = LocalContext.current
-                val navController = rememberNavController()
-                val connexionCS108 = Cs108Connector(context)
-                connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
-                connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
-                var connexion = true  // false si pas de connexion
-                var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
-                val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
-                NavHost(navController = navController, startDestination = "Alerte") {
-                    composable("HomePage") { HomePage(connexionCS108, navController, structureViewModel) }
+                    val context = LocalContext.current
+                    val navController = rememberNavController()
+                    val connexionCS108 = Cs108Connector(context)
+                    connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
+                    connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
+                    var connexion = true  // false si pas de connexion
+                    var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
+                    val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
+                    NavHost(navController = navController, startDestination = "Alerte") {
+                        composable("HomePage") {
+                            SetDynamicStatusBar(false)
+                            ButtonText("Poursuivre le scan", null, Red, White) {
+                                navController.navigate("Alerte")
+                            }
+                            HomePage(connexionCS108, navController, structureViewModel)
+                        }
 
-                    composable("startScan?structureId={structureId}") { backStackEntry ->
-                        val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                        MainScreenStartSensor(scanViewModel, structureId, navController)
+                        composable("startScan?structureId={structureId}") { backStackEntry ->
+                            val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                            MainScreenStartSensor(scanViewModel, structureId, navController)
+                        }
+                        composable("ConnexionPage") { ConnexionCard(navController, accountDao) }
+                        composable("ScanPage"){ /*ScanPage(navController)*/ }
+                        // composable("AlerteOk"){ /*AlerteOk(navController)*/ }
+                        composable("Alerte"){
+                            SetDynamicStatusBar(true)
+                            Alerte(navController,true,"Sensor","Ok")
+                        }
+                        composable("SettingsPage"){ SettingsPage() }
                     }
-                    composable("ConnexionPage") { ConnexionCard(navController, accountDao) }
-                    composable("ScanPage"){ /*ScanPage(navController)*/ }
-                    //composable("AlerteOk"){ /*AlerteOk(navController)*/ }
-                    composable("Alerte"){ Alerte(navController,false,"Sensor","Ok") }
-                    composable("SettingsPage"){ SettingsPage() }
                 }
             }
         }
@@ -183,23 +196,31 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-//Exemples  -- A retirer quand plus d'utilité
+/**
+ * Changes the status bar text color to white or black depending on
+ * the given theme. This is useful to make the text clear with custom
+ * background color.
+ * @param dark true for dark background colors, false otherwise
+ */
 @Composable
-fun Ecran1(navController: NavController){
-    ButtonText(
-        text = "ecran1 Vers ecran2",
-        color = Red,
-        onClick = { navController.navigate("ecran2") },
-        id = R.drawable.check
-    )
-}
+private fun ComponentActivity.SetDynamicStatusBar(dark: Boolean? = null) {
+    val systemBarStyle by remember {
+        val defaultSystemBarColor = android.graphics.Color.TRANSPARENT
+        mutableStateOf(
+            SystemBarStyle.auto(
+                lightScrim = defaultSystemBarColor,
+                darkScrim = defaultSystemBarColor,
+                detectDarkMode = {r ->
+                    dark ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
+                }
+            )
+        )
+    }
 
-@Composable
-fun Ecran2(navController: NavController){
-    ButtonText(
-        text = "ecran2 vers ecran1",
-        color = Black,
-        onClick = { navController.navigate("ecran1") },
-        id = R.drawable.x
-    )
+    LaunchedEffect(systemBarStyle) {
+        enableEdgeToEdge(
+            statusBarStyle = systemBarStyle,
+            navigationBarStyle = systemBarStyle
+        )
+    }
 }
