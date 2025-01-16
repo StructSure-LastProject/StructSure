@@ -11,7 +11,7 @@
 	<groupId>fr.uge</groupId>
 	<artifactId>structsure</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>structSure-backend</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
