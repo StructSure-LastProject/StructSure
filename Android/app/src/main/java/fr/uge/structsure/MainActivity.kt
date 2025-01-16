@@ -30,7 +30,6 @@ import androidx.navigation.compose.rememberNavController
 import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.alertes.Alerte
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
-import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.settings.presentation.SettingsPage
@@ -39,8 +38,6 @@ import fr.uge.structsure.startScan.presentation.MainScreenStartSensor
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
-import fr.uge.structsure.ui.theme.Red
-import fr.uge.structsure.ui.theme.White
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -120,13 +117,9 @@ class MainActivity : ComponentActivity() {
             val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
             NavHost(navController = navController, startDestination = "Alerte") {
                 composable("HomePage") {
-                    ButtonText("Poursuivre le scan", null, Red, White) {
-                        navController.navigate("Alerte")
-                    }
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
-
                 composable("startScan?structureId={structureId}") { backStackEntry ->
                     val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
                     MainScreenStartSensor(scanViewModel, structureId, navController)
@@ -137,7 +130,6 @@ class MainActivity : ComponentActivity() {
                     SetDynamicStatusBar()
                 }
                 composable("ScanPage"){ /*ScanPage(navController)*/ }
-                // composable("AlerteOk"){ /*AlerteOk(navController)*/ }
                 composable("Alerte"){
                     Alerte(navController,true,"Sensor","Ok")
                     SetDynamicStatusBar()

@@ -43,27 +43,26 @@ fun Alerte(navController: NavController, state:Boolean, sensorName:String, lastS
 
     Page (
         backgroundColor = colors[0],
-        decorated = false,
-        content = {
-            Column (
-                modifier = Modifier
-                    .background(Brush.linearGradient(colors = colors, Offset.Zero, Offset.Infinite))
-                    .fillMaxSize()
-                    .padding(horizontal = 25.dp, vertical = 50.dp),
-                verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically),
-                horizontalAlignment = Alignment.CenterHorizontally,
+        decorated = false
+    ) {
+        Column (
+            modifier = Modifier
+                .background(Brush.linearGradient(colors = colors, Offset.Zero, Offset.Infinite))
+                .fillMaxSize()
+                .padding(horizontal = 25.dp, vertical = 50.dp),
+            verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Box(
+                Modifier.weight(1.0f)
             ) {
-                Box(
-                    Modifier.weight(1.0f)
-                ) {
-                    AlertDetails(state, sensorName, lastStateSensor)
-                }
-                ButtonText("Poursuivre le scan", null, Red, White) {
-                    navController.navigateUp()
-                }
+                AlertDetails(state, sensorName, lastStateSensor)
+            }
+            ButtonText("Poursuivre le scan", null, Red, White) {
+                navController.navigateUp()
             }
         }
-    )
+    }
 }
 
 /**

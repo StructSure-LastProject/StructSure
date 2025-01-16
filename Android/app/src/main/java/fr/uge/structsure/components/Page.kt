@@ -19,6 +19,7 @@ import fr.uge.structsure.ui.theme.StructSureTheme
 @Composable
 fun Page(
     modifier: Modifier = Modifier,
+    bottomBar: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     floatingActionButtonPosition: FabPosition = FabPosition.End,
     backgroundColor: Color = LightGray,
@@ -29,6 +30,7 @@ fun Page(
     StructSureTheme {
         Scaffold(
             modifier = modifier,
+            bottomBar = bottomBar,
             floatingActionButton = floatingActionButton,
             floatingActionButtonPosition = floatingActionButtonPosition,
             contentWindowInsets = contentWindowInsets,
