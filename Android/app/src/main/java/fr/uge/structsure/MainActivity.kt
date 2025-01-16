@@ -130,8 +130,11 @@ class MainActivity : ComponentActivity() {
                     SetDynamicStatusBar()
                 }
                 composable("ScanPage"){ /*ScanPage(navController)*/ }
-                composable("Alerte"){
-                    Alerte(navController,true,"Sensor","Ok")
+                composable("Alerte?state={state}&name={name}&lastState={lastState}") { backStackEntry ->
+                    val state = backStackEntry.arguments?.getString("state")?.toBoolean() ?: true
+                    val name = backStackEntry.arguments?.getString("name")?: "Unknown"
+                    val lastState = backStackEntry.arguments?.getString("lastState") ?: ""
+                    Alerte(navController, state,name,lastState)
                     SetDynamicStatusBar()
                 }
                 composable("SettingsPage"){ SettingsPage() }

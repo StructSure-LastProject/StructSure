@@ -134,6 +134,8 @@ fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long, navCo
             StructureSummaryView(viewModel = scanViewModel)
             PlansView(modifier = Modifier.fillMaxWidth())
             SensorsListView(modifier = Modifier.fillMaxWidth())
+            // TODO Display alert
+            navController.navigate("Alerte?state=true&name=Sensor&lastState=Ok") // true for NOK, false for Failing
         }
         println("toast " + scanViewModel.currentScanState.value)
         if (scanViewModel.currentScanState.value == ScanState.STARTED) {
