@@ -25,9 +25,9 @@ import androidx.navigation.NavController
 import auth
 import fr.uge.structsure.R
 import fr.uge.structsure.components.ButtonText
-import fr.uge.structsure.components.Header
 import fr.uge.structsure.components.InputPassword
 import fr.uge.structsure.components.InputText
+import fr.uge.structsure.components.Page
 import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.Red
@@ -37,22 +37,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ConnexionCard(navController: NavController, accountDao: AccountDao) {
-    Column (
-        verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
-        //horizontalAlignment = Alignment.End,
-        modifier = Modifier
-            .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
-    )
-    {
-        Header()
+    Page {
         Column(
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
-            //horizontalAlignment = Alignment.End,
             modifier = Modifier
                 .background(color = White, shape = RoundedCornerShape(size = 20.dp))
                 .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
         ) {
-
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,

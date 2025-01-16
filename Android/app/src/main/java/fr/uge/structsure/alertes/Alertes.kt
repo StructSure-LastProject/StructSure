@@ -3,13 +3,13 @@ package fr.uge.structsure.alertes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
 import fr.uge.structsure.components.ButtonText
+import fr.uge.structsure.components.Page
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
 
@@ -38,58 +39,70 @@ import fr.uge.structsure.ui.theme.White
 fun Alerte(navController: NavController, state:Boolean, sensorName:String, lastStateSensor:String) {
 
     //Parameters of the page according to the state
-    val fade = if(state) listOf(Color(0xFFF13327),Color(0xFFF15627)) else listOf(Color(0xFFF18527),Color(0xFFF15627))
-    val errorMessage = if(state) "Non OK" else "Défaillant"
+    val colors = if(state) listOf(Color(0xFFF13327), Color(0xFFF15627)) else listOf(Color(0xFFF18527), Color(0xFFF15627))
 
-     Scaffold (
-         content = {
-            Column(
+    Page (
+        backgroundColor = colors[0],
+        decorated = false,
+        content = {
+            Column (
                 modifier = Modifier
-                    .background(Brush.linearGradient(colors = fade, Offset.Zero, Offset.Infinite))
-                    .padding(it)
+                    .background(Brush.linearGradient(colors = colors, Offset.Zero, Offset.Infinite))
                     .fillMaxSize()
-                    .padding(start = 25.dp, top = 50.dp, end = 25.dp, bottom = 113.dp),
+                    .padding(horizontal = 25.dp, vertical = 50.dp),
                 verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                // Triangle alert
-                Image(painterResource(id = R.drawable.lucide_triangle_alert), "Triangle d'alerte")
-
-                // Error message
-                Text(
-                    text = "Capteur $errorMessage",
-                    color = White,
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                SensorDetails(sensorName, lastStateSensor)
-
-                Plan()
-
-                // Sensor note
-                Text(
-                    modifier = Modifier.padding(horizontal = 50.dp).alpha(.5f),
-                    text = "Capteur caché derrière la poutre métallique à environ 30cm du point d'ancrage.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                    color = White,
-                )
-            }
-        },
-
-        //Poursuivre le scan button
-        bottomBar = {
-            Row (
-                modifier = Modifier.fillMaxWidth().padding(30.dp),
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.Center
-            ) {
+                Box(
+                    Modifier.weight(1.0f)
+                ) {
+                    AlertDetails(state, sensorName, lastStateSensor)
+                }
                 ButtonText("Poursuivre le scan", null, Red, White) {
                     navController.navigateUp()
                 }
             }
         }
     )
+}
+
+/**
+ * Block containing all the details about the alert (error message,
+ * sensor details, ...)
+ * @param state whether or not the sensor is NOK or not
+ * @param sensorName the name of the failing sensor
+ * @param lastStateSensor last known state of sensor
+ */
+@Composable
+private fun AlertDetails(state: Boolean, sensorName: String, lastStateSensor: String) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        // Triangle alert
+        Image(painterResource(id = R.drawable.lucide_triangle_alert), "Triangle d'alerte")
+
+        // Error message
+        Text(
+            text = "Capteur ${if(state) "Non OK" else "Défaillant"}",
+            color = White,
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        SensorDetails(sensorName, lastStateSensor)
+
+        Plan()
+
+        // Sensor note
+        Text(
+            modifier = Modifier.padding(horizontal = 50.dp).alpha(.5f),
+            text = "Capteur caché derrière la poutre métallique à environ 30cm du point d'ancrage.",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = White,
+        )
+    }
 }
 
 /**

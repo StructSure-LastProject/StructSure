@@ -17,8 +17,6 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,12 +40,13 @@ import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
 import fr.uge.structsure.ui.theme.Red
-import fr.uge.structsure.ui.theme.StructSureTheme
 import fr.uge.structsure.ui.theme.White
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 class MainActivity : ComponentActivity() {
     companion object {
+        var darkStatusBar: AtomicBoolean = AtomicBoolean(true)
         lateinit var csLibrary4A: Cs108Library4A
         lateinit var db: AppDatabase
             private set
@@ -64,6 +63,7 @@ class MainActivity : ComponentActivity() {
 
     private val isBluetoothEnabled: Boolean
         get() = bluetoothAdapter?.isEnabled == true
+
 
 
     private val viewModelFactory: StructureViewModelFactory by lazy {
@@ -109,78 +109,40 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            StructSureTheme {
-                Surface(
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    /*Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        topBar = {
-                            // Header
-                        },
-                        content = {
-                            var visible by remember { mutableStateOf(false) }
-                            Column(
-                                Modifier
-                                    .blur(radius = if (visible) 10.dp else 0.dp)
-                                    .fillMaxSize()
-                                    .background(LightGray)
-                                    .padding(it)
-                                    .padding(25.dp),
-                                verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.Top),
-                                horizontalAlignment = Alignment.Start,
-                            ) {
-                                Text("Bonjour")
-                            }
-                            if (visible) {
-                                // PopUp()
-                            }
-                        },
-                        floatingActionButton = {
-//                        FloatingActionButton(
-//                            onClick = { navController.navigate(Pages.TEST.name + "/-1") },
-//                            shape = CircleShape,
-//                            modifier = Modifier.padding(end=10.dp, bottom=10.dp),
-//                            containerColor = MaterialTheme.colorScheme.primary
-//                        ) {
-//                            Icon(painterResource(R.drawable.icon_add), "New test", tint = MaterialTheme.colorScheme.onPrimary)
-//                        }
-                            BluetoothButton(connexion)
-                        }
-                        , floatingActionButtonPosition = FabPosition.Start
-                    )*/
-
-                    val context = LocalContext.current
-                    val navController = rememberNavController()
-                    val connexionCS108 = Cs108Connector(context)
-                    connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
-                    connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
-                    var connexion = true  // false si pas de connexion
-                    var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
-                    val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
-                    NavHost(navController = navController, startDestination = "Alerte") {
-                        composable("HomePage") {
-                            SetDynamicStatusBar(false)
-                            ButtonText("Poursuivre le scan", null, Red, White) {
-                                navController.navigate("Alerte")
-                            }
-                            HomePage(connexionCS108, navController, structureViewModel)
-                        }
-
-                        composable("startScan?structureId={structureId}") { backStackEntry ->
-                            val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                            MainScreenStartSensor(scanViewModel, structureId, navController)
-                        }
-                        composable("ConnexionPage") { ConnexionCard(navController, accountDao) }
-                        composable("ScanPage"){ /*ScanPage(navController)*/ }
-                        // composable("AlerteOk"){ /*AlerteOk(navController)*/ }
-                        composable("Alerte"){
-                            SetDynamicStatusBar(true)
-                            Alerte(navController,true,"Sensor","Ok")
-                        }
-                        composable("SettingsPage"){ SettingsPage() }
+            SetDynamicStatusBar()
+            val context = LocalContext.current
+            val navController = rememberNavController()
+            val connexionCS108 = Cs108Connector(context)
+            connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
+            connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
+            var connexion = true  // false si pas de connexion
+            var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
+            val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
+            NavHost(navController = navController, startDestination = "Alerte") {
+                composable("HomePage") {
+                    ButtonText("Poursuivre le scan", null, Red, White) {
+                        navController.navigate("Alerte")
                     }
+                    HomePage(connexionCS108, navController, accountDao, structureViewModel)
+                    SetDynamicStatusBar()
                 }
+
+                composable("startScan?structureId={structureId}") { backStackEntry ->
+                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                    MainScreenStartSensor(scanViewModel, structureId, navController)
+                    SetDynamicStatusBar()
+                }
+                composable("ConnexionPage") {
+                    ConnexionCard(navController, accountDao)
+                    SetDynamicStatusBar()
+                }
+                composable("ScanPage"){ /*ScanPage(navController)*/ }
+                // composable("AlerteOk"){ /*AlerteOk(navController)*/ }
+                composable("Alerte"){
+                    Alerte(navController,true,"Sensor","Ok")
+                    SetDynamicStatusBar()
+                }
+                composable("SettingsPage"){ SettingsPage() }
             }
         }
     }
@@ -203,7 +165,7 @@ class MainActivity : ComponentActivity() {
  * @param dark true for dark background colors, false otherwise
  */
 @Composable
-private fun ComponentActivity.SetDynamicStatusBar(dark: Boolean? = null) {
+private fun ComponentActivity.SetDynamicStatusBar() {
     val systemBarStyle by remember {
         val defaultSystemBarColor = android.graphics.Color.TRANSPARENT
         mutableStateOf(
@@ -211,7 +173,7 @@ private fun ComponentActivity.SetDynamicStatusBar(dark: Boolean? = null) {
                 lightScrim = defaultSystemBarColor,
                 darkScrim = defaultSystemBarColor,
                 detectDarkMode = {r ->
-                    dark ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
+                    MainActivity.darkStatusBar.get() ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
                 }
             )
         )

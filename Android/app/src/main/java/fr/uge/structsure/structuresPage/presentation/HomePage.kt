@@ -12,6 +12,7 @@ import androidx.navigation.NavHostController
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.BluetoothButton
 import fr.uge.structsure.components.Header
+import fr.uge.structsure.components.Page
 import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.presentation.components.AccountInformationsView
@@ -25,18 +26,19 @@ fun HomePage(
     dao: AccountDao,
     structureViewModel: StructureViewModel
 ) {
-
-    Column(
-        modifier = Modifier
-            .padding(start = 25.dp, top = 50.dp, end = 25.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(35.dp)
-    ) {
-        Header()
-        BluetoothButton(connexionCS108)
-        AccountInformationsView(dao, navController)
-        StructuresListView(structureViewModel, navController)
-        ConnectivityStatus()
+    Page() {
+        Column(
+            modifier = Modifier
+                .padding(start = 25.dp, top = 50.dp, end = 25.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(35.dp)
+        ) {
+            Header()
+            BluetoothButton(connexionCS108)
+            AccountInformationsView(dao, navController)
+            StructuresListView(structureViewModel, navController)
+            ConnectivityStatus()
+        }
     }
 
 }
