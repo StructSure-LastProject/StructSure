@@ -1,31 +1,35 @@
 package fr.uge.structsure
 
-//import com.csl.cs108library4a.Cs108Library4A
-//import com.csl.cslibrary4a.Cs108Library4A
+// import com.csl.cs108library4a.Cs108Library4A
+// import com.csl.cslibrary4a.Cs108Library4A
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.csl.cslibrary4a.Cs108Library4A
+import fr.uge.structsure.alertes.Alerte
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
-import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.settings.presentation.SettingsPage
@@ -34,12 +38,12 @@ import fr.uge.structsure.startScan.presentation.MainScreenStartSensor
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
-import fr.uge.structsure.ui.theme.Black
-import fr.uge.structsure.ui.theme.Red
-import fr.uge.structsure.ui.theme.StructSureTheme
+import java.util.concurrent.atomic.AtomicBoolean
+
 
 class MainActivity : ComponentActivity() {
     companion object {
+        var darkStatusBar: AtomicBoolean = AtomicBoolean(true)
         lateinit var csLibrary4A: Cs108Library4A
         lateinit var db: AppDatabase
             private set
@@ -56,6 +60,7 @@ class MainActivity : ComponentActivity() {
 
     private val isBluetoothEnabled: Boolean
         get() = bluetoothAdapter?.isEnabled == true
+
 
 
     private val viewModelFactory: StructureViewModelFactory by lazy {
@@ -101,76 +106,40 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            StructSureTheme {
-                Surface(
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    /*Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        topBar = {
-                            // Header
-                        },
-                        content = {
-                            var visible by remember { mutableStateOf(false) }
-                            Column(
-                                Modifier
-                                    .blur(radius = if (visible) 10.dp else 0.dp)
-                                    .fillMaxSize()
-                                    .background(LightGray)
-                                    .padding(it)
-                                    .padding(25.dp),
-                                verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.Top),
-                                horizontalAlignment = Alignment.Start,
-                            ) {
-                                Text("Bonjour")
-                            }
-                            if (visible) {
-                                // PopUp()
-                            }
-                        },
-                        floatingActionButton = {
-//                        FloatingActionButton(
-//                            onClick = { navController.navigate(Pages.TEST.name + "/-1") },
-//                            shape = CircleShape,
-//                            modifier = Modifier.padding(end=10.dp, bottom=10.dp),
-//                            containerColor = MaterialTheme.colorScheme.primary
-//                        ) {
-//                            Icon(painterResource(R.drawable.icon_add), "New test", tint = MaterialTheme.colorScheme.onPrimary)
-//                        }
-                            BluetoothButton(connexion)
-                        }
-                        , floatingActionButtonPosition = FabPosition.Start
-                    )*/
+            SetDynamicStatusBar()
+            val context = LocalContext.current
+            val navController = rememberNavController()
+            val connexionCS108 = Cs108Connector(context)
+            connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
+            connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
+            var connexion = true  // false si pas de connexion
+            var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
+            val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
+            NavHost(navController = navController, startDestination = "Alerte") {
+                composable("HomePage") {
+                    HomePage(connexionCS108, navController, accountDao, structureViewModel)
+                    SetDynamicStatusBar()
                 }
-
-                val context = LocalContext.current
-                val navController = rememberNavController()
-                val connexionCS108 = Cs108Connector(context)
-                connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
-                connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
-                var connexion = true  // false si pas de connexion
-                var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
-                val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
-                NavHost(navController = navController, startDestination = homePage) {
-                    composable("HomePage") { HomePage(connexionCS108, navController, accountDao, structureViewModel) }
-
-                    composable("startScan?structureId={structureId}") { backStackEntry ->
-                        val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                        MainScreenStartSensor(scanViewModel, structureId, navController)
-                    }
-                    composable("ConnexionPage") { ConnexionCard(navController, accountDao) }
-                    composable("ScanPage"){ /*ScanPage(navController)*/ }
-                    composable("AlerteOk"){ /*AlerteOk(navController)*/ }
-                    composable("AlerteNok"){ /*AlerteNok(navController)*/ }
-                    composable("SettingsPage"){ SettingsPage() }
+                composable("startScan?structureId={structureId}") { backStackEntry ->
+                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                    MainScreenStartSensor(scanViewModel, structureId, navController)
+                    SetDynamicStatusBar()
                 }
+                composable("ConnexionPage") {
+                    ConnexionCard(navController, accountDao)
+                    SetDynamicStatusBar()
+                }
+                composable("ScanPage"){ /*ScanPage(navController)*/ }
+                composable("Alerte?state={state}&name={name}&lastState={lastState}") { backStackEntry ->
+                    val state = backStackEntry.arguments?.getString("state")?.toBoolean() ?: true
+                    val name = backStackEntry.arguments?.getString("name")?: "Unknown"
+                    val lastState = backStackEntry.arguments?.getString("lastState") ?: ""
+                    Alerte(navController, state,name,lastState)
+                    SetDynamicStatusBar()
+                }
+                composable("SettingsPage"){ SettingsPage() }
             }
-
         }
-
-
-
-
     }
 
     override fun onRestart() {
@@ -184,23 +153,31 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-//Exemples  -- A retirer quand plus d'utilité
+/**
+ * Changes the status bar text color to white or black depending on
+ * the given theme. This is useful to make the text clear with custom
+ * background color.
+ * @param dark true for dark background colors, false otherwise
+ */
 @Composable
-fun Ecran1(navController: NavController){
-    ButtonText(
-        text = "ecran1 Vers ecran2",
-        color = Red,
-        onClick = { navController.navigate("ecran2") },
-        id = R.drawable.check
-    )
-}
+private fun ComponentActivity.SetDynamicStatusBar() {
+    val systemBarStyle by remember {
+        val defaultSystemBarColor = android.graphics.Color.TRANSPARENT
+        mutableStateOf(
+            SystemBarStyle.auto(
+                lightScrim = defaultSystemBarColor,
+                darkScrim = defaultSystemBarColor,
+                detectDarkMode = {r ->
+                    MainActivity.darkStatusBar.get() ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
+                }
+            )
+        )
+    }
 
-@Composable
-fun Ecran2(navController: NavController){
-    ButtonText(
-        text = "ecran2 vers ecran1",
-        color = Black,
-        onClick = { navController.navigate("ecran1") },
-        id = R.drawable.x
-    )
+    LaunchedEffect(systemBarStyle) {
+        enableEdgeToEdge(
+            statusBarStyle = systemBarStyle,
+            navigationBarStyle = systemBarStyle
+        )
+    }
 }
