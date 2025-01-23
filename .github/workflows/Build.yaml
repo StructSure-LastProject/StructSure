@@ -63,10 +63,28 @@ jobs:
           ln -s /usr/share/apache-maven-3.9.9/bin/mvn /usr/bin/mvn
           echo "M2_HOME=/usr/share/apache-maven-3.9.9" | tee -a /etc/environment
       
-      - name: Build with Maven
+      - name: Build and Test with Maven
         run: |
           cd Backend
-          mvn -B package --file pom.xml
+          mvn clean test verify package -B --file pom.xml
+
+
+      - name: Save JaCoCo Coverage Report
+        if: success()
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/coverage-reports
+          cp Backend/target/site/jacoco/index.html $GITHUB_WORKSPACE/coverage-reports/
+          
+#      - name: Upload JaCoCo Coverage Report
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: jacoco-coverage-report
+#          path: coverage-reports/
+
+#      - name: Build with Maven
+#        run: |
+#          cd Backend
+#          mvn -B package --file pom.xml
 
       - name: Build Docker Image
         run: |

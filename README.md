@@ -5,4 +5,6 @@
 
 # Run docker image
 
-`docker run -d -v <host path>/structure.db:/structure.db -p 8000:8080 structure:latest`
+`touch structsure.db`
+
+`docker run -v <host path>/structsure.db:/structsure.db -p 8000:8080 structsure:latest`
