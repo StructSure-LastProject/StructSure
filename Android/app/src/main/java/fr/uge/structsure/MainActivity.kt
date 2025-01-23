@@ -1,8 +1,5 @@
 package fr.uge.structsure
 
-// import com.csl.cs108library4a.Cs108Library4A
-// import com.csl.cslibrary4a.Cs108Library4A
-
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -78,32 +75,7 @@ class MainActivity : ComponentActivity() {
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
 
-        val enableBluetoothLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { /* Not needed */ }
-
-        val permissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { perms ->
-            val canEnableBluetooth = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                perms[Manifest.permission.BLUETOOTH_CONNECT] == true
-            } else true
-
-            if(canEnableBluetooth && !isBluetoothEnabled) {
-                enableBluetoothLauncher.launch(
-                    Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                )
-            }
-        }
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            permissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                )
-            )
-        }
+        requestPermissions()
 
         setContent {
             SetDynamicStatusBar()
@@ -115,7 +87,7 @@ class MainActivity : ComponentActivity() {
             var connexion = true  // false si pas de connexion
             var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
             val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
-            NavHost(navController = navController, startDestination = "Alerte") {
+            NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
@@ -150,6 +122,41 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         csLibrary4A.disconnect(true)
         super.onDestroy()
+    }
+
+    private fun requestPermissions() {
+        val enableBluetoothLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { /* Not needed */ }
+
+        val permissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            val canEnableBluetooth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                permissions[Manifest.permission.BLUETOOTH_CONNECT] == true
+            } else true
+
+            if (canEnableBluetooth && !isBluetoothEnabled) {
+                enableBluetoothLauncher.launch(
+                    Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                )
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                )
+            )
+        } else {
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
     }
 }
 
