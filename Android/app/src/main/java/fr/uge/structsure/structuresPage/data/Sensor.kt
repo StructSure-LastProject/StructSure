@@ -16,7 +16,7 @@ data class Sensor(
     val y: Double
 )
 
-@Entity(tableName = "sensor")
+@Entity(tableName = "sensors")
 data class SensorDB(
     @PrimaryKey val sensorId: String,
     val controlChip: String,

@@ -2,10 +2,6 @@ package fr.uge.structsure.entities;
 
 import jakarta.persistence.*;
 
-import java.sql.Time;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 
 @Entity
@@ -75,8 +71,6 @@ public class Sensor {
 
 
     // Getter and Setter
-
-
     public SensorId getSensorId() {
         return sensorId;
     }

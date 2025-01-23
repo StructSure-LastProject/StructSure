@@ -11,7 +11,6 @@ public class SensorId implements Serializable {
 
     //constructeurs nécéssaire
     public SensorId(){
-
     }
 
     public SensorId(String controlChip, String measureChip) {

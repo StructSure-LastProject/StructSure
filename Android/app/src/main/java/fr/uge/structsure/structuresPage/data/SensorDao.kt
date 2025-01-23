@@ -11,6 +11,6 @@ interface SensorDao {
     @Upsert
     fun upsertSensor(sensor: SensorDB)
 
-    @Query("DELETE FROM sensor WHERE structureId = :structureId")
+    @Query("DELETE FROM sensors WHERE structureId = :structureId")
     fun deleteSensorsByStructureId(structureId: Long)
 }

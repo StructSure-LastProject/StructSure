@@ -11,6 +11,6 @@ interface PlanDao {
     @Upsert
     fun upsertPlan(plan: PlanDB)
 
-    @Query("DELETE FROM sensor WHERE structureId = :structureId")
+    @Query("DELETE FROM sensors WHERE structureId = :structureId")
     fun deletePlansByStructureId(structureId: Long)
 }

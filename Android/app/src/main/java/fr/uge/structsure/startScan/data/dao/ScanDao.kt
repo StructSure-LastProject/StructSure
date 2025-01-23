@@ -22,10 +22,9 @@ interface ScanDao {
     @Query("SELECT id from scan WHERE scan.structureId = :structureId")
     suspend fun getScanByStructureId(structureId: Long):Long
 
+    @Query("UPDATE sensors SET state = :state WHERE controlChip = :controlChip AND measureChip = :measureChip")
+    suspend fun updateSensorState(controlChip: String, measureChip: String, state: String)
 
-    @Query("UPDATE sensor SET state = :newState WHERE controlChip = :controlChip AND measureChip = :measureChip")
-    suspend fun updateSensorState(controlChip: String, measureChip: String, newState: String)
-
-    @Query("SELECT * from sensor as s WHERE s.structureId = :id")
+    @Query("SELECT * from sensors as s WHERE s.structureId = :id")
     suspend fun getAllSensors(id: Long): List<SensorDB>
 }

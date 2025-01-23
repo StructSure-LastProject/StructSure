@@ -11,12 +11,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.components.Page
+import fr.uge.structsure.retrofit.response.GetAllSensorsResponse
 import fr.uge.structsure.startScan.domain.ScanState
 import fr.uge.structsure.startScan.domain.ScanViewModel
 import fr.uge.structsure.startScan.presentation.components.CustomToast
@@ -37,12 +37,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreenStartSensor(context: Context, scanViewModel: ScanViewModel, structureId: Long, connexionCS108: Cs108Connector, navController: NavController) {
 
+    val sensors = listOf<GetAllSensorsResponse>()
+
     val cs108Scanner = remember { mutableStateOf(Cs108Scanner { chip ->
         println(chip)
         scanViewModel.viewModelScope.launch {
-            scanViewModel.startSensorInterrogation(chip)
-            Toast.makeText(context, "Capteur : ${chip.id}" + "is Ok !", Toast.LENGTH_SHORT).show()
-            scanViewModel.stopScan()
+            scanViewModel.insertSensorsAndStartScan(chip, sensors)
+            Toast.makeText(context, "Capteur : ${chip.id}" + " is ok ! ", Toast.LENGTH_SHORT).show()
         }
     }) }
 
@@ -56,10 +57,8 @@ fun MainScreenStartSensor(context: Context, scanViewModel: ScanViewModel, struct
             ToolBar(
                 currentState = scanViewModel.currentScanState.value,
                 onPlayClick = {
-                    println("before scan state " + scanViewModel.currentScanState.value)
                     cs108Scanner.value.start()
                     scanViewModel.currentScanState.value = ScanState.STARTED
-                    println("after scan state " + scanViewModel.currentScanState.value)
                 },
                 onPauseClick = {
                     cs108Scanner.value.stop()
