@@ -7,9 +7,9 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface StructureApi {
-    @GET("api/structure/android")
+    @GET("api/structures/android")
     fun getAllStructures(): Call<List<GetAllStructureResponse>>
 
-    @GET("/api/structure/android/{id}")
+    @GET("/api/structures/android/{id}")
     fun getStructureDetails(@Path("id") id: Long): Call<GetStructureDetailsResponse>
 }
