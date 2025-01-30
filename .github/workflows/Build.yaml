@@ -76,8 +76,8 @@ jobs:
       - name: Build & Push Docker Image
         run: |
           docker login --username ${{ secrets.GH_U }} --password ${{ secrets.GH_P }} ghcr.io
-          docker build -t ghcr.io/structsure-lastproject/structsure/structure:latest -f Backend/Dockerfile .
-          docker push ghcr.io/structsure-lastproject/structsure/structure:latest
+          docker build -t ghcr.io/structsure-lastproject/structsure/structsure:latest -f Backend/Dockerfile .
+          docker push ghcr.io/structsure-lastproject/structsure/structsure:latest
 
 
 
