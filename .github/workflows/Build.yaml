@@ -73,9 +73,11 @@ jobs:
 #          cd Backend
 #          mvn -B package --file pom.xml
 
-      - name: Build Docker Image
+      - name: Build & Push Docker Image
         run: |
-          docker build -t structure:latest -f Backend/Dockerfile .
+          docker login --username ${{ secrets.GH_U }} --password ${{ secrets.GH_P }} ghcr.io
+          docker build -t ghcr.io/structsure-lastproject/structsure/structure:latest -f Backend/Dockerfile .
+          docker push ghcr.io/structsure-lastproject/structsure/structure:latest
 
 
 
