@@ -61,8 +61,8 @@ fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long, navCo
                 navController = navController
             )
         }
-    ) { 
-        StructureSummaryView(viewModel = scanViewModel)
+    ) { scrollState ->
+        StructureSummaryView(viewModel = scanViewModel, scrollState)
         PlansView(modifier = Modifier.fillMaxWidth())
         SensorsListView(modifier = Modifier.fillMaxWidth())
         // TODO Display alert
