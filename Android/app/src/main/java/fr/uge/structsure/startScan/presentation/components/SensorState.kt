@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.presentation.sensors.status
+package fr.uge.structsure.startScan.presentation.components
 
 import androidx.compose.ui.graphics.Color
 import fr.uge.structsure.ui.theme.Gray
