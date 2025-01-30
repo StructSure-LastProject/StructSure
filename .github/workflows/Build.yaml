@@ -50,14 +50,6 @@ jobs:
           distribution: "temurin"
           cache: maven
       
-      - name: Download Maven
-        run: |
-          curl -sL https://www-eu.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o maven.zip
-          sudo unzip -d /usr/share maven.zip
-          sudo rm maven.zip
-          sudo ln -s /usr/share/apache-maven-3.9.9/bin/mvn /usr/bin/mvn
-          sudo echo "M2_HOME=/usr/share/apache-maven-3.9.9" | tee -a /etc/environment
-      
       - name: Build and Test with Maven
         run: |
           cd Backend
