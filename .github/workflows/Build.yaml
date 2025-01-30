@@ -2,7 +2,7 @@ name: Build FrontEnd SolidJS / BackEnd Spring Boot
 
 on:
   push:
-    branches: ["main"]
+    branches: ["develop"]
   pull_request:
     branches: ["main"]
 
