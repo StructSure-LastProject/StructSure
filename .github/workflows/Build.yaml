@@ -49,15 +49,10 @@ jobs:
           java-version: "21"
           distribution: "temurin"
           cache: maven
-
-      - name: Install curl (for nektos/act local CI testing)
-        run: apt-get update && apt-get install build-essential curl pkg-config openssl -y
       
       - name: Download Maven
         run: |
           curl -sL https://www-eu.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o maven.zip
-          apt-get update
-          apt-get -y install unzip
           unzip -d /usr/share maven.zip
           rm maven.zip
           ln -s /usr/share/apache-maven-3.9.9/bin/mvn /usr/bin/mvn
