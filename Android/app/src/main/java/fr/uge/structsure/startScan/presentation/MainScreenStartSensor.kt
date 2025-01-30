@@ -1,8 +1,6 @@
 package fr.uge.structsure.startScan.presentation
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
@@ -28,71 +26,7 @@ import fr.uge.structsure.startScan.presentation.sensors.list.SensorsListView
  * @see SensorsListView
  * @see CustomToast
  * @see ToolBar
- *
  */
-/*
-@Composable
-fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long, navController: NavController) {
-
-    val cs108Scanner = remember { mutableStateOf(Cs108Scanner { chip ->
-        println(chip)
-    }) }
-
-    SideEffect {
-        scanViewModel.fetchSensorsAndStartScan(structureId)
-    }
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            ToolBar(
-                currentState = scanViewModel.currentScanState.value,
-                onPlayClick = {
-                    println("before scan state " + scanViewModel.currentScanState.value)
-                    cs108Scanner.value.start()
-                    scanViewModel.currentScanState.value = ScanState.STARTED
-                    println("after scan state " + scanViewModel.currentScanState.value)
-                },
-                onPauseClick = {
-                    cs108Scanner.value.stop()
-                    scanViewModel.currentScanState.value = ScanState.PAUSED
-                },
-                onStopClick = {
-                    scanViewModel.stopScan()
-                    scanViewModel.currentScanState.value = ScanState.STOPPED
-                },
-                onSyncClick = { /* À implémenter */ },
-                onContentClick = { /* À implémenter */ },
-                navController = navController
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Header()
-            StructureSummaryView(viewModel = scanViewModel)
-            PlansView(modifier = Modifier.fillMaxWidth())
-            SensorsListView(modifier = Modifier.fillMaxWidth())
-        }
-        println(" toast " + scanViewModel.currentScanState.value)
-        if (scanViewModel.currentScanState.value == ScanState.STARTED) {
-            scanViewModel.sensorMessages.lastOrNull()?.let { message ->
-                CustomToast(
-                    message = message,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 150.dp)
-                )
-            }
-        }
-    }
-}
-
- */
-
 @Composable
 fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long, navController: NavController) {
 
@@ -127,16 +61,13 @@ fun MainScreenStartSensor(scanViewModel: ScanViewModel, structureId: Long, navCo
                 navController = navController
             )
         }
-    ) {
-        Column(
-            modifier = Modifier.verticalScroll(rememberScrollState())
-        ) {
-            StructureSummaryView(viewModel = scanViewModel)
-            PlansView(modifier = Modifier.fillMaxWidth())
-            SensorsListView(modifier = Modifier.fillMaxWidth())
-            // TODO Display alert
-            navController.navigate("Alerte?state=true&name=Sensor&lastState=Ok") // true for NOK, false for Failing
-        }
+    ) { 
+        StructureSummaryView(viewModel = scanViewModel)
+        PlansView(modifier = Modifier.fillMaxWidth())
+        SensorsListView(modifier = Modifier.fillMaxWidth())
+        // TODO Display alert
+        // navController.navigate("Alerte?state=true&name=Sensor&lastState=Ok") // true for NOK, false for Failing
+
         println("toast " + scanViewModel.currentScanState.value)
         if (scanViewModel.currentScanState.value == ScanState.STARTED) {
             scanViewModel.sensorMessages.lastOrNull()?.let { message ->

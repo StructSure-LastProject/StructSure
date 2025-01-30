@@ -1,9 +1,12 @@
 package fr.uge.structsure.components
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -25,7 +28,7 @@ fun Page(
     backgroundColor: Color = LightGray,
     decorated: Boolean = true,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
-    content: @Composable () -> Unit
+    content: @Composable (scrollState: ScrollState) -> Unit
 ) {
     StructSureTheme {
         Scaffold(
@@ -37,15 +40,16 @@ fun Page(
             containerColor = backgroundColor,
         ) { innerPadding ->
             var mod = Modifier.padding(innerPadding)
+            val scrollState = rememberScrollState()
             if (decorated) mod = mod.padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
             Column(
-                verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
-                modifier = mod
+                verticalArrangement = Arrangement.spacedBy(35.dp, Alignment.CenterVertically),
+                modifier = mod.verticalScroll(scrollState),
             ) {
                 val brightness = (0.299 * backgroundColor.red + 0.587 * backgroundColor.green + 0.114 * backgroundColor.blue)
                 MainActivity.darkStatusBar.set(brightness < 0.5)
                 if (decorated) Header()
-                content()
+                content(scrollState)
             }
         }
     }

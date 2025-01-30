@@ -53,10 +53,10 @@ fun BluetoothPage(bleConnexion: Cs108Connector, onClose: () -> Unit) {
                 .background(color = White, shape = RoundedCornerShape(25.dp, 25.dp, 0.dp, 0.dp))
                 .padding(start = 25.dp, top = 25.dp, end = 25.dp, bottom = 25.dp)
         ) {
-            PaneHeader({
+            PaneHeader {
                 bleConnexion.stop()
                 onClose.invoke()
-            })
+            }
 
             val devices = remember { Cs108Connector.devices }
             DevicesList(devices) { device ->
@@ -90,8 +90,8 @@ private fun PaneHeader(onClick: () -> Unit) {
 @Composable
 private fun Device(device: ReaderDevice, onClick: () -> Unit) {
     val connected = device.isConnected // TODO change to device.connected
-    val fg = if (connected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface;
-    val bg = if (connected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.surface;
+    val fg = if (connected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
+    val bg = if (connected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.surface
     Row(
         Modifier
             .clip(RoundedCornerShape(size = 20.dp))
