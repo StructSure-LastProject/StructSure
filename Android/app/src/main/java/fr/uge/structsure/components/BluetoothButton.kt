@@ -2,12 +2,13 @@ package fr.uge.structsure.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,7 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -34,6 +35,7 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.presentation.BluetoothPage
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.Red
+import fr.uge.structsure.ui.theme.White
 
 
 /**
@@ -53,14 +55,8 @@ fun BluetoothButton(connexion: Cs108Connector) {
 
     connexion.onBatteryChange { battery -> batteryLevel = battery }
 
-    IconButton(
-        modifier = Modifier
-            .width(77.dp)
-            .height(58.dp)
-            .background(color = Color.White, shape = RoundedCornerShape(size = 45.dp)),
-        onClick = {
-            showPopUp = !showPopUp
-        }
+    BigButton(
+        onClick =  { showPopUp = !showPopUp }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -110,18 +106,18 @@ fun BluetoothButton(connexion: Cs108Connector) {
     }
 }
 
-/**
- * Extracts the battery level of the cs108 device. This function is
- * made to avoid calling directly to csLibrary4A.batteryLevel which is
- * the raw value without the battery curve.
- * @return the battery level if connected, -1 otherwise
- */
-private fun getBatteryLevel(): Int {
-    if (csLibrary4A.isBleConnected) {
-        val lvl = csLibrary4A.getBatteryDisplay(false)
-        val pos = lvl.indexOf('%')
-        return if (pos == -1) 0 else lvl.substring(0, lvl.indexOf('%')).toInt()
-    } else {
-        return -1
+@Composable
+fun BigButton(onClick: () -> Unit, content: @Composable () -> Unit) {
+    Row(
+        modifier = Modifier
+            .width(77.dp)
+            .height(58.dp)
+            .clip(RoundedCornerShape(size = 45.dp))
+            .background(White)
+            .clickable { onClick() },
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        content()
     }
 }

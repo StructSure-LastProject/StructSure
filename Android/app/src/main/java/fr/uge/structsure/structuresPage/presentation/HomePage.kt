@@ -1,7 +1,11 @@
 package fr.uge.structsure.structuresPage.presentation
 
-import androidx.compose.material3.FabPosition
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.BluetoothButton
@@ -20,10 +24,12 @@ fun HomePage(
     structureViewModel: StructureViewModel
 ) {
     Page (
-        floatingActionButton = {
-            BluetoothButton(connexionCS108)
-        },
-        floatingActionButtonPosition = FabPosition.Start
+        Modifier.padding(bottom = 75.dp),
+        bottomBar = {
+            Box (Modifier.systemBarsPadding().padding(horizontal = 20.dp, vertical = 15.dp)) {
+                BluetoothButton(connexionCS108)
+            }
+        }
     ) {
         AccountInformationsView(dao, navController)
         StructuresListView(structureViewModel, navController)
