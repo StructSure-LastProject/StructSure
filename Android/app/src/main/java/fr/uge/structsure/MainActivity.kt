@@ -94,7 +94,7 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("startScan?structureId={structureId}") { backStackEntry ->
                     val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                    MainScreenStartSensor(scanViewModel, structureId, navController)
+                    MainScreenStartSensor(scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
                 composable("ConnexionPage") {
