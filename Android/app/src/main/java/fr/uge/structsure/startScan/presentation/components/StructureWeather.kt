@@ -101,7 +101,7 @@ fun StructureWeather(viewModel: ScanViewModel?, scrollState: ScrollState) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 repeat(4) { index ->
-                    SensorBean((index + 21).toString(), SensorState.entries[index % 4])
+                    SensorBean(value = (index + 21).toString(), state = SensorState.entries[index % 4])
                 }
             }
             Box (

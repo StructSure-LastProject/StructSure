@@ -71,7 +71,9 @@ private fun List() {
     ) {
         items(SENSORS_NUMBER) { index ->
             // SensorItem -> display of a sensor
-            SensorBean("Capteur $index", SENSORS_STATES_LIST[index]) // TODO clickable
+            SensorBean(Modifier.fillMaxWidth(), "Capteur $index", SENSORS_STATES_LIST[index]) {
+                println("Sensor $index")
+            }
         }
     }
 }

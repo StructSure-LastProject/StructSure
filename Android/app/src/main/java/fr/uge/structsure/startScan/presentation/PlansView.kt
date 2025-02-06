@@ -46,34 +46,39 @@ import fr.uge.structsure.ui.theme.fonts
  */
 @Composable
 fun PlansView(modifier: Modifier = Modifier) {
-    var selected = remember { mutableStateOf("Section OA/Plan 01") }
-
-    Text(
-        modifier = Modifier.padding(horizontal = 20.dp),
-        style = Typography.titleLarge,
-        text = "Plans",
-    )
+    val selected = remember { mutableStateOf("Section OA/Plan 01") }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = White, shape = RoundedCornerShape(size = 20.dp))
-            .padding(horizontal = 20.dp, vertical = 15.dp),
-        verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.Start
-    )  {
-        Image(
-            painter = painterResource(id = R.drawable.oa_plan),
-            contentDescription = "Plan",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(171.dp)
+        verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        Text(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            style = Typography.titleLarge,
+            text = "Plans",
         )
 
-        Spacer( Modifier.fillMaxWidth().height(1.dp).background(LightGray) )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = White, shape = RoundedCornerShape(size = 20.dp))
+                .padding(horizontal = 20.dp, vertical = 15.dp),
+            verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.Start
+        )  {
+            Image(
+                painter = painterResource(id = R.drawable.oa_plan),
+                contentDescription = "Plan",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(171.dp)
+            )
 
-        PlanSelector(selected)
+            Spacer( Modifier.fillMaxWidth().height(1.dp).background(LightGray) )
+
+            PlanSelector(selected)
+        }
     }
 }
 
@@ -120,10 +125,10 @@ private fun PlanSelector(selected: MutableState<String>) {
             PlanItem("Plan 05", selected.value == "Section OB/Plan 05" ) {
                 selected.value = "Section OB/Plan 05"
             }
-            PlanItem("Plan 06", selected.value == "Section OA/Plan 06" ) {
+            PlanItem("Plan 06", selected.value == "Section OB/Plan 06" ) {
                 selected.value = "Section OB/Plan 06"
             }
-            PlanItem("Plan 07", selected.value == "Section OA/Plan 07" ) {
+            PlanItem("Plan 07", selected.value == "Section OB/Plan 07" ) {
                 selected.value = "Section OB/Plan 07"
             }
         }

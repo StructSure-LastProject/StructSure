@@ -2,14 +2,13 @@ package fr.uge.structsure.startScan.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -24,16 +23,21 @@ import fr.uge.structsure.ui.theme.White
 /**
  * Bean containing a colored circle and a value that can tell how many
  * sensor are contained in a given state or display a sensor.
+ * @param modifier to apply custom styling to the bean
  * @param value the value to display (number or name of the sensor)
  * @param state (weather) state to display
+ * @param onClick action to run when the bean is clicked
  */
 @Composable
-fun SensorBean(value: String, state: SensorState, onClick: () -> Unit = {}) {
+fun SensorBean(modifier: Modifier = Modifier, value: String, state: SensorState, onClick: (() -> Unit)? = null) {
+    var mod = modifier.height(40.dp)
+        .clip(RoundedCornerShape(size = 50.dp))
+    if (onClick != null) {
+        mod = mod.clickable { onClick() }
+    }
     Row(
-        modifier = Modifier
-            .horizontalScroll(rememberScrollState())
-            .height(40.dp)
-            .background(color = White, shape = RoundedCornerShape(size = 50.dp))
+        modifier = mod
+            .background(color = White)
             .padding(start = 15.dp, top = 5.dp, end = 15.dp, bottom = 5.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start),
         verticalAlignment = Alignment.CenterVertically,
