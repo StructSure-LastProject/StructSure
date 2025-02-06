@@ -22,6 +22,10 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.PLAN_FILE_IS_EMPTY, new Error(422, "Le fichier ne peut pas être vide"));
         messages.put(ErrorIdentifier.PLAN_NAME_IS_EMPTY, new Error(422, "Le nom du fichier ne peut pas être vide"));
         messages.put(ErrorIdentifier.SERVER_ERROR, new Error(500, "Une erreur est survenue"));
+        messages.put(ErrorIdentifier.SENSOR_PROPERTIES_NOT_COMPLETE, new Error(422, "Il manque des champs au capteur"));
+        messages.put(ErrorIdentifier.SENSOR_NAME_ALREADY_EXISTS, new Error(422, "Le nom du capteur est déjà utilisé"));
+        messages.put(ErrorIdentifier.SENSOR_ID_ALREADY_EXISTS, new Error(422, "Le/les capteur(s) sont déjà utilisé(s)"));
+        messages.put(ErrorIdentifier.SENSOR_STRUCTURE_NOT_FOUND, new Error(422, "L'ouvrage id est introuvable"));
     }
 
     /**
