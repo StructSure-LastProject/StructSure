@@ -3,6 +3,7 @@ import order from '/src/assets/order.svg';
 import filter from '/src/assets/filter.svg';
 import add from '/src/assets/add.svg';
 import { useNavigate } from "@solidjs/router";
+import useFetch from '../hooks/useFetch';
 
 function LstStructureHead() {
     const [isModalVisible, setModalVisible] = createSignal(false);
@@ -21,7 +22,7 @@ function LstStructureHead() {
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        structuresFetchRequest("http://localhost:8080/api/structures");
+        structuresFetchRequest("/api/structures");
     };
 
     const structuresFetchRequest = async (url) => {
@@ -30,22 +31,27 @@ function LstStructureHead() {
             name: name(),
             note: note()
         });
-        const request = await fetch(url, {
+
+        const requestData = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
             body: requestBody
-        });
-        if (request.status == 201) {
+        };
+
+        const { fetchData, statusCode, error } = useFetch();
+        await fetchData(url, requestData);
+        
+        if (statusCode() === 201) {
             location.reload();
-        } else if (request.status == 401) {
+        } else if (statusCode() === 401) {
             console.log("not autorized");
             navigate("/login");
         } else {
-            console.log("Error occurred, status : ", request.status);
-            setError((await request.json()).error);
+            console.log("Error occurred, status : ", statusCode());
+            setError(error());
         }
     };
 

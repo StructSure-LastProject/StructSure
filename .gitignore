@@ -88,3 +88,6 @@
 
 # Android Profiling
 **/*/*.hprof
+
+# Env
+**/*/*.env

@@ -2,6 +2,7 @@ import logo from '/src/assets/logo.svg';
 import check from '/src/assets/check.svg';
 import { For, createResource, createSignal } from "solid-js";
 import { useNavigate } from '@solidjs/router';
+import useFetch from '../hooks/useFetch';
 
 
 function StructSureBody() {
@@ -19,27 +20,34 @@ function StructSureBody() {
             order: orderBy
         }).toString();
         const requestUrl = `${url}?${params}`;
-        const request = await fetch(requestUrl, {
+        
+        
+        const requestData = {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             }
-        });
-        if (request.status == 200) {
-            const res = await request.json()
+        };
+
+        const { fetchData, statusCode, data, error } = useFetch();
+        await fetchData(requestUrl, requestData);
+ 
+
+        if (statusCode() === 200) {
+            const res = data()
             console.log("got: ", res);
             setStructures(res);
-        } else if (request.status == 401) {
+        } else if (statusCode() === 401) {
             console.log("not autorized");
             navigate("/login");
         } else {
-            console.log("Error occurred, status : ", request.statusCode);
-            setError((await request.json()).error);
+            console.log("Error occurred, status : ", statusCode());
+            setError(error());
         }
     };
 
-    createResource(() => structuresFetchRequest("http://localhost:8080/api/structures", "", "NAME", "ASC"));
+    createResource(() => structuresFetchRequest("/api/structures", "", "NAME", "ASC"));
 
     return (
         

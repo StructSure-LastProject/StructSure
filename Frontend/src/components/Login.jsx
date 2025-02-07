@@ -2,6 +2,7 @@ import logo from '/src/assets/logo.svg';
 import log_in from '/src/assets/log_in.svg';
 import { createSignal } from "solid-js";
 import { useNavigate } from '@solidjs/router';
+import useFetch from '../hooks/useFetch';
 
 
 function Login() {
@@ -23,27 +24,32 @@ function Login() {
             login: login(),
             password: password()
         });
-        const request = await fetch(url, {
+        
+        const requestData = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: requestBody,
-        });
-        if (request.status == 200) {
-            const response = await request.json();
+        };
+
+        const { fetchData, statusCode, data, error } = useFetch();
+        await fetchData(url, requestData);
+
+        if (statusCode() === 200) {
+            const response = data();
             fillLocalStorage(response);
             navigate("/");
-        } else if (request.status == 404) {
-            const response = await request.json();
-            console.log("Error occurred, status : ", request.statusCode, ", message : ", response);
-            setError(response.error);
-        }
+        } else if (statusCode() === 404) {
+            const response = data();
+            console.log("Error occurred, status : ", statusCode(), ", message : ", response);
+            setError(error());
+        }        
     };
 
     const handlSubmit = async (e) => {
         e.preventDefault();
-        const req = await loginFetchRequest("http://localhost:8080/api/login");
+        const req = await loginFetchRequest("/api/login");    
     };
     
 
