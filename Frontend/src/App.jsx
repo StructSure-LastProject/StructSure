@@ -1,5 +1,5 @@
 import { Router, Route, useNavigate } from "@solidjs/router";
-import Login from "../components/Login";
+import Login from "./components/Login";
 import { createEffect } from "solid-js";
 import Account from "./pages/Account";
 import Home from "./pages/Home";

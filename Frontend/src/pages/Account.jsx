@@ -1,9 +1,9 @@
 import logo from '/src/assets/logo.svg';
 import loginIconBlack from '/src/assets/loginIconBlack.svg';
-import Header from '../../components/Header';
+import Header from '../components/Header';
 import { createSignal } from "solid-js";
 import { useNavigate } from '@solidjs/router';
-import StructSure from '../../components/Structure';
+import StructSure from '../components/Structure';
 
 
 function Account() {
