@@ -1,0 +1,167 @@
+import { createSignal, onMount, onCleanup } from "solid-js";
+import plan from '/src/assets/plan.png';
+import StructureDetailSection from './StructureDetailSection';
+
+function StructureDetailPlans() {
+    const [ctxCanvas, setCtxCanvas] = createSignal("");
+    const [zoomFactor, setZoomFactor] = createSignal(0);
+    const [offsetX, setOffsetX] = createSignal(0);
+    const [offsetY, setOffsetY] = createSignal(0);
+    
+    let img = new Image();
+    let canvasRef;
+    let isMouseDown = false;
+    let startX = 0;
+    let startY = 0;
+
+    const fixDpi = () => {
+        if (!canvasRef) return;
+        const dpi = window.devicePixelRatio;
+        const styles = getComputedStyle(canvasRef);
+        // Extract width and height from styles
+        const width = parseFloat(styles.width);
+        const height = parseFloat(styles.height);
+        // Set canvas attributes for high-DPI screens
+        canvasRef.width = width * dpi;
+        canvasRef.height = height * dpi;
+        canvasRef.style.width = `${width}px`;
+        canvasRef.style.height = `${height}px`;
+    };
+
+    onMount(() => {
+        const ctx = canvasRef.getContext('2d');
+        fixDpi();
+        setCtxCanvas(ctx);
+        loadDetails();
+        addMouseEvents();
+    })
+
+    const addMouseEvents = () => {
+        let c = canvasRef;
+        c.addEventListener("wheel", handleWheel);
+        c.addEventListener("mousedown", handleMouseDown);
+        c.addEventListener("mousemove", handleMouseMove);
+        c.addEventListener("mouseup", handleMouseUp);
+        c.addEventListener("mouseout", handleMouseUp);
+        window.addEventListener("resize", fixDpi);
+    }
+
+    onCleanup(() => {
+        let c = canvasRef;
+        c.removeEventListener("wheel", handleWheel);
+        c.removeEventListener("mousedown", handleMouseDown);
+        c.removeEventListener("mousemove", handleMouseMove);
+        c.removeEventListener("mouseup", handleMouseUp);
+        c.removeEventListener("mouseout", handleMouseUp);
+        window.removeEventListener("resize", fixDpi);
+    });
+
+    const loadAndDrawImage = (imgLink) => {
+        img.src = imgLink;
+        img.onload = () => drawImage();
+    }
+
+    const handleWheel = (event) => {
+        event.preventDefault();
+        if (event.ctrlKey) {
+            const zoomChange = event.deltaY;
+            setZoomFactor((prev) => Math.max(0, prev + (-1 * zoomChange)));
+            drawImage();
+        }
+    };
+
+    const handleMouseDown = (event) => {
+        event.preventDefault();
+        if (event.button === 0) {
+            isMouseDown = true;
+            startX = event.clientX - offsetX();
+            startY = event.clientY - offsetY();
+            console.log("h : " + startX + " " + startY);
+        }
+    };
+
+    const handleMouseMove = (event) => {
+        event.preventDefault();
+        if (isMouseDown) {
+            const dx = event.clientX - startX;
+            const dy = event.clientY - startY;
+            setOffsetX(dx);
+            setOffsetY(dy);
+            drawImage();
+        }
+    };
+
+    const handleMouseUp = () => {
+        isMouseDown = false;
+    };
+
+    const zoomRatioFromZoomNumber = (imgRatio, canvasRatio, zoomNumber) => {
+        let zoomX, zoomY;
+        if (imgRatio > canvasRatio) {
+            zoomX = zoomNumber;
+            zoomY = zoomNumber / imgRatio;
+        } else {
+            zoomX = zoomNumber * imgRatio;
+            zoomY = zoomNumber;
+        }
+        return [zoomX, zoomY];
+    };
+
+    const drawImage = () => {
+        const ctx = ctxCanvas();
+        const c = canvasRef;
+        const imgRatio = img.width / img.height;
+        const canvasRatio = c.width / c.height;
+        let drawWidth, drawHeight, baseOffsetX, baseOffsetY;
+        if (imgRatio > canvasRatio) {
+            // Image plus large que le canvas (paysage) -> Ajuster en largeur
+            drawWidth = c.width;
+            drawHeight = c.width / imgRatio;
+            baseOffsetX = 0;
+            baseOffsetY = (c.height - drawHeight) / 2;
+        } else {
+            // Image plus haute que le canvas (portrait) -> Ajuster en hauteur
+            drawWidth = c.height * imgRatio;
+            drawHeight = c.height;
+            baseOffsetX = (c.width - drawWidth) / 2;
+            baseOffsetY = 0;
+        }
+        // Appliquer le zoom
+        const zoom = zoomFactor();
+        ctx.clearRect(0, 0, c.width, c.height);
+        console.log("Image ration: " + imgRatio);
+        console.log("Canva Width : " + c.width + ", Canva Height : " + c.height);
+        console.log("Width : " + drawWidth + ", Height : " + drawHeight);
+        console.log("Zoom number : " + zoom);
+        let [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio, canvasRatio, zoom);
+        ctx.drawImage(
+            img,
+            baseOffsetX + offsetX() - zoomX / 2,
+            baseOffsetY + offsetY() - zoomY / 2,
+            drawWidth + zoomX,
+            drawHeight + zoomY
+        );
+    }
+
+    const loadDetails = () => {
+        loadAndDrawImage(plan);
+    };
+    
+    return (
+        <div class="flex rounded-[20px] bg-E9E9EB">
+            <div class="flex flex-col gap-y-[15px] w-[25%] m-5">
+                <p class="prose font-poppins title">Plans</p>
+                <StructureDetailSection />
+            </div>
+            <div class="w-[75%] rounded-[20px] bg-white">
+                <canvas
+                    ref={canvasRef}
+                    class="p-[20px] w-full"
+                ></canvas>
+            </div>
+        </div>
+    );
+}
+
+
+export default StructureDetailPlans

@@ -4,7 +4,7 @@ import filter from '/src/assets/filter.svg';
 import add from '/src/assets/add.svg';
 import { useNavigate } from "@solidjs/router";
 
-function StructSureHead() {
+function LstStructureHead() {
     const [isModalVisible, setModalVisible] = createSignal(false);
 
     const openModal = () => setModalVisible(true);
@@ -109,4 +109,4 @@ function StructSureHead() {
     );
 }
 
-export default StructSureHead;
+export default LstStructureHead;

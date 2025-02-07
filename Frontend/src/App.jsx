@@ -3,6 +3,7 @@ import Login from "../components/Login";
 import { createEffect } from "solid-js";
 import Account from "./pages/Account";
 import Home from "./pages/Home";
+import StructSureDetail from "./pages/StructureDetail";
 
 function RequireAuth(Component) {
   return () => {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/login" component={Login} />
         <Route path="/" component={RequireAuth(Home)} />
         <Route path="/account" component={RequireAuth(Account)} />
+        <Route path="/structure" component={StructSureDetail} />
       </Router>
     </>
   )
