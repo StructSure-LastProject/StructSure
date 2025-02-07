@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,12 +46,16 @@ fun Alerte(navController: NavController, state:Boolean, sensorName:String, lastS
 
     Page (
         backgroundColor = colors[0],
-        decorated = false
+        decorated = false,
+        scrollable = false
     ) {
         Column (
             modifier = Modifier
                 .background(Brush.linearGradient(colors = colors, Offset.Zero, Offset.Infinite))
                 .fillMaxSize()
+                .padding(
+                    bottom = WindowInsets.Companion.navigationBars.asPaddingValues().calculateBottomPadding()
+                )
                 .padding(horizontal = 25.dp, vertical = 50.dp),
             verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally,

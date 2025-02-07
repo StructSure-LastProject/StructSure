@@ -1,10 +1,8 @@
 package fr.uge.structsure.structuresPage.presentation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FabPosition
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,19 +24,16 @@ fun HomePage(
     structureViewModel: StructureViewModel
 ) {
     Page (
-        floatingActionButton = {
-            BluetoothButton(connexionCS108)
-        },
-        floatingActionButtonPosition = FabPosition.Start
-    ) {
-        Column(
-            modifier = Modifier.verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(35.dp)
-        ) {
-            AccountInformationsView(dao, navController)
-            StructuresListView(structureViewModel, navController)
-            ConnectivityStatus()
+        Modifier.padding(bottom = 75.dp),
+        bottomBar = {
+            Box (Modifier.systemBarsPadding().padding(horizontal = 20.dp, vertical = 15.dp)) {
+                BluetoothButton(connexionCS108)
+            }
         }
+    ) {
+        AccountInformationsView(dao, navController)
+        StructuresListView(structureViewModel, navController)
+        ConnectivityStatus()
     }
 
 }
