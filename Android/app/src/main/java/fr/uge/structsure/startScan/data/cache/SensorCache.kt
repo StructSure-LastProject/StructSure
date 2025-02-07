@@ -1,4 +1,3 @@
-// SensorCache.kt
 package fr.uge.structsure.cache
 
 import fr.uge.structsure.structuresPage.data.SensorDB

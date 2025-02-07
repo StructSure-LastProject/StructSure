@@ -27,4 +27,9 @@ interface ScanDao {
 
     @Query("SELECT * from sensors as s WHERE s.structureId = :id")
     suspend fun getAllSensors(id: Long): List<SensorDB>
+
+    @Query("UPDATE scan SET end_timestamp = :endTime WHERE id = :scanId")
+    suspend fun updateEndTimestamp(scanId: Long, endTime: String)
+
 }
+
