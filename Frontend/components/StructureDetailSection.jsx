@@ -3,7 +3,7 @@ import check from '/src/assets/check.svg';
 import { For, createResource, createSignal } from "solid-js";
 import { useNavigate } from '@solidjs/router';
 
-import { ChevronDown, Dot, ChevronRight } from 'lucide-solid';
+import { ChevronDown, Dot, ChevronRight, Pencil, FolderSync } from 'lucide-solid';
 
 
 function StructureDetailSection() {
@@ -17,23 +17,43 @@ function StructureDetailSection() {
                     </div>
                     <p class="prose font-poppins poppins font-semibold">Section OA</p>
                 </div>
-                <div class="px-[8px] py-[9px] rounded-[10px] ml-4 flex gap-x-[10px]">
-                    <div class="w-4 h-4">
-                        <Dot />
+                <div class="px-[8px] py-[9px] rounded-[10px] ml-4 flex gap-x-[10px] justify-between">
+                    <div class="flex gap-x-[10px]">
+                        <div class="w-4 h-4">
+                            <Dot />
+                        </div>
+                        <p class="prose font-poppins poppins font-semibold">Plan 01</p>
                     </div>
-                    <p class="prose font-poppins poppins font-medium">Plan 01</p>
                 </div>
-                <div class="px-[8px] py-[9px] rounded-[10px] ml-4 flex gap-x-[10px]">
-                    <div class="w-4 h-4">
-                        <Dot />
+                <div class="px-[8px] py-[9px] rounded-[10px] ml-4 flex gap-x-[10px] justify-between">
+                    <div class="flex gap-x-[10px]">
+                        <div class="w-4 h-4">
+                            <Dot />
+                        </div>
+                        <p class="prose font-poppins poppins font-semibold">Plan 02</p>
                     </div>
-                    <p class="prose font-poppins poppins font-medium">Plan 02</p>
                 </div>
-                <div class="px-[8px] py-[9px] rounded-[10px] ml-4 flex gap-x-[10px] bg-[#F2F2F4]">
-                    <div class="w-4 h-4">
-                        <Dot />
+                <div class="px-[8px] py-[9px] rounded-[10px] ml-4 flex gap-x-[10px] bg-[#F2F2F4] justify-between">
+                    <div class="flex gap-x-[10px]">
+                        <div class="w-4 h-4">
+                            <Dot />
+                        </div>
+                        <p class="prose font-poppins poppins font-semibold">Plan 03</p>
                     </div>
-                    <p class="prose font-poppins poppins font-semibold">Plan 03</p>
+                    <div class="w-5 h-5">
+                        <Pencil size={20}/>
+                    </div>
+                </div>
+                <div class="px-[8px] py-[9px] rounded-[10px] ml-4 flex gap-x-[10px] justify-between">
+                    <div class="flex gap-x-[10px]">
+                        <div class="w-4 h-4">
+                            <Dot />
+                        </div>
+                        <p class="prose font-poppins poppins font-semibold">Plan 04</p>
+                    </div>
+                    <div class="w-5 h-5">
+                        <FolderSync size={20} />
+                    </div>
                 </div>
             </div>
             <div class="flex flex-col gap-y-[5px]">

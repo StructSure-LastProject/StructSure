@@ -16,6 +16,14 @@
     text-decoration-skip-ink: none;
 }
 
+.normal {
+    font-size: 14px;
+    line-height: 21px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+}
+
 
 .bg-E9E9EB {
     background: #E9E9EB;
