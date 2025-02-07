@@ -21,9 +21,9 @@ import java.io.IOException;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    private CustomUserDetailsService customUserDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
     @Autowired
     public JwtFilter(CustomUserDetailsService customUserDetailsService, JwtUtils jwtUtils) {
@@ -37,21 +37,21 @@ public class JwtFilter extends OncePerRequestFilter {
      * @param request the request of the client
      * @param response the response for the client
      * @param filterChain the filter
-     * @throws ServletException
-     * @throws IOException
+     * @throws IOException if an I/ O error occurs during the processing of the request
+     * @throws ServletException if the processing fails for any other reason
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
 
-        String username = null;
-        String jwt = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
-            username = jwtUtils.extractUsername(jwt);
+        if (authHeader == null || !authHeader.startsWith("Bearer ") || authHeader.endsWith("null")) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
+        String jwt = authHeader.substring(7);
+        String username = jwtUtils.extractUsername(jwt);
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
             if (jwtUtils.validateToken(jwt, userDetails)) {
@@ -67,10 +67,9 @@ public class JwtFilter extends OncePerRequestFilter {
      * Defines the endpoints that should not be filtered because they are allowed without authentication
      * @param request the request of the user
      * @return boolean true if request should not be filtered by the filter, and false if not
-     * @throws ServletException
      */
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         return request.getServletPath().startsWith("/api/login") ||
                 request.getServletPath().startsWith("/api/register") ||
                 request.getServletPath().startsWith("/swagger-ui/index.html");
