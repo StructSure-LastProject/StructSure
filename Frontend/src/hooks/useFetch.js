@@ -13,7 +13,7 @@ const useFetch = () => {
   const fetchData = async (endpoint, requestData) => {
     setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, requestData);
+            const response = await fetch(endpoint, requestData);
             setStatusCode(response.status);
             if (!response.ok) throw new Error('Network response was not ok');
             const jsonData = await response.json();
