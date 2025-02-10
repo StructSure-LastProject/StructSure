@@ -6,6 +6,7 @@ import { A, useNavigate } from '@solidjs/router';
 
 
 function Header() {
+    const navigate = useNavigate();
 
     return (
         <div class="flex justify-between">

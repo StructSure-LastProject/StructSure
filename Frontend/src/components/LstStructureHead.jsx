@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
 import order from '/src/assets/order.svg';
 import filter from '/src/assets/filter.svg';
 import add from '/src/assets/add.svg';
@@ -8,7 +8,8 @@ import useFetch from '../hooks/useFetch';
 function LstStructureHead() {
     const [isModalVisible, setModalVisible] = createSignal(false);
 
-    const openModal = () => setModalVisible(true);
+
+    const openModal = createMemo(() => setModalVisible(true));
 
     const closeModal = () => setModalVisible(false);
 

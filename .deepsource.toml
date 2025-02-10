@@ -16,8 +16,9 @@ name = "kotlin"
 [[analyzers]]
 name = "javascript"
 
-  [analyzers.meta]
-  plugins = ["react"]
+[analyzers.javascript.config]
+ignore_paths = ["node_modules/", "dist/", "build/"]
+jsx_framework = "solid" 
 
 [[analyzers]]
 name = "test-coverage"
