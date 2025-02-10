@@ -1,4 +1,3 @@
-import { JSX } from 'solid-js';
 import StructureDetailHead from './StructureDetailHead';
 import StructureDetailPlans from './StructureDetailPlans';
 import StructureDetailRow from './StructureDetailRow';
@@ -6,7 +5,7 @@ import StructureDetailRow from './StructureDetailRow';
 
 /**
  * Shows the body part of the strcutre detail page
- * @returns {JSX.Element} component for the body part
+ * @returns component for the body part
  */
 function StructureDetailBody() {
     

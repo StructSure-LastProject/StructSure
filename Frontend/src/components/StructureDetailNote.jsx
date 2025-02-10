@@ -1,13 +1,11 @@
-import { JSX } from "solid-js";
 
 /**
  * Show the note part
- * @returns {JSX.Element} the component for the note part
+ * @returns the component for the note part
  */
 function StructureDetailNote() {
     
     return (
-        
         <div class="w-[30%] bg-white rounded-[20px] flex flex-col gay-y-[15px] px-[15px] py-[20px]">
             <p class="prose font-poppins title">Note</p>
             <div class="rounded-[10px] px-[16px] py-[8px] bg-gray-100">
@@ -18,4 +16,3 @@ function StructureDetailNote() {
 }
 
 export default StructureDetailNote
-

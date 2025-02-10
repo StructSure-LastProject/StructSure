@@ -1,11 +1,10 @@
 import loginIconBlack from '/src/assets/loginIconBlack.svg';
 import Header from '../components/Header';
 import { useNavigate } from '@solidjs/router';
-import { JSX } from 'solid-js';
 
 /**
  * Component for the account page
- * @returns {JSX.Element} component for the account page
+ * @returns component for the account page
  */
 function Account() {
 

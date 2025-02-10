@@ -1,10 +1,9 @@
-import { JSX } from 'solid-js';
 import Header from '../components/Header';
 import StructSure from '../components/Structure';
 
 /**
  * Component for the home page
- * @returns {JSX.Element} component for the home page
+ * @returns component for the home page
  */
 function Home() {
 

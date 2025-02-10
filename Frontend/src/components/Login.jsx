@@ -1,12 +1,12 @@
 import logo from '/src/assets/logo.svg';
 import log_in from '/src/assets/log_in.svg';
-import { createSignal, JSX } from "solid-js";
+import { createSignal } from "solid-js";
 import { useNavigate } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 
 /**
  * Component for the login
- * @returns {JSX.Element} component for the login
+ * @returns component for the login
  */
 function Login() {
     const [login, setLogin] = createSignal("");
@@ -54,7 +54,7 @@ function Login() {
         } else if (statusCode() === 404) {
             const response = data();
             setError(errorFetch());
-        }        
+        }
     };
 
     /**

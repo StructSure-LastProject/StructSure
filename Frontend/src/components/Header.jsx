@@ -2,11 +2,10 @@ import logo from '/src/assets/logo.svg';
 import leftAccount from '/src/assets/leftAccount.svg';
 import accountButton from '/src/assets/accountButton.svg';
 import { A, useNavigate } from '@solidjs/router';
-import { JSX } from 'solid-js';
 
 /**
  * Component for the header
- * @returns {JSX.Element} component for the Header
+ * @returns component for the Header
  */
 function Header() {
     const navigate = useNavigate();

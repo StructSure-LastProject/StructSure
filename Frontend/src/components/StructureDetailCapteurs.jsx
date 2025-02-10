@@ -1,9 +1,8 @@
 import { ArrowDownNarrowWide, Filter, Plus, Trash2 } from 'lucide-solid';
-import { JSX } from 'solid-js';
 
 /**
  * Show the sensors part of the structure detail page
- * @returns {JSX.Element} the component for the sensors part
+ * @returns the component for the sensors part
  */
 function StructureDetailCapteurs() {
     

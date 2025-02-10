@@ -1,10 +1,10 @@
-import { createSignal, onMount, onCleanup, JSX } from "solid-js";
+import { createSignal, onMount, onCleanup } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
 
 /**
  * Shows the plans part
- * @returns {JSX.Element} the component for the plans part
+ * @returns the component for the plans part
  */
 function StructureDetailPlans() {
     const [ctxCanvas, setCtxCanvas] = createSignal("");
@@ -52,17 +52,25 @@ function StructureDetailPlans() {
         );
     }
 
+    const handleResize = () => {
+        console.log("Resizing ?");
+        fixDpi();
+        drawImage();
+    };
+
     /**
      * Fixes the dpi for the canvas
      */
     const fixDpi = () => {
-        if (!canvasRef) return;
+        if (!canvasRef || !canvasRef.parentElement) return;
         const dpi = window.devicePixelRatio;
-        const styles = getComputedStyle(canvasRef);
-        // Extract width and height from styles
-        const width = parseFloat(styles.width);
-        const height = parseFloat(styles.height);
-        // Set canvas attributes for high-DPI screens
+        
+        // Récupérer la vraie taille du parent du canvas
+        const parent = canvasRef.parentElement;
+        const width = parent.clientWidth;
+        const height = parent.clientHeight;
+    
+        // Appliquer ces dimensions au canvas
         canvasRef.width = width * dpi;
         canvasRef.height = height * dpi;
         canvasRef.style.width = `${width}px`;
@@ -86,7 +94,7 @@ function StructureDetailPlans() {
         canvasRef.addEventListener("mousemove", handleMouseMove);
         canvasRef.addEventListener("mouseup", handleMouseUp);
         canvasRef.addEventListener("mouseout", handleMouseUp);
-        window.addEventListener("resize", fixDpi);
+        window.addEventListener("resize", handleResize);
     }
 
     onCleanup(() => {
@@ -95,7 +103,7 @@ function StructureDetailPlans() {
         canvasRef.removeEventListener("mousemove", handleMouseMove);
         canvasRef.removeEventListener("mouseup", handleMouseUp);
         canvasRef.removeEventListener("mouseout", handleMouseUp);
-        window.removeEventListener("resize", fixDpi);
+        window.removeEventListener("resize", handleResize);
     });
 
     /**

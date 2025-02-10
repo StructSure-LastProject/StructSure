@@ -4,7 +4,7 @@ import StructureDetailBody from '../components/StructureDetailBody';
 
 /**
  * Prints the detail of structre
- * @returns {JSX.Element} The component of structure detail
+ * @returns The component of structure detail
  */
 function StructSureDetail() {
 

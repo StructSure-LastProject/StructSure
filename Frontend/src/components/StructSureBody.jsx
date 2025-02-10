@@ -1,11 +1,11 @@
 import check from '/src/assets/check.svg';
-import { For, JSX, createResource, createSignal } from "solid-js";
+import { For, createResource, createSignal } from "solid-js";
 import { useNavigate } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 
 /**
  * Component body part of the structure
- * @returns {JSX.Element} component for the structure body
+ * @returns component for the structure body
  */
 function StructSureBody() {
     const [structures, setStructures] = createSignal([]);

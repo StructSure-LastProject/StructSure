@@ -7,7 +7,7 @@ import useFetch from '../hooks/useFetch';
 
 /**
  * Component for list of structure
- * @returns {JSX.Event} component for the list of structure
+ * @returns component for the list of structure
  */
 function LstStructureHead() {
     const [isModalVisible, setModalVisible] = createSignal(false);

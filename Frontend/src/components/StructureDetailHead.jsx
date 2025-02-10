@@ -1,10 +1,8 @@
 import { Download, Plus } from 'lucide-solid';
-import { JSX } from 'solid-js';
-
 
 /**
  * Show the head part of the structure detail
- * @returns {JSX.Element} the component for the head part
+ * @returns the component for the head part
  */
 function StructureDetailHead() {
     
