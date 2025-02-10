@@ -20,11 +20,6 @@ name = "javascript"
   ignore_paths = ["node_modules/", "dist/", "build/"]
   jsx_framework = "solid" 
 
-  [analyzers.meta]
-  plugins = ["solid"]  # Utiliser "solid" si supporté, sinon retirer cette ligne
-
-  [analyzers.javascript]
-  dependency_install_command = "npm install"
 
 [[analyzers]]
 name = "test-coverage"
