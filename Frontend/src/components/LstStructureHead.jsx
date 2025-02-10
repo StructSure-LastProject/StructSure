@@ -5,12 +5,19 @@ import add from '/src/assets/add.svg';
 import { useNavigate } from "@solidjs/router";
 import useFetch from '../hooks/useFetch';
 
+/**
+ * Component for list of structure
+ * @returns {JSX.Event} component for the list of structure
+ */
 function LstStructureHead() {
     const [isModalVisible, setModalVisible] = createSignal(false);
 
 
     const openModal = createMemo(() => setModalVisible(true));
 
+    /**
+     * Handles close modal
+     */
     const closeModal = () => setModalVisible(false);
 
     const [error, setError] = createSignal("");
@@ -50,7 +57,7 @@ function LstStructureHead() {
             body: requestBody
         };
 
-        const { fetchData, statusCode, error } = useFetch();
+        const { fetchData, statusCode, errorFetch } = useFetch();
         await fetchData(url, requestData);
         
         if (statusCode() === 201) {
@@ -58,7 +65,7 @@ function LstStructureHead() {
         } else if (statusCode() === 401) {
             navigate("/login");
         } else {
-            setError(error());
+            setError(errorFetch());
         }
     };
 

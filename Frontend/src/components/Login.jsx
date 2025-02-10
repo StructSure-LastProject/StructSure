@@ -44,7 +44,7 @@ function Login() {
             body: requestBody,
         };
 
-        const { fetchData, statusCode, data, error } = useFetch();
+        const { fetchData, statusCode, data, errorFetch } = useFetch();
         await fetchData(url, requestData);
 
         if (statusCode() === 200) {
@@ -53,7 +53,7 @@ function Login() {
             navigate("/");
         } else if (statusCode() === 404) {
             const response = data();
-            setError(error());
+            setError(errorFetch());
         }        
     };
 

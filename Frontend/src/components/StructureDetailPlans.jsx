@@ -12,7 +12,7 @@ function StructureDetailPlans() {
     const [offsetX, setOffsetX] = createSignal(0);
     const [offsetY, setOffsetY] = createSignal(0);
     
-    let img = new Image();
+    const img = new Image();
     let canvasRef;
     let isMouseDown = false;
     let startX = 0;
@@ -42,7 +42,7 @@ function StructureDetailPlans() {
         // Appliquer le zoom
         const zoom = zoomFactor();
         ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-        let [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio, canvasRatio, zoom);
+        const [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio, canvasRatio, zoom);
         ctx.drawImage(
             img,
             baseOffsetX + offsetX() - zoomX / 2,
@@ -163,7 +163,7 @@ function StructureDetailPlans() {
      * @returns {number[]} in index 0 zoom for x, and in index 1 zoom for y
      */
     const zoomRatioFromZoomNumber = (imgRatio, canvasRatio, zoomNumber) => {
-        let zoomX, zoomY;
+        let zoomX = 0, zoomY = 0;
         if (imgRatio > canvasRatio) {
             zoomX = zoomNumber;
             zoomY = zoomNumber / imgRatio;
