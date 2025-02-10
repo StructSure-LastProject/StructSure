@@ -76,7 +76,6 @@ function StructureDetailPlans() {
             isMouseDown = true;
             startX = event.clientX - offsetX();
             startY = event.clientY - offsetY();
-            console.log("h : " + startX + " " + startY);
         }
     };
 
@@ -129,10 +128,6 @@ function StructureDetailPlans() {
         // Appliquer le zoom
         const zoom = zoomFactor();
         ctx.clearRect(0, 0, c.width, c.height);
-        console.log("Image ration: " + imgRatio);
-        console.log("Canva Width : " + c.width + ", Canva Height : " + c.height);
-        console.log("Width : " + drawWidth + ", Height : " + drawHeight);
-        console.log("Zoom number : " + zoom);
         let [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio, canvasRatio, zoom);
         ctx.drawImage(
             img,

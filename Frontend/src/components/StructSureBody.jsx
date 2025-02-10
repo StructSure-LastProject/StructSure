@@ -36,13 +36,10 @@ function StructSureBody() {
 
         if (statusCode() === 200) {
             const res = data()
-            console.log("got: ", res);
             setStructures(res);
         } else if (statusCode() === 401) {
-            console.log("not autorized");
             navigate("/login");
         } else {
-            console.log("Error occurred, status : ", statusCode());
             setError(error());
         }
     };

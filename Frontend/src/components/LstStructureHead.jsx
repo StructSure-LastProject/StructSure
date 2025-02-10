@@ -48,10 +48,8 @@ function LstStructureHead() {
         if (statusCode() === 201) {
             location.reload();
         } else if (statusCode() === 401) {
-            console.log("not autorized");
             navigate("/login");
         } else {
-            console.log("Error occurred, status : ", statusCode());
             setError(error());
         }
     };

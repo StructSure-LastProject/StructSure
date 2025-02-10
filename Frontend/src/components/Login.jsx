@@ -42,7 +42,6 @@ function Login() {
             navigate("/");
         } else if (statusCode() === 404) {
             const response = data();
-            console.log("Error occurred, status : ", statusCode(), ", message : ", response);
             setError(error());
         }        
     };
