@@ -5,6 +5,7 @@ import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.LoginResponseDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterResponseDTO;
+import fr.uge.structsure.dto.userAccount.UserAccountResponseDTO;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
@@ -17,6 +18,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -79,5 +81,22 @@ public class AccountService {
         } catch (AuthenticationException e) {
             throw new TraitementException(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT);
         }
+    }
+
+
+    public List<UserAccountResponseDTO> getUserAccounts(){
+         return accountRepository
+            .findAll()
+            .stream()
+            .map(account ->
+                new UserAccountResponseDTO(
+                    account.getFirstname(),
+                    account.getLastname(),
+                    "MAIL de %s".formatted(account.getFirstname()),
+                    account.getRole().toString(),
+                    account.getEnabled()
+                )
+            )
+            .toList();
     }
 }
