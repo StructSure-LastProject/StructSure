@@ -1,6 +1,10 @@
 import add from '/src/assets/add.svg';
 import AccountDetails from './AccountDetails';
 
+/**
+ * The admin panel body component 
+ * @returns the component for the admin panel
+ */
 const AdminPanelBody = () => {
     return (
         <>

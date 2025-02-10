@@ -1,4 +1,12 @@
 
+/**
+ * Display the Account details
+ * @param {String} firstName the firstname
+ * @param {String} lastName the lastName
+ * @param {String} mail the mail
+ * @param {String} role role of the user 
+ * @returns the component for the account details
+ */
 const AccountDetails = ({firstName, lastName, mail, role, isDisabled}) => {
 
     const roleStyles = {
