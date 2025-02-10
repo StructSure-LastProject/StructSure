@@ -1,6 +1,5 @@
 package fr.uge.structsure.retrofit
 
-import android.util.Log
 import fr.uge.structsure.MainActivity
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -26,13 +25,10 @@ object RetrofitInstance {
     }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        // level = HttpLoggingInterceptor.Level.BODY
     }
 
     private val tokenInjector = { chain: Interceptor.Chain ->
-        // chain.proceed(chain.request().newBuilder().apply {
-        //     header("Authorization", "Bearer " + tokenProvider())
-        // }.build())
         var request = chain.request()
 
         request = request.newBuilder()
@@ -40,7 +36,7 @@ object RetrofitInstance {
             .build()
         val response = chain.proceed(request)
         if (response.code == 401) {
-            Log.e("RetrofitInstance", "Got 401")
+            MainActivity.navigateToLogin.postValue(true)
         }
         response
     }

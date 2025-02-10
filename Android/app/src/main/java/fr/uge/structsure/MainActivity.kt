@@ -17,9 +17,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,6 +44,7 @@ class MainActivity : ComponentActivity() {
     companion object {
         var darkStatusBar: AtomicBoolean = AtomicBoolean(true)
         lateinit var csLibrary4A: Cs108Library4A
+        val navigateToLogin = MutableLiveData<Boolean>()
         lateinit var db: AppDatabase
             private set
     }
@@ -84,7 +87,13 @@ class MainActivity : ComponentActivity() {
             val connexionCS108 = Cs108Connector(context)
             connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
             connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
-            var connexion = true  // false si pas de connexion
+            navigateToLogin.observeAsState(false).value.let {
+                if (it) {
+                    navController.navigate("ConnexionPage")
+                    navigateToLogin.value = false
+                }
+            }
+            var connexion = true  // TODO false si pas de connexion
             var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
             val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
             NavHost(navController = navController, startDestination = homePage) {
