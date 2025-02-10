@@ -44,10 +44,14 @@ class MainActivity : ComponentActivity() {
     companion object {
         var darkStatusBar: AtomicBoolean = AtomicBoolean(true)
         lateinit var csLibrary4A: Cs108Library4A
+        /** Live data use to trigger redirect to the login page */
         val navigateToLogin = MutableLiveData<Boolean>()
         lateinit var db: AppDatabase
             private set
     }
+
+    /** Name of the login page to avoid string duplication */
+    private val loginPage = "loginPage"
 
     private lateinit var structureViewModel: StructureViewModel
 
@@ -89,13 +93,13 @@ class MainActivity : ComponentActivity() {
             connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
             navigateToLogin.observeAsState(false).value.let {
                 if (it) {
-                    navController.navigate("ConnexionPage")
+                    navController.navigate(loginPage)
                     navigateToLogin.value = false
                 }
             }
             var connexion = true  // TODO false si pas de connexion
             var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
-            val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
+            val homePage = if (connexion && !loggedIn) loginPage else "HomePage"
             NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
@@ -106,7 +110,7 @@ class MainActivity : ComponentActivity() {
                     MainScreenStartSensor(scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
-                composable("ConnexionPage") {
+                composable(loginPage) {
                     ConnexionCard(navController, accountDao)
                     SetDynamicStatusBar()
                 }
@@ -173,7 +177,6 @@ class MainActivity : ComponentActivity() {
  * Changes the status bar text color to white or black depending on
  * the given theme. This is useful to make the text clear with custom
  * background color.
- * @param dark true for dark background colors, false otherwise
  */
 @Composable
 private fun ComponentActivity.SetDynamicStatusBar() {
