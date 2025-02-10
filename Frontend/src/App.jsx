@@ -4,6 +4,7 @@ import { createEffect } from "solid-js";
 import Account from "./pages/Account";
 import Home from "./pages/Home";
 import StructSureDetail from "./pages/StructureDetail";
+import AdminPanel from "./pages/AdminPanel";
 
 /**
  * Checks if the user have the right to acces the component
@@ -36,6 +37,7 @@ function App() {
         <Route path="/" component={RequireAuth(Home)} />
         <Route path="/account" component={RequireAuth(Account)} />
         <Route path="/structure" component={StructSureDetail} />
+        <Route path="/admin-panel" component={AdminPanel} />
       </Router>
     </>
   )
