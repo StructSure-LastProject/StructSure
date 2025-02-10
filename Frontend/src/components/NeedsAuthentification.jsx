@@ -1,6 +1,4 @@
 import logo from '/src/assets/logo.svg';
-import log_in from '/src/assets/log_in.svg';
-import { createResource, createSignal } from "solid-js";
 
 function NeedsAuthentification() {
 

@@ -18,8 +18,7 @@ name = "javascript"
 
   [analyzers.javascript.config]
   ignore_paths = ["node_modules/", "dist/", "build/"]
-  jsx_framework = "solid" 
-
+  jsx_framework = "solid"
 
 [[analyzers]]
 name = "test-coverage"

@@ -1,7 +1,3 @@
-import logo from '/src/assets/logo.svg';
-import log_in from '/src/assets/log_in.svg';
-import { createSignal } from "solid-js";
-import { useNavigate } from '@solidjs/router';
 import LstStructureHead from './LstStructureHead';
 import StructureBody from './StructSureBody';
 

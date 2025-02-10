@@ -1,7 +1,6 @@
 import logo from '/src/assets/logo.svg';
 import leftAccount from '/src/assets/leftAccount.svg';
 import accountButton from '/src/assets/accountButton.svg';
-import { createSignal } from "solid-js";
 import { A, useNavigate } from '@solidjs/router';
 
 

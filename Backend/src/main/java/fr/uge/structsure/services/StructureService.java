@@ -9,26 +9,25 @@ import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.OrderEnum;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class StructureService {
     private final StructureRepository structureRepository;
     private final PlanRepository planRepository;
     private final SensorRepository sensorRepository;
-    private final ModelMapper modelMapper;
 
     @Autowired
-    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository, PlanRepository planRepository,
-                            ModelMapper modelMapper) {
+    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository, PlanRepository planRepository) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.planRepository = Objects.requireNonNull(planRepository);
-        this.modelMapper = Objects.requireNonNull(modelMapper);
     }
 
     /**
@@ -227,11 +226,10 @@ public class StructureService {
         var sensors = sensorRepository.findByStructure(structure);
         System.err.println("Plans : " + plans);
         System.err.println("Sensors : " + sensors);
-        var plansDto = new ArrayList<StructureDetailsResponseDTO.PLan>();
-        var sensorsDto = new ArrayList<StructureDetailsResponseDTO.Sensor>();
-        modelMapper.map(plans, plansDto);
-        modelMapper.map(sensors, sensorsDto);
+
         return new StructureDetailsResponseDTO(structure.getId(), structure.getName(),
-                structure.getNote(), plansDto, sensorsDto);
+                structure.getNote(),
+                plans.stream().map(StructureDetailsResponseDTO.Plan::fromPlanEntity).toList(),
+                sensors.stream().map(StructureDetailsResponseDTO.Sensor::fromSensorEntity).toList());
     }
 }

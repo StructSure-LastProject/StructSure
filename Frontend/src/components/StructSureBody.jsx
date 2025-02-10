@@ -1,4 +1,3 @@
-import logo from '/src/assets/logo.svg';
 import check from '/src/assets/check.svg';
 import { For, createResource, createSignal } from "solid-js";
 import { useNavigate } from '@solidjs/router';
@@ -30,7 +29,7 @@ function StructSureBody() {
             }
         };
 
-        const { fetchData, statusCode, data, error } = useFetch();
+        const { fetchData, statusCode, data, errorFetch } = useFetch();
         await fetchData(requestUrl, requestData);
  
 
@@ -40,7 +39,7 @@ function StructSureBody() {
         } else if (statusCode() === 401) {
             navigate("/login");
         } else {
-            setError(error());
+            setError(errorFetch());
         }
     };
 
