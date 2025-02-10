@@ -1,7 +1,11 @@
-import { createSignal, onMount, onCleanup } from "solid-js";
+import { createSignal, onMount, onCleanup, JSX } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
 
+/**
+ * Shows the plans part
+ * @returns {JSX.Element} the component for the plans part
+ */
 function StructureDetailPlans() {
     const [ctxCanvas, setCtxCanvas] = createSignal("");
     const [zoomFactor, setZoomFactor] = createSignal(0);
@@ -14,6 +18,9 @@ function StructureDetailPlans() {
     let startX = 0;
     let startY = 0;
 
+    /**
+     * Draws the image in the canvas
+     */
     const drawImage = () => {
         const ctx = ctxCanvas();
         const imgRatio = img.width / img.height;
@@ -45,6 +52,9 @@ function StructureDetailPlans() {
         );
     }
 
+    /**
+     * Fixes the dpi for the canvas
+     */
     const fixDpi = () => {
         if (!canvasRef) return;
         const dpi = window.devicePixelRatio;
@@ -67,6 +77,9 @@ function StructureDetailPlans() {
         addMouseEvents();
     })
 
+    /**
+     * Adds the mouse events to the canvas
+     */
     const addMouseEvents = () => {
         canvasRef.addEventListener("wheel", handleWheel);
         canvasRef.addEventListener("mousedown", handleMouseDown);
@@ -85,11 +98,19 @@ function StructureDetailPlans() {
         window.removeEventListener("resize", fixDpi);
     });
 
+    /**
+     * Loads and draws the image from it's link
+     * @param {String} imgLink the link of the image
+     */
     const loadAndDrawImage = (imgLink) => {
         img.src = imgLink;
         img.onload = () => drawImage();
     }
 
+    /**
+     * Handles the mouse wheel event
+     * @param {MouseEvent} event the mouse event 
+     */
     const handleWheel = (event) => {
         event.preventDefault();
         if (event.ctrlKey) {
@@ -99,6 +120,10 @@ function StructureDetailPlans() {
         }
     };
 
+    /**
+     * Handles the mouse down
+     * @param {MouseEvent} event the mouse event
+     */
     const handleMouseDown = (event) => {
         event.preventDefault();
         if (event.button === 0) {
@@ -108,6 +133,10 @@ function StructureDetailPlans() {
         }
     };
 
+    /**
+     * Handles the mouse move event
+     * @param {MouseEvent} event the event of the mouse
+     */
     const handleMouseMove = (event) => {
         event.preventDefault();
         if (isMouseDown) {
@@ -119,10 +148,20 @@ function StructureDetailPlans() {
         }
     };
 
+    /**
+     * Changes state of isMouseDown variable when mouse is up
+     */
     const handleMouseUp = () => {
         isMouseDown = false;
     };
 
+    /**
+     * Calculates the zoom ratio
+     * @param {number} imgRatio the ratio of the image
+     * @param {number} canvasRatio the ration of the canvas
+     * @param {number} zoomNumber the zoom number
+     * @returns {number[]} in index 0 zoom for x, and in index 1 zoom for y
+     */
     const zoomRatioFromZoomNumber = (imgRatio, canvasRatio, zoomNumber) => {
         let zoomX, zoomY;
         if (imgRatio > canvasRatio) {
@@ -135,6 +174,9 @@ function StructureDetailPlans() {
         return [zoomX, zoomY];
     };
 
+    /**
+     * Loads the details (images and draw it)
+     */
     const loadDetails = () => {
         loadAndDrawImage(plan);
     };

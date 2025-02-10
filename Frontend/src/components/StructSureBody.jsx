@@ -1,9 +1,12 @@
 import check from '/src/assets/check.svg';
-import { For, createResource, createSignal } from "solid-js";
+import { For, JSX, createResource, createSignal } from "solid-js";
 import { useNavigate } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 
-
+/**
+ * Component body part of the structure
+ * @returns {JSX.Element} component for the structure body
+ */
 function StructSureBody() {
     const [structures, setStructures] = createSignal([]);
 
@@ -11,6 +14,13 @@ function StructSureBody() {
 
     const navigate = useNavigate();
 
+    /**
+     * Fetch the structures
+     * @param {String} url the url for the server
+     * @param {String} name the name of the structure
+     * @param {String} sortBy the sort by string
+     * @param {String} orderBy the order by string
+     */
     const structuresFetchRequest = async (url, name, sortBy, orderBy) => {
         const token = localStorage.getItem("token");
         const params = new URLSearchParams({

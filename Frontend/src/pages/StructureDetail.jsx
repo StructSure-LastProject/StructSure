@@ -2,6 +2,10 @@ import Header from '../components/Header';
 import StructureDetailBody from '../components/StructureDetailBody';
 
 
+/**
+ * Prints the detail of structre
+ * @returns {JSX.Element} The component of structure detail
+ */
 function StructSureDetail() {
 
     return (

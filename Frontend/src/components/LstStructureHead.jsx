@@ -21,11 +21,19 @@ function LstStructureHead() {
 
     const navigate = useNavigate();
 
+    /**
+     * Handles the form submit
+     * @param {Event} e The event of form submit 
+     */
     const handleFormSubmit = (e) => {
         e.preventDefault();
         structuresFetchRequest("/api/structures");
     };
 
+    /**
+     * Fetch the strucutres
+     * @param {String} url the url of the server
+     */
     const structuresFetchRequest = async (url) => {
         const token = localStorage.getItem("token");
         const requestBody = JSON.stringify({

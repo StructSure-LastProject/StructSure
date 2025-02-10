@@ -1,3 +1,9 @@
+import { JSX } from "solid-js";
+
+/**
+ * Show the note part
+ * @returns {JSX.Element} the component for the note part
+ */
 function StructureDetailNote() {
     
     return (

@@ -1,7 +1,12 @@
+import { JSX } from 'solid-js';
 import LstStructureHead from './LstStructureHead';
 import StructureBody from './StructSureBody';
 
 
+/**
+ * Structre component 
+ * @returns {JSX.Element} component for the Strucuture
+ */
 function StructSure() {
 
     return (

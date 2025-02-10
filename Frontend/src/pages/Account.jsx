@@ -1,12 +1,19 @@
 import loginIconBlack from '/src/assets/loginIconBlack.svg';
 import Header from '../components/Header';
 import { useNavigate } from '@solidjs/router';
+import { JSX } from 'solid-js';
 
-
+/**
+ * Component for the account page
+ * @returns {JSX.Element} component for the account page
+ */
 function Account() {
 
     const navigate = useNavigate();
 
+    /**
+     * Clears the data about the user in the local storage
+     */
     const clearLocalStorage = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("role");
@@ -15,6 +22,10 @@ function Account() {
         localStorage.removeItem("login");
     };
 
+    /**
+     * Handles the submit event
+     * @param {Event} e the submit event 
+     */
     const handlSubmit = async (e) => {
         e.preventDefault();
         clearLocalStorage();

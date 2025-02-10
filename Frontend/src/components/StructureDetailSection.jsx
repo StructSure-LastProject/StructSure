@@ -1,6 +1,9 @@
 import { ChevronDown, Dot, ChevronRight, Pencil, FolderSync } from 'lucide-solid';
 
-
+/**
+ * Shwo the section part component
+ * @returns {JSX.Element} the component for the section part 
+ */
 function StructureDetailSection() {
 
     return (

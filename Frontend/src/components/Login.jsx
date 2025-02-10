@@ -1,16 +1,23 @@
 import logo from '/src/assets/logo.svg';
 import log_in from '/src/assets/log_in.svg';
-import { createSignal } from "solid-js";
+import { createSignal, JSX } from "solid-js";
 import { useNavigate } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 
-
+/**
+ * Component for the login
+ * @returns {JSX.Element} component for the login
+ */
 function Login() {
     const [login, setLogin] = createSignal("");
     const [password, setPassword] = createSignal("");
     const [error, setError] = createSignal("");
     const navigate = useNavigate();
 
+    /**
+     * Fills the local storage with informations of the user
+     * @param {Object} response the response containing token, role, ...
+     */
     const fillLocalStorage = (response) => {
         localStorage.setItem("token", response.token);
         localStorage.setItem("role", response.role);
@@ -19,6 +26,10 @@ function Login() {
         localStorage.setItem("login", response.login);
     };
 
+    /**
+     * Call the login endpoint to login the user
+     * @param {String} url the url of the server 
+     */
     const loginFetchRequest = async (url) => {
         const requestBody = JSON.stringify({
             login: login(),
@@ -46,6 +57,10 @@ function Login() {
         }        
     };
 
+    /**
+     * Handles the form submit event
+     * @param {Event} e Form submit event 
+     */
     const handlSubmit = async (e) => {
         e.preventDefault();
         const req = await loginFetchRequest("/api/login");    

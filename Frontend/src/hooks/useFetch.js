@@ -10,6 +10,11 @@ const useFetch = () => {
   const [error, setError] = createSignal(null);
   const [statusCode, setStatusCode] = createSignal(0);
 
+  /**
+   * Will fetch data from server
+   * @param {String} endpoint the endpoint
+   * @param {Object} requestData the object containing request informations
+   */
   const fetchData = async (endpoint, requestData) => {
     setLoading(true);
         try {
