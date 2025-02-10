@@ -8,7 +8,7 @@ import StructureDetailCapteurs from './StructureDetailCapteurs';
 function StructureDetailRow() {
     
     return (
-        <div class="flex gap-x-[50px] w-full">
+        <div class="flex lg:flex-row flex-col gap-y-[50px] lg:gap-x-[50px] w-full">
             <StructureDetailNote />
             <StructureDetailCapteurs />
         </div>

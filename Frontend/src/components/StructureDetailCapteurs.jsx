@@ -23,7 +23,7 @@ function StructureDetailCapteurs() {
                     </div>
                 </div>
             </div>
-            <div class="grid grid-cols-3 rounded-[20px] gap-4">
+            <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
                     <div class="w-[12px] h-[12px] rounded-[50px] bg-[#F13327] border-2 border-red-200"></div>
                     <p class="prose font-poppins poppins font-semibold w-[138px]">Capteur 01</p>

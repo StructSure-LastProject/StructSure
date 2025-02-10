@@ -190,12 +190,12 @@ function StructureDetailPlans() {
     };
     
     return (
-        <div class="flex rounded-[20px] bg-E9E9EB">
-            <div class="flex flex-col gap-y-[15px] w-[25%] m-5">
+        <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
+            <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
                 <p class="prose font-poppins title">Plans</p>
                 <StructureDetailSection />
             </div>
-            <div class="w-[75%] rounded-[20px] bg-white">
+            <div class="lg:w-[75%] rounded-[20px] bg-white">
                 <canvas
                     ref={canvasRef}
                     class="p-[20px] w-full"
