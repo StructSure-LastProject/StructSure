@@ -53,7 +53,6 @@ function StructureDetailPlans() {
     }
 
     const handleResize = () => {
-        console.log("Resizing ?");
         fixDpi();
         drawImage();
     };
