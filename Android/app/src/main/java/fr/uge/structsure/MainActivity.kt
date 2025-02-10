@@ -97,9 +97,7 @@ class MainActivity : ComponentActivity() {
                     navigateToLogin.value = false
                 }
             }
-            var connexion = true  // TODO false si pas de connexion
-            var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
-            val homePage = if (connexion && !loggedIn) loginPage else "HomePage"
+            val homePage = if (accountDao.get()?.token == null) loginPage else "HomePage"
             NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
