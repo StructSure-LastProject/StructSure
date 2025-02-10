@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import fr.uge.structsure.cache.SensorCache
+import fr.uge.structsure.startScan.data.cache.SensorCache
 import fr.uge.structsure.startScan.data.ResultSensors
 import fr.uge.structsure.startScan.data.ScanEntity
 import fr.uge.structsure.startScan.data.dao.ResultDao
@@ -63,6 +63,11 @@ class ScanViewModel(
     private val _sensorMessages = MutableLiveData<String>()
     val sensorMessages: LiveData<String> = _sensorMessages
 
+
+    companion object {
+        private const val LOG_TAG = "TestScan"
+    }
+
     /**
      * Buffer that stores RFID chip IDs for a certain amount of time.
      * When a chip is added, it waits for the other chip to be read.
@@ -79,7 +84,6 @@ class ScanViewModel(
      * from the same sensor can be read.
      */
     fun onTagScanned(chipId: String)  {
-        Log.d("TestScan", "Adding chip $chipId to buffer")
         rfidBuffer.add(chipId)
     }
 
@@ -89,20 +93,16 @@ class ScanViewModel(
      * Here, we decide how to determine the state of a sensor.
      */
     private fun handleTimedOutChip(chipId: String) {
-        try {
-            val sensor = findSensorByChip(chipId)
-            if (sensor == null) {
-                Log.d("TestScan", "No sensor found for chipId $chipId")
-                return
-            }
-            val otherChipId = if (sensor.controlChip == chipId) sensor.measureChip else sensor.controlChip
-            val otherPresent = rfidBuffer.contains(otherChipId)
-            val newState = computeSensorState(sensor, chipId, otherPresent)
-            Log.d("TestScan", "Chip $chipId timed out. Other chip presence: $otherPresent. New state computed: $newState")
-            updateSensorState(sensor, newState)
-        } catch (e: Exception) {
-            Log.e("TestScan", "Error in handleTimedOutChip: ${e.message}")
+        val sensor = findSensorByChip(chipId)
+        if (sensor == null) {
+            Log.d(LOG_TAG, "No sensor found for chipId $chipId")
+            return
         }
+        val otherChipId = if (sensor.controlChip == chipId) sensor.measureChip else sensor.controlChip
+        val otherPresent = rfidBuffer.contains(otherChipId)
+        val newState = computeSensorState(sensor, chipId, otherPresent)
+        Log.d(LOG_TAG, "Chip $chipId timed out. Other chip presence: $otherPresent. New state computed: $newState")
+        updateSensorState(sensor, newState)
     }
 
     /**
@@ -144,7 +144,7 @@ class ScanViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             // 1) Update the 'state' field in the sensors table
             sensorDao.updateSensorDBState(sensor.controlChip, sensor.measureChip, newState)
-            Log.d("TestScan", "Sensor ${sensor.sensorId} updated to state: $newState")
+            Log.d(LOG_TAG, "Sensor ${sensor.sensorId} updated to state: $newState")
 
             // 2) Insert a new record into ResultSensors
             activeScanId?.let { scanId ->
@@ -244,8 +244,8 @@ class ScanViewModel(
                     delay(100)
                 }
             } catch (e: CancellationException) {
-                // Caught when scanJob?.cancel() is called
-                println("startSensorInterrogation() => coroutine canceled.")
+                Log.e("ScanViewModel", "startSensorInterrogation() coroutine canceled.", e)
+                throw e
             } finally {
                 // This block is executed even if the coroutine was canceled
                 println("All sensors processed or job was canceled.")

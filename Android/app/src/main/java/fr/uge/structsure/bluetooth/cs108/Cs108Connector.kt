@@ -10,14 +10,17 @@ import androidx.core.app.ActivityCompat
 import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.MainActivity
 import fr.uge.structsure.MainActivity.Companion.csLibrary4A
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CancellationException
+import kotlin.coroutines.CoroutineContext
 
 class Cs108Connector(private val context: Context) {
     companion object {
@@ -174,12 +177,15 @@ class Cs108Connector(private val context: Context) {
      * Wait for the latest device to be ready for other operations.
      */
     private suspend fun waitForDeviceReady() {
-        while (pairTask != null && pairTask!!.isActive && MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
+        while (pairTask?.isActive == true && MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
             delay(500L)
         }
-        if (batteryTask == null) batteryTask = GlobalScope.launch { pollBattery() }
+        if (batteryTask == null) {
+            batteryTask = GlobalScope.launch { pollBattery() }
+        }
         println("[DeviceConnector] Device Ready")
     }
+
 
     /**
      * Ask continuously the cs108 library for any freshly read device
