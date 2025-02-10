@@ -1,5 +1,6 @@
 package fr.uge.structsure.retrofit
 
+import android.util.Log
 import fr.uge.structsure.MainActivity
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -18,7 +19,7 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 object RetrofitInstance {
 
-    private const val BASE_URL = "http://172.20.10.4:8080"
+    private const val BASE_URL = "http://10.42.0.191:8080"
     private var tokenProvider: () -> String = {
         val account = MainActivity.db.accountDao().get()
         if (account == null) "" else account.token?: ""
@@ -29,9 +30,19 @@ object RetrofitInstance {
     }
 
     private val tokenInjector = { chain: Interceptor.Chain ->
-        chain.proceed(chain.request().newBuilder().apply {
-            header("Authorization", "Bearer " + tokenProvider())
-        }.build())
+        // chain.proceed(chain.request().newBuilder().apply {
+        //     header("Authorization", "Bearer " + tokenProvider())
+        // }.build())
+        var request = chain.request()
+
+        request = request.newBuilder()
+            .header("Authorization", "Bearer " + tokenProvider())
+            .build()
+        val response = chain.proceed(request)
+        if (response.code == 401) {
+            Log.e("RetrofitInstance", "Got 401")
+        }
+        response
     }
 
     private val okHttpClient = OkHttpClient.Builder()
