@@ -16,4 +16,6 @@ public interface SensorRepository extends JpaRepository<Sensor, Long> {
     List<Sensor> findByStructureId(Long structureId);
     Optional<Sensor> findBySensorId(SensorId sensorId);
     Optional<Sensor> findByName(String name);
+    @Query("SELECT s FROM Sensor s WHERE s.sensorId.controlChip = :chipTag OR s.sensorId.measureChip = :chipTag")
+    List<Sensor> findByChipTag(String chipTag);
 }
