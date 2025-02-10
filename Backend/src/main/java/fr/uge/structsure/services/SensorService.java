@@ -152,7 +152,7 @@ public class SensorService {
         if (request.name().isEmpty() || request.name().length() > 32) {
             throw new TraitementException(ErrorIdentifier.SENSOR_NAME_EXCEED_LIMIT);
         }
-        if (!request.note().isEmpty() && request.note().length() > 1000) {
+        if (request.note() != null && request.note().length() > 1000) {
             throw new TraitementException(ErrorIdentifier.SENSOR_NOTE_EXCEED_LIMIT);
         }
         var formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd");
