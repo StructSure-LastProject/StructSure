@@ -34,6 +34,7 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.SENSOR_CHIP_TAGS_ALREADY_EXISTS, new Error(422, "L'un des deux tags ou les deux sont déjà utilisés"));
         messages.put(ErrorIdentifier.SENSOR_STRUCTURE_NOT_FOUND, new Error(404, "Ouvrage introuvable"));
         messages.put(ErrorIdentifier.SENSOR_INSTALLATION_DATE_INVALID_FORMAT, new Error(422, "La date d’installation doit être au format AAAA-MM-JJ"));
+        messages.put(ErrorIdentifier.SENSOR_CHIP_TAGS_ARE_IDENTICAL, new Error(422, "Les tags sont identiques"));
     }
 
     /**

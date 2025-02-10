@@ -4,7 +4,6 @@ import fr.uge.structsure.dto.sensors.AddSensorAnswerDTO;
 import fr.uge.structsure.dto.sensors.AddSensorRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.entities.Sensor;
-import fr.uge.structsure.entities.SensorId;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.SensorRepository;
@@ -82,7 +81,11 @@ public class SensorService {
      * @throws TraitementException If preconditions are not met or uniqueness constraints fail.
      */
     public AddSensorAnswerDTO createSensor(AddSensorRequestDTO request) throws TraitementException {
-        sensorPrecondition(request);
+        sensorEmptyPrecondition(request);
+        sensorMalformedPrecondition(request);
+        if (request.measureChip().equals(request.controlChip())) {
+            throw new TraitementException(ErrorIdentifier.SENSOR_CHIP_TAGS_ARE_IDENTICAL);
+        }
         var structure = structureRepository.findById(request.structureId());
         if (structure.isEmpty()) {
             throw new TraitementException(ErrorIdentifier.SENSOR_STRUCTURE_NOT_FOUND);
@@ -111,34 +114,46 @@ public class SensorService {
     /**
      * Ensures that the sensor request object contains all necessary information.
      *
-     * This method checks that none of the required properties are null, malformed, etc.
+     * This method checks that none of the required properties are null.
      * If any essential field is missing, an exception is thrown.
      *
      * @param request An object containing the sensor information.
      * @throws TraitementException If any required property is null.
      */
-    private void sensorPrecondition(AddSensorRequestDTO request) throws TraitementException {
+    private void sensorEmptyPrecondition(AddSensorRequestDTO request) throws TraitementException {
         Objects.requireNonNull(request);
         if (request.controlChip() == null || request.measureChip() == null) {
             throw new TraitementException(ErrorIdentifier.SENSOR_CHIP_TAGS_IS_EMPTY);
         }
+        if (request.name() == null) {
+            throw new TraitementException(ErrorIdentifier.SENSOR_NAME_IS_EMPTY);
+        }
+        if (request.installationDate() == null || request.installationDate().isEmpty()) {
+            throw new TraitementException(ErrorIdentifier.SENSOR_INSTALLATION_DATE_IS_EMPTY);
+        }
+    }
+
+    /**
+     * Ensures that the sensor request object contains all necessary information.
+     *
+     * This method checks that none of the required properties are malformed.
+     * If any essential field is malformed, an exception is thrown.
+     *
+     * @param request An object containing the sensor information.
+     * @throws TraitementException If any required property is malformed.
+     */
+    private void sensorMalformedPrecondition(AddSensorRequestDTO request) throws TraitementException {
         if (request.controlChip().isEmpty() || request.controlChip().length() > 32) {
             throw new TraitementException(ErrorIdentifier.SENSOR_CHIP_TAGS_EXCEED_LIMIT);
         }
         if (request.measureChip().isEmpty() || request.measureChip().length() > 32) {
             throw new TraitementException(ErrorIdentifier.SENSOR_CHIP_TAGS_EXCEED_LIMIT);
         }
-        if (request.name() == null) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_NAME_IS_EMPTY);
-        }
         if (request.name().isEmpty() || request.name().length() > 32) {
             throw new TraitementException(ErrorIdentifier.SENSOR_NAME_EXCEED_LIMIT);
         }
         if (!request.note().isEmpty() && request.note().length() > 1000) {
             throw new TraitementException(ErrorIdentifier.SENSOR_NOTE_EXCEED_LIMIT);
-        }
-        if (request.installationDate() == null || request.installationDate().isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_INSTALLATION_DATE_IS_EMPTY);
         }
         var formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd");
         try {
