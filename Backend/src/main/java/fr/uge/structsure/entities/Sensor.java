@@ -23,6 +23,10 @@ public class Sensor {
     private String name;
     private String note;
 
+    @ManyToOne
+    @JoinColumn(name = "structure_id", nullable = true)
+    private Structure structure;
+
     /*
     @Convert(converter = LocalTimeConverter.class)
     private LocalTime installationDate;
@@ -40,9 +44,6 @@ public class Sensor {
     @Column(columnDefinition = "INTEGER")
     private Boolean archived;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "structure_id", nullable = false)
-    private Structure structure;
 
     //constructeurs nécéssaire
     public Sensor(){

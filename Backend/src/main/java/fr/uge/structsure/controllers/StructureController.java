@@ -3,9 +3,7 @@ package fr.uge.structsure.controllers;
 import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.plan.AddPlanRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
-import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
-import fr.uge.structsure.dto.structure.GetAllStructureRequest;
-import fr.uge.structsure.dto.structure.StructureResponseDTO;
+import fr.uge.structsure.dto.structure.*;
 import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
@@ -21,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalTime;
 import java.util.List;
 
-import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
 import fr.uge.structsure.services.StructureService;
 
 import org.springframework.http.MediaType;
@@ -175,5 +172,20 @@ public class StructureController {
     }
 
 
-
+    /**
+     * Returns the structure details with the specified id
+     * @param id the id of the structure
+     * @return StructureDetailsResponseDTO the detail of the structure,
+     *  or Error if structure not found
+     */
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> structureDetail(@PathVariable("id") long id) {
+        try {
+            var detail = structureService.structureDetail(id);
+            return ResponseEntity.status(200).body(detail);
+        } catch (TraitementException e) {
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
+            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        }
+    }
 }

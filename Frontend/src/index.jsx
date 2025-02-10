@@ -1,4 +1,5 @@
 import "./index.css"
+import "typeface-poppins";
 
 /* @refresh reload */
 import { render } from 'solid-js/web';

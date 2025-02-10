@@ -1,12 +1,10 @@
+import Header from '../components/Header';
+import StructSure from '../components/Structure';
 
-import logo from '/src/assets/logo.svg';
-import loginIconBlack from '/src/assets/loginIconBlack.svg';
-import Header from '../../components/Header';
-import { createSignal } from "solid-js";
-import { useNavigate } from '@solidjs/router';
-import StructSure from '../../components/Structure';
-
-
+/**
+ * Component for the home page
+ * @returns component for the home page
+ */
 function Home() {
 
     return (

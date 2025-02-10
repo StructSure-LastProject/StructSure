@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface StructureRepository extends JpaRepository<Structure, Long> {
     Optional<Structure> findByName(String name);
+
+    Optional<Structure> findById(long id);
 }

@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class StructureService {
@@ -24,7 +21,7 @@ public class StructureService {
     private final SensorRepository sensorRepository;
 
     @Autowired
-    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository ,PlanRepository planRepository) {
+    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository, PlanRepository planRepository) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.planRepository = Objects.requireNonNull(planRepository);
@@ -192,21 +189,44 @@ public class StructureService {
 
     }
 
-  public StructureResponseDTO getStructureById(Long id) {
-      Objects.requireNonNull(id);
-      var structureOptional = structureRepository.findById(id);
-      if (structureOptional.isEmpty()){
+    public StructureResponseDTO getStructureById(Long id) {
+        Objects.requireNonNull(id);
+        var structureOptional = structureRepository.findById(id);
+        if (structureOptional.isEmpty()){
         throw new IllegalArgumentException("Structure n'existe pas");
-      }
-      var structure = structureOptional.get();
-      var plans = planRepository.findByStructure(structure);
-      var sensors = sensorRepository.findByStructureId(structure.getId());
-      return new StructureResponseDTO(
+        }
+        var structure = structureOptional.get();
+        var plans = planRepository.findByStructure(structure);
+        var sensors = sensorRepository.findByStructureId(structure.getId());
+        return new StructureResponseDTO(
           id,
           structure.getName(),
           structure.getNote(),
           plans,
           sensors
-      );
-  }
+        );
+    }
+
+    /**
+     * Will return a detail of the structure with the specified id
+     * @param id the id of the structure
+     * @return the record containing the detail
+     * @throws TraitementException
+     */
+    public StructureDetailsResponseDTO structureDetail(long id) throws TraitementException {
+        var structureOpt = structureRepository.findById(id);
+        if (structureOpt.isEmpty()) {
+            throw new TraitementException(ErrorIdentifier.STRUCTURE_ID_NOT_FOUND);
+        }
+        var structure = structureOpt.get();
+        var plans = planRepository.findByStructure(structure);
+        var sensors = sensorRepository.findByStructure(structure);
+        System.err.println("Plans : " + plans);
+        System.err.println("Sensors : " + sensors);
+
+        return new StructureDetailsResponseDTO(structure.getId(), structure.getName(),
+                structure.getNote(),
+                plans.stream().map(StructureDetailsResponseDTO.Plan::fromPlanEntity).toList(),
+                sensors.stream().map(StructureDetailsResponseDTO.Sensor::fromSensorEntity).toList());
+    }
 }
