@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.uge.structsure.R
+import fr.uge.structsure.components.Plan
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
@@ -66,14 +67,7 @@ fun PlansView(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            Image(
-                painter = painterResource(id = R.drawable.oa_plan),
-                contentDescription = "Plan",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(171.dp)
-            )
+            Plan(R.drawable.oa_plan)
 
             Spacer( Modifier.fillMaxWidth().height(1.dp).background(LightGray) )
 
