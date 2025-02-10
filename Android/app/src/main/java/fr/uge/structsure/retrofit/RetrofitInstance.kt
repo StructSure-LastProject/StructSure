@@ -1,6 +1,5 @@
 package fr.uge.structsure.retrofit
 
-import android.util.Log
 import fr.uge.structsure.MainActivity
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
