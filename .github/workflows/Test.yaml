@@ -1,0 +1,42 @@
+name: Test FrontEnd SolidJS / BackEnd Spring Boot
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deepsource:
+    runs-on: self-hosted
+    env:
+      DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Run Tests and Generate Coverage
+      run: npm run coverage
+
+    - name: Run Java Tests
+      run: mvn test
+
+    - name: Report test-coverage to DeepSource
+      run: |
+        # Install the CLI
+        curl https://deepsource.io/cli | sh
+
+        cd Frontend/
+
+        # Send the report to DeepSource
+        ./bin/deepsource report --analyzer test-coverage --key javascript --value-file ./coverage/lcov.info
+
+        cd ../Backend
+
+        ./bin/deepsource report --analyzer test-coverage --key java --value-file target/site/jacoco/jacoco.xml

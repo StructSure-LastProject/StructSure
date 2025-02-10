@@ -43,7 +43,8 @@ public class FrontController {
         try (var input = new ClassPathResource("static/index.html").getInputStream()) {
             return new String(input.readAllBytes());
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to load index.html in memory", e);
+            System.err.println("Failed to load 'index.html' which is needed in production");
+            return "Loading error : index.html";
         }
     }
 }
