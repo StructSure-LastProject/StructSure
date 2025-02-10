@@ -22,6 +22,19 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.PLAN_FILE_IS_EMPTY, new Error(422, "Le fichier ne peut pas être vide"));
         messages.put(ErrorIdentifier.PLAN_NAME_IS_EMPTY, new Error(422, "Le nom du fichier ne peut pas être vide"));
         messages.put(ErrorIdentifier.SERVER_ERROR, new Error(500, "Une erreur est survenue"));
+
+        messages.put(ErrorIdentifier.SENSOR_CHIP_TAGS_IS_EMPTY, new Error(422, "Les champs [controlChip | measureChip] sont obligatoires"));
+        messages.put(ErrorIdentifier.SENSOR_NAME_IS_EMPTY, new Error(422, "Le champ name est obligatoire"));
+        messages.put(ErrorIdentifier.SENSOR_INSTALLATION_DATE_IS_EMPTY, new Error(422, "Le champ installationDate est obligatoire"));
+        messages.put(ErrorIdentifier.SENSOR_POSITION_IS_EMPTY, new Error(422, "Les champs [x | y] sont obligatoires"));
+        messages.put(ErrorIdentifier.SENSOR_CHIP_TAGS_EXCEED_LIMIT, new Error(422, "L'un des tags dépasse le nombre de caractères (1-32 caractères)"));
+        messages.put(ErrorIdentifier.SENSOR_NAME_EXCEED_LIMIT, new Error(422, "Le nom dépasse le nombre de caractères (1-32 caractères)"));
+        messages.put(ErrorIdentifier.SENSOR_NOTE_EXCEED_LIMIT, new Error(422, "La note dépasse le nombre de caractères (0-1000 caractères)"));
+        messages.put(ErrorIdentifier.SENSOR_NAME_ALREADY_EXISTS, new Error(422, "Le nom est déjà utilisé"));
+        messages.put(ErrorIdentifier.SENSOR_CHIP_TAGS_ALREADY_EXISTS, new Error(422, "L'un des deux tags ou les deux sont déjà utilisés"));
+        messages.put(ErrorIdentifier.SENSOR_STRUCTURE_NOT_FOUND, new Error(404, "Ouvrage introuvable"));
+        messages.put(ErrorIdentifier.SENSOR_INSTALLATION_DATE_INVALID_FORMAT, new Error(422, "La date d’installation doit être au format AAAA-MM-JJ"));
+        messages.put(ErrorIdentifier.SENSOR_CHIP_TAGS_ARE_IDENTICAL, new Error(422, "Les tags sont identiques"));
     }
 
     /**
