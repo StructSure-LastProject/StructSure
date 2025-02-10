@@ -13,26 +13,20 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-
-    - name: Install Dependencies
-      run: npm install
-
     - name: Run Tests and Generate Coverage
-      run: npm run coverage
+      run: docker run --rm -v ${{ secrets.FRONTEND_PATH }}:/app -w /app --user 1001 node:22-bullseye-slim sh -c "npm install && npm run coverage"
 
     - name: Run Java Tests
-      run: mvn test
+      run: |
+        cd Backend
+        mvn test
 
     - name: Report test-coverage to DeepSource
       run: |
         # Install the CLI
         curl https://deepsource.io/cli | sh
 
-        cd Frontend/
+        cd ../Frontend
 
         # Send the report to DeepSource
         ./bin/deepsource report --analyzer test-coverage --key javascript --value-file ./coverage/lcov.info
