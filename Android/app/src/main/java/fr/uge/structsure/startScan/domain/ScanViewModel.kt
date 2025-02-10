@@ -1,5 +1,6 @@
 package fr.uge.structsure.startScan.domain
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,6 +12,7 @@ import fr.uge.structsure.startScan.data.ScanEntity
 import fr.uge.structsure.startScan.data.dao.ResultDao
 import fr.uge.structsure.startScan.data.dao.ScanDao
 import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.structuresPage.data.SensorDao
 import kotlinx.coroutines.*
 import java.sql.Timestamp
 
@@ -21,6 +23,7 @@ import java.sql.Timestamp
 class ScanViewModel(
     private val scanDao: ScanDao,
     private val resultDao: ResultDao,
+    private val sensorDao: SensorDao,
     private val structureId: Long
 ) : ViewModel() {
 
@@ -59,6 +62,108 @@ class ScanViewModel(
      */
     private val _sensorMessages = MutableLiveData<String>()
     val sensorMessages: LiveData<String> = _sensorMessages
+
+    /**
+     * Buffer that stores RFID chip IDs for a certain amount of time.
+     * When a chip is added, it waits for the other chip to be read.
+     * If the other chip is not read within the timeout, the buffer is flushed
+     * and the state of the sensor is determined.
+     */
+    private val rfidBuffer = TimedBuffer<String> { buffer, chipId ->
+        handleTimedOutChip(chipId)
+    }
+
+    /**
+     * Function called each time an RFID chip is read.
+     * We add it to the buffer to “wait” for the other chip
+     * from the same sensor can be read.
+     */
+    fun onTagScanned(chipId: String)  {
+        Log.d("TestScan", "Adding chip $chipId to buffer")
+        rfidBuffer.add(chipId)
+    }
+
+    /**
+     * Callback executed when chipId has remained in the buffer
+     * longer than timeout (in TimedBuffer).
+     * Here, we decide how to determine the state of a sensor.
+     */
+    private fun handleTimedOutChip(chipId: String) {
+        try {
+            val sensor = findSensorByChip(chipId)
+            if (sensor == null) {
+                Log.d("TestScan", "No sensor found for chipId $chipId")
+                return
+            }
+            val otherChipId = if (sensor.controlChip == chipId) sensor.measureChip else sensor.controlChip
+            val otherPresent = rfidBuffer.contains(otherChipId)
+            val newState = computeSensorState(sensor, chipId, otherPresent)
+            Log.d("TestScan", "Chip $chipId timed out. Other chip presence: $otherPresent. New state computed: $newState")
+            updateSensorState(sensor, newState)
+        } catch (e: Exception) {
+            Log.e("TestScan", "Error in handleTimedOutChip: ${e.message}")
+        }
+    }
+
+    /**
+     * Retrieves a cached SensorDB from a chipId (controlChip or measureChip).
+     */
+    private fun findSensorByChip(chipId: String): SensorDB? {
+        return sensorCache.getAllSensors().find { s ->
+            s.controlChip == chipId || s.measureChip == chipId
+        }
+    }
+
+    /**
+     * Rules :
+     *  - OK: if we only have the control chip => controlChip
+     *  - NOK : if we have the control chip AND the scrambled chip
+     *  - DEFECTIVE: if only the chip is scrambled
+     */
+    private fun computeSensorState(sensor: SensorDB, scannedChip: String, otherChipInBuffer: Boolean): String {
+        val isControl = (scannedChip == sensor.controlChip)
+        val isMeasure = (scannedChip == sensor.measureChip)
+
+        return when {
+            (isControl && otherChipInBuffer) -> "NOK"
+
+            (isMeasure && otherChipInBuffer) -> "NOK"
+
+            isControl && !otherChipInBuffer -> "OK"
+
+            isMeasure && !otherChipInBuffer -> "DEFECTIVE"
+
+            else -> "UNKNOWN"
+        }
+    }
+
+    /**
+     * Save sensor status by updating SensorDB.state and inserting a ResultSensors entry.
+     */
+    private fun updateSensorState(sensor: SensorDB, newState: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // 1) Update the 'state' field in the sensors table
+            sensorDao.updateSensorDBState(sensor.controlChip, sensor.measureChip, newState)
+            Log.d("TestScan", "Sensor ${sensor.sensorId} updated to state: $newState")
+
+            // 2) Insert a new record into ResultSensors
+            activeScanId?.let { scanId ->
+                val resultSensor = ResultSensors(
+                    timestamp = Timestamp(System.currentTimeMillis()).toString(),
+                    scanId = scanId,
+                    controlChip = sensor.controlChip,
+                    measureChip = sensor.measureChip,
+                    state = newState
+                )
+                resultDao.insertResult(resultSensor)
+            }
+            if (newState == "OK") {
+                _sensorMessages.postValue("Message posted: Sensor ${sensor.sensorId} => $newState")
+            }
+        }
+    }
+
+
 
     /**
      * Fetches sensors for the given structure from the database and stores them in sensorCache.
@@ -158,6 +263,7 @@ class ScanViewModel(
             // Cancel the current job
             scanJob?.cancel()
             scanJob = null
+            rfidBuffer.stop()
         }
     }
 
@@ -193,6 +299,12 @@ class ScanViewModel(
                 // Reset the state and index
                 currentScanState.value = ScanState.STOPPED
                 lastProcessedSensorIndex = 0
+
+                // Clear the sensor cache
+                sensorCache.clearCache()
+
+                // Stop the timerBuffer
+                rfidBuffer.stop()
             }
         }
     }

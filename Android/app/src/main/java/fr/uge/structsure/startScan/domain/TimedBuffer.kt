@@ -90,6 +90,7 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
          */
         fun start() {
             if (runningTask != null) return
+            Log.d("TestScan", "Starting TaskLoopRunner")
             runningTask = executor.scheduleWithFixedDelay(task, delay, delay, TimeUnit.MILLISECONDS)
         }
 

@@ -40,14 +40,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreenStartSensor(context: Context, scanViewModel: ScanViewModel, structureId: Long, connexionCS108: Cs108Connector, navController: NavController) {
 
-    val sensors = listOf<GetAllSensorsResponse>()
-
     val cs108Scanner = remember {
-        Cs108Scanner { chip: RfidChip ->
-        println("RFID détecté = ${chip.id}, atten=${chip.attenuation}")
-            GlobalScope.launch(Dispatchers.Main) {
-                Toast.makeText(context, "Capteur ${chip.id} is oK ! ", Toast.LENGTH_SHORT).show()
-            }
+        Cs108Scanner { chip ->
+            println("RFID détecté : ${chip.id}, atten=${chip.attenuation}")
+            scanViewModel.onTagScanned(chip.id)
         }
     }
 
@@ -81,19 +77,12 @@ fun MainScreenStartSensor(context: Context, scanViewModel: ScanViewModel, struct
         StructureWeather(viewModel = scanViewModel, scrollState)
         PlansView(modifier = Modifier.fillMaxWidth())
         SensorsList(modifier = Modifier.fillMaxWidth())
-        // TODO Display alert
+
+        val sensorMsg = scanViewModel.sensorMessages.observeAsState().value
+        sensorMsg?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
         // navController.navigate("Alerte?state=true&name=Sensor&lastState=Ok") // true for NOK, false for Failing
 
-        println("toast " + scanViewModel.currentScanState.value)
-        if (scanViewModel.currentScanState.value == ScanState.STARTED) {
-           scanViewModel.sensorMessages.observeAsState().value?.let { message ->
-                CustomToast(
-                    message = message,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 150.dp)
-                )
-            }
-        }
     }
 }

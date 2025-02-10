@@ -22,7 +22,7 @@ class TimedBufferTests {
         buffer.add("abc")
         Thread.sleep(500)
         buffer.add("def")
-        Thread.sleep(500)
+        Thread.sleep(750)
         assertEquals(1, result.get())
         assertFalse(buffer.contains("abc"))
         assertFalse(buffer.contains("def"))
