@@ -8,14 +8,11 @@ import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.OrderEnum;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class StructureService {
