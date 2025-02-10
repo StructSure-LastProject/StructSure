@@ -14,6 +14,37 @@ function StructureDetailPlans() {
     let startX = 0;
     let startY = 0;
 
+    const drawImage = () => {
+        const ctx = ctxCanvas();
+        const imgRatio = img.width / img.height;
+        const canvasRatio = canvasRef.width / canvasRef.height;
+        let drawWidth = 0, drawHeight = 0, baseOffsetX = 0, baseOffsetY = 0;
+        if (imgRatio > canvasRatio) {
+            // Image plus large que le canvas (paysage) -> Ajuster en largeur
+            drawWidth = canvasRef.width;
+            drawHeight = canvasRef.width / imgRatio;
+            baseOffsetX = 0;
+            baseOffsetY = (canvasRef.height - drawHeight) / 2;
+        } else {
+            // Image plus haute que le canvas (portrait) -> Ajuster en hauteur
+            drawWidth = canvasRef.height * imgRatio;
+            drawHeight = canvasRef.height;
+            baseOffsetX = (canvasRef.width - drawWidth) / 2;
+            baseOffsetY = 0;
+        }
+        // Appliquer le zoom
+        const zoom = zoomFactor();
+        ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+        let [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio, canvasRatio, zoom);
+        ctx.drawImage(
+            img,
+            baseOffsetX + offsetX() - zoomX / 2,
+            baseOffsetY + offsetY() - zoomY / 2,
+            drawWidth + zoomX,
+            drawHeight + zoomY
+        );
+    }
+
     const fixDpi = () => {
         if (!canvasRef) return;
         const dpi = window.devicePixelRatio;
@@ -37,22 +68,20 @@ function StructureDetailPlans() {
     })
 
     const addMouseEvents = () => {
-        let c = canvasRef;
-        c.addEventListener("wheel", handleWheel);
-        c.addEventListener("mousedown", handleMouseDown);
-        c.addEventListener("mousemove", handleMouseMove);
-        c.addEventListener("mouseup", handleMouseUp);
-        c.addEventListener("mouseout", handleMouseUp);
+        canvasRef.addEventListener("wheel", handleWheel);
+        canvasRef.addEventListener("mousedown", handleMouseDown);
+        canvasRef.addEventListener("mousemove", handleMouseMove);
+        canvasRef.addEventListener("mouseup", handleMouseUp);
+        canvasRef.addEventListener("mouseout", handleMouseUp);
         window.addEventListener("resize", fixDpi);
     }
 
     onCleanup(() => {
-        let c = canvasRef;
-        c.removeEventListener("wheel", handleWheel);
-        c.removeEventListener("mousedown", handleMouseDown);
-        c.removeEventListener("mousemove", handleMouseMove);
-        c.removeEventListener("mouseup", handleMouseUp);
-        c.removeEventListener("mouseout", handleMouseUp);
+        canvasRef.removeEventListener("wheel", handleWheel);
+        canvasRef.removeEventListener("mousedown", handleMouseDown);
+        canvasRef.removeEventListener("mousemove", handleMouseMove);
+        canvasRef.removeEventListener("mouseup", handleMouseUp);
+        canvasRef.removeEventListener("mouseout", handleMouseUp);
         window.removeEventListener("resize", fixDpi);
     });
 
@@ -105,38 +134,6 @@ function StructureDetailPlans() {
         }
         return [zoomX, zoomY];
     };
-
-    const drawImage = () => {
-        const ctx = ctxCanvas();
-        const c = canvasRef;
-        const imgRatio = img.width / img.height;
-        const canvasRatio = c.width / c.height;
-        let drawWidth, drawHeight, baseOffsetX, baseOffsetY;
-        if (imgRatio > canvasRatio) {
-            // Image plus large que le canvas (paysage) -> Ajuster en largeur
-            drawWidth = c.width;
-            drawHeight = c.width / imgRatio;
-            baseOffsetX = 0;
-            baseOffsetY = (c.height - drawHeight) / 2;
-        } else {
-            // Image plus haute que le canvas (portrait) -> Ajuster en hauteur
-            drawWidth = c.height * imgRatio;
-            drawHeight = c.height;
-            baseOffsetX = (c.width - drawWidth) / 2;
-            baseOffsetY = 0;
-        }
-        // Appliquer le zoom
-        const zoom = zoomFactor();
-        ctx.clearRect(0, 0, c.width, c.height);
-        let [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio, canvasRatio, zoom);
-        ctx.drawImage(
-            img,
-            baseOffsetX + offsetX() - zoomX / 2,
-            baseOffsetY + offsetY() - zoomY / 2,
-            drawWidth + zoomX,
-            drawHeight + zoomY
-        );
-    }
 
     const loadDetails = () => {
         loadAndDrawImage(plan);
