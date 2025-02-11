@@ -28,6 +28,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.startScan.presentation.components.SensorState
+import kotlin.math.max
 
 private val Int.toPx: Int get() = (this * getSystem().displayMetrics.density).toInt()
 
@@ -35,17 +36,21 @@ data class Point(val x: Int, val y: Int)
 
 @Composable
 fun Plan(@DrawableRes image: Int) {
-    val points = mutableListOf(Point(100, 100))
+    val points = mutableListOf(Point(0, 0), Point(100, 100))
     val imgSize = painterResource(image).intrinsicSize
+    val ratio = (imgSize.width / imgSize.height).coerceIn(1.5f, 1.75f)
+    println("${(imgSize.width / imgSize.height)}")
+    val transformFactor = (imgSize.width / ratio) / imgSize.height
+    val offsetFactor = computeOffsetFactor(imgSize, ratio)
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(0.dp))
             .fillMaxWidth()
-            .aspectRatio(imgSize.width / imgSize.height),
+            .aspectRatio(ratio),
         Alignment.Center
     ) {
         // Define mutable state variables to keep track of the scale and offset.
-        var scale by remember { mutableFloatStateOf(1f) }
+        var scale by remember { mutableFloatStateOf(max(1f, transformFactor)) }
         var offset by remember { mutableStateOf(Offset(0f, 0f)) }
 
         Image(
@@ -57,12 +62,12 @@ fun Plan(@DrawableRes image: Int) {
                     detectTransformGestures { centroid, pan, zoom, _ ->
                         val adjustment = centroid * (1 - zoom)
                         offset = (offset + pan) * zoom + adjustment
-                        scale = (scale * zoom).coerceIn(1f, 3f)
+                        scale = (scale * zoom).coerceIn(transformFactor.coerceAtLeast(1f), 3 * transformFactor.coerceAtLeast(1f))
+                        println("Factor $transformFactor")
 
-                        val width = (size.width * scale - size.width)/2
-                        val height = (size.height * scale - size.height)/2f
-                        println("${imgSize.width} - ${imgSize.height}")
-                        println(offset.x)
+                        val width = ((size.width * scale - size.width)/2 - (size.width * offsetFactor.x * scale)).coerceAtLeast(0f)
+                        val height = ((size.height * scale - size.height)/2f - (size.height * offsetFactor.y * scale)).coerceAtLeast(0f)
+                        println("${offset.x} - ${offset.y}")
                         offset = Offset(
                             offset.x.coerceIn(-width, width),
                             offset.y.coerceIn(-height, height)
@@ -89,8 +94,12 @@ fun Plan(@DrawableRes image: Int) {
         )
 
         Canvas(Modifier.fillMaxSize()) {
+            val pointTransform = if (imgSize.width / imgSize.height > 1.57f) size.width/imgSize.width else size.height/imgSize.height
             points.forEach {
-                val panned = zoomAndPan(offset, scale, size, it.x, it.y)
+                val panned = zoomAndPan(offset, scale, size,
+                    it.x * pointTransform + size.width * offsetFactor.x,
+                    it.y * pointTransform + size.height * offsetFactor.y
+                )
                 point(size, panned.x, panned.y, SensorState.NOK)
             }
         }
@@ -128,8 +137,21 @@ private fun DrawScope.point(size: Size, x: Float, y: Float, state: SensorState) 
  * @param x the initial x coordinate in the plan without zoom
  * @param y the initial y coordinate in the plan iwz
  */
-private fun zoomAndPan(pan: Offset, zoom: Float, size: Size, x: Int, y: Int): Offset {
+private fun zoomAndPan(pan: Offset, zoom: Float, size: Size, x: Float, y: Float): Offset {
     val centerX = size.width / 2f
     val centerY = size.height / 2f
     return Offset((x - centerX) * zoom + centerX + pan.x, (y - centerY) * zoom + centerY + pan.y)
+}
+
+private fun computeOffsetFactor(img: Size, ratio: Float): Offset {
+    var offsetTop = 0f
+    var offsetLeft = 0f
+    if (img.width / img.height > 1.57f) {
+        offsetTop = ((img.width / ratio) - img.height) / 2f / (img.width / ratio)
+        offsetLeft = 0f
+    } else {
+        offsetTop = 0f
+        offsetLeft = ((img.height * ratio) - img.width) / 2f / (img.height * ratio)
+    }
+    return Offset(offsetLeft, offsetTop)
 }
