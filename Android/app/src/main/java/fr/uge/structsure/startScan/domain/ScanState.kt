@@ -1,7 +1,7 @@
 package fr.uge.structsure.startScan.domain
 
 /**
- * États possibles pour le déroulement du scan.
+ * Possible states for the scanning process.
  */
 enum class ScanState {
     NOT_STARTED,

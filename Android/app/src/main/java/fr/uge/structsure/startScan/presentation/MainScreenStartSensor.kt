@@ -1,6 +1,7 @@
 package fr.uge.structsure.startScan.presentation
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,18 +14,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
-import fr.uge.structsure.bluetooth.cs108.RfidChip
 import fr.uge.structsure.components.Page
-import fr.uge.structsure.retrofit.response.GetAllSensorsResponse
 import fr.uge.structsure.startScan.domain.ScanState
 import fr.uge.structsure.startScan.domain.ScanViewModel
-import fr.uge.structsure.startScan.presentation.components.CustomToast
 import fr.uge.structsure.startScan.presentation.components.SensorsList
 import fr.uge.structsure.startScan.presentation.components.StructureWeather
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 /**
  * Home screen of the application when the user starts a scan.
@@ -36,13 +30,16 @@ import kotlinx.coroutines.launch
  *     state from the toolbar
  * @param navController to navigate to other screens
  */
-@OptIn(DelicateCoroutinesApi::class)
 @Composable
-fun MainScreenStartSensor(context: Context, scanViewModel: ScanViewModel, structureId: Long, connexionCS108: Cs108Connector, navController: NavController) {
+fun MainScreenStartSensor(context: Context,
+                          scanViewModel: ScanViewModel,
+                          structureId: Long,
+                          connexionCS108: Cs108Connector,
+                          navController: NavController) {
 
     val cs108Scanner = remember {
         Cs108Scanner { chip ->
-            println("RFID détecté : ${chip.id}, atten=${chip.attenuation}")
+            Log.d("MainScreenStartSensor", "Chip scanned: ${chip.id}")
             scanViewModel.onTagScanned(chip.id)
         }
     }
@@ -68,7 +65,7 @@ fun MainScreenStartSensor(context: Context, scanViewModel: ScanViewModel, struct
                     cs108Scanner.stop()
                     scanViewModel.stopScan()
                 },
-                onContentClick = { /* À implémenter */ },
+                onContentClick = { },
                 connexionCS108 = connexionCS108,
                 navController = navController
             )
@@ -82,7 +79,17 @@ fun MainScreenStartSensor(context: Context, scanViewModel: ScanViewModel, struct
         sensorMsg?.let { message ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
-        // navController.navigate("Alerte?state=true&name=Sensor&lastState=Ok") // true for NOK, false for Failing
 
-    }
+        val alertMsg = scanViewModel.alertMessages.observeAsState().value
+        alertMsg?.let { alerteInfo ->
+            if(alerteInfo != null){
+                cs108Scanner.stop()
+                scanViewModel.pauseScan()
+                navController.navigate("Alerte?state=true&name=${alerteInfo.sensorName}&lastState=${alerteInfo.lastStateSensor}")
+                scanViewModel.alertMessages.value = null
+            }
+
+        }
+
+   }
 }

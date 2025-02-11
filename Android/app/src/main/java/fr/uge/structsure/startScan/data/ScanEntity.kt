@@ -17,5 +17,6 @@ data class ScanEntity(
     val structureId: Long,
     val start_timestamp: String,
     val end_timestamp: String,
-    val technician_id: Int,
+    val technician: String,
+    val note: String
 )

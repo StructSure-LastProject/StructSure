@@ -37,4 +37,8 @@ interface AccountDao {
 
     @Query("DELETE FROM account")
     fun clear()
+
+    // get login account
+    @Query("SELECT login FROM account")
+    fun getLogin(): String
 }

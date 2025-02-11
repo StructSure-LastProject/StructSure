@@ -32,7 +32,6 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
         const val LOG_TAG = "TimedBuffer"
     }
 
-
     /**
      * Adds the given element to the buffer if not already present.
      * If the element was not present, the delayed task will be
@@ -58,6 +57,7 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
      * is no longer used.
      */
     fun stop() {
+        Log.d(LOG_TAG, "Stopping TimedBuffer")
         runner.stop()
     }
 
@@ -110,7 +110,6 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
             try {
                 runningTask?.let {
                     it.cancel(true)
-                    Log.i(LOG_TAG, "Stopped")
                 } ?: Log.w(LOG_TAG, "No running task to cancel")
             } catch (e: InterruptedException) {
                 Log.e(LOG_TAG, "Interrupted while stopping task: ${e.message}")

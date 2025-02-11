@@ -6,159 +6,153 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import fr.uge.structsure.startScan.data.cache.SensorCache
+import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.startScan.data.ResultSensors
 import fr.uge.structsure.startScan.data.ScanEntity
 import fr.uge.structsure.startScan.data.dao.ResultDao
 import fr.uge.structsure.startScan.data.dao.ScanDao
+import fr.uge.structsure.structuresPage.data.SensorCache
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.data.SensorDao
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
 import java.sql.Timestamp
+import java.util.concurrent.CancellationException
 
 /**
  * ViewModel that manages the scan process (start, pause, resume, stop).
- * It stores sensors in a local cache and inserts ResultSensors into the database.
+ * It uses a SensorCache as a proxy for sensor state updates and saves results in the database.
  */
 class ScanViewModel(
     private val scanDao: ScanDao,
     private val resultDao: ResultDao,
     private val sensorDao: SensorDao,
+    private val accountDao: AccountDao,
     private val structureId: Long
 ) : ViewModel() {
 
-    /**
-     * Represents the current state of the scan:
-     * NOT_STARTED, STARTED, PAUSED, or STOPPED.
-     */
+    companion object {
+        private const val LOG_TAG = "ScanViewModel"
+    }
+
+    // Current scan state: NOT_STARTED, STARTED, PAUSED, or STOPPED.
     val currentScanState = mutableStateOf(ScanState.NOT_STARTED)
 
-    /**
-     * The ID of the current ScanEntity (created when the user presses "Play").
-     * This is used to link ResultSensors to the correct scan.
-     */
+    // ID of the current ScanEntity, set when "Play" is pressed.
     var activeScanId: Long? = null
         private set
 
-    /**
-     * Local cache of sensors to avoid multiple database fetches.
-     */
+    // Local sensor cache (proxy) to store current sensor states.
     private val sensorCache = SensorCache()
 
-    /**
-     * Keeps track of the last sensor index already processed.
-     * This allows the scan to resume from the same position if needed.
-     */
+    // Index of the last sensor processed in the interrogation loop.
     private var lastProcessedSensorIndex = 0
 
-    /**
-     * The Job associated with the insertion coroutine.
-     * If canceled, the loop stops immediately.
-     */
+    // Job for the insertion coroutine.
     private var scanJob: Job? = null
 
-    /**
-     * A LiveData for any messages (e.g., toast messages) that can be observed by the UI.
-     */
+    // LiveData for toast messages (e.g., for OK state).
     private val _sensorMessages = MutableLiveData<String>()
-    val sensorMessages: LiveData<String> = _sensorMessages
+    val sensorMessages: LiveData<String> get() = _sensorMessages
 
+    // LiveData for alert messages (for NOK/DEFECTIVE states).
+    val alertMessages = MutableLiveData<AlertInfo?>()
 
-    companion object {
-        private const val LOG_TAG = "TestScan"
-    }
+    // Set to track sensors for which an alert has already been triggered.
+    private val alertedSensors = mutableSetOf<String>()
 
-    /**
-     * Buffer that stores RFID chip IDs for a certain amount of time.
-     * When a chip is added, it waits for the other chip to be read.
-     * If the other chip is not read within the timeout, the buffer is flushed
-     * and the state of the sensor is determined.
-     */
-    private val rfidBuffer = TimedBuffer<String> { buffer, chipId ->
+    // TimedBuffer storing RFID chip IDs for a fixed timeout.
+    private val rfidBuffer = TimedBuffer { _, chipId ->
         handleTimedOutChip(chipId)
     }
 
     /**
-     * Function called each time an RFID chip is read.
-     * We add it to the buffer to “wait” for the other chip
-     * from the same sensor can be read.
+     * Called when an RFID chip is scanned.
+     * Adds the chip ID to the buffer only if the scan is active.
      */
-    fun onTagScanned(chipId: String)  {
+    fun onTagScanned(chipId: String) {
+        if (currentScanState.value != ScanState.STARTED) {
+            Log.d(LOG_TAG, "Scan not active; ignoring chip: $chipId")
+            return
+        }
         rfidBuffer.add(chipId)
     }
 
     /**
-     * Callback executed when chipId has remained in the buffer
-     * longer than timeout (in TimedBuffer).
-     * Here, we decide how to determine the state of a sensor.
+     * Callback from TimedBuffer when a chip has stayed in the buffer beyond the timeout.
      */
     private fun handleTimedOutChip(chipId: String) {
-        val sensor = findSensorByChip(chipId)
+        val sensor = sensorCache.findSensor(chipId)
         if (sensor == null) {
-            Log.d(LOG_TAG, "No sensor found for chipId $chipId")
+            Log.d(LOG_TAG, "No sensor found for chipId=$chipId")
             return
         }
-        val otherChipId = if (sensor.controlChip == chipId) sensor.measureChip else sensor.controlChip
+        val otherChipId = if (chipId == sensor.controlChip) sensor.measureChip else sensor.controlChip
         val otherPresent = rfidBuffer.contains(otherChipId)
         val newState = computeSensorState(sensor, chipId, otherPresent)
-        Log.d(LOG_TAG, "Chip $chipId timed out. Other chip presence: $otherPresent. New state computed: $newState")
+        Log.d(LOG_TAG, "Chip $chipId timed out. Other chip ($otherChipId) present: $otherPresent => newState=$newState")
         updateSensorState(sensor, newState)
     }
 
     /**
-     * Retrieves a cached SensorDB from a chipId (controlChip or measureChip).
-     */
-    private fun findSensorByChip(chipId: String): SensorDB? {
-        return sensorCache.getAllSensors().find { s ->
-            s.controlChip == chipId || s.measureChip == chipId
-        }
-    }
-
-    /**
-     * Rules :
-     *  - OK: if we only have the control chip => controlChip
-     *  - NOK : if we have the control chip AND the scrambled chip
-     *  - DEFECTIVE: if only the chip is scrambled
+     * Determines the sensor state based on the scanned chip.
+     * - If the scanned chip is the controlChip: returns "OK" if the other chip is absent, "NOK" if present.
+     * - If the scanned chip is the measureChip: returns "DEFECTIVE" if the other chip is absent, "NOK" if present.
      */
     private fun computeSensorState(sensor: SensorDB, scannedChip: String, otherChipInBuffer: Boolean): String {
-        val isControl = (scannedChip == sensor.controlChip)
-        val isMeasure = (scannedChip == sensor.measureChip)
-
-        return when {
-            (isControl && otherChipInBuffer) -> "NOK"
-
-            (isMeasure && otherChipInBuffer) -> "NOK"
-
-            isControl && !otherChipInBuffer -> "OK"
-
-            isMeasure && !otherChipInBuffer -> "DEFECTIVE"
-
-            else -> "UNKNOWN"
+        return if (scannedChip == sensor.controlChip) {
+            if (otherChipInBuffer) "NOK" else "OK"
+        } else if (scannedChip == sensor.measureChip) {
+            if (otherChipInBuffer) "NOK" else "DEFECTIVE"
+        } else {
+            "UNKNOWN"
         }
     }
 
     /**
-     * Save sensor status by updating SensorDB.state and inserting a ResultSensors entry.
+     * Updates the sensor state in the cache and database, and inserts a ResultSensors record.
+     * If the new state is critical (NOK or DEFECTIVE), the scan is completely stopped and an alert is posted.
      */
     private fun updateSensorState(sensor: SensorDB, newState: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            // 1) Update the 'state' field in the sensors table
-            sensorDao.updateSensorDBState(sensor.controlChip, sensor.measureChip, newState)
-            Log.d(LOG_TAG, "Sensor ${sensor.sensorId} updated to state: $newState")
+            val lastState = sensorCache.updateSensorState(sensor, newState)
+            if (lastState == newState) {
+                Log.d(LOG_TAG, "Sensor ${sensor.sensorId} already in state $newState; skipping update")
+                return@launch
+            }
 
-            // 2) Insert a new record into ResultSensors
-            activeScanId?.let { scanId ->
+            sensorDao.updateSensorDBState(sensor.controlChip, sensor.measureChip, newState)
+            Log.d(LOG_TAG, "Sensor ${sensor.sensorId} updated to state=$newState in DB.")
+
+            activeScanId?.let { sid ->
                 val resultSensor = ResultSensors(
                     timestamp = Timestamp(System.currentTimeMillis()).toString(),
-                    scanId = scanId,
+                    scanId = sid,
                     controlChip = sensor.controlChip,
                     measureChip = sensor.measureChip,
                     state = newState
                 )
                 resultDao.insertResult(resultSensor)
             }
-            if (newState == "OK") {
-                _sensorMessages.postValue("Message posted: Sensor ${sensor.sensorId} => $newState")
+
+            when (newState) {
+                "OK" -> {
+                    _sensorMessages.postValue("Sensor ${sensor.sensorId} => OK")
+                }
+                "NOK", "DEFECTIVE" -> {
+
+                    pauseScan()
+                    alertMessages.postValue(
+                        AlertInfo(
+                            newState = newState,
+                            sensorName = "Capteur ${sensor.name}",
+                            lastStateSensor = lastState ?: "UNKNOWN"
+                        )
+                    )
+
+                }
             }
         }
     }
@@ -166,146 +160,111 @@ class ScanViewModel(
 
 
     /**
-     * Fetches sensors for the given structure from the database and stores them in sensorCache.
+     * Loads sensors for the given structure from the DB and stores them in the cache.
      */
     fun fetchSensors(structureId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val sensors = scanDao.getAllSensors(structureId)
             if (sensors.isNotEmpty()) {
                 sensorCache.insertSensors(sensors)
-                println("Fetched and cached ${sensors.size} sensors for structureId=$structureId")
+                Log.d(LOG_TAG, "Fetched and cached ${sensors.size} sensors")
             } else {
-                println("No sensors found for structureId=$structureId")
+                Log.d(LOG_TAG, "No sensors found for structureId=$structureId")
                 sensorCache.clearCache()
             }
         }
     }
 
     /**
-     * Creates a new ScanEntity in the database (triggered by clicking "Play"),
-     * retrieves its ID, and starts the loop that inserts ResultSensors.
+     * Creates a new ScanEntity (when "Play" is pressed), using the logged-in user's login as technician,
+     * then starts the interrogation loop.
      */
     fun createNewScan(structureId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            // 1) Insert a new ScanEntity in the database
+            alertedSensors.clear()
+            currentScanState.value = ScanState.STARTED
+
             val now = Timestamp(System.currentTimeMillis()).toString()
             val newScan = ScanEntity(
                 structureId = structureId,
                 start_timestamp = now,
                 end_timestamp = "",
-                technician_id = 123
+                technician = accountDao.getLogin(),
+                note = ""
             )
+
             val newScanId = scanDao.insertScan(newScan)
             activeScanId = newScanId
 
-            // 2) Reset the last processed index to 0
             lastProcessedSensorIndex = 0
 
-            // 3) Change the current scan state to STARTED
-            currentScanState.value = ScanState.STARTED
-
-            // 4) Start the interrogation loop
             startSensorInterrogation()
         }
     }
 
     /**
-     * The loop that inserts ResultSensors into the database for each sensor in the cache.
-     * It runs until all sensors are processed or until it's canceled (pause or stop).
+     * Starts the interrogation loop: iterates over cached sensors and inserts a ResultSensors record for each.
      */
     private fun startSensorInterrogation() {
-        // If there's already a job running, don't start a new one
         if (scanJob != null) return
-
         scanJob = viewModelScope.launch(Dispatchers.IO) {
             try {
                 val sensors = sensorCache.getAllSensors()
                 for (i in lastProcessedSensorIndex until sensors.size) {
-                    // Check if the coroutine was canceled
                     ensureActive()
-
                     val sensor = sensors[i]
-                    println("Inserting sensor #$i => ${sensor.controlChip} - ${sensor.measureChip}")
-
-                    // Only insert if we have a valid scan ID
+                    Log.d(LOG_TAG, "Inserting sensor #$i => ${sensor.controlChip} / ${sensor.measureChip}")
                     activeScanId?.let { sid ->
                         val resultSensor = ResultSensors(
                             timestamp = Timestamp(System.currentTimeMillis()).toString(),
                             scanId = sid,
                             controlChip = sensor.controlChip,
                             measureChip = sensor.measureChip,
-                            state = sensor.state ?: "UNKNOWN"
+                            state = sensor.state
                         )
                         resultDao.insertResult(resultSensor)
                     }
-
                     lastProcessedSensorIndex = i + 1
-                    // Simulate some processing delay
-                    delay(100)
                 }
             } catch (e: CancellationException) {
-                Log.e("ScanViewModel", "startSensorInterrogation() coroutine canceled.", e)
+                Log.e(LOG_TAG, "startSensorInterrogation() canceled.", e)
                 throw e
             } finally {
-                // This block is executed even if the coroutine was canceled
-                println("All sensors processed or job was canceled.")
+                Log.d(LOG_TAG, "Interrogation loop finished or canceled.")
                 scanJob = null
             }
         }
     }
 
     /**
-     * Pauses the scan: cancels the current job so the insertion loop stops immediately.
+     * Pauses the scan: sets the state to PAUSED, cancels the interrogation loop,
+     * and stops the TimedBuffer so no new chips are processed.
      */
     fun pauseScan() {
-        if (currentScanState.value == ScanState.STARTED) {
-            currentScanState.value = ScanState.PAUSED
-            // Cancel the current job
-            scanJob?.cancel()
-            scanJob = null
-            rfidBuffer.stop()
-        }
+        currentScanState.value = ScanState.PAUSED
+        scanJob?.cancel()
+        scanJob = null
+        rfidBuffer.stop()
     }
 
     /**
-     * Resumes the scan from a paused state,
-     * continuing the insertion loop from where it stopped.
-     */
-    fun resumeScan() {
-        if (currentScanState.value == ScanState.PAUSED) {
-            currentScanState.value = ScanState.STARTED
-            startSensorInterrogation()
-        }
-    }
-
-    /**
-     * Completely stops the scan: cancels the job, updates the end_timestamp
-     * in the database, and resets the state to STOPPED.
+     * Stops the scan completely: cancels the loop, updates the scan end time in the DB,
+     * clears caches, and stops the TimedBuffer.
      */
     fun stopScan() {
-        if (currentScanState.value == ScanState.STARTED || currentScanState.value == ScanState.PAUSED) {
-            viewModelScope.launch(Dispatchers.IO) {
-                // Immediately cancel the loop
-                scanJob?.cancel()
-                scanJob = null
-
-                // Update end_timestamp in the database
-                val now = Timestamp(System.currentTimeMillis()).toString()
-                activeScanId?.let { scanId ->
-                    scanDao.updateEndTimestamp(scanId, now)
-                }
-                activeScanId = null
-
-                // Reset the state and index
-                currentScanState.value = ScanState.STOPPED
-                lastProcessedSensorIndex = 0
-
-                // Clear the sensor cache
-                sensorCache.clearCache()
-
-                // Stop the timerBuffer
-                rfidBuffer.stop()
+        viewModelScope.launch(Dispatchers.IO) {
+            scanJob?.cancel()
+            scanJob = null
+            val now = Timestamp(System.currentTimeMillis()).toString()
+            activeScanId?.let { scanId ->
+                scanDao.updateEndTimestamp(scanId, now)
             }
+            activeScanId = null
+            currentScanState.value = ScanState.STOPPED
+
+            rfidBuffer.stop()
+            sensorCache.clearCache()
         }
     }
+
 }
