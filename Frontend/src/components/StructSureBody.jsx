@@ -50,6 +50,12 @@ function StructSureBody() {
 
     createResource(() => structuresFetchRequest("http://localhost:8080/api/structures"));
 
+    /**
+     * Return the corresponding icon based on the state and if the structure is archived or not
+     * @param {String} state the state of the strucutre
+     * @param {Boolean} archived true if archived and false if not
+     * @returns  the componenent containing the icon
+     */
     const getIconFromStateAndArchived = (state, archived) => {
         if (archived == true) {
             return <FolderSync color='#6A6A6A' class="w-full" />;

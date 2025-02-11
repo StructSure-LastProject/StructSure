@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 public class Sensor {
@@ -44,6 +45,9 @@ public class Sensor {
 
     @Column(columnDefinition = "INTEGER")
     private Boolean archived;
+
+    @OneToMany(mappedBy="sensor")
+    private Set<Result> results;
 
 
     //constructeurs nécéssaire
@@ -138,6 +142,14 @@ public class Sensor {
 
     public void setStructure(Structure structure) {
         this.structure = structure;
+    }
+
+    public Set<Result> getResults() {
+        return results;
+    }
+
+    public void setResults(Set<Result> results) {
+        this.results = results;
     }
 }
     

@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public interface PlanRepository extends JpaRepository<Plan, Long> {
 
-    int countByStructureId(Long structureId);
+    long countByStructure(Structure structure);
 
     List<Plan> findByStructure(Structure structure);
 

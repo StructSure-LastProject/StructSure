@@ -24,4 +24,25 @@ public interface SensorRepository extends JpaRepository<Sensor, Long> {
     List<Sensor> findByChipTag(String chipTag);
 
     List<Sensor> findByStructure(Structure structure);
+
+    long countByStructure(Structure structure);
+
+    @Query("""
+    SELECT COUNT(sensor.sensorId) > 0 
+    FROM Sensor sensor
+    JOIN Result result ON result.sensor = sensor
+    WHERE sensor.structure = :structure
+    AND result.state = fr.uge.structsure.entities.State.NOK
+    """)
+    boolean existsSensorWithNokState(Structure structure);
+
+    @Query("""
+        SELECT COUNT(sensor.sensorId) > 0 
+        FROM Sensor sensor
+        JOIN Result result ON result.sensor = sensor
+        WHERE sensor.structure = :structure
+        AND result.state = fr.uge.structsure.entities.State.DEFAULTER
+    """)
+    boolean existsSensorWithDefaulterState(Structure structure);
+
 }

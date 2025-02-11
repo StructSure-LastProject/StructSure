@@ -5,9 +5,9 @@ import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.PlanRepository;
+import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
-import fr.uge.structsure.utils.OrderEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,12 +19,14 @@ public class StructureService {
     private final StructureRepository structureRepository;
     private final PlanRepository planRepository;
     private final SensorRepository sensorRepository;
+    private final ResultRepository resultRepository;
 
     @Autowired
-    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository, PlanRepository planRepository) {
+    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository, PlanRepository planRepository, ResultRepository resultRepository) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.planRepository = Objects.requireNonNull(planRepository);
+        this.resultRepository = resultRepository;
     }
 
     /**
@@ -141,13 +143,47 @@ public class StructureService {
         }
     }
 
+    /**
+     * Returns the structures with state for each structure, if it's archived or not, number of sensors in the structure
+     * and also with the number of plans
+     * @return List<AllStructureResponseDTO> the list containing of the structures
+     * @throws TraitementException if there is no structure in the database we throw this exception
+     */
     public List<AllStructureResponseDTO> getAllStructure() throws TraitementException {
-        var structures = structureRepository.findStructuresWithState();
-        System.out.println("Structures getAllStructure(): " + structures);
+        var structures = structureRepository.findAll();
         if (structures.isEmpty()) {
             throw new TraitementException(ErrorIdentifier.LIST_STRUCTURES_EMPTY);
         }
-        return structures;
+        return structures.stream().map(
+                structure -> new AllStructureResponseDTO(structure.getId(), structure.getName(),
+                     sensorRepository.countByStructure(structure),
+                        planRepository.countByStructure(structure),
+                        getState(structure),
+                        structure.getArchived()
+                )
+        ).toList();
+    }
+
+    /**
+     * Returns the state of the structure
+     * @param structure the structure that we will use
+     * @return String the state
+     */
+    private String getState(Structure structure) {
+        var numberOfSensors = sensorRepository.countByStructure(structure);
+        if (numberOfSensors == 0) {
+            return "UNKNOWN";
+        }
+
+        var isNokPresent = sensorRepository.existsSensorWithNokState(structure);
+        if (isNokPresent) {
+            return "NOK";
+        }
+        var isDefaulterPresent = sensorRepository.existsSensorWithDefaulterState(structure);
+        if (isDefaulterPresent) {
+            return "DEFAULTER";
+        }
+        return "OK";
     }
 
     public StructureResponseDTO getStructureById(Long id) {
