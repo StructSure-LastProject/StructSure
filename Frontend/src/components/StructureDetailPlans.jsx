@@ -2,8 +2,7 @@ import { createSignal, onMount, onCleanup } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
 import ModalAddPlan from './Plan/ModalAddPlan';
-import { Show } from "solid-js"
-import { Plus } from 'lucide-solid'
+import { Plus } from 'lucide-solid';
 
 /**
  * Shows the plans part
