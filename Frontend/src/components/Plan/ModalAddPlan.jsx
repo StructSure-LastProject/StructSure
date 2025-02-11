@@ -113,29 +113,14 @@ const ModalImage = (props) => {
       <div class="flex items-center justify-between">
         <div class="relative w-full h-48 border-2 border-[#F2F2F4] rounded-[10px] flex justify-center items-center">
           {imageData() ? (
-            <img
-              src={imageData()}
-              alt="Plan ajouté"
-              class="w-full h-full object-cover"
-              onLoad={() => console.log("Image loaded successfully")}
-              onError={(e) => console.error("Image load error:", e)}
-            />
+            <img src={imageData()} alt="Plan ajouté" class="w-full h-full object-cover"/>
           ) : (
             <p class="text-center">Pas encore d&apos;image ...</p>
           )}
-          <label
-            class="absolute bottom-4 right-4 bg-[#F2F2F4] text-black px-4 py-2 rounded-[50px] flex items-center space-x-2 cursor-pointer"
-            htmlFor="file-input"
-          >
+          <label class="absolute bottom-4 right-4 bg-[#F2F2F4] text-black px-4 py-2 rounded-[50px] flex items-center space-x-2 cursor-pointer" htmlFor="file-input">
             <span>Remplacer</span>
             <Pencil size={20} />
-            <input
-              type="file"
-              id="file-input"
-              accept="image/*"
-              onChange={props.onImageChange}
-              class="hidden"
-            />
+            <input type="file" id="file-input" accept="image/*" onChange={props.onImageChange} class="hidden"/>
           </label>
         </div>
       </div>
