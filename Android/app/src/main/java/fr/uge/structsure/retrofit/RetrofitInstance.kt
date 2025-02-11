@@ -18,20 +18,27 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 object RetrofitInstance {
 
-    private const val BASE_URL = "http://172.20.10.4:8080"
+    private const val BASE_URL = "http://10.42.0.191:8080"
     private var tokenProvider: () -> String = {
         val account = MainActivity.db.accountDao().get()
         if (account == null) "" else account.token?: ""
     }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        // level = HttpLoggingInterceptor.Level.BODY
     }
 
     private val tokenInjector = { chain: Interceptor.Chain ->
-        chain.proceed(chain.request().newBuilder().apply {
-            header("Authorization", "Bearer " + tokenProvider())
-        }.build())
+        var request = chain.request()
+
+        request = request.newBuilder()
+            .header("Authorization", "Bearer " + tokenProvider())
+            .build()
+        val response = chain.proceed(request)
+        if (response.code == 401) {
+            MainActivity.navigateToLogin.postValue(true)
+        }
+        response
     }
 
     private val okHttpClient = OkHttpClient.Builder()

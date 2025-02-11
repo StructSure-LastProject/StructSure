@@ -17,9 +17,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,9 +44,14 @@ class MainActivity : ComponentActivity() {
     companion object {
         var darkStatusBar: AtomicBoolean = AtomicBoolean(true)
         lateinit var csLibrary4A: Cs108Library4A
+        /** Live data use to trigger redirect to the login page */
+        val navigateToLogin = MutableLiveData<Boolean>()
         lateinit var db: AppDatabase
             private set
     }
+
+    /** Name of the login page to avoid string duplication */
+    private val loginPage = "loginPage"
 
     private lateinit var structureViewModel: StructureViewModel
 
@@ -84,9 +91,13 @@ class MainActivity : ComponentActivity() {
             val connexionCS108 = Cs108Connector(context)
             connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
             connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
-            var connexion = true  // false si pas de connexion
-            var loggedIn = accountDao.get()?.token != null  // true si déjà connecté
-            val homePage = if (connexion && !loggedIn) "ConnexionPage" else "HomePage"
+            navigateToLogin.observeAsState(false).value.let {
+                if (it) {
+                    navController.navigate(loginPage)
+                    navigateToLogin.value = false
+                }
+            }
+            val homePage = if (accountDao.get()?.token == null) loginPage else "HomePage"
             NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
@@ -97,7 +108,7 @@ class MainActivity : ComponentActivity() {
                     MainScreenStartSensor(scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
-                composable("ConnexionPage") {
+                composable(loginPage) {
                     ConnexionCard(navController, accountDao)
                     SetDynamicStatusBar()
                 }
@@ -164,7 +175,6 @@ class MainActivity : ComponentActivity() {
  * Changes the status bar text color to white or black depending on
  * the given theme. This is useful to make the text clear with custom
  * background color.
- * @param dark true for dark background colors, false otherwise
  */
 @Composable
 private fun ComponentActivity.SetDynamicStatusBar() {
