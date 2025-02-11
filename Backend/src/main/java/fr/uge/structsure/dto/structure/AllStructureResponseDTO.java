@@ -12,7 +12,7 @@ import java.util.Objects;
  * @param numberOfPlans Number of plans
  * @param state The state of the structure
  */
-public record AllStructureResponseDTO(long id, String name, int numberOfSensors, int numberOfPlans, StructureStateEnum state, boolean archived) {
+public record AllStructureResponseDTO(long id, String name, long numberOfSensors, long numberOfPlans, String state, boolean archived) {
     public AllStructureResponseDTO {
         Objects.requireNonNull(name);
         Objects.requireNonNull(state);

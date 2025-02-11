@@ -53,7 +53,7 @@ function Login() {
             navigate("/");
         } else if (statusCode() === 404) {
             const response = data();
-            setError(errorFetch());
+            setError(errorFetch);
         }
     };
 
@@ -63,7 +63,7 @@ function Login() {
      */
     const handlSubmit = async (e) => {
         e.preventDefault();
-        const req = await loginFetchRequest("/api/login");    
+        const req = await loginFetchRequest("http://localhost:8080/api/login");    
     };
     
 

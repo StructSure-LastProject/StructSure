@@ -9,7 +9,6 @@ import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
 import fr.uge.structsure.services.SensorService;
 import fr.uge.structsure.utils.OrderEnum;
-import fr.uge.structsure.utils.SortStructuresByEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -146,29 +145,16 @@ public class StructureController {
 
     /**
      * This method handle the structure endpoint to get all structures
-     * @param searchByName Object that represents the request
-     * @param sort Object that represents the request
-     * @param order Object that represents the request
      * @return List of structures
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllStructure(@RequestParam(required = false) String searchByName,
-                                                         @RequestParam(required = false) SortStructuresByEnum sort,
-                                                         @RequestParam(required = false) OrderEnum order){
-        Objects.requireNonNull(searchByName);
-        Objects.requireNonNull(sort);
-        Objects.requireNonNull(order);
+    public ResponseEntity<?> getAllStructure(){
         try {
-            return ResponseEntity.status(200).body(structureService.getAllStructure(new GetAllStructureRequest(searchByName, sort, order)));
+            return ResponseEntity.status(200).body(structureService.getAllStructure());
         } catch (TraitementException e) {
             var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
             return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
         }
-    }
-
-    @GetMapping(value = "/android", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<AllStructureResponseDTO> getAllStructure(){
-        return structureService.getAllStructure();
     }
 
     @GetMapping(value = "/android/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
