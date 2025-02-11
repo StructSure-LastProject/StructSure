@@ -30,7 +30,7 @@ const Modal = ({ isOpen, onClose, onSave }) => {
     <>
       {isOpen && (
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div class="bg-white p-6 rounded-[20px] shadow-lg w-96">
+          <form class="bg-white p-6 rounded-[20px] shadow-lg w-96">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-lg font-semibold">Ajouter un Plan</h2>
               <div class="flex items-center space-x-2">
@@ -70,7 +70,7 @@ const Modal = ({ isOpen, onClose, onSave }) => {
               </div>
 
               <div>
-                <label class="block text-sm font-medium">Image*
+                <div class="block text-sm font-medium">Image*
                     <div class="flex items-center justify-between">
                     <div class="relative w-96 h-48 border-2 border-[#F2F2F4] rounded-[10px] flex justify-center items-center">
                         {image() ? (
@@ -96,10 +96,10 @@ const Modal = ({ isOpen, onClose, onSave }) => {
                         </div>
 
                     </div>
-                </label>
+                </div>
               </div>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </>
