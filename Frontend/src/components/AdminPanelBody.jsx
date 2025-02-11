@@ -10,11 +10,15 @@ const AdminPanelBody = () => {
         <>
             <div class="flex justify-between items-center w-full max-w-[1250px] h-[40px] sm:h-[50px] rounded-[20px] pl-[20px] gap-[10px]">
                 <h1 class="text-2xl sm:text-3xl font-poppins title">Comptes</h1>
-                <img
-                    src={add}
-                    alt="Add Button logo"
-                    class="cursor-pointer w-[40px] h-[40px] rounded-[50px]"
-                />
+                
+                <div class="pr-[5%]">
+
+                    <img
+                        src={add}
+                        alt="Add Button logo"
+                        class="cursor-pointer w-[40px] h-auto rounded-[50px]"
+                    />
+                </div>
             </div>
 
             <div class="m-[2%] flex flex-wrap gap-[15px]">

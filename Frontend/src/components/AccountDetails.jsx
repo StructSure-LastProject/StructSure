@@ -11,16 +11,16 @@ const AccountDetails = ({firstName, lastName, mail, role, isDisabled}) => {
 
     const roleStyles = {
         "Opérateur": {
-            text: "text-green-600 w-[74px] h-auto flex items-center justify-center font-poppins user-role",
-            bg: "bg-green-200 py-[2px] px-[10px] w-[94px] h-auto rounded-[20px]"
+            text: "text-[#25B61F] w-[74px] h-auto flex items-center justify-center font-poppins user-role",
+            bg: "bg-[#25B61F1A] py-[2px] px-[10px] w-[94px] h-auto rounded-[20px]"
         },
         "Admin": {
-            text: "text-red-600 w-[48px] h-auto flex items-center justify-center font-poppins user-role",
-            bg: "bg-red-200 py-[2px] px-[10px] w-[68px] h-auto rounded-[20px]"
+            text: "text-[#F13327] w-[48px] h-auto flex items-center justify-center font-poppins user-role",
+            bg: "bg-[#F133271A] py-[2px] px-[10px] w-[68px] h-auto rounded-[20px]"
         },
         "Responsable": {
-            text: "text-orange-400 w-[93px] h-auto flex items-center justify-center font-poppins user-role",
-            bg: "bg-orange-100 py-[2px] px-[10px] w-[113px] h-auto rounded-[20px]"
+            text: "text-[#F19327] w-[93px] h-auto flex items-center justify-center font-poppins user-role",
+            bg: "bg-[#F193271A] py-[2px] px-[10px] w-[113px] h-auto rounded-[20px]"
         }
     };
     
