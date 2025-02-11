@@ -21,31 +21,34 @@ function StructSureHead() {
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        structuresFetchRequest("http://localhost:8080/api/structures");
+        structuresFetchRequest("/api/structures");
     };
 
-    const structuresFetchRequest = async (url) => {
+    const   structuresFetchRequest = async (url) => {
         const token = localStorage.getItem("token");
         const requestBody = JSON.stringify({
             name: name(),
             note: note()
         });
-        const request = await fetch(url, {
+
+        const { fetchData, statusCode, data, errorFetch } = useFetch();
+
+        const requestData = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
             body: requestBody
-        });
-        if (request.status == 201) {
+        }
+
+        await fetchData(url, requestData);
+        if (statusCode() === 201) {
             location.reload();
-        } else if (request.status == 401) {
-            console.log("not autorized");
+        } else if (statusCode() === 401) {
             navigate("/login");
         } else {
-            console.log("Error occurred, status : ", request.status);
-            setError((await request.json()).error);
+            setError(errorFetch());
         }
     };
 

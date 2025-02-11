@@ -8,7 +8,7 @@
  */
 const LogDetails = ({date, time, logMessage}) => {
   return (
-    <div class="flex flex-wrap items-center w-full max-w-[1250px] h-auto mx-auto">
+    <div class="flex flex-wrap sm:flex-nowrap items-center w-full max-w-[1250px] h-auto mx-auto">
         <div class="w-[169px] h-auto px-[15px] gap-[10px] opacity-[50%]">
             <p class="text-gray-500 font-poppins HeadLineMedium">{date} - {time}</p>
         </div>
