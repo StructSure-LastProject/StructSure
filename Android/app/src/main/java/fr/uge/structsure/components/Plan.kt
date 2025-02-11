@@ -1,6 +1,5 @@
 package fr.uge.structsure.components
 
-import android.content.res.Resources.getSystem
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -30,10 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import fr.uge.structsure.startScan.presentation.components.SensorState
-import kotlin.math.max
 import kotlin.math.sqrt
-
-private val Int.toPx: Int get() = (this * getSystem().displayMetrics.density).toInt()
 
 data class Point(val x: Int, val y: Int, val state: SensorState)
 
@@ -43,25 +39,21 @@ fun Plan(@DrawableRes image: Int) {
         Point(0, 0, SensorState.OK),
         Point(100, 100, SensorState.OK)
     ) }
-    val imgSize = painterResource(image).intrinsicSize
-    val state = remember { mutableStateOf(SensorState.NOK) }
+    val painter = painterResource(image)
+    val factor = remember(image) { Factor(painter.intrinsicSize) }
 
-    val ratio = remember(imgSize) { (imgSize.width / imgSize.height).coerceIn(1.5f, 1.75f) }
-    val transformFactor = remember(imgSize, ratio) { (imgSize.width / ratio) / imgSize.height }
-    val offsetFactor = computeOffsetFactor(imgSize, ratio)
-
-    var scale by remember { mutableFloatStateOf(max(1f, transformFactor)) }
+    var scale by remember { mutableFloatStateOf(factor.transform) }
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
 
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(0.dp))
             .fillMaxWidth()
-            .aspectRatio(ratio),
+            .aspectRatio(factor.canvasRatio),
         Alignment.Center
     ) {
         Image(
-            painterResource(image),
+            painter,
             "Plan",
             Modifier
                 .fillMaxSize()
@@ -69,10 +61,10 @@ fun Plan(@DrawableRes image: Int) {
                     detectTransformGestures { centroid, pan, zoom, _ ->
                         val adjustment = centroid * (1 - zoom)
                         offset = (offset + pan) * zoom + adjustment
-                        scale = (scale * zoom).coerceIn(transformFactor.coerceAtLeast(1f), 3 * transformFactor.coerceAtLeast(1f))
+                        scale = (scale * zoom).coerceIn(factor.transform, 3 * factor.transform)
 
-                        val width = ((size.width * scale - size.width)/2 - (size.width * offsetFactor.x * scale)).coerceAtLeast(0f)
-                        val height = ((size.height * scale - size.height)/2f - (size.height * offsetFactor.y * scale)).coerceAtLeast(0f)
+                        val width = ((size.width * scale - size.width)/2 - (size.width * factor.offset.x * scale)).coerceAtLeast(0f)
+                        val height = ((size.height * scale - size.height)/2f - (size.height * factor.offset.y * scale)).coerceAtLeast(0f)
                         offset = Offset(
                             offset.x.coerceIn(-width, width),
                             offset.y.coerceIn(-height, height)
@@ -82,16 +74,16 @@ fun Plan(@DrawableRes image: Int) {
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = { pos ->
-                            // TODO on click
-                            var imgPos = canvasToImg(offset, scale, size.toSize(), imgSize, offsetFactor, pos.x, pos.y)
-                            var imgPoint = Point(imgPos.x.toInt(), imgPos.y.toInt(), SensorState.NOK)
-                            // TODO range may be wrong because not in px
+                            val range = (30 / factor.transform / scale).toInt()
+                            val imgPos = canvasToImg(offset, scale, size.toSize(), factor.transformPoint(size.toSize()), factor.offset, pos.x, pos.y)
+                            val imgPoint = Point(imgPos.x.toInt(), imgPos.y.toInt(), SensorState.NOK)
                             for (i in 0 ..< points.size) {
-                                if (imgPoint.inRange(points[i], 30)) {
+                                if (imgPoint.inRange(points[i], range)) {
                                     points[i] = Point(points[i].x, points[i].y, if (points[i].state == SensorState.NOK) SensorState.OK else SensorState.NOK)
-                                    println("Point $i clicked")
+                                    return@detectTapGestures
                                 }
                             }
+                            points.add(Point(imgPos.x.toInt(), imgPos.y.toInt(), SensorState.DEFECTIVE))
                         }
                     )
                 }
@@ -102,8 +94,9 @@ fun Plan(@DrawableRes image: Int) {
         )
 
         Canvas(Modifier.fillMaxSize()) {
+            val transformPoint = factor.transformPoint(size)
             points.forEach {
-                val panned = imgToCanvas(offset, scale, size, imgSize, offsetFactor, it.x, it.y)
+                val panned = imgToCanvas(offset, scale, size, transformPoint, factor.offset, it.x, it.y)
                 point(size, panned.x, panned.y, it.state)
             }
         }
@@ -138,19 +131,16 @@ private fun DrawScope.point(size: Size, x: Float, y: Float, state: SensorState) 
  * @param pan values of the horizontal/vertical displacement to apply
  * @param zoom level of zoom to apply between 1 and 3
  * @param size the size of the canvas to draw on
- * @param imgSize the original size of the image
+ * @param transformPoint factor to correct image scale
  * @param offsetFactor offset to center the image if needed
  * @param x the initial x coordinate in the image
  * @param y the initial y coordinate in the image
  */
-private fun imgToCanvas(pan: Offset, zoom: Float, size: Size, imgSize: Size, offsetFactor: Offset, x: Int, y: Int): Offset {
-    val pointTransform = if (imgSize.width / imgSize.height > 1.57f) size.width/imgSize.width
-    else size.height/imgSize.height
-
+private fun imgToCanvas(pan: Offset, zoom: Float, size: Size, transformPoint: Float, offsetFactor: Offset, x: Int, y: Int): Offset {
     val centerX = size.width / 2f
     val centerY = size.height / 2f
-    val posX = x * pointTransform + size.width * offsetFactor.x
-    val posY = y * pointTransform + size.height * offsetFactor.y
+    val posX = x * transformPoint + size.width * offsetFactor.x
+    val posY = y * transformPoint + size.height * offsetFactor.y
     return Offset(
         (posX - centerX) * zoom + centerX + pan.x,
         (posY - centerY) * zoom + centerY + pan.y
@@ -163,22 +153,19 @@ private fun imgToCanvas(pan: Offset, zoom: Float, size: Size, imgSize: Size, off
  * @param pan values of the horizontal/vertical displacement to apply
  * @param zoom level of zoom to apply between 1 and 3
  * @param size the size of the canvas to draw on
- * @param imgSize the original size of the image
+ * @param transformPoint factor to correct image scale
  * @param offsetFactor offset to center the image if needed
  * @param x the initial x coordinate in the canvas
  * @param y the initial y coordinate in the canvas
  */
-private fun canvasToImg(pan: Offset, zoom: Float, size: Size, imgSize: Size, offsetFactor: Offset, x: Float, y: Float): Offset {
-    val pointTransform = if (imgSize.width / imgSize.height > 1.57f) size.width/imgSize.width
-    else size.height/imgSize.height
-
+private fun canvasToImg(pan: Offset, zoom: Float, size: Size, transformPoint: Float, offsetFactor: Offset, x: Float, y: Float): Offset {
     val centerX = size.width / 2f
     val centerY = size.height / 2f
     val posX = (x - centerX - pan.x) / zoom + centerX
     val posY = (y - centerY - pan.y) / zoom + centerY
     return Offset(
-        ((posX - size.width * offsetFactor.x) / pointTransform).toInt().toFloat(),
-        ((posY - size.height * offsetFactor.y) / pointTransform).toInt().toFloat()
+        ((posX - size.width * offsetFactor.x) / transformPoint).toInt().toFloat(),
+        ((posY - size.height * offsetFactor.y) / transformPoint).toInt().toFloat()
     )
 }
 
@@ -199,15 +186,45 @@ private fun Point.inRange(point: Point, range: Int): Boolean {
     return sqrt((dx * dx + dy * dy).toDouble()) <= range
 }
 
-private fun computeOffsetFactor(img: Size, ratio: Float): Offset {
-    var offsetTop = 0f
-    var offsetLeft = 0f
-    if (img.width / img.height > 1.57f) {
-        offsetTop = ((img.width / ratio) - img.height) / 2f / (img.width / ratio)
-        offsetLeft = 0f
-    } else {
-        offsetTop = 0f
-        offsetLeft = ((img.height * ratio) - img.width) / 2f / (img.height * ratio)
+
+/**
+ * Object containing all the values that enable to switch from original
+ * image coordinates to rescaled to panned/zoomed coordinates.
+ */
+private class Factor(val image: Size) {
+
+    /** Ratio of the canvas calculated on the image original ratio */
+    val canvasRatio = (image.width / image.height).coerceIn(1.5f, 1.75f)
+
+    /** Factor to go from the original image to the re-scaled image */
+    val transform = ((image.width / canvasRatio) / image.height).coerceAtLeast(1f)
+
+    /** Margin top or left to center the image in the canvas */
+    val offset: Offset
+
+    init {
+        /* Compute offset */
+        var offsetTop = 0f
+        var offsetLeft = 0f
+        if (image.width / image.height > 1.57f) {
+            offsetTop = ((image.width / canvasRatio) - image.height) / 2f / (image.width / canvasRatio)
+        } else {
+            offsetLeft = ((image.height * canvasRatio) - image.width) / 2f / (image.height * canvasRatio)
+        }
+        offset = Offset(offsetLeft, offsetTop)
     }
-    return Offset(offsetLeft, offsetTop)
+
+    /**
+     * Factor that enable to adapt a point position to the displayed
+     * image rescaled.
+     * @param size the size of the canvas
+     * @return the adapted factor
+     */
+    fun transformPoint(size: Size): Float {
+        return if (image.width / image.height > 1.57f) {
+            size.width/image.width
+        } else {
+            size.height/image.height
+        }
+    }
 }
