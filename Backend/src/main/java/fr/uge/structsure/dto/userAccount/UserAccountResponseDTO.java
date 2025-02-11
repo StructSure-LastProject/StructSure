@@ -10,7 +10,12 @@ import java.util.Objects;
  * @param role The role of the user
  * @param enabled The user account is enabled or not
  */
-public record UserAccountResponseDTO(String firstName, String lastName, String login, String role, boolean enabled) {
+public record UserAccountResponseDTO(
+        String firstName,
+        String lastName,
+        String login,
+        String role,
+        boolean enabled) {
   public UserAccountResponseDTO {
     Objects.requireNonNull(firstName);
     Objects.requireNonNull(lastName);

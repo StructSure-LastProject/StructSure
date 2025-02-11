@@ -6,11 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 /**
  * Controller handles the user details
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 public class UserAccountController {
     private final AccountService accountService;
 
@@ -27,7 +29,7 @@ public class UserAccountController {
      * Returns the user list
      * @return UserAccountResponseDTO The list of user details
      */
-    @GetMapping("/getUserAccounts")
+    @GetMapping("/accounts")
     public ResponseEntity<?> getUserAccounts(){
         return ResponseEntity
             .status(HttpStatus.OK)

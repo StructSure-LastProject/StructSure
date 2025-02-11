@@ -26,7 +26,7 @@ const AdminPanelBody = () => {
             }
         };
     
-        await fetchData("/api/users/getUserAccounts", requestData);
+        await fetchData("/api/accounts", requestData);
         
         if (statusCode() === 200) {
             setUsers(data());

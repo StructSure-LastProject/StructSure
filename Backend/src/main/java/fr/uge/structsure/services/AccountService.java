@@ -97,7 +97,7 @@ public class AccountService {
      * @return List Send the list of users
      */
     public List<UserAccountResponseDTO> getUserAccounts(){
-         return accountRepository
+        return accountRepository
             .findAll()
             .stream()
             .map(account ->
