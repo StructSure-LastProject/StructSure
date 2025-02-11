@@ -38,7 +38,7 @@ public class CorsConfig {
         if (origin == null) {
             // TODO Log!
             System.err.println("Environment variable 'DOMAIN_NAME' must be defined to run in production");
-            origin = "*"; // default value that works with localhost
+            origin = "http://localhost:5173"; // default value that works with localhost
         }
         return origin;
     }

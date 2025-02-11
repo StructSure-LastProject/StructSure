@@ -92,8 +92,8 @@ public class AccountService {
                 new UserAccountResponseDTO(
                     account.getFirstname(),
                     account.getLastname(),
-                    "MAIL de %s".formatted(account.getFirstname()),
-                    account.getRole().toString(),
+                    account.getLogin(),
+                    account.getRole().value,
                     account.getEnabled()
                 )
             )
