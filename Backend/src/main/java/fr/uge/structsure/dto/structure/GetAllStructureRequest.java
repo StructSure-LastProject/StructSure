@@ -3,7 +3,7 @@ package fr.uge.structsure.dto.structure;
 
 
 import fr.uge.structsure.utils.OrderEnum;
-import fr.uge.structsure.utils.SortEnum;
+import fr.uge.structsure.utils.SortStructuresByEnum;
 
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ import java.util.Objects;
  * @param sort Sort options
  * @param order Order options
  */
-public record GetAllStructureRequest(String searchByName, SortEnum sort, OrderEnum order) {
+public record GetAllStructureRequest(String searchByName, SortStructuresByEnum sort, OrderEnum order) {
     public  GetAllStructureRequest {
         Objects.requireNonNull(searchByName);
         Objects.requireNonNull(sort);
