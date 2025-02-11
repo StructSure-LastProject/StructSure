@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.startScan.data.ResultSensors
 import fr.uge.structsure.startScan.data.ScanEntity
@@ -30,7 +31,8 @@ class ScanViewModel(
     private val resultDao: ResultDao,
     private val sensorDao: SensorDao,
     private val accountDao: AccountDao,
-    private val structureId: Long
+    private val structureId: Long,
+    private val connexionCS108: Cs108Connector
 ) : ViewModel() {
 
     companion object {
@@ -151,7 +153,6 @@ class ScanViewModel(
                             lastStateSensor = lastState ?: "UNKNOWN"
                         )
                     )
-
                 }
             }
         }
@@ -242,6 +243,7 @@ class ScanViewModel(
      */
     fun pauseScan() {
         currentScanState.value = ScanState.PAUSED
+        connexionCS108.stop()
         scanJob?.cancel()
         scanJob = null
         rfidBuffer.stop()
@@ -253,6 +255,7 @@ class ScanViewModel(
      */
     fun stopScan() {
         viewModelScope.launch(Dispatchers.IO) {
+            connexionCS108.stop()
             scanJob?.cancel()
             scanJob = null
             val now = Timestamp(System.currentTimeMillis()).toString()

@@ -15,7 +15,6 @@ import androidx.navigation.NavController
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.components.Page
-import fr.uge.structsure.startScan.domain.ScanState
 import fr.uge.structsure.startScan.domain.ScanViewModel
 import fr.uge.structsure.startScan.presentation.components.SensorsList
 import fr.uge.structsure.startScan.presentation.components.StructureWeather
@@ -58,11 +57,9 @@ fun MainScreenStartSensor(context: Context,
                     cs108Scanner.start()
                 },
                 onPauseClick = {
-                    cs108Scanner.stop()
                     scanViewModel.pauseScan()
                 },
                 onStopClick = {
-                    cs108Scanner.stop()
                     scanViewModel.stopScan()
                 },
                 onContentClick = { },
@@ -80,16 +77,11 @@ fun MainScreenStartSensor(context: Context,
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
 
-        val alertMsg = scanViewModel.alertMessages.observeAsState().value
-        alertMsg?.let { alerteInfo ->
-            if(alerteInfo != null){
-                cs108Scanner.stop()
-                scanViewModel.pauseScan()
-                navController.navigate("Alerte?state=true&name=${alerteInfo.sensorName}&lastState=${alerteInfo.lastStateSensor}")
+        scanViewModel.alertMessages.observeAsState(null).value.let {
+            if (it != null) {
                 scanViewModel.alertMessages.value = null
+                navController.navigate("Alerte?state=true&name=${it.sensorName}&lastState=${it.lastStateSensor}")
             }
-
         }
-
    }
 }
