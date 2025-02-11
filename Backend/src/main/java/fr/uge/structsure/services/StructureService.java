@@ -8,12 +8,16 @@ import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
+import fr.uge.structsure.utils.StructureStateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.*;
 
+/**
+ * Will regroup all the services available for structure like the service that will create a structure
+ */
 @Service
 public class StructureService {
     private final StructureRepository structureRepository;
@@ -21,6 +25,13 @@ public class StructureService {
     private final SensorRepository sensorRepository;
     private final ResultRepository resultRepository;
 
+    /**
+     * The consturctor for the structure service
+     * @param structureRepository the structure repository
+     * @param sensorRepository the sensor repository
+     * @param planRepository the plan repository
+     * @param resultRepository the result repository
+     */
     @Autowired
     public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository, PlanRepository planRepository, ResultRepository resultRepository) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
@@ -169,21 +180,21 @@ public class StructureService {
      * @param structure the structure that we will use
      * @return String the state
      */
-    private String getState(Structure structure) {
+    private StructureStateEnum getState(Structure structure) {
         var numberOfSensors = sensorRepository.countByStructure(structure);
         if (numberOfSensors == 0) {
-            return "UNKNOWN";
+            return StructureStateEnum.UNKNOWN;
         }
 
         var isNokPresent = sensorRepository.existsSensorWithNokState(structure);
         if (isNokPresent) {
-            return "NOK";
+            return StructureStateEnum.NOK;
         }
         var isDefaulterPresent = sensorRepository.existsSensorWithDefaulterState(structure);
         if (isDefaulterPresent) {
-            return "DEFAULTER";
+            return StructureStateEnum.DEFAULTER;
         }
-        return "OK";
+        return StructureStateEnum.OK;
     }
 
     public StructureResponseDTO getStructureById(Long id) {

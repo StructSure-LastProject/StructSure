@@ -74,10 +74,10 @@ function StructSureBody() {
 
     return (
         
-        <div class="flex flex-wrap gap-x-4 gap-y-4">
+        <div class="flex flex-col lg:grid 2xl:grid lg:grid-cols-3 2xl:grid-cols-4 rounded-[20px] gap-4">
             <For each={structures()}>
                 {(item) => (
-                    <div class="flex items-center bg-white w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px]">
+                    <div class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full">
                         <div class="w-7 h-7 flex justify-center items-center">
                             { getIconFromStateAndArchived(item.state, item.archived) }
                         </div>

@@ -1,5 +1,8 @@
 package fr.uge.structsure.exceptions;
 
+/**
+ * Represents the identifiers for the errors
+ */
 public enum ErrorIdentifier {
     USER_ALREADY_EXISTS,
     ROLE_NOT_EXISTS,
