@@ -49,7 +49,7 @@ const AdminPanelBody = () => {
                 </div>
             </div>
 
-            <div class="m-[2%] flex flex-wrap gap-[15px]">
+            <div class="m-[2%] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto sm:px-4 lg:px-16">
                 <For each={users()}>
                     {
                         (item) => (

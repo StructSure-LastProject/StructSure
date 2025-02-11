@@ -28,8 +28,8 @@ const AccountDetails = ({firstName, lastName, mail, role, isDisabled}) => {
     const bgColor = roleStyles[role]?.bg || "";
     
     return (
-        <div class={`${isDisabled ? "opacity-[50%]" : ""} flex justify-between py-[10px] px-[25px] gap-x-[15px] bg-white rounded-[20px] w-[378px] h-auto`}>
-            <div class="flex flex-col justify-center w-[219px] h-auto">
+        <div class={`${isDisabled ? "opacity-[50%]" : ""} flex justify-between py-[10px] px-[25px] gap-x-[15px] bg-white rounded-[20px] w-full h-auto`}>
+            <div class="flex flex-col justify-center w-full sm:w-[200px] md:w-[219px] h-auto">
                 <h2 class="text-lg font-poppins title-medium">{firstName} {lastName}</h2>
                 <span class="font-poppins HeadLineMedium text-gray-500">{mail}</span>
             </div>
