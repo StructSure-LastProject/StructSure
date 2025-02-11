@@ -21,6 +21,7 @@ public class Sensor {
     private SensorId sensorId;
 
     private String name;
+
     private String note;
 
     @ManyToOne

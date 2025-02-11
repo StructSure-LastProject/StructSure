@@ -141,52 +141,13 @@ public class StructureService {
         }
     }
 
-    public List<AllStructureResponseDTO> getAllStructure(){
-        return structureRepository.findAll().stream()
-            .map(structure -> {
-                    var numberOfPlans = planRepository.countByStructureId(structure.getId());
-                    var numberOfSensors = sensorRepository.findByStructureId(structure.getId()).size();
-                    return new AllStructureResponseDTO(
-                        structure.getId(),
-                        structure.getName(),
-                        numberOfSensors,
-                        numberOfPlans,
-                        String.format("/api/structure/%d", structure.getId())
-                    );
-                }
-            ).toList();
-    }
-
-    public List<AllStructureResponseDTO> getAllStructure(GetAllStructureRequest getAllStructureRequest) throws TraitementException {
-        Objects.requireNonNull(getAllStructureRequest);
-        var result = structureRepository
-                .findAll()
-                .stream()
-                .map(structure -> {
-                        var numberOfPlans = planRepository.countByStructureId(structure.getId());
-                        var numberOfSensors = sensorRepository.findByStructureId(structure.getId()).size();
-                        return new AllStructureResponseDTO(
-                                structure.getId(),
-                                structure.getName(),
-                                numberOfSensors,
-                                numberOfPlans,
-                                String.format("/api/structure/%d", structure.getId())
-                                );
-                    }
-                );
-
-        // TODO Filters
-        var resultList = switch (getAllStructureRequest.sort()){
-            case NUMBER_OF_SENSORS -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
-            case NAME -> result.sorted(Comparator.comparing(AllStructureResponseDTO::name)).toList();
-            case STATE -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
-        };
-
-        if (getAllStructureRequest.order() == OrderEnum.DESC) {
-            resultList = resultList.reversed();
+    public List<AllStructureResponseDTO> getAllStructure() throws TraitementException {
+        var structures = structureRepository.findStructuresWithState();
+        System.out.println("Structures getAllStructure(): " + structures);
+        if (structures.isEmpty()) {
+            throw new TraitementException(ErrorIdentifier.LIST_STRUCTURES_EMPTY);
         }
-        return resultList;
-
+        return structures;
     }
 
     public StructureResponseDTO getStructureById(Long id) {

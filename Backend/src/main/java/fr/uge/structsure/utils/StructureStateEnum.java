@@ -4,5 +4,5 @@ public enum StructureStateEnum {
     OK,
     NOK,
     DEFAULTER,
-    UNkNOWN
+    UNKNOWN
 }
