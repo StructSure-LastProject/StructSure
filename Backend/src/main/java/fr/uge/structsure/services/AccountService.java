@@ -21,12 +21,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Account service class
+ */
 @Service
 public class AccountService {
     private final AccountRepository accountRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
 
+    /**
+     * Constructor
+     * @param accountRepository Account repository to perform operations with the database
+     * @param authenticationManager Authentication manager for the authentication
+     * @param jwtUtils Jwt utils to perform operations with JWT token
+     */
     @Autowired
     public AccountService(AccountRepository accountRepository, AuthenticationManager authenticationManager,
                           JwtUtils jwtUtils) {

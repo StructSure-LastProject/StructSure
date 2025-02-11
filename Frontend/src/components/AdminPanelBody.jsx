@@ -2,7 +2,6 @@ import add from '/src/assets/add.svg';
 import AccountDetails from './AccountDetails';
 import useFetch from "../hooks/useFetch";
 import { createResource, createSignal } from 'solid-js';
-import { Navigate } from '@solidjs/router';
 
 /**
  * The admin panel body component 
