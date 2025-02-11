@@ -2,6 +2,7 @@ import add from '/src/assets/add.svg';
 import AccountDetails from './AccountDetails';
 import useFetch from "../hooks/useFetch";
 import { createResource, createSignal } from 'solid-js';
+import EditAccountModal from './EditAccountModal';
 
 /**
  * The admin panel body component 
@@ -37,7 +38,7 @@ const AdminPanelBody = () => {
     createResource(() => fetchUserDetails());
 
     return (
-        <>
+        <>  
             <div class="flex justify-between items-center w-full max-w-[1250px] h-[40px] sm:h-[50px] rounded-[20px] pl-[20px] gap-[10px]">
                 <h1 class="text-2xl sm:text-3xl font-poppins title">Comptes</h1>
                 <div class="pr-[5%]">
