@@ -99,6 +99,45 @@ const ModalSelect = ({ label, value, onInput }) => (
 );
 
 /**
+ * Displays the uploaded image or a placeholder message if no image is present
+ * @component
+ * @param {Object} props - Component properties
+ * @param {Function} props.imageData - Signal function returning the image data URL
+ * @returns {JSX.Element} Image preview or placeholder message
+ */
+const ImagePreview = ({ imageData }) => (
+  <div class="h-full w-full flex justify-center items-center">
+    {imageData() ? (
+      <img src={imageData()} alt="Plan ajouté" class="w-full h-full object-cover"/>
+    ) : (
+      <p class="text-center">Pas encore d&apos;image ...</p>
+    )}
+  </div>
+);
+
+/**
+ * A styled button component that handles file uploads
+ * @component
+ * @param {Object} props - Component properties
+ * @param {Function} props.onImageChange - Callback function triggered when a file is selected
+ * @returns {JSX.Element} Upload button with hidden file input
+ */
+const UploadButton = ({ onImageChange }) => (
+  <label class="absolute bottom-4 right-4 bg-[#F2F2F4] text-black px-4 py-2 rounded-[50px] flex items-center space-x-2 cursor-pointer" 
+    htmlFor="file-input">
+    <span>Remplacer</span>
+    <Pencil size={20} />
+    <input 
+      type="file" 
+      id="file-input" 
+      accept="image/*" 
+      onChange={onImageChange} 
+      class="hidden"
+    />
+  </label>
+);
+
+/**
  * Component for handling image upload and preview functionality
  * @param {Array} props.imageSignal - A tuple containing [imageData, setImageData] signals
  * @param {Function} props.onImageChange - Callback function triggered when the image file is selected
@@ -106,23 +145,13 @@ const ModalSelect = ({ label, value, onInput }) => (
  */
 const ModalImage = (props) => {
   const [imageData] = props.imageSignal;
-  
+
   return (
-    <div>
+    <div class="space-y-2">
       <span class="block text-sm font-medium">Image*</span>
-      <div class="flex items-center justify-between">
-        <div class="relative w-full h-48 border-2 border-[#F2F2F4] rounded-[10px] flex justify-center items-center">
-          {imageData() ? (
-            <img src={imageData()} alt="Plan ajouté" class="w-full h-full object-cover"/>
-          ) : (
-            <p class="text-center">Pas encore d&apos;image ...</p>
-          )}
-          <label class="absolute bottom-4 right-4 bg-[#F2F2F4] text-black px-4 py-2 rounded-[50px] flex items-center space-x-2 cursor-pointer" htmlFor="file-input">
-            <span>Remplacer</span>
-            <Pencil size={20} />
-            <input type="file" id="file-input" accept="image/*" onChange={props.onImageChange} class="hidden"/>
-          </label>
-        </div>
+      <div class="relative w-full h-48 border-2 border-[#F2F2F4] rounded-[10px]">
+        <ImagePreview imageData={imageData} />
+        <UploadButton onImageChange={props.onImageChange} />
       </div>
     </div>
   );
