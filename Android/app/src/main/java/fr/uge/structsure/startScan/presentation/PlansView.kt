@@ -67,7 +67,7 @@ fun PlansView(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            Plan(R.drawable.oa_plan)
+            Plan(R.drawable.oa_debug)
 
             Spacer( Modifier.fillMaxWidth().height(1.dp).background(LightGray) )
 
