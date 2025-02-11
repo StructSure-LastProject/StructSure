@@ -1,6 +1,9 @@
 import { createSignal, onMount, onCleanup } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
+import ModalAddPlan from './Plan/ModalAddPlan';
+import { Show } from "solid-js"
+import { Plus } from 'lucide-solid'
 
 /**
  * Shows the plans part
@@ -11,6 +14,11 @@ function StructureDetailPlans() {
     const [zoomFactor, setZoomFactor] = createSignal(0);
     const [offsetX, setOffsetX] = createSignal(0);
     const [offsetY, setOffsetY] = createSignal(0);
+
+    const [isOpen, setIsOpen] = createSignal(false);
+
+    const openModal = () => setIsOpen(true);
+    const closeModal = () => setIsOpen(false);
     
     const img = new Image();
     let canvasRef;
@@ -191,7 +199,19 @@ function StructureDetailPlans() {
     return (
         <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
             <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
-                <p class="prose font-poppins title">Plans</p>
+                <div class="flex items-center justify-between">
+                    <p class="prose font-poppins title">Plans</p>
+                    <button 
+                      title="Ajouter un plan" 
+                      onClick={openModal} 
+                      class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+                    >
+                        <Plus color="black"/>
+                    </button>
+                </div>
+                <Show when={isOpen()}>
+                    <ModalAddPlan isOpen={isOpen()} onClose={closeModal} />
+                </Show>
                 <StructureDetailSection />
             </div>
             <div class="lg:w-[75%] rounded-[20px] bg-white">
