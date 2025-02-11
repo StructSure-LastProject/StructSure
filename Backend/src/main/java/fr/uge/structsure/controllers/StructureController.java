@@ -9,7 +9,7 @@ import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
 import fr.uge.structsure.services.SensorService;
 import fr.uge.structsure.utils.OrderEnum;
-import fr.uge.structsure.utils.SortEnum;
+import fr.uge.structsure.utils.SortStructuresByEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -152,13 +152,18 @@ public class StructureController {
      * @return List of structures
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<AllStructureResponseDTO> getAllStructure(@RequestParam(required = false) String searchByName,
-                                                         @RequestParam(required = false) SortEnum sort,
+    public ResponseEntity<?> getAllStructure(@RequestParam(required = false) String searchByName,
+                                                         @RequestParam(required = false) SortStructuresByEnum sort,
                                                          @RequestParam(required = false) OrderEnum order){
         Objects.requireNonNull(searchByName);
         Objects.requireNonNull(sort);
         Objects.requireNonNull(order);
-        return structureService.getAllStructure(new GetAllStructureRequest(searchByName, sort, order));
+        try {
+            return ResponseEntity.status(200).body(structureService.getAllStructure(new GetAllStructureRequest(searchByName, sort, order)));
+        } catch (TraitementException e) {
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
+            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        }
     }
 
     @GetMapping(value = "/android", produces = MediaType.APPLICATION_JSON_VALUE)

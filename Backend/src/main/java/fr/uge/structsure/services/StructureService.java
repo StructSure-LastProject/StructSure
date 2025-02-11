@@ -157,7 +157,7 @@ public class StructureService {
             ).toList();
     }
 
-    public List<AllStructureResponseDTO> getAllStructure(GetAllStructureRequest getAllStructureRequest){
+    public List<AllStructureResponseDTO> getAllStructure(GetAllStructureRequest getAllStructureRequest) throws TraitementException {
         Objects.requireNonNull(getAllStructureRequest);
         var result = structureRepository
                 .findAll()
@@ -177,9 +177,9 @@ public class StructureService {
 
         // TODO Filters
         var resultList = switch (getAllStructureRequest.sort()){
-            case NUMBEROFSENSORS -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
+            case NUMBER_OF_SENSORS -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
             case NAME -> result.sorted(Comparator.comparing(AllStructureResponseDTO::name)).toList();
-            case WORSTSTATE -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
+            case STATE -> result.sorted(Comparator.comparing(AllStructureResponseDTO::numberOfSensors)).toList();
         };
 
         if (getAllStructureRequest.order() == OrderEnum.DESC) {
