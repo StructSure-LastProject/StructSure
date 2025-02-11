@@ -20,7 +20,7 @@ class SensorCache {
     fun insertSensors(sensors: List<SensorDB>) {
         synchronized(lock) {
             for (sensor in sensors) {
-                sensorMap[sensor.sensorId] = Pair(sensor, null) // Initialize with no previous state
+                sensorMap[sensor.sensorId] = Pair(sensor, null)
                 chipToSensorIdMap[sensor.controlChip] = sensor.sensorId
                 chipToSensorIdMap[sensor.measureChip] = sensor.sensorId
             }
@@ -47,13 +47,14 @@ class SensorCache {
     fun updateSensorState(sensor: SensorDB, newState: String): String? {
         synchronized(lock) {
             val current = sensorMap[sensor.sensorId]
-            if (current == null || current.first.state != newState) {
-                val previousState = current?.first?.state
+            val previousState = current?.first?.state
+
+            if (previousState != newState) {
                 sensor.state = newState
                 sensorMap[sensor.sensorId] = Pair(sensor, previousState)
-                return previousState
             }
-            return current?.second // Return the previously recorded state
+
+            return previousState
         }
     }
 

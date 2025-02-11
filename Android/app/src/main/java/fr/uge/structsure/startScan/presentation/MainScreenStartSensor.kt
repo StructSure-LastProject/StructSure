@@ -15,6 +15,7 @@ import androidx.navigation.NavController
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.components.Page
+import fr.uge.structsure.startScan.domain.ScanState
 import fr.uge.structsure.startScan.domain.ScanViewModel
 import fr.uge.structsure.startScan.presentation.components.SensorsList
 import fr.uge.structsure.startScan.presentation.components.StructureWeather
@@ -38,14 +39,16 @@ fun MainScreenStartSensor(context: Context,
 
     val cs108Scanner = remember {
         Cs108Scanner { chip ->
-            Log.d("MainScreenStartSensor", "Chip scanned: ${chip.id}")
             scanViewModel.onTagScanned(chip.id)
         }
     }
 
     SideEffect {
-        scanViewModel.fetchSensors(structureId)
+        if (scanViewModel.currentScanState.value == ScanState.NOT_STARTED) {
+            scanViewModel.fetchSensors(structureId)
+        }
     }
+
 
     Page(
         Modifier.padding(bottom = 100.dp),
@@ -57,9 +60,11 @@ fun MainScreenStartSensor(context: Context,
                     cs108Scanner.start()
                 },
                 onPauseClick = {
+                    cs108Scanner.stop()
                     scanViewModel.pauseScan()
                 },
                 onStopClick = {
+                    cs108Scanner.stop()
                     scanViewModel.stopScan()
                 },
                 onContentClick = { },
@@ -72,16 +77,19 @@ fun MainScreenStartSensor(context: Context,
         PlansView(modifier = Modifier.fillMaxWidth())
         SensorsList(modifier = Modifier.fillMaxWidth())
 
-        val sensorMsg = scanViewModel.sensorMessages.observeAsState().value
-        sensorMsg?.let { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        scanViewModel.sensorMessages.observeAsState(null).value.let {
+            if (it != null) {
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            }
         }
 
         scanViewModel.alertMessages.observeAsState(null).value.let {
             if (it != null) {
                 scanViewModel.alertMessages.value = null
+                cs108Scanner.stop()
                 navController.navigate("Alerte?state=true&name=${it.sensorName}&lastState=${it.lastStateSensor}")
             }
+
         }
    }
 }
