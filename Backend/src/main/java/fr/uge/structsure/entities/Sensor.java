@@ -6,10 +6,7 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 public class Sensor {
@@ -149,7 +146,7 @@ public class Sensor {
     }
 
     public void setResults(Set<Result> results) {
-        this.results = results;
+        this.results = new HashSet<>(results);
     }
 }
     
