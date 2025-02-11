@@ -44,56 +44,59 @@ const Modal = ({ isOpen, onClose, onSave }) => {
             </div>
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium">Nom*</label>
-                <input
-                  type="text"
-                  class="w-full px-3 py-2 border rounded-[10px]"
-                  placeholder="Zone 03"
-                />
+                <label class="block text-sm font-medium">Nom*
+                    <input
+                    type="text"
+                    class="w-full px-3 py-2 border rounded-[10px]"
+                    placeholder="Zone 03"
+                    />
+                </label>
               </div>
 
               <div>
-                <label class="block text-sm font-medium">Section*</label>
-                <select
-                  class="bg-[#F2F2F4] w-full px-3 py-2 border rounded-[10px]"
-                  value={selectedSection()}
-                  onInput={(e) => setSelectedSection(e.target.value)}
-                >
-                  <option value="">Sélectionner une section</option>
-                  <option value="OA">OA</option>
-                  <option value="Aval">Aval</option>
-                  <option value="Zone 04">Zone 04</option>
-                  <option value="Zone 05">Zone 05</option>
-                </select>
+                <label class="block text-sm font-medium">Section*
+                    <select
+                      class="bg-[#F2F2F4] w-full px-3 py-2 border rounded-[10px]"
+                      value={selectedSection()}
+                      onInput={(e) => setSelectedSection(e.target.value)}
+                    >
+                        <option value="">Sélectionner une section</option>
+                        <option value="OA">OA</option>
+                        <option value="Aval">Aval</option>
+                        <option value="Zone 04">Zone 04</option>
+                        <option value="Zone 05">Zone 05</option>
+                    </select>
+                </label>
               </div>
 
               <div>
-                <label class="block text-sm font-medium">Image*</label>
-                <div class="flex items-center justify-between">
-                  <div class="relative w-96 h-48 border-2 border-[#F2F2F4] rounded-[10px] flex justify-center items-center">
-                      {image() ? (
-                        <img src={image()} alt="Image capturée" class="w-full h-full object-cover" />
-                      ) : (
-                        <p>Pas encore d'image ...</p>
-                      )}
-                      <label
-                        class="absolute bottom-4 right-4 bg-[#F2F2F4] text-black px-4 py-2 rounded-[50px] flex items-center space-x-2 cursor-pointer"
-                        for="file-input"
-                      >
-                        <span>Remplacer</span>
-                        <Pencil size={20}/>
-                      <input
-                        type="file"
-                        id="file-input"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        class="hidden"
-                      />
-                      </label>
-                      
+                <label class="block text-sm font-medium">Image*
+                    <div class="flex items-center justify-between">
+                    <div class="relative w-96 h-48 border-2 border-[#F2F2F4] rounded-[10px] flex justify-center items-center">
+                        {image() ? (
+                            <img src={image()} alt="Plan ajouté" class="w-full h-full object-cover" />
+                        ) : (
+                            <p>Pas encore d&apos;image ...</p>
+                        )}
+                        <label
+                            class="absolute bottom-4 right-4 bg-[#F2F2F4] text-black px-4 py-2 rounded-[50px] flex items-center space-x-2 cursor-pointer"
+                            for="file-input"
+                        >
+                            <span>Remplacer</span>
+                            <Pencil size={20}/>
+                            <input
+                                type="file"
+                                id="file-input"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                class="hidden"
+                            />
+                        </label>
+                        
+                        </div>
+
                     </div>
-
-                </div>
+                </label>
               </div>
             </div>
           </div>

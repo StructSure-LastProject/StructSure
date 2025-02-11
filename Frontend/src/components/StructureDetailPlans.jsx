@@ -16,7 +16,17 @@ function StructureDetailPlans() {
 
     const [isOpen, setIsOpen] = createSignal(false);
 
+    /**
+     * Opens the modal by setting the `isOpen` state to `true`.
+     * This will trigger the modal to become visible.
+     * @returns {void}
+     */
     const openModal = () => setIsOpen(true);
+    /**
+     * Closes the modal by setting the `isOpen` state to `false`.
+     * This will hide the modal from view.
+     * @returns {void}
+     */
     const closeModal = () => setIsOpen(false);
     
     const img = new Image();
