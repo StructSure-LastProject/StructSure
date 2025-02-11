@@ -37,18 +37,11 @@ fun MainScreenStartSensor(context: Context,
                           connexionCS108: Cs108Connector,
                           navController: NavController) {
 
-    val cs108Scanner = remember {
-        Cs108Scanner { chip ->
-            scanViewModel.onTagScanned(chip.id)
-        }
-    }
-
     SideEffect {
         if (scanViewModel.currentScanState.value == ScanState.NOT_STARTED) {
             scanViewModel.fetchSensors(structureId)
         }
     }
-
 
     Page(
         Modifier.padding(bottom = 100.dp),
@@ -57,14 +50,11 @@ fun MainScreenStartSensor(context: Context,
                 currentState = scanViewModel.currentScanState.value,
                 onPlayClick = {
                     scanViewModel.createNewScan(structureId)
-                    cs108Scanner.start()
                 },
                 onPauseClick = {
-                    cs108Scanner.stop()
                     scanViewModel.pauseScan()
                 },
                 onStopClick = {
-                    cs108Scanner.stop()
                     scanViewModel.stopScan()
                 },
                 onContentClick = { },
@@ -86,10 +76,8 @@ fun MainScreenStartSensor(context: Context,
         scanViewModel.alertMessages.observeAsState(null).value.let {
             if (it != null) {
                 scanViewModel.alertMessages.value = null
-                cs108Scanner.stop()
                 navController.navigate("Alerte?state=true&name=${it.sensorName}&lastState=${it.lastStateSensor}")
             }
-
         }
    }
 }

@@ -39,9 +39,8 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
      * @param element the value to store
      */
     fun add(element: T) {
-        if (entries.putIfAbsent(element, SystemClock.uptimeMillis()) == null) {
-            runner.start()
-        }
+        entries.putIfAbsent(element, SystemClock.uptimeMillis())
+        runner.start()
     }
 
     /**
@@ -60,6 +59,7 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
         Log.d(LOG_TAG, "Stopping TimedBuffer")
         runner.stop()
     }
+
 
     /**
      * Walk through all the elements, remove all element older than
