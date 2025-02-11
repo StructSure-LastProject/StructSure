@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { Check, Pencil, X  } from 'lucide-solid'
+import { Check, Pencil, X } from 'lucide-solid';
 
 /**
  * Modal for adding a plan.
@@ -9,7 +9,7 @@ import { Check, Pencil, X  } from 'lucide-solid'
  */
 const Modal = ({ isOpen, onClose, onSave }) => {
   const [selectedSection, setSelectedSection] = createSignal("");
-  const [image, setImage] = createSignal(null);
+  const [imageData, setImageData] = createSignal(null);
 
   /**
    * Handles image file input change.
@@ -17,13 +17,11 @@ const Modal = ({ isOpen, onClose, onSave }) => {
    */
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageData(reader.result)
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -35,33 +33,7 @@ const Modal = ({ isOpen, onClose, onSave }) => {
             <div class="space-y-4">
               <ModalField label="Nom*" placeholder="Zone 03" />
               <ModalSelect label="Section*" value={selectedSection()} onInput={(e) => setSelectedSection(e.target.value)} />
-              <div>
-                <div class="block text-sm font-medium">Image*
-                  <div class="flex items-center justify-between">
-                    <div class="relative w-96 h-48 border-2 border-[#F2F2F4] rounded-[10px] flex justify-center items-center">
-                      {image() ? (
-                        <img src={image()} alt="Plan ajouté" class="w-full h-full object-cover" />
-                      ) : (
-                        <p>Pas encore d&apos;image ...</p>
-                      )}
-                      <label
-                        class="absolute bottom-4 right-4 bg-[#F2F2F4] text-black px-4 py-2 rounded-[50px] flex items-center space-x-2 cursor-pointer"
-                        for="file-input"
-                      >
-                        <span>Remplacer</span>
-                        <Pencil size={20}/>
-                        <input
-                          type="file"
-                          id="file-input"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          class="hidden"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ModalImage imageSignal={[imageData, setImageData]} onImageChange={handleImageChange} />
             </div>
           </form>
         </div>
@@ -125,5 +97,50 @@ const ModalSelect = ({ label, value, onInput }) => (
     </label>
   </div>
 );
+
+/**
+ * Component for handling image upload and preview functionality
+ * @param {Array} props.imageSignal - A tuple containing [imageData, setImageData] signals
+ * @param {Function} props.onImageChange - Callback function triggered when the image file is selected
+ * @returns {JSX.Element} A form section for image upload and preview
+ */
+const ModalImage = (props) => {
+  const [imageData] = props.imageSignal;
+  
+  return (
+    <div>
+      <span class="block text-sm font-medium">Image*</span>
+      <div class="flex items-center justify-between">
+        <div class="relative w-full h-48 border-2 border-[#F2F2F4] rounded-[10px] flex justify-center items-center">
+          {imageData() ? (
+            <img
+              src={imageData()}
+              alt="Plan ajouté"
+              class="w-full h-full object-cover"
+              onLoad={() => console.log("Image loaded successfully")}
+              onError={(e) => console.error("Image load error:", e)}
+            />
+          ) : (
+            <p class="text-center">Pas encore d&apos;image ...</p>
+          )}
+          <label
+            class="absolute bottom-4 right-4 bg-[#F2F2F4] text-black px-4 py-2 rounded-[50px] flex items-center space-x-2 cursor-pointer"
+            htmlFor="file-input"
+          >
+            <span>Remplacer</span>
+            <Pencil size={20} />
+            <input
+              type="file"
+              id="file-input"
+              accept="image/*"
+              onChange={props.onImageChange}
+              class="hidden"
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default Modal;
