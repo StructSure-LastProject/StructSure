@@ -6,16 +6,27 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controller handles the user details
+ */
 @RestController
 @RequestMapping("/api/users")
 public class UserAccountController {
     private final AccountService accountService;
 
+    /**
+     * Constructor
+     * @param accountService Service class
+     */
     @Autowired
     public UserAccountController(AccountService accountService) {
       this.accountService = accountService;
     }
 
+    /**
+     * Returns the user list
+     * @return UserAccountResponseDTO The list of user details
+     */
     @GetMapping("/getUserAccounts")
     public ResponseEntity<?> getUserAccounts(){
         return ResponseEntity

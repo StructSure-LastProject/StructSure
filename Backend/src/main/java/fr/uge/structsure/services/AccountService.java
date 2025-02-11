@@ -83,7 +83,10 @@ public class AccountService {
         }
     }
 
-
+    /**
+     * Service that will get all users
+     * @return List Send the list of users
+     */
     public List<UserAccountResponseDTO> getUserAccounts(){
          return accountRepository
             .findAll()
