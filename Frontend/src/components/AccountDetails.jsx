@@ -9,23 +9,36 @@ import EditAccountModal from "./AdminPanel/EditAccountModal";
  * @param {String} role role of the user 
  * @returns the component for the account details
  */
-const AccountDetails = ({firstName, lastName, login, role, isDisabled}) => {
+const AccountDetails = () => {
 
-    const [isModalOpen, setIsModalOpen] = createSignal(false);
+    const [firstName, setFirstName] = createSignal("");
+    const [lastName, setLastName] = createSignal("");
+    const [id, setId] = createSignal("");
+    const [role, setRole] = createSignal(""); 
+    const [accountState, setAccountState] = createSignal("");
 
+    const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
+    
     /**
-     * Handle the click event by opening the modal
+     * Handle the edit account click event by opening the modal
      */
-    const handleClick = () => {        
-        setIsModalOpen(true); 
+    const handleEditAccountClick = (firstName, lastName, login, role, enabled) => {
+        setFirstName(firstName);
+        setLastName(lastName);
+        setId(login);
+        setRole(role);
+        setAccountState(enabled);       
+        setIsEditModalOpen(true); 
     };
 
+
     /**
-     * Close the modal
+     * Close the edit account modal
      */
-    const closeModal = () => {
-        setIsModalOpen(false); 
+    const closeEditAccountModal = () => {
+        setIsEditModalOpen(false); 
     };
+
 
     const roleStyles = {
         "Opérateur": {
@@ -47,7 +60,7 @@ const AccountDetails = ({firstName, lastName, login, role, isDisabled}) => {
     
     return (
         <div>
-            <button onClick={handleClick} class={`${isDisabled ? "opacity-[50%]" : ""} flex justify-between items-center py-[10px] px-[25px] bg-white rounded-[20px] w-full h-auto`}>
+            <button onClick={handleEditAccountClick(firstName, lastName, login, role, enabled)} class={`${isDisabled ? "opacity-[50%]" : ""} flex justify-between items-center py-[10px] px-[25px] bg-white rounded-[20px] w-full h-auto`}>
                 <div class="flex flex-col text-start w-full sm:w-[200px] md:w-[219px] h-auto">
                     <h2 class="text-lg font-poppins title-medium-name">{firstName} {lastName}</h2>
                     <span class="font-poppins HeadLineMedium text-gray-500">{login}</span>
@@ -62,8 +75,8 @@ const AccountDetails = ({firstName, lastName, login, role, isDisabled}) => {
                     </div>
                 </div>
             </button>
-            {isModalOpen() && (
-                <EditAccountModal closeModal={closeModal} />
+            {isEditModalOpen() && (
+                <EditAccountModal closeModal={closeEditAccountModal} firstName={firstName()} lastName={lastName()} id={id()} role={role()} accountState={accountState()} />
             )}
         </div>
     );

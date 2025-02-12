@@ -3,18 +3,18 @@ import StructureNameCard from '../StructureNameCard';
 import { createSignal } from 'solid-js';
 
 /**
- * Edit account modal component
+ * Add account modal component
  * @param {Function} closeModal The function to close the modal
  * @returns The Model compoanent
  */
-const EditAccountModal = ({ closeModal, firstName, lastName, id, role, accountState}) => {
+const AddAccountModal = ({ closeModal }) => {
 
-    const [firstName, setFirstName] = createSignal(firstName);
-    const [lastName, setLastName] = createSignal(lastName);
-    const [id, setId] = createSignal(id);
+    const [firstName, setFirstName] = createSignal("");
+    const [lastName, setLastName] = createSignal("");
+    const [id, setId] = createSignal("");
     const [password, setPassword] = createSignal("");
-    const [role, setRole] = createSignal(role); 
-    const [accountState, setAccountState] = createSignal(accountState);
+    const [role, setRole] = createSignal(""); 
+    const [accountState, setAccountState] = createSignal(false);
 
 
 
@@ -24,12 +24,9 @@ const EditAccountModal = ({ closeModal, firstName, lastName, id, role, accountSt
             <div class="sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
                 <div class="flex justify-between items-center w-full gap-[10px]">
                     <h1 class="font-poppins text-[20px] sm:text-[20px] font-[600] leading-[30px] sm:leading-[37.5px] tracking-[0%]">
-                        Edition de Compte
+                        Créer un Compte
                     </h1>
                     <div class="flex flex-wrap gap-[10px]">
-                        <button class="flex justify-center items-center w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-[50px] bg-[#F133271A]">
-                            <Trash2 color="#f13327" size={20} width={20} top={10} left={10}/>
-                        </button>
                         <button onClick={closeModal} class="flex justify-center items-center w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-[50px] bg-[#F2F2F4]">
                             <X />
                         </button>
@@ -100,8 +97,8 @@ const EditAccountModal = ({ closeModal, firstName, lastName, id, role, accountSt
                 </div>
                 }
                 <div class="md:flex md:flex-row-reverse">
-                    <button class="w-[123px] h-auto rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-[#F2F2F4]">
-                        <p class="w-[91px] h-auto font-poppins font-[600] text-[14px] leading-[21px] tracking-[0%]">Mettre à jour</p>
+                    <button class="w-[72px] h-auto rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-[#181818]">
+                        <p class="w-[40px] h-auto text-white font-poppins font-[600] text-[14px] leading-[21px] tracking-[0%]">Créer</p>
                     </button>
                 </div>
             </div>
@@ -109,4 +106,4 @@ const EditAccountModal = ({ closeModal, firstName, lastName, id, role, accountSt
     )
 }
 
-export default EditAccountModal
+export default AddAccountModal
