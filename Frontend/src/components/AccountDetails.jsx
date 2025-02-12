@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import EditAccountModal from "./EditAccountModal";
+import EditAccountModal from "./AdminPanel/EditAccountModal";
 
 /**
  * Display the Account details

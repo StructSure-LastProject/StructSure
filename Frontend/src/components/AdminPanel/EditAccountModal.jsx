@@ -1,5 +1,5 @@
 import { Trash2, X, ChevronDown } from 'lucide-solid';
-import StructureNameCard from './StructureNameCard';
+import StructureNameCard from '../StructureNameCard';
 import { createSignal } from 'solid-js';
 
 /**
