@@ -6,12 +6,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -27,8 +24,6 @@ private fun StateMapper(state: Boolean): StructureStates {
 
 @Composable
 fun StructuresListView(structureViewModel: StructureViewModel, navController: NavController) {
-    val coroutineScope = rememberCoroutineScope()
-    val latestStructure by rememberUpdatedState(structureViewModel)
     val structures = structureViewModel.getAllStructures.observeAsState()
 
     LaunchedEffect(structureViewModel) {
