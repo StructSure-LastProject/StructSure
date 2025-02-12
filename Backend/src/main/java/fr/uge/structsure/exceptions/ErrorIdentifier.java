@@ -1,5 +1,8 @@
 package fr.uge.structsure.exceptions;
 
+/**
+ * Represents the identifiers for the errors
+ */
 public enum ErrorIdentifier {
     USER_ALREADY_EXISTS,
     ROLE_NOT_EXISTS,
@@ -24,5 +27,6 @@ public enum ErrorIdentifier {
     SENSOR_NAME_EXCEED_LIMIT,
     SENSOR_NOTE_EXCEED_LIMIT,
     SENSOR_INSTALLATION_DATE_INVALID_FORMAT,
-    SENSOR_CHIP_TAGS_ARE_IDENTICAL
+    SENSOR_CHIP_TAGS_ARE_IDENTICAL,
+    LIST_STRUCTURES_EMPTY
 }

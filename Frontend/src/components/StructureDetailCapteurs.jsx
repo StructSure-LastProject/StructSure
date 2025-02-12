@@ -26,42 +26,42 @@ function StructureDetailCapteurs() {
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
                     <div class="w-[12px] h-[12px] rounded-[50px] bg-[#F13327] border-2 border-red-200"></div>
-                    <p class="prose font-poppins poppins font-semibold w-[138px]">Capteur 01</p>
+                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 01</p>
                     <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                         <Trash2 size={20} />
                     </div>
                 </div>
                 <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
                     <div class="w-[12px] h-[12px] rounded-[50px] bg-[#25B61F] border-2 border-green-200"></div>
-                    <p class="prose font-poppins poppins font-semibold w-[138px]">Capteur 02</p>
+                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 02</p>
                     <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                         <Trash2 size={20} />
                     </div>
                 </div>
                 <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
                     <div class="w-[12px] h-[12px] rounded-[50px] bg-[#6A6A6A] border-2 border-grey-200"></div>
-                    <p class="prose font-poppins poppins font-semibold w-[138px]">Capteur 05</p>
+                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 05</p>
                     <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                         <Trash2 size={20} />
                     </div>
                 </div>
                 <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
                     <div class="w-[12px] h-[12px] rounded-[50px] bg-[#F19327] border-2 border-yellow-200"></div>
-                    <p class="prose font-poppins poppins font-semibold w-[138px]">Capteur 06</p>
+                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 06</p>
                     <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                         <Trash2 size={20} />
                     </div>
                 </div>
                 <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
                     <div class="w-[12px] h-[12px] rounded-[50px] bg-[#25B61F] border-2 border-green-200"></div>
-                    <p class="prose font-poppins poppins font-semibold w-[138px]">Capteur 10</p>
+                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 10</p>
                     <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                         <Trash2 size={20} />
                     </div>
                 </div>
                 <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
                     <div class="w-[12px] h-[12px] rounded-[50px] bg-[#25B61F] border-2 border-green-200"></div>
-                    <p class="prose font-poppins poppins font-semibold w-[138px]">Capteur 04</p>
+                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 04</p>
                     <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                         <Trash2 size={20} />
                     </div>

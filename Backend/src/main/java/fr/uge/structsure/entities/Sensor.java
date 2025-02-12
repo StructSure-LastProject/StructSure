@@ -6,9 +6,7 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 public class Sensor {
@@ -21,6 +19,7 @@ public class Sensor {
     private SensorId sensorId;
 
     private String name;
+
     private String note;
 
     @ManyToOne
@@ -43,6 +42,9 @@ public class Sensor {
 
     @Column(columnDefinition = "INTEGER")
     private Boolean archived;
+
+    @OneToMany(mappedBy="sensor")
+    private Set<Result> results;
 
 
     //constructeurs nécéssaire
@@ -137,6 +139,14 @@ public class Sensor {
 
     public void setStructure(Structure structure) {
         this.structure = structure;
+    }
+
+    public Set<Result> getResults() {
+        return results;
+    }
+
+    public void setResults(Set<Result> results) {
+        this.results = new HashSet<>(results);
     }
 }
     

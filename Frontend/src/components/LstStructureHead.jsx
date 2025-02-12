@@ -4,6 +4,7 @@ import filter from '/src/assets/filter.svg';
 import add from '/src/assets/add.svg';
 import { useNavigate } from "@solidjs/router";
 import useFetch from '../hooks/useFetch';
+import { ArrowDownNarrowWide, Filter, Plus } from 'lucide-solid';
 
 /**
  * Component for list of structure
@@ -13,7 +14,7 @@ function LstStructureHead() {
     const [isModalVisible, setModalVisible] = createSignal(false);
 
 
-    const openModal = createMemo(() => setModalVisible(true));
+    const openModal = () => setModalVisible(true);
 
     /**
      * Handles close modal
@@ -70,17 +71,18 @@ function LstStructureHead() {
     };
 
     return (
-        <div class="flex justify-between w-full">
-            <h1 class="text-2xl font-medium">Ouvrages</h1>
-            <div class="flex space-x-4">
-                <img src={order} alt="Order Elements logo" />
-                <img src={filter} alt="Filter logo" />
-                <img
-                    src={add}
-                    alt="Add Button logo"
-                    class="cursor-pointer"
-                    onClick={openModal}
-                />
+        <div class="flex justify-between w-full pl-5">
+            <h1 class="font-poppins poppins text-[25px] font-semibold">Ouvrages</h1>
+            <div class="flex gap-x-[10px]">
+                <button class="w-10 h-10 bg-white rounded-[50px] flex items-center justify-center">
+                    <ArrowDownNarrowWide />
+                </button>
+                <button class="w-10 h-10 bg-white rounded-[50px] flex items-center justify-center">
+                    <Filter />
+                </button>
+                <button class="w-10 h-10 bg-black rounded-[50px] flex items-center justify-center"  onClick={openModal}>
+                    <Plus color="white" />
+                </button>
             </div>
 
             {isModalVisible() && (

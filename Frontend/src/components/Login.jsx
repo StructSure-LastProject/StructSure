@@ -53,7 +53,7 @@ function Login() {
             navigate("/");
         } else if (statusCode() === 404) {
             const response = data();
-            setError(errorFetch());
+            setError(errorFetch);
         }
     };
 

@@ -1,5 +1,7 @@
 package fr.uge.structsure.dto.structure;
 
+import fr.uge.structsure.utils.StructureStateEnum;
+
 import java.util.Objects;
 
 /**
@@ -8,12 +10,12 @@ import java.util.Objects;
  * @param name Name of the structure
  * @param numberOfSensors Number of sensors
  * @param numberOfPlans Number of plans
- * @param url The url to access the structure
+ * @param state The state of the structure
  */
-public record AllStructureResponseDTO(long id, String name, int numberOfSensors, int numberOfPlans, String url) {
+public record AllStructureResponseDTO(long id, String name, long numberOfSensors, long numberOfPlans, StructureStateEnum state, boolean archived) {
     public AllStructureResponseDTO {
         Objects.requireNonNull(name);
-        Objects.requireNonNull(url);
+        Objects.requireNonNull(state);
         if (id <= 0) {
             throw new IllegalArgumentException("id must be greater than 0");
         }
