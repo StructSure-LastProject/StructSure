@@ -33,7 +33,8 @@ import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.settings.presentation.SettingsPage
 import fr.uge.structsure.startScan.domain.ScanViewModel
-import fr.uge.structsure.startScan.presentation.MainScreenStartSensor
+import fr.uge.structsure.startScan.presentation.ScanPage
+import fr.uge.structsure.structuresPage.data.StructureData
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
@@ -102,8 +103,8 @@ class MainActivity : ComponentActivity() {
                     SetDynamicStatusBar()
                 }
                 composable("startScan?structureId={structureId}") { backStackEntry ->
-                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                    MainScreenStartSensor(context, scanViewModel, structureId, connexionCS108, navController)
+                   val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                    ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
                 composable(loginPage) {

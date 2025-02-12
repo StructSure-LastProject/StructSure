@@ -8,8 +8,8 @@ import java.sql.Timestamp
 
 @Entity(tableName = "resultSensor")
 data class ResultSensors(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    @PrimaryKey
+    val id: String,
     val timestamp: String,
     val controlChip: String,
     val measureChip: String,

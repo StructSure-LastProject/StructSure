@@ -1,19 +1,16 @@
 package fr.uge.structsure.startScan.presentation
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
-import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.components.Page
 import fr.uge.structsure.startScan.domain.ScanState
 import fr.uge.structsure.startScan.domain.ScanViewModel
@@ -31,15 +28,17 @@ import fr.uge.structsure.startScan.presentation.components.StructureWeather
  * @param navController to navigate to other screens
  */
 @Composable
-fun MainScreenStartSensor(context: Context,
-                          scanViewModel: ScanViewModel,
-                          structureId: Long,
-                          connexionCS108: Cs108Connector,
-                          navController: NavController) {
+fun ScanPage(context: Context,
+             scanViewModel: ScanViewModel,
+             structureId: Long,
+             connexionCS108: Cs108Connector,
+             navController: NavController) {
+
+    val currentState = scanViewModel.currentScanState.observeAsState(initial = ScanState.NOT_STARTED)
 
     SideEffect {
         if (scanViewModel.currentScanState.value == ScanState.NOT_STARTED) {
-            scanViewModel.fetchSensors(structureId)
+            scanViewModel.init()
         }
     }
 
@@ -47,8 +46,9 @@ fun MainScreenStartSensor(context: Context,
         Modifier.padding(bottom = 100.dp),
         bottomBar = {
             ToolBar(
-                currentState = scanViewModel.currentScanState.value,
+                currentState = currentState.value,
                 onPlayClick = {
+
                     scanViewModel.createNewScan(structureId)
                 },
                 onPauseClick = {
@@ -57,7 +57,9 @@ fun MainScreenStartSensor(context: Context,
                 onStopClick = {
                     scanViewModel.stopScan()
                 },
-                onContentClick = { },
+                onContentClick = {
+
+                },
                 connexionCS108 = connexionCS108,
                 navController = navController
             )
@@ -76,7 +78,7 @@ fun MainScreenStartSensor(context: Context,
         scanViewModel.alertMessages.observeAsState(null).value.let {
             if (it != null) {
                 scanViewModel.alertMessages.value = null
-                navController.navigate("Alerte?state=true&name=${it.sensorName}&lastState=${it.lastStateSensor}")
+                navController.navigate("Alerte?state=${it.state}&name=${it.sensorName}&lastState=${it.lastStateSensor}")
             }
         }
    }

@@ -109,7 +109,7 @@ class StructureRepository(
                             sensor.name,
                             sensor.note,
                             sensor.installationDate,
-                            state = "",
+                            state = "", // TODO
                             sensor.x,
                             sensor.y,
                             structure.id

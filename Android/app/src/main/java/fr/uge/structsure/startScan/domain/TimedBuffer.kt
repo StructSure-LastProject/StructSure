@@ -27,11 +27,6 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
     /** List of values with their associated entrance time */
     private val entries = mutableMapOf<T, Long>()
 
-    /** Tag for logging */
-    private companion object {
-        const val LOG_TAG = "TimedBuffer"
-    }
-
     /**
      * Adds the given element to the buffer if not already present.
      * If the element was not present, the delayed task will be
@@ -56,7 +51,6 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
      * is no longer used.
      */
     fun stop() {
-        Log.d(LOG_TAG, "Stopping TimedBuffer")
         runner.stop()
     }
 
@@ -70,11 +64,11 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
         val toRemove = entries.entries.filter { now - it.value > timeout }
         toRemove.forEach {
             if (entries.contains(it.key)) {
-                Log.d(LOG_TAG, "Executing task on value ${it.key}")
+                Log.d("TimedBuffer", "Executing task on value ${it.key}")
                 task(this, it.key)
                 entries.remove(it.key)
             } else {
-                Log.d(LOG_TAG, "Value " + it.key + " skipped (deleted)")
+                Log.d("TimedBuffer", "Value " + it.key + " skipped (deleted)")
             }
         }
     }
@@ -110,9 +104,9 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
             try {
                 runningTask?.let {
                     it.cancel(true)
-                } ?: Log.w(LOG_TAG, "No running task to cancel")
+                } ?: Log.w("TimedBuffer", "No running task to cancel")
             } catch (e: InterruptedException) {
-                Log.e(LOG_TAG, "Interrupted while stopping task: ${e.message}")
+                Log.e("TimedBuffer", "Interrupted while stopping task: ${e.message}")
             }
             runningTask = null
         }
