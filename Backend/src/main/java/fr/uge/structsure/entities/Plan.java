@@ -9,12 +9,13 @@ import java.io.File;
 @Entity
 public class Plan {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long id;
     @Column(unique = true)
     @NotBlank(message = "Name is required")
     @Size(max = 32, message = "Name must be less than 32 characters")
     private String name;
+    private Boolean archived;
     private String imageUrl;
     @NotBlank(message = "Section is required")
     @Size(max = 128, message = "Section must be less than 128 characters")
@@ -25,8 +26,9 @@ public class Plan {
 
     public Plan() {}
 
-    public Plan(String imageUrl, String name, String section, Structure structure) {
+    public Plan(String imageUrl, Boolean archived, String name, String section, Structure structure) {
         this.imageUrl = imageUrl;
+        this.archived = archived;
         this.name = name;
         this.section = section;
         this.structure = structure;
@@ -57,5 +59,13 @@ public class Plan {
     }
     public long getId() {
         return id;
+    }
+
+    public Boolean getArchived() {
+        return archived;
+    }
+
+    public void setArchived(Boolean archived) {
+        this.archived = archived;
     }
 }

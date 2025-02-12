@@ -45,7 +45,9 @@ public class PlanService {
 
     public AddPlanResponseDTO createPlan(Long id, AddPlanRequestDTO addPlanRequestDTO, MultipartFile file) throws TraitementException {
         Objects.requireNonNull(addPlanRequestDTO);
-        Objects.requireNonNull(id);
+        if (id == null) {
+            throw new TraitementException(ErrorIdentifier.PLAN_ID_IS_EMPTY);
+        }
         var structure = structureService.existStructure(id);
         if (structure.isEmpty()) {
             throw new TraitementException(ErrorIdentifier.STRUCTURE_ID_NOT_FOUND);
@@ -72,8 +74,18 @@ public class PlanService {
             log.severe("IOException when uploading file to server : " + e.getMessage());
             throw new TraitementException(ErrorIdentifier.SERVER_ERROR);
         }
-        var plan = new Plan(filePath, addPlanRequestDTO.name(), addPlanRequestDTO.section(), structure.get());
-        var savedPlan = planRepository.save(plan);
+        var plan = new Plan(filePath, false, addPlanRequestDTO.name(), addPlanRequestDTO.section(), structure.get());
+        Plan savedPlan;
+        try {
+            savedPlan = planRepository.save(plan);
+        } catch (Exception e) {
+            log.severe("Exception when uploading plan to bdd : " + e.getMessage());
+            var delete = dest.delete();
+            if (!delete) {
+                log.severe("Exception when removing file to server, please check it");
+            }
+            throw new TraitementException(ErrorIdentifier.SERVER_ERROR);
+        }
         return new AddPlanResponseDTO(savedPlan.getId(), new Timestamp(System.currentTimeMillis()).toString());
     }
 
