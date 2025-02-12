@@ -1,18 +1,13 @@
 package fr.uge.structsure.structuresPage.data
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.retrofit.StructureApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStreamWriter
 import java.util.Optional
 
 class StructureRepository(
@@ -39,9 +34,9 @@ class StructureRepository(
                             it.name,
                             it.numberOfPlans,
                             it.numberOfSensors,
-                            it.url,
-                            false,
-                            ""
+                            it.state,
+                            it.archived,
+                            downloaded = false
                         )
                     }
                 } else {
@@ -123,7 +118,7 @@ class StructureRepository(
                 }
             }
         }
-        structure.state = true
+        structure.downloaded = true
         structureDao.upsertStructure(structure)
     }
 

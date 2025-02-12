@@ -30,7 +30,7 @@ import fr.uge.structsure.structuresPage.data.StructureData
 @Database(
     entities = [ScanEntity::class, StructureEntity::class, AccountEntity::class,
         StructureData::class, SensorDB::class, PlanDB::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 /**

@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,6 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.uge.structsure.R
+import fr.uge.structsure.components.Plan
+import fr.uge.structsure.components.Point
+import fr.uge.structsure.startScan.presentation.components.SensorState
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
@@ -66,14 +70,11 @@ fun PlansView(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            Image(
-                painter = painterResource(id = R.drawable.oa_plan),
-                contentDescription = "Plan",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(171.dp)
-            )
+            val points = remember { mutableStateListOf(
+                Point(0, 0, SensorState.OK),
+                Point(100, 100, SensorState.OK)
+            ) }
+            Plan(R.drawable.oa_plan, points)
 
             Spacer( Modifier.fillMaxWidth().height(1.dp).background(LightGray) )
 

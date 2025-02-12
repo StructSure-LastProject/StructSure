@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,7 +25,10 @@ private fun StateMapper(state: Boolean): StructureStates {
 @Composable
 fun StructuresListView(structureViewModel: StructureViewModel, navController: NavController) {
     val structures = structureViewModel.getAllStructures.observeAsState()
-    structureViewModel.getAllStructures()
+
+    LaunchedEffect(structureViewModel) {
+        structureViewModel.getAllStructures()
+    }
 
     val searchByName = remember { mutableStateOf("") }
 
@@ -40,7 +43,7 @@ fun StructuresListView(structureViewModel: StructureViewModel, navController: Na
         )
         SearchBar(input = searchByName)
         structures.value?.filter { it.name.contains(searchByName.value) }?.forEach {
-            val state = mutableStateOf(StateMapper(it.state))
+            val state = mutableStateOf(StateMapper(it.downloaded))
             Structure(it, state, structureViewModel, navController)
         }
     }
