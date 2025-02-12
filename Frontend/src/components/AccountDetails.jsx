@@ -5,29 +5,18 @@ import EditAccountModal from "./AdminPanel/EditAccountModal";
  * Display the Account details
  * @param {String} firstName the firstname
  * @param {String} lastName the lastName
- * @param {String} mail the mail
+ * @param {String} login the login
  * @param {String} role role of the user 
  * @returns the component for the account details
  */
-const AccountDetails = () => {
-
-    const [firstName, setFirstName] = createSignal("");
-    const [lastName, setLastName] = createSignal("");
-    const [id, setId] = createSignal("");
-    const [role, setRole] = createSignal(""); 
-    const [accountState, setAccountState] = createSignal("");
+const AccountDetails = ({firstName, lastName, login, role, isEnabled}) => {
 
     const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
     
     /**
      * Handle the edit account click event by opening the modal
      */
-    const handleEditAccountClick = (firstName, lastName, login, role, enabled) => {
-        setFirstName(firstName);
-        setLastName(lastName);
-        setId(login);
-        setRole(role);
-        setAccountState(enabled);       
+    const handleEditAccountClick = () => {
         setIsEditModalOpen(true); 
     };
 
@@ -60,7 +49,7 @@ const AccountDetails = () => {
     
     return (
         <div>
-            <button onClick={handleEditAccountClick(firstName, lastName, login, role, enabled)} class={`${isDisabled ? "opacity-[50%]" : ""} flex justify-between items-center py-[10px] px-[25px] bg-white rounded-[20px] w-full h-auto`}>
+            <button onClick={handleEditAccountClick} class={`${!isEnabled ? "opacity-[50%]" : ""} flex justify-between items-center py-[10px] px-[25px] bg-white rounded-[20px] w-full h-auto`}>
                 <div class="flex flex-col text-start w-full sm:w-[200px] md:w-[219px] h-auto">
                     <h2 class="text-lg font-poppins title-medium-name">{firstName} {lastName}</h2>
                     <span class="font-poppins HeadLineMedium text-gray-500">{login}</span>
@@ -76,7 +65,16 @@ const AccountDetails = () => {
                 </div>
             </button>
             {isEditModalOpen() && (
-                <EditAccountModal closeModal={closeEditAccountModal} firstName={firstName()} lastName={lastName()} id={id()} role={role()} accountState={accountState()} />
+                <EditAccountModal 
+                    closeModal={closeEditAccountModal} 
+                    userDetails={{
+                        firstName: firstName,
+                        lastName: lastName,
+                        login: login,
+                        role: role,
+                        accountState: isDisabled
+                    }}
+                />
             )}
         </div>
     );

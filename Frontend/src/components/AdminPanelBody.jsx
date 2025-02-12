@@ -31,9 +31,8 @@ const AdminPanelBody = () => {
      * Fetch user details
      */
     const fetchUserDetails = async () => {
-        const { fetchData, data, statusCode } = useFetch();
         const token = localStorage.getItem("token");
-    
+        
         const requestData = {
             method: "GET",
             headers: {
@@ -41,11 +40,12 @@ const AdminPanelBody = () => {
                 "Authorization": `Bearer ${token}`
             }
         };
-    
+        
+        const { fetchData, data, statusCode } = useFetch();
         await fetchData("/api/accounts", requestData);
         
         if (statusCode() === 200) {
-            setUsers(data());
+            setUsers(data());            
         }
         
     }
@@ -69,7 +69,7 @@ const AdminPanelBody = () => {
                 <For each={users()}>
                     {
                         (item) => (
-                            <AccountDetails firstName={item.firstName} lastName={item.lastName} login={item.login} role={item.role}/>
+                            <AccountDetails firstName={item.firstName} lastName={item.lastName} login={item.login} role={item.role} isEnabled={item.enabled} />
                         )
                     }
                 </For>

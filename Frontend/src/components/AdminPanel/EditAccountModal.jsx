@@ -7,14 +7,14 @@ import { createSignal } from 'solid-js';
  * @param {Function} closeModal The function to close the modal
  * @returns The Model compoanent
  */
-const EditAccountModal = ({ closeModal, firstName, lastName, id, role, accountState}) => {
+const EditAccountModal = ({ closeModal, userDetails}) => {
 
-    const [firstName, setFirstName] = createSignal(firstName);
-    const [lastName, setLastName] = createSignal(lastName);
-    const [id, setId] = createSignal(id);
+    const [firstName, setFirstName] = createSignal(userDetails.firstName);
+    const [lastName, setLastName] = createSignal(userDetails.lastName);
+    const [login, setLogin] = createSignal(userDetails.login);
     const [password, setPassword] = createSignal("");
-    const [role, setRole] = createSignal(role); 
-    const [accountState, setAccountState] = createSignal(accountState);
+    const [role, setRole] = createSignal(userDetails.role); 
+    const [accountState, setAccountState] = createSignal(userDetails.accountState);
 
 
 
@@ -52,7 +52,7 @@ const EditAccountModal = ({ closeModal, firstName, lastName, id, role, accountSt
                         </div>
                         <div class="flex flex-col gap-[5px]">
                             <p class="font-poppins HeadLineMedium text-[#181818]">Identifiant*</p>
-                            <input value={id()} type="text" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]" />
+                            <input value={login()} type="text" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]" />
                         </div>
                     </div>
                 <div class="flex flex-col w-full lg:w-[338px] gap-[15px]">
@@ -63,7 +63,7 @@ const EditAccountModal = ({ closeModal, firstName, lastName, id, role, accountSt
                     <div class="flex flex-col gap-[5px]">
                         <p class="font-poppins HeadLineMedium text-[#181818]">Role*</p>
                         <div class="relative">
-                            <select name="roles" id="roles" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] px-[16px] appearance-none">
+                            <select value={role()} name="roles" id="roles" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] px-[16px] appearance-none">
                                 <option value="Opérateur">Opérateur</option>
                                 <option value="Responsable">Responsable</option>
                                 <option value="Admin">Admin</option>
@@ -77,7 +77,7 @@ const EditAccountModal = ({ closeModal, firstName, lastName, id, role, accountSt
                     <div class="flex flex-col gap-[5px]">
                         <p class="font-poppins HeadLineMedium text-[#181818]">Etat*</p>
                         <div class="flex items-center w-full h-[37px] rounded-[10px] py-[8px] px-[16px] gap-[10px]">
-                            <input value={accountState()} type="checkbox" class="w-[14px] h-auto bg-white border-2" />
+                            <input checked={accountState() ? "checked" : ""} type="checkbox" class="w-[14px] h-auto bg-white border-2" />
                             <span class="font-poppins HeadLineMedium">Compte activé</span>
                         </div>
                     </div>
