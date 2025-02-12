@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup } from "solid-js";
+import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
 import ModalAddPlan from './Plan/ModalAddPlan';
@@ -28,12 +28,16 @@ function StructureDetailPlans() {
      * @returns {void}
      */
     const closeModal = () => setIsOpen(false);
+    const [cClickX, setCClickX] = createSignal(0);
+    const [cClickY, setCClickY] = createSignal(0);
     
     const img = new Image();
     let canvasRef;
     let isMouseDown = false;
     let startX = 0;
     let startY = 0;
+
+    const lstSensors = [{x: 10, y: 200}, {x : 20, y: 20}];
 
     /**
      * Draws the image in the canvas
@@ -60,14 +64,31 @@ function StructureDetailPlans() {
         const zoom = zoomFactor();
         ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
         const [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio, canvasRatio, zoom);
+        const imgStartX = baseOffsetX + offsetX() - zoomX / 2;
+        const imgStartY = baseOffsetY + offsetY() - zoomY / 2;
         ctx.drawImage(
             img,
-            baseOffsetX + offsetX() - zoomX / 2,
-            baseOffsetY + offsetY() - zoomY / 2,
+            imgStartX,
+            imgStartY,
             drawWidth + zoomX,
             drawHeight + zoomY
         );
+        drawSensors(imgStartX, imgStartY, zoomX, zoomY);
     }
+
+    const drawSensors = (imgStartX, imgStartY, zoomX, zoomY) => {
+        const ctx = ctxCanvas();
+        lstSensors.forEach(sensor => {
+            const sensorX = imgStartX + sensor.x;
+            const sensorY = imgStartY + sensor.y;
+            ctx.beginPath();
+            console.log("Sx: " + sensorX + offsetX() + ", Sy: " + sensorY + offsetY());
+            ctx.arc(sensorX, sensorY, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+        });
+    };
 
     const handleResize = () => {
         fixDpi();
@@ -110,6 +131,7 @@ function StructureDetailPlans() {
         canvasRef.addEventListener("mousemove", handleMouseMove);
         canvasRef.addEventListener("mouseup", handleMouseUp);
         canvasRef.addEventListener("mouseout", handleMouseUp);
+        canvasRef.addEventListener("click", handleCanvasClick);
         window.addEventListener("resize", handleResize);
     }
 
@@ -120,6 +142,20 @@ function StructureDetailPlans() {
         canvasRef.removeEventListener("mouseup", handleMouseUp);
         canvasRef.removeEventListener("mouseout", handleMouseUp);
         window.removeEventListener("resize", handleResize);
+        canvasRef.removeEventListener("click", handleCanvasClick);
+    });
+
+    const handleCanvasClick = (event) => {
+        const rect = canvasRef.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        setCClickX(x);
+        setCClickY(y);
+        console.log("Clicked at:", x, y);
+    };
+
+    createEffect(() => {
+        
     });
 
     /**
