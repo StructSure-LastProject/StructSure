@@ -10,5 +10,5 @@ enum class SensorState(val color : Color) {
     OK(Ok),
     NOK(Red),
     DEFECTIVE(Gray), // Orange color
-    UNSCAN(Unknown)
+    UNKNOWN(Unknown)
 }

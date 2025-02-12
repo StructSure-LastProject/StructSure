@@ -48,7 +48,7 @@ fun StructuresListView(structureViewModel: StructureViewModel, navController: Na
         )
         SearchBar(input = searchByName)
         structures.value?.filter { it.name.contains(searchByName.value) }?.forEach {
-            val state = mutableStateOf(StateMapper(it.state))
+            val state = mutableStateOf(StateMapper(it.downloaded))
             Structure(it, state, structureViewModel, navController)
         }
     }
