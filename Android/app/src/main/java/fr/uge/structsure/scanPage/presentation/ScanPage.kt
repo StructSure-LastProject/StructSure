@@ -69,18 +69,14 @@ fun ScanPage(context: Context,
         PlansView(modifier = Modifier.fillMaxWidth())
         SensorsList(modifier = Modifier.fillMaxWidth())
 
-        scanViewModel.sensorMessages.observeAsState(null).value.let {
-            if (it != null) {
-                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                scanViewModel.sensorMessages.value = null
-            }
+        scanViewModel.sensorMessages.observeAsState(null).value?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            scanViewModel.sensorMessages.value = null
         }
 
-        scanViewModel.alertMessages.observeAsState(null).value.let {
-            if (it != null) {
-                scanViewModel.alertMessages.value = null
-                navController.navigate("Alerte?state=${it.state}&name=${it.sensorName}&lastState=${it.lastStateSensor}")
-            }
+        scanViewModel.alertMessages.observeAsState(null).value?.let {
+            scanViewModel.alertMessages.value = null
+            navController.navigate("Alerte?state=${it.state}&name=${it.sensorName}&lastState=${it.lastStateSensor}")
         }
    }
 }

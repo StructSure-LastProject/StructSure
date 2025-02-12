@@ -2,7 +2,6 @@ package fr.uge.structsure.structuresPage.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
 
 
 data class SensorId(val controlChip: String, val measureChip: String)
@@ -24,7 +23,7 @@ data class SensorDB(
     val name: String,
     val note: String,
     val installationDate: String,
-    var state: String,
+    val state: String,
     val x: Double,
     val y: Double,
     val structureId: Long
