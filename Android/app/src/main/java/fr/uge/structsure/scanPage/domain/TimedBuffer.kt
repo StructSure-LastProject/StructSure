@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.domain
+package fr.uge.structsure.scanPage.domain
 
 import android.os.SystemClock
 import android.util.Log

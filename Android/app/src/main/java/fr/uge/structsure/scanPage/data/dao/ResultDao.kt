@@ -1,10 +1,9 @@
-package fr.uge.structsure.startScan.data.dao
+package fr.uge.structsure.scanPage.data.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import fr.uge.structsure.startScan.data.ResultSensors
+import fr.uge.structsure.scanPage.data.ResultSensors
 
 @Dao
 interface ResultDao {

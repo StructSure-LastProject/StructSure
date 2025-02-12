@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.domain
+package fr.uge.structsure.scanPage.domain
 
 /**
  * Data class representing the information of an alert.

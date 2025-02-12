@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.presentation.components
+package fr.uge.structsure.scanPage.presentation.components
 
 
 import android.annotation.SuppressLint
@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
-import fr.uge.structsure.startScan.domain.ScanViewModel
+import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.White
 

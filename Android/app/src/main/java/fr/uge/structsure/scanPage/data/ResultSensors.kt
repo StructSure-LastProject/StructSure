@@ -1,10 +1,7 @@
-package fr.uge.structsure.startScan.data
+package fr.uge.structsure.scanPage.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import fr.uge.structsure.structuresPage.data.Sensor
-import fr.uge.structsure.structuresPage.data.SensorDB
-import java.sql.Timestamp
 
 @Entity(tableName = "resultSensor")
 data class ResultSensors(

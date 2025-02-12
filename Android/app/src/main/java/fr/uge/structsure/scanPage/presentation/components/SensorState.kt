@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.presentation.components
+package fr.uge.structsure.scanPage.presentation.components
 
 import androidx.compose.ui.graphics.Color
 import fr.uge.structsure.ui.theme.Gray

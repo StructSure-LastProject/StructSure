@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.presentation
+package fr.uge.structsure.scanPage.presentation
 
 import android.content.Context
 import android.widget.Toast
@@ -12,10 +12,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Page
-import fr.uge.structsure.startScan.domain.ScanState
-import fr.uge.structsure.startScan.domain.ScanViewModel
-import fr.uge.structsure.startScan.presentation.components.SensorsList
-import fr.uge.structsure.startScan.presentation.components.StructureWeather
+import fr.uge.structsure.scanPage.domain.ScanState
+import fr.uge.structsure.scanPage.domain.ScanViewModel
+import fr.uge.structsure.scanPage.presentation.components.SensorsList
+import fr.uge.structsure.scanPage.presentation.components.StructureWeather
 
 /**
  * Home screen of the application when the user starts a scan.

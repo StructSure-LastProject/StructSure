@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.presentation
+package fr.uge.structsure.scanPage.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

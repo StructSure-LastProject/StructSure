@@ -1,15 +1,15 @@
-package fr.uge.structsure.startScan.domain
+package fr.uge.structsure.scanPage.domain
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.connexionPage.data.AccountDao
-import fr.uge.structsure.startScan.data.ResultSensors
-import fr.uge.structsure.startScan.data.ScanEntity
-import fr.uge.structsure.startScan.data.dao.ResultDao
-import fr.uge.structsure.startScan.data.dao.ScanDao
-import fr.uge.structsure.startScan.data.cache.SensorCache
+import fr.uge.structsure.scanPage.data.ResultSensors
+import fr.uge.structsure.scanPage.data.ScanEntity
+import fr.uge.structsure.scanPage.data.dao.ResultDao
+import fr.uge.structsure.scanPage.data.dao.ScanDao
+import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.data.SensorDao
 import kotlinx.coroutines.Dispatchers

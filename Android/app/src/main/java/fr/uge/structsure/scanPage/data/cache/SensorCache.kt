@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.data.cache
+package fr.uge.structsure.scanPage.data.cache
 
 import fr.uge.structsure.structuresPage.data.SensorDB
 

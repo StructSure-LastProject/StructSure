@@ -1,6 +1,5 @@
-package fr.uge.structsure.startScan.domain
+package fr.uge.structsure.scanPage.domain
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse

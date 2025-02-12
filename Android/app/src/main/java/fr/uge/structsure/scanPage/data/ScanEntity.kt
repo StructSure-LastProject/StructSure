@@ -1,8 +1,7 @@
-package fr.uge.structsure.startScan.data
+package fr.uge.structsure.scanPage.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.sql.Timestamp
 
 /**
  * Entity class for the Scan table.

@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.domain
+package fr.uge.structsure.scanPage.domain
 
 /**
  * Possible states for the scanning process.

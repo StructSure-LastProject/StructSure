@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.presentation
+package fr.uge.structsure.scanPage.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,7 +29,7 @@ import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.BigButton
 import fr.uge.structsure.components.BluetoothButton
-import fr.uge.structsure.startScan.domain.ScanState
+import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 

@@ -1,8 +1,7 @@
-package fr.uge.structsure.startScan.data.dao
+package fr.uge.structsure.scanPage.data.dao
 
 import androidx.room.*
-import fr.uge.structsure.startScan.data.ScanEntity
-import fr.uge.structsure.structuresPage.data.Sensor
+import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.structuresPage.data.SensorDB
 
 /**
