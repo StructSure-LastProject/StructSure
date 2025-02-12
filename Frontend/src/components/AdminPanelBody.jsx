@@ -50,7 +50,7 @@ const AdminPanelBody = () => {
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:px-4 lg:px-16">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:px-4 lg:px-10">
                 <For each={users()}>
                     {
                         (item) => (
