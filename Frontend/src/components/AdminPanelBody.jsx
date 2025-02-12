@@ -37,7 +37,7 @@ const AdminPanelBody = () => {
     createResource(() => fetchUserDetails());
 
     return (
-        <>
+        <>             
             <div class="flex justify-between items-center w-full max-w-[1250px] h-[40px] sm:h-[50px] rounded-[20px] pl-[20px] gap-[10px]">
                 <h1 class="text-2xl sm:text-3xl font-poppins title">Comptes</h1>
                 <div class="pr-[5%]">
@@ -49,7 +49,7 @@ const AdminPanelBody = () => {
                 </div>
             </div>
 
-            <div class="m-[2%] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto sm:px-4 lg:px-16">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:px-4 lg:px-10">
                 <For each={users()}>
                     {
                         (item) => (
