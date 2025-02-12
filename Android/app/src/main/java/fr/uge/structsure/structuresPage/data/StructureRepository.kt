@@ -3,7 +3,6 @@ package fr.uge.structsure.structuresPage.data
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import fr.uge.structsure.retrofit.RetrofitInstance
-import fr.uge.structsure.retrofit.StructureApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,10 +14,7 @@ class StructureRepository(
     private val planDao: PlanDao,
     private val sensorDao: SensorDao
 ): ViewModel() {
-    private fun getApiInterface(): StructureApi {
-        return RetrofitInstance.structureApi
-    }
-
+    private fun getApiInterface() = RetrofitInstance.structureApi
 
     private suspend fun getFromApi(): List<StructureData> {
         return withContext(Dispatchers.IO) {

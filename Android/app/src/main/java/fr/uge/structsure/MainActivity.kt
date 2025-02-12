@@ -114,7 +114,7 @@ class MainActivity : ComponentActivity() {
                 composable("Alerte?state={state}&name={name}&lastState={lastState}") { backStackEntry ->
                     val state = backStackEntry.arguments?.getString("state")?.toBoolean() ?: true
                     val name = backStackEntry.arguments?.getString("name")?: "Unknown"
-                    val lastState = backStackEntry.arguments?.getString("lastState") ?: ""
+                    val lastState = backStackEntry.arguments?.getString("lastState").orEmpty()
                     Alerte(navController, state,name,lastState)
                     SetDynamicStatusBar()
                 }

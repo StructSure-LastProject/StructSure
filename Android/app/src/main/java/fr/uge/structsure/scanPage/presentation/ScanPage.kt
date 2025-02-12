@@ -2,7 +2,6 @@ package fr.uge.structsure.scanPage.presentation
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -66,8 +65,8 @@ fun ScanPage(context: Context,
         }
     ) { scrollState ->
         StructureWeather(viewModel = scanViewModel, scrollState)
-        PlansView(modifier = Modifier.fillMaxWidth())
-        SensorsList(modifier = Modifier.fillMaxWidth())
+        PlansView()
+        SensorsList()
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()

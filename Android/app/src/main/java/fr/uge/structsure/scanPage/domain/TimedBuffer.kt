@@ -18,6 +18,10 @@ import java.util.concurrent.TimeUnit
  */
 class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> Unit) {
 
+    companion object {
+        private const val LOG_TAG = "TimedBuffer"
+    }
+
     /** The delay between two flushes */
     private val timeout: Long = 1000
 
@@ -64,11 +68,11 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
         toRemove.forEach {
             if (entries.contains(it.key)) {
                 if (!runner.isRunning()) return // stop here
-                Log.d("TimedBuffer", "Executing task on value ${it.key}")
+                Log.d(LOG_TAG, "Executing task on value ${it.key}")
                 task(this, it.key)
                 entries.remove(it.key)
             } else {
-                Log.d("TimedBuffer", "Value " + it.key + " skipped (deleted)")
+                Log.d(LOG_TAG, "Value " + it.key + " skipped (deleted)")
             }
         }
     }
@@ -83,7 +87,7 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
         private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
         private var runningTask: ScheduledFuture<*>? = null
         private companion object {
-            const val LOG_TAG_TEST_SCAN = "TaskLoopRunner"
+            const val LOG_TAG = "TaskLoopRunner"
         }
 
         /**
@@ -91,7 +95,7 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
          */
         fun start() {
             if (runningTask != null) return
-            Log.d(LOG_TAG_TEST_SCAN, "Starting TaskLoopRunner")
+            Log.d(LOG_TAG, "Starting TaskLoopRunner")
             runningTask = executor.scheduleWithFixedDelay(task, delay, delay, TimeUnit.MILLISECONDS)
         }
 
@@ -102,9 +106,9 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
             if (runningTask == null) return
             // executor.shutdown()
             try {
-                runningTask?.cancel(true) ?: Log.w("TimedBuffer", "No running task to cancel")
+                runningTask?.cancel(true) ?: Log.w(LOG_TAG, "No running task to cancel")
             } catch (e: InterruptedException) {
-                Log.e("TimedBuffer", "Interrupted while stopping task: ${e.message}")
+                Log.e(LOG_TAG, "Interrupted while stopping task: ${e.message}")
             }
             runningTask = null
         }
@@ -113,8 +117,6 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
          * Checks if this task is currently running or not
          * @return true if running, false if not or cancelled
          */
-        fun isRunning(): Boolean {
-            return runningTask != null && !runningTask!!.isCancelled
-        }
+        fun isRunning() = runningTask?.isCancelled == false
     }
 }

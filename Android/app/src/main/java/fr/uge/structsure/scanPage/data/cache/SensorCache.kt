@@ -58,7 +58,7 @@ class SensorCache {
      * @param newState The new state received from the RFID chip.
      */
     private fun mergeStates(lastState: String?, newState: String): String {
-        if (lastState == null || lastState == ""){
+        if (lastState.isNullOrEmpty()){
             return newState
         }
         if (lastState == "NOK" || newState == "NOK") {
@@ -85,7 +85,7 @@ class SensorCache {
         synchronized(lock) {
             val serverState = sensor.state
             val secondPair = sensorMap[sensor.sensorId]?.second
-            val lastState = if(secondPair == null || secondPair == "") serverState else secondPair
+            val lastState = if(secondPair.isNullOrEmpty()) serverState else secondPair
             val computedState = mergeStates(lastState, newState)
             if (computedState != lastState) {
                 sensorMap[sensor.sensorId] = Pair(sensor,computedState)

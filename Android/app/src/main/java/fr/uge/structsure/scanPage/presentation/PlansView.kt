@@ -49,7 +49,7 @@ import fr.uge.structsure.ui.theme.fonts
  * This composable is used to display the plans of the structure.
  */
 @Composable
-fun PlansView(modifier: Modifier = Modifier) {
+fun PlansView() {
     val selected = remember { mutableStateOf("Section OA/Plan 01") }
 
     Column(
