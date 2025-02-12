@@ -20,7 +20,7 @@ const EditAccountModal = ({ closeModal }) => {
 
 
     return (
-        <div class="shadow-[0px 0px 50px 0px #33333340] backdrop-blur-lg z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] absolute top-0 left-0 p-[25px]">
+        <div class="bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] absolute top-0 left-0 p-[25px]">
             <div class="sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
                 <div class="flex justify-between items-center w-full sm:w-[726px] gap-[10px]">
                     <h1 class="font-poppins text-[20px] sm:text-[25px] font-[600] leading-[30px] sm:leading-[37.5px] tracking-[0%]">
