@@ -29,13 +29,11 @@ import java.util.Objects;
 public class StructureController {
 
     private final StructureService structureService;
-    private final SensorService sensorService;
     private final PlanService planService;
 
     @Autowired
-    public StructureController(StructureService structureService, SensorService sensorService, PlanService planService) {
+    public StructureController(StructureService structureService, PlanService planService) {
         this.structureService = Objects.requireNonNull(structureService);
-        this.sensorService = Objects.requireNonNull(sensorService);
         this.planService = planService;
     }
 

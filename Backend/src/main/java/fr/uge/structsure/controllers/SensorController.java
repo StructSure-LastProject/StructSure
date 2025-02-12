@@ -12,11 +12,9 @@ import fr.uge.structsure.services.StructureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -46,6 +44,21 @@ public class SensorController {
         try {
             var sensor = sensorService.createSensor(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(sensor);
+        } catch (TraitementException e) {
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
+            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        }
+    }
+
+    /**
+     * Endpoint pour récupérer la liste des capteurs d'un ouvrage donné avec options de tri et filtre.
+     * @return Liste des capteurs (DTO)
+     */
+    @GetMapping("/structures/{id}/sensors")
+    public ResponseEntity<?> getSensorsByStructure(@PathVariable("id") long id) {
+        try {
+            List<SensorDTO> sensorDTOs = sensorService.getSensors(id);
+            return ResponseEntity.ok(sensorDTOs);
         } catch (TraitementException e) {
             var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
             return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
