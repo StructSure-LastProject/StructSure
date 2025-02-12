@@ -1,11 +1,14 @@
-name: Build FrontEnd SolidJS / BackEnd Spring Boot
+name: Build Project
 
 on:
   push:
     branches: ["main"]
+    tags: ["stable"]
 
+  
 jobs:
-  build:
+  build-prod:
+    if: github.ref == 'refs/tags/stable'
     runs-on: self-hosted
 
     steps: 
@@ -52,23 +55,64 @@ jobs:
           cd Backend
           mvn clean test verify package -B --file pom.xml
 
-
-      - name: Save JaCoCo Coverage Report
-        if: success()
+      
+      - name: Build & Push Docker Image
         run: |
-          mkdir -p $GITHUB_WORKSPACE/coverage-reports
-          cp Backend/target/site/jacoco/index.html $GITHUB_WORKSPACE/coverage-reports/
-          
-#      - name: Upload JaCoCo Coverage Report
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: jacoco-coverage-report
-#          path: coverage-reports/
+          docker login --username ${{ secrets.GH_U }} --password ${{ secrets.GH_P }} ghcr.io
+          docker build -t ghcr.io/structsure-lastproject/structsure/structsure:stable -f Backend/Dockerfile .
+          docker push ghcr.io/structsure-lastproject/structsure/structsure:stable
 
-#      - name: Build with Maven
-#        run: |
-#          cd Backend
-#          mvn -B package --file pom.xml
+
+
+  build-dev:
+    if: github.ref == 'refs/heads/main'
+    runs-on: self-hosted
+
+    steps: 
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Build FontEnd Project
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+
+      - name: Install FrontEnd Dependencies
+        run: |
+          cd Frontend
+          npm install
+
+      - name: Build FrontEnd Project
+        run: |
+          cd Frontend
+          npm run build
+
+
+      - name: Move static files into Spring Boot Ressources Folder
+        run: |
+          mkdir Backend/src/main/resources/static
+          cp -R Frontend/dist/* Backend/src/main/resources/static/
+      
+
+      - name: Check static files
+        run: |
+          ls -al Backend/src/main/resources/static
+
+      # Build BackEnd Project
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: maven
+      
+
+      - name: Build and Test with Maven
+        run: |
+          cd Backend
+          mvn clean test verify package -B --file pom.xml
+
 
       - name: Build & Push Docker Image
         run: |
