@@ -18,7 +18,8 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 object RetrofitInstance {
 
-    private const val BASE_URL = "https://structsure.miumo.xyz"
+    private const val BASE_URL = "https://dev.structsure.miumo.xyz"
+
     private var tokenProvider: () -> String = {
         val account = MainActivity.db.accountDao().get()
         if (account == null) "" else account.token?: ""

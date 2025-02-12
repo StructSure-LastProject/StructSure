@@ -54,7 +54,6 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
         runner.stop()
     }
 
-
     /**
      * Walk through all the elements, remove all element older than
      * the timeout and run the task on each of them.
@@ -64,6 +63,7 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
         val toRemove = entries.entries.filter { now - it.value > timeout }
         toRemove.forEach {
             if (entries.contains(it.key)) {
+                if (!runner.isRunning()) return // stop here
                 Log.d("TimedBuffer", "Executing task on value ${it.key}")
                 task(this, it.key)
                 entries.remove(it.key)
@@ -102,13 +102,19 @@ class TimedBuffer<T>(private val task: (buffer: TimedBuffer<T>, element: T) -> U
             if (runningTask == null) return
             // executor.shutdown()
             try {
-                runningTask?.let {
-                    it.cancel(true)
-                } ?: Log.w("TimedBuffer", "No running task to cancel")
+                runningTask?.cancel(true) ?: Log.w("TimedBuffer", "No running task to cancel")
             } catch (e: InterruptedException) {
                 Log.e("TimedBuffer", "Interrupted while stopping task: ${e.message}")
             }
             runningTask = null
+        }
+
+        /**
+         * Checks if this task is currently running or not
+         * @return true if running, false if not or cancelled
+         */
+        fun isRunning(): Boolean {
+            return runningTask != null && !runningTask!!.isCancelled
         }
     }
 }

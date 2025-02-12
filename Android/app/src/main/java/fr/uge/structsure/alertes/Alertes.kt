@@ -66,7 +66,8 @@ fun Alerte(navController: NavController, state:Boolean, sensorName:String, lastS
                 AlertDetails(state, sensorName, lastStateSensor)
             }
             ButtonText("Poursuivre le scan", null, Red, White) {
-                navController.navigateUp()
+                // Putting "ScanPage" prevent from double clicking and going to the homepage
+                navController.popBackStack("ScanPage", false)
             }
         }
     }

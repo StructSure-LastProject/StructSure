@@ -9,7 +9,7 @@ import fr.uge.structsure.scanPage.data.ResultSensors
 interface ResultDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertResult(resultSensor : ResultSensors)
+    fun insertResult(resultSensor : ResultSensors)
 
 
 }

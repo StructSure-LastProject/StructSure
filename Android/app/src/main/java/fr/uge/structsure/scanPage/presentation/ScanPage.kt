@@ -72,6 +72,7 @@ fun ScanPage(context: Context,
         scanViewModel.sensorMessages.observeAsState(null).value.let {
             if (it != null) {
                 Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                scanViewModel.sensorMessages.value = null
             }
         }
 

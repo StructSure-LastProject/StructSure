@@ -101,7 +101,7 @@ class MainActivity : ComponentActivity() {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
-                composable("startScan?structureId={structureId}") { backStackEntry ->
+                composable("ScanPage?structureId={structureId}") { backStackEntry ->
                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
                     ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()

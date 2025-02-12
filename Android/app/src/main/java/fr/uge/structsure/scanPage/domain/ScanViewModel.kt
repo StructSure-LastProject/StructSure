@@ -35,7 +35,7 @@ class ScanViewModel(
 ) : ViewModel() {
 
     // Scanner hardware for reading RFID chips
-    val cs108Scanner =
+    private val cs108Scanner =
         Cs108Scanner { chip ->
             onTagScanned(chip.id)
         }
@@ -44,8 +44,7 @@ class ScanViewModel(
     val currentScanState = MutableLiveData(ScanState.NOT_STARTED)
 
     // ID of the currently active scan
-    var activeScanId: Long? = null
-        private set
+    private var activeScanId: Long? = null
 
     // Sensor cache for managing sensor states in memory
     private val sensorCache = SensorCache()
@@ -107,46 +106,44 @@ class ScanViewModel(
      * @param newState The new state of the sensor.
      */
     private fun updateSensorState(sensor: SensorDB, newState: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val stateChanged = sensorCache.updateSensorState(sensor, newState) ?: return@launch
+        val stateChanged = sensorCache.updateSensorState(sensor, newState) ?: return
 
-            activeScanId?.let { scanId ->
-                resultDao.insertResult(
-                    ResultSensors(
-                        id = sensor.sensorId,
-                        timestamp = Timestamp(System.currentTimeMillis()).toString(),
-                        scanId = scanId,
-                        controlChip = sensor.controlChip,
-                        measureChip = sensor.measureChip,
-                        state = stateChanged
+        activeScanId?.let { scanId ->
+            resultDao.insertResult(
+                ResultSensors(
+                    id = sensor.sensorId,
+                    timestamp = Timestamp(System.currentTimeMillis()).toString(),
+                    scanId = scanId,
+                    controlChip = sensor.controlChip,
+                    measureChip = sensor.measureChip,
+                    state = stateChanged
+                )
+            )
+        }
+
+        when (stateChanged) {
+            "OK" -> {
+                sensorMessages.postValue("Sensor ${sensor.name} is OK")
+            }
+            "NOK" -> {
+                pauseScan()
+                alertMessages.postValue(
+                    AlertInfo(
+                        state = true,
+                        sensorName = "Capteur ${sensor.name}",
+                        lastStateSensor = sensor.state
                     )
                 )
             }
-
-            when (stateChanged) {
-                "OK" -> {
-                    sensorMessages.postValue("Sensor ${sensor.name} is OK")
-                }
-                "NOK" -> {
-                    pauseScan()
-                    alertMessages.postValue(
-                        AlertInfo(
-                            state = true,
-                            sensorName = "Capteur ${sensor.name}",
-                            lastStateSensor = sensor.state
-                        )
+            "DEFECTIVE" -> {
+                pauseScan()
+                alertMessages.postValue(
+                    AlertInfo(
+                        state = false,
+                        sensorName = "Capteur ${sensor.name}",
+                        lastStateSensor = sensor.state
                     )
-                }
-                "DEFECTIVE" -> {
-                    pauseScan()
-                    alertMessages.postValue(
-                        AlertInfo(
-                            state = false,
-                            sensorName = "Capteur ${sensor.name}",
-                            lastStateSensor = sensor.state
-                        )
-                    )
-                }
+                )
             }
         }
     }
