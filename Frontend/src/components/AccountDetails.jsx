@@ -72,7 +72,7 @@ const AccountDetails = ({firstName, lastName, login, role, isEnabled}) => {
                         lastName: lastName,
                         login: login,
                         role: role,
-                        accountState: isDisabled
+                        accountState: isEnabled
                     }}
                 />
             )}
