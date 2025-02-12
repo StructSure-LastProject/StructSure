@@ -5,6 +5,7 @@ import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.LoginResponseDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterResponseDTO;
+import fr.uge.structsure.dto.userAccount.UserAccountResponseDTO;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
@@ -17,14 +18,24 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
+/**
+ * Account service class
+ */
 @Service
 public class AccountService {
     private final AccountRepository accountRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
 
+    /**
+     * Constructor
+     * @param accountRepository Account repository to perform operations with the database
+     * @param authenticationManager Authentication manager for the authentication
+     * @param jwtUtils Jwt utils to perform operations with JWT token
+     */
     @Autowired
     public AccountService(AccountRepository accountRepository, AuthenticationManager authenticationManager,
                           JwtUtils jwtUtils) {
@@ -79,5 +90,25 @@ public class AccountService {
         } catch (AuthenticationException e) {
             throw new TraitementException(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT);
         }
+    }
+
+    /**
+     * Service that will get all users
+     * @return List Send the list of users
+     */
+    public List<UserAccountResponseDTO> getUserAccounts(){
+        return accountRepository
+            .findAll()
+            .stream()
+            .map(account ->
+                new UserAccountResponseDTO(
+                    account.getFirstname(),
+                    account.getLastname(),
+                    account.getLogin(),
+                    account.getRole().value,
+                    account.getEnabled()
+                )
+            )
+            .toList();
     }
 }

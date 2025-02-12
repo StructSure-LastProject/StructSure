@@ -49,6 +49,14 @@
     font-weight: 600;
 }
 
+.title-medium-name {
+    color: black;
+    font-size: 16px;
+    line-height: 16px;
+    font-weight: 600;
+}
+
+
 .HeadLineMedium {
     font-size: 14px;
     font-weight: 400;
