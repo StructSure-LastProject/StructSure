@@ -8,12 +8,10 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.connexionPage.data.AccountEntity
-import fr.uge.structsure.scanPage.data.ResultSensors
-import fr.uge.structsure.scanPage.data.ScanEntity
-import fr.uge.structsure.scanPage.data.StructureEntity
-import fr.uge.structsure.scanPage.data.dao.ResultDao
-import fr.uge.structsure.scanPage.data.dao.ScanDao
-import fr.uge.structsure.scanPage.data.dao.StructurePlanDao
+import fr.uge.structsure.startScan.data.ScanEntity
+import fr.uge.structsure.startScan.data.StructureEntity
+import fr.uge.structsure.startScan.data.dao.ScanDao
+import fr.uge.structsure.startScan.data.dao.StructurePlanDao
 import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.structuresPage.data.PlanDao
 import fr.uge.structsure.structuresPage.data.SensorDB
@@ -30,15 +28,16 @@ import fr.uge.structsure.structuresPage.data.StructureData
  * - PlanEntity: Plan data.
  */
 @Database(
-    entities = [ResultSensors::class, ScanEntity::class, StructureEntity::class,
-        StructureData::class, SensorDB::class, PlanDB::class, AccountEntity::class],
-    version = 5,
+    entities = [ScanEntity::class, StructureEntity::class, AccountEntity::class,
+        StructureData::class, SensorDB::class, PlanDB::class],
+    version = 7,
     exportSchema = false
 )
 /**
  * AppDatabase class for Room database.
  */
 abstract class AppDatabase : RoomDatabase() {
+
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -69,11 +68,10 @@ abstract class AppDatabase : RoomDatabase() {
     /**
      * DAOs for the database.
      */
-    abstract fun scanDao(): ScanDao
     abstract fun accountDao(): AccountDao
+    abstract fun scanDao(): ScanDao
     abstract fun structureDao(): StructureDao
     abstract fun structurePlanDao(): StructurePlanDao
     abstract fun planDao(): PlanDao
     abstract fun sensorDao(): SensorDao
-    abstract fun resultDao(): ResultDao
 }

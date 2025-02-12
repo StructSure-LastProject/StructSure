@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import fr.uge.structsure.MainActivity
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.StructSureTheme
@@ -31,6 +32,7 @@ fun Page(
     backgroundColor: Color = LightGray,
     decorated: Boolean = true,
     scrollable: Boolean = true,
+    navController: NavController,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     content: @Composable ColumnScope.(scrollState: ScrollState) -> Unit
 ) {
@@ -51,7 +53,7 @@ fun Page(
             ) {
                 val brightness = (0.299 * backgroundColor.red + 0.587 * backgroundColor.green + 0.114 * backgroundColor.blue)
                 MainActivity.darkStatusBar.set(brightness < 0.5)
-                if (decorated) Header()
+                if (decorated) Header(navController)
                 content(scrollState)
             }
         }

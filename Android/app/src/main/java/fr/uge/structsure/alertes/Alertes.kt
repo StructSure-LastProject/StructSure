@@ -47,7 +47,8 @@ fun Alerte(navController: NavController, state:Boolean, sensorName:String, lastS
     Page (
         backgroundColor = colors[0],
         decorated = false,
-        scrollable = false
+        scrollable = false,
+        navController = navController
     ) {
         Column (
             modifier = Modifier

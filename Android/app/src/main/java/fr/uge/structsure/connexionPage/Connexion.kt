@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ConnexionCard(navController: NavController, accountDao: AccountDao) {
-    Page {
+    Page(navController = navController) {
         Column(
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             modifier = Modifier
