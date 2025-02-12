@@ -95,6 +95,7 @@ class MainActivity : ComponentActivity() {
                     navigateToLogin.value = false
                 }
             }
+            val scanViewModel = ScanViewModel(scanDao, db.resultDao(), db.sensorDao(), accountDao, 1L)
             val homePage = if (accountDao.get()?.token == null) loginPage else "HomePage"
             NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {

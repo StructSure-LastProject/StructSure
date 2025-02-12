@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.sp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Plan
 import fr.uge.structsure.components.Point
-import fr.uge.structsure.startScan.presentation.components.SensorState
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
