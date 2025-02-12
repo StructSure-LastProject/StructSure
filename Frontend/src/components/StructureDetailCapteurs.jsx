@@ -1,13 +1,33 @@
 import { ArrowDownNarrowWide, Filter, Plus, Trash2 } from 'lucide-solid';
+import { createEffect } from 'solid-js';
 
 /**
  * Show the sensors part of the structure detail page
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs() {
-    
+function StructureDetailCapteurs({sensors}) {;
+
+    const getSensorStatusColor = (sensor) => {
+        let colorsClasses = "";
+        switch(sensor.state) {
+            case "OK":
+                colorsClasses = "bg-[#25B61F] border-green-200";
+                break;
+            case "NOK":
+                colorsClasses = "bg-[#F13327] border-red-200";
+                break;
+            case "UNKNOWN":
+                colorsClasses = "bg-[#6A6A6A] border-grey-200";
+                break;
+            case "DEFECTIVE":
+                colorsClasses = "bg-[#F19327] border-yellow-200";
+                break;
+        }
+        return <div class={`w-[12px] h-[12px] rounded-[50px] border-2 ${colorsClasses}`}></div>;
+    };
+
+
     return (
-        
         <div class="w-full flex flex-col gap-y-[15px]">
             <div class="flex justify-between">
                 <p class="prose font-poppins title">Capteurs</p>
@@ -24,48 +44,17 @@ function StructureDetailCapteurs() {
                 </div>
             </div>
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
-                <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
-                    <div class="w-[12px] h-[12px] rounded-[50px] bg-[#F13327] border-2 border-red-200"></div>
-                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 01</p>
-                    <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
-                        <Trash2 size={20} />
-                    </div>
-                </div>
-                <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
-                    <div class="w-[12px] h-[12px] rounded-[50px] bg-[#25B61F] border-2 border-green-200"></div>
-                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 02</p>
-                    <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
-                        <Trash2 size={20} />
-                    </div>
-                </div>
-                <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
-                    <div class="w-[12px] h-[12px] rounded-[50px] bg-[#6A6A6A] border-2 border-grey-200"></div>
-                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 05</p>
-                    <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
-                        <Trash2 size={20} />
-                    </div>
-                </div>
-                <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
-                    <div class="w-[12px] h-[12px] rounded-[50px] bg-[#F19327] border-2 border-yellow-200"></div>
-                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 06</p>
-                    <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
-                        <Trash2 size={20} />
-                    </div>
-                </div>
-                <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
-                    <div class="w-[12px] h-[12px] rounded-[50px] bg-[#25B61F] border-2 border-green-200"></div>
-                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 10</p>
-                    <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
-                        <Trash2 size={20} />
-                    </div>
-                </div>
-                <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
-                    <div class="w-[12px] h-[12px] rounded-[50px] bg-[#25B61F] border-2 border-green-200"></div>
-                    <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 04</p>
-                    <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
-                        <Trash2 size={20} />
-                    </div>
-                </div>
+                <For each={sensors()}>
+                    {(sensor) => (
+                        <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
+                            {getSensorStatusColor(sensor)}
+                            <p class="prose font-poppins poppins text-base font-semibold w-[138px]">Capteur 01</p>
+                            <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
+                                <Trash2 size={20} />
+                            </div>
+                        </div>
+                    )}
+                </For>
             </div>
         </div>
     );

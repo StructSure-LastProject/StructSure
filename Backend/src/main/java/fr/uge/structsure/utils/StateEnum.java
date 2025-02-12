@@ -4,7 +4,7 @@ package fr.uge.structsure.utils;
 /**
  * Represents the structure state
  */
-public enum StructureStateEnum {
+public enum StateEnum {
     OK,
     NOK,
     DEFECTIVE,

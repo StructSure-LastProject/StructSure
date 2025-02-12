@@ -7,8 +7,10 @@ import fr.uge.structsure.dto.sensors.SensorFilterDTO;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
 import fr.uge.structsure.exceptions.TraitementException;
+import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
+import fr.uge.structsure.utils.StateEnum;
 import fr.uge.structsure.utils.sort.SortStrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,41 +26,50 @@ import java.util.stream.Collectors;
 public class SensorService {
     private final SensorRepository sensorRepository;
     private final StructureRepository structureRepository;
+    private final ResultRepository resultRepository;
 
     @Autowired
-    public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository) {
+    public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository) {
         this.sensorRepository = sensorRepository;
         this.structureRepository = structureRepository;
+        this.resultRepository = resultRepository;
     }
 
-    public List<SensorDTO> getSensorDTOsByStructure(SensorFilterDTO filterDTO) {
-        var sensors = sensorRepository.findByStructureId(filterDTO.getStructureId());
-        if (sensors.isEmpty()) {
-            throw new RuntimeException("Ouvrage introuvable");
+
+    /**
+     * Return the list of sensors with state
+     * @param structureId the structure id
+     * @return List<SensorDTO> list of sensors
+     * @throws TraitementException if there is no structure with the id
+     */
+    public List<SensorDTO> getSensors(long structureId) throws TraitementException {
+        var structure = structureRepository.findById(structureId);
+        if (structure.isEmpty()) {
+            throw new TraitementException(ErrorIdentifier.STRUCTURE_ID_NOT_FOUND);
         }
+        var sensors = sensorRepository.findByStructureId(structureId);
+        return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
+    }
 
-        // Filtrage par état (archivé ou actif)
-        sensors = sensors.stream()
-                .filter(sensor -> {
-                    if ("actif".equalsIgnoreCase(filterDTO.getFiltreEtat())) {
-                        return Boolean.FALSE.equals(sensor.getArchived());
-                    } else if ("archivé".equalsIgnoreCase(filterDTO.getFiltreEtat())) {
-                        return Boolean.TRUE.equals(sensor.getArchived());
-                    }
-                    return true; // Aucun filtre
-                })
-                .collect(Collectors.toList());
-
-        // Application du tri avec le design pattern Strategy
-        var comparator = SortStrategyFactory.getStrategy(filterDTO.getTri()).getComparator();
-        if ("desc".equalsIgnoreCase(filterDTO.getOrdre())) {
-            comparator = comparator.reversed();
+    /**
+     * Returns the state of the sensor
+     * @param sensor the sensor
+     * @return StateEnum the state
+     */
+    private StateEnum getSensorState(Sensor sensor) {
+        var numberOfResults = resultRepository.countBySensor(sensor);
+        if (numberOfResults == 0) {
+            return StateEnum.UNKNOWN;
         }
-
-        return sensors.stream()
-                .sorted(comparator)
-                .map(SensorDTO::fromEntity)
-                .collect(Collectors.toList());
+        var isNokPresent = resultRepository.existsResultWithNokState(sensor);
+        if (isNokPresent) {
+            return StateEnum.NOK;
+        }
+        var isDefecitvePresent = resultRepository.existsResultWithDefectiveState(sensor);
+        if (isDefecitvePresent) {
+            return StateEnum.DEFECTIVE;
+        }
+        return StateEnum.OK;
     }
 
     /**

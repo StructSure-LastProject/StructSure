@@ -8,7 +8,7 @@ import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
-import fr.uge.structsure.utils.StructureStateEnum;
+import fr.uge.structsure.utils.StateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -180,21 +180,21 @@ public class StructureService {
      * @param structure the structure that we will use
      * @return String the state
      */
-    private StructureStateEnum getState(Structure structure) {
+    private StateEnum getState(Structure structure) {
         var numberOfSensors = sensorRepository.countByStructure(structure);
         if (numberOfSensors == 0) {
-            return StructureStateEnum.UNKNOWN;
+            return StateEnum.UNKNOWN;
         }
 
         var isNokPresent = sensorRepository.existsSensorWithNokState(structure);
         if (isNokPresent) {
-            return StructureStateEnum.NOK;
+            return StateEnum.NOK;
         }
         var isDefecitvePresent = sensorRepository.existsSensorWithDefectiveState(structure);
         if (isDefecitvePresent) {
-            return StructureStateEnum.DEFECTIVE;
+            return StateEnum.DEFECTIVE;
         }
-        return StructureStateEnum.OK;
+        return StateEnum.OK;
     }
 
     public StructureResponseDTO getStructureById(Long id) {
