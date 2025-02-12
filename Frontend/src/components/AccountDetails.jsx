@@ -13,10 +13,16 @@ const AccountDetails = ({firstName, lastName, login, role, isDisabled}) => {
 
     const [isModalOpen, setIsModalOpen] = createSignal(false);
 
+    /**
+     * Handle the click event by opening the modal
+     */
     const handleClick = () => {        
         setIsModalOpen(true); 
     };
 
+    /**
+     * Close the modal
+     */
     const closeModal = () => {
         setIsModalOpen(false); 
     };
