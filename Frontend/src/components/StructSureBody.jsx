@@ -48,7 +48,7 @@ function StructSureBody() {
         }
     };
 
-    createResource(() => structuresFetchRequest("http://localhost:8080/api/structures"));
+    createResource(() => structuresFetchRequest("/api/structures"));
 
     /**
      * Return the corresponding icon based on the state and if the structure is archived or not

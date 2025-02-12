@@ -190,9 +190,9 @@ public class StructureService {
         if (isNokPresent) {
             return StructureStateEnum.NOK;
         }
-        var isDefaulterPresent = sensorRepository.existsSensorWithDefaulterState(structure);
-        if (isDefaulterPresent) {
-            return StructureStateEnum.DEFAULTER;
+        var isDefecitvePresent = sensorRepository.existsSensorWithDefectiveState(structure);
+        if (isDefecitvePresent) {
+            return StructureStateEnum.DEFECTIVE;
         }
         return StructureStateEnum.OK;
     }

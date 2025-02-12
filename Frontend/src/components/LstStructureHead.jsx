@@ -35,7 +35,7 @@ function LstStructureHead() {
      */
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        structuresFetchRequest("http://localhost:8080/api/structures");
+        structuresFetchRequest("/api/structures");
     };
 
     /**

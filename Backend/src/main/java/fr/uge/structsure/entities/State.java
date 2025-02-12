@@ -1,5 +1,5 @@
 package fr.uge.structsure.entities;
 
 public enum State {
-    OK, NOK, DEFAULTER
+    OK, NOK, DEFECTIVE
 }
