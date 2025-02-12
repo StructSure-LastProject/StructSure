@@ -41,16 +41,18 @@ const AccountDetails = ({firstName, lastName, login, role, isDisabled}) => {
     
     return (
         <div>
-            <button onClick={handleClick} class={`${isDisabled ? "opacity-[50%]" : ""} flex justify-between py-[10px] px-[25px] gap-x-[15px] bg-white rounded-[20px] w-[378px] h-auto`}>
-                <div class="flex flex-col justify-center w-[219px] h-auto">
-                    <h2 class="text-lg font-poppins title-medium">{firstName} {lastName}</h2>
-                    <span class="font-poppins HeadLineMedium text-gray-500">{mail}</span>
+            <button onClick={handleClick} class={`${isDisabled ? "opacity-[50%]" : ""} flex justify-between items-center py-[10px] px-[25px] bg-white rounded-[20px] w-full h-auto`}>
+                <div class="flex flex-col text-start w-full sm:w-[200px] md:w-[219px] h-auto">
+                    <h2 class="text-lg font-poppins title-medium-name">{firstName} {lastName}</h2>
+                    <span class="font-poppins HeadLineMedium text-gray-500">{login}</span>
                 </div>
-                <div class="flex items-center">
-                    <div class={`${bgColor}`}>
-                        <p class={`${bgColorText}`}>
-                            {role}
-                        </p>
+                <div>
+                    <div class="flex items-center">
+                        <div class={`${bgColor}`}>
+                            <p class={`${bgColorText}`}>
+                                {role}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </button>

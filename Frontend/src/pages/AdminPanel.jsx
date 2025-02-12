@@ -10,7 +10,7 @@ const AdminPanel = () => {
   return (
     <div class="bg-gray-100 h-screen p-[1%]">
         <Header />
-        <div class="pt-[3%] mx-auto lg:max-w-[1250px] h-auto" >
+        <div class="pt-[3%] mx-[20px] flex flex-col gap-[15px] sm:mx-auto lg:max-w-[1250px] h-auto" >
             <AdminPanelBody />
             <AdminPanelBottom/>
         </div>

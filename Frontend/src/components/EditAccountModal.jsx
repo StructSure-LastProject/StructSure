@@ -1,4 +1,4 @@
-import { Trash2, X } from 'lucide-solid';
+import { Trash2, X, ChevronDown } from 'lucide-solid';
 import StructureNameCard from './StructureNameCard';
 import { createSignal } from 'solid-js';
 
@@ -21,8 +21,8 @@ const EditAccountModal = ({ closeModal }) => {
 
     return (
         <div class="shadow-[0px 0px 50px 0px #33333340] backdrop-blur-lg z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] absolute top-0 left-0 p-[25px]">
-            <div class="inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
-                <div class="flex justify-between w-full sm:w-[726px] gap-[10px] px-4">
+            <div class="sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
+                <div class="flex justify-between items-center w-full sm:w-[726px] gap-[10px]">
                     <h1 class="font-poppins text-[20px] sm:text-[25px] font-[600] leading-[30px] sm:leading-[37.5px] tracking-[0%]">
                         Edition de Compte
                     </h1>
@@ -62,7 +62,17 @@ const EditAccountModal = ({ closeModal }) => {
                     </div>
                     <div class="flex flex-col gap-[5px]">
                         <p class="font-poppins HeadLineMedium text-[#181818]">Role*</p>
-                        <input value={role()} type="text" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]" />
+                        <div class="relative">
+                            <select name="roles" id="roles" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] px-[16px] appearance-none">
+                                <option value="Opérateur">Opérateur</option>
+                                <option value="Responsable">Responsable</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
+                                <ChevronDown size={20} strokeWidth={2.5} />
+                            </div>
+                        </div>
+
                     </div>
                     <div class="flex flex-col gap-[5px]">
                         <p class="font-poppins HeadLineMedium text-[#181818]">Etat*</p>
@@ -74,7 +84,7 @@ const EditAccountModal = ({ closeModal }) => {
                 </div>
             </div>
 
-                {<div class="w-[100%] h-auto gap-[5px]">
+                {<div class="flex flex-col w-[100%] h-auto gap-[5px]">
                     <p class="text-[#181818] opacity-[75%]">Ouvrages autorisés</p>
                     <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
                         <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
