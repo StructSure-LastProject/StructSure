@@ -68,7 +68,7 @@ public interface SensorRepository extends JpaRepository<Sensor, Long> {
     boolean existsSensorWithNokState(Structure structure);
 
     /**
-     * Checks if there is a sensor with DEFAULTER state
+     * Checks if there is a sensor with DEFECTIVE state
      * @param structure the structure
      * @return true if yes and false if not
      */
@@ -77,8 +77,8 @@ public interface SensorRepository extends JpaRepository<Sensor, Long> {
         FROM Sensor sensor
         JOIN Result result ON result.sensor = sensor
         WHERE sensor.structure = :structure
-        AND result.state = fr.uge.structsure.entities.State.DEFAULTER
+        AND result.state = fr.uge.structsure.entities.State.DEFECTIVE
     """)
-    boolean existsSensorWithDefaulterState(Structure structure);
+    boolean existsSensorWithDefectiveState(Structure structure);
 
 }
