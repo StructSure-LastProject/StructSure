@@ -53,7 +53,7 @@ const AdminPanelBody = () => {
                 <For each={users()}>
                     {
                         (item) => (
-                            <AccountDetails firstName={item.firstName} lastName={item.lastName} mail={item.mail} role={item.role}/>
+                            <AccountDetails firstName={item.firstName} lastName={item.lastName} login={item.login} role={item.role}/>
                         )
                     }
                 </For>
