@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup } from "solid-js";
+import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
 import ModalAddPlan from './Plan/ModalAddPlan';
@@ -28,12 +28,18 @@ function StructureDetailPlans() {
      * @returns {void}
      */
     const closeModal = () => setIsOpen(false);
+    const [cClickX, setCClickX] = createSignal(0);
+    const [cClickY, setCClickY] = createSignal(0);
     
     const img = new Image();
     let canvasRef;
     let isMouseDown = false;
     let startX = 0;
     let startY = 0;
+
+    const lstSensors = [{x: 10, y: 200, state: "OK"}, {x : 20, y: 20, state: "NOK"}, 
+        {x : 60, y: 60, state: "DEFECTIVE"}, {x : 40, y: 40, state: "UNKNOWN"}
+    ];
 
     /**
      * Draws the image in the canvas
@@ -60,15 +66,71 @@ function StructureDetailPlans() {
         const zoom = zoomFactor();
         ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
         const [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio, canvasRatio, zoom);
+        const imgStartX = baseOffsetX + offsetX() - zoomX / 2;
+        const imgStartY = baseOffsetY + offsetY() - zoomY / 2;
         ctx.drawImage(
             img,
-            baseOffsetX + offsetX() - zoomX / 2,
-            baseOffsetY + offsetY() - zoomY / 2,
+            imgStartX,
+            imgStartY,
             drawWidth + zoomX,
             drawHeight + zoomY
         );
+        drawSensors(imgStartX, imgStartY, drawWidth, drawHeight, zoomX, zoomY);
     }
 
+    /**
+     * Draws the sensors in the canvas
+     * @param {number} imgStartX the image start position y
+     * @param {number} imgStartY the image start position x
+     * @param {number} drawWidth the width of the image
+     * @param {number} drawHeight the height of the image
+     * @param {number} zoomX the zoom with ratio for x axis
+     * @param {number} zoomY the zoom with ratio for y axis
+     */
+    const drawSensors = (imgStartX, imgStartY, drawWidth, drawHeight, zoomX, zoomY) => {
+        const ctx = ctxCanvas();
+        // Facteurs d'échelle pour les capteurs
+        const scaleX = (drawWidth + zoomX) / drawWidth;
+        const scaleY = (drawHeight + zoomY) / drawHeight;
+        lstSensors.forEach(sensor => {
+            // La position relative du capteur est mise à l'échelle de la même manière que l'image
+            let bgColor = "";
+            let borderColor = "";
+            switch (sensor.state) {
+                case "OK":
+                    bgColor = "#25B61F";
+                    borderColor = "#25b51f40";
+                    break;
+                case "NOK":
+                    bgColor = "#F13327";
+                    borderColor = "#f1332740";
+                    break;
+                case "DEFECTIVE":
+                    bgColor = "#F19327";
+                    borderColor = "#f1932740";
+                    break;
+                case "UNKNOWN":
+                    bgColor = "#6A6A6A";
+                    borderColor = "#6a6a6a40";
+                    break;
+            }
+            
+            const sensorCanvasX = imgStartX + sensor.x * scaleX;
+            const sensorCanvasY = imgStartY + sensor.y * scaleY;
+            ctx.beginPath();
+            ctx.arc(sensorCanvasX, sensorCanvasY, 10, 0, Math.PI * 2);
+            ctx.fillStyle = bgColor;
+            ctx.fill();
+            ctx.arc(sensorCanvasX, sensorCanvasY, 12, 0, Math.PI * 2);
+            ctx.fillStyle = borderColor;
+            ctx.fill();
+            ctx.closePath();
+        });
+    };
+
+    /**
+     * Handles the resize event
+     */
     const handleResize = () => {
         fixDpi();
         drawImage();
@@ -93,6 +155,9 @@ function StructureDetailPlans() {
         canvasRef.style.height = `${height}px`;
     };
 
+    /**
+     * This function is called in the begning when this component is mounted in the DOM
+     */
     onMount(() => {
         const ctx = canvasRef.getContext('2d');
         fixDpi();
@@ -110,9 +175,13 @@ function StructureDetailPlans() {
         canvasRef.addEventListener("mousemove", handleMouseMove);
         canvasRef.addEventListener("mouseup", handleMouseUp);
         canvasRef.addEventListener("mouseout", handleMouseUp);
+        canvasRef.addEventListener("click", handleCanvasClick);
         window.addEventListener("resize", handleResize);
     }
 
+    /**
+     * This function is called at the end of the lifecycle of this component
+     */
     onCleanup(() => {
         canvasRef.removeEventListener("wheel", handleWheel);
         canvasRef.removeEventListener("mousedown", handleMouseDown);
@@ -120,7 +189,21 @@ function StructureDetailPlans() {
         canvasRef.removeEventListener("mouseup", handleMouseUp);
         canvasRef.removeEventListener("mouseout", handleMouseUp);
         window.removeEventListener("resize", handleResize);
+        canvasRef.removeEventListener("click", handleCanvasClick);
     });
+
+    /**
+     * Handles the canvas click
+     * @param {Event} event the event of the click in the canvas
+     */
+    const handleCanvasClick = (event) => {
+        const rect = canvasRef.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        setCClickX(x);
+        setCClickY(y);
+        console.log("Clicked at:", x, y);
+    };
 
     /**
      * Loads and draws the image from it's link
