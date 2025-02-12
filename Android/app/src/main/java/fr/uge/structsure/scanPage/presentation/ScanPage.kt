@@ -4,7 +4,6 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -34,12 +33,7 @@ fun ScanPage(context: Context,
              navController: NavController) {
 
     val currentState = scanViewModel.currentScanState.observeAsState(initial = ScanState.NOT_STARTED)
-
-    SideEffect {
-        if (scanViewModel.currentScanState.value == ScanState.NOT_STARTED) {
-            scanViewModel.init()
-        }
-    }
+    scanViewModel.setStructure(structureId)
 
     Page(
         Modifier.padding(bottom = 100.dp),
@@ -47,7 +41,6 @@ fun ScanPage(context: Context,
             ToolBar(
                 currentState = currentState.value,
                 onPlayClick = {
-
                     scanViewModel.createNewScan(structureId)
                 },
                 onPauseClick = {

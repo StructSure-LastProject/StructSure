@@ -3,15 +3,12 @@ package fr.uge.structsure.scanPage.domain
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
-import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
-import fr.uge.structsure.scanPage.data.dao.ResultDao
-import fr.uge.structsure.scanPage.data.dao.ScanDao
 import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.structuresPage.data.SensorDB
-import fr.uge.structsure.structuresPage.data.SensorDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
@@ -19,20 +16,24 @@ import java.sql.Timestamp
 /**
  * ViewModel responsible for managing the scanning process.
  * It interacts with the database, sensor cache, and scanner hardware to handle sensor states and user actions.
- *
- * @property scanDao DAO to interact with the scan database.
- * @property resultDao DAO to store scan results.
- * @property sensorDao DAO to interact with sensor data.
- * @property accountDao DAO to fetch user account information.
- * @property structureId ID of the structure being scanned.
+
  */
-class ScanViewModel(
-    private val scanDao: ScanDao,
-    private val resultDao: ResultDao,
-    private val sensorDao: SensorDao,
-    private val accountDao: AccountDao,
-    private val structureId: Long
-) : ViewModel() {
+class ScanViewModel: ViewModel() {
+
+    /** DAO to interact with the scan database */
+    private val scanDao = db.scanDao()
+
+    /** DAO to store scan results */
+    private val resultDao = db.resultDao()
+
+    /** DAO to interact with sensor data */
+    private val sensorDao = db.sensorDao()
+
+    /** DAO to fetch user account information */
+    private val accountDao = db.accountDao()
+
+    /** ID of the structure being scanned */
+    private var structureId: Long? = null
 
     // Scanner hardware for reading RFID chips
     private val cs108Scanner =
@@ -58,6 +59,21 @@ class ScanViewModel(
     // Buffer to manage RFID chip scanning with timeout handling
     private val rfidBuffer = TimedBuffer { _, chipId ->
         processChip(chipId)
+    }
+
+    /**
+     * Changes the structureId of the scanViewModel. This will reload
+     * the sensors if the given id is not the same as the saved one.
+     * @param structureId the id of the structure in use
+     */
+    fun setStructure(structureId: Long) {
+        if (this.structureId == structureId) return
+        this.structureId = structureId
+        this.activeScanId = null
+        viewModelScope.launch(Dispatchers.IO) {
+            val sensors = sensorDao.getAllSensors(structureId)
+            sensorCache.insertSensors(sensors)
+        }
     }
 
     /**
@@ -149,36 +165,24 @@ class ScanViewModel(
     }
 
     /**
-     * Initializes the sensor cache with the sensors of the structure being scanned.
-     *
-     */
-    fun init() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val sensors = scanDao.getAllSensors(structureId)
-            sensorCache.insertSensors(sensors)
-        }
-    }
-
-    /**
      * Creates a new scan for the given structure.
      *
      * @param structureId ID of the structure to scan.
      */
     fun createNewScan(structureId: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            cs108Scanner.start()
-            currentScanState.postValue(ScanState.STARTED)
-            alertMessages.postValue(null)
-            val now = Timestamp(System.currentTimeMillis()).toString()
-            val newScan = ScanEntity(
-                structureId = structureId,
-                start_timestamp = now,
-                end_timestamp = "",
-                technician = accountDao.getLogin(),
-                note = ""
-            )
-            activeScanId = scanDao.insertScan(newScan)
-        }
+        cs108Scanner.start()
+        currentScanState.postValue(ScanState.STARTED)
+        alertMessages.postValue(null)
+        if (activeScanId != null) return // already created
+        val now = Timestamp(System.currentTimeMillis()).toString()
+        val newScan = ScanEntity(
+            structureId = structureId,
+            start_timestamp = now,
+            end_timestamp = "",
+            technician = accountDao.getLogin(),
+            note = ""
+        )
+        activeScanId = scanDao.insertScan(newScan)
     }
 
     /**

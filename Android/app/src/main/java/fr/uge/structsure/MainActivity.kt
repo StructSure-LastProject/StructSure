@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /** Name of the login page to avoid string duplication */
-    private val loginPage = "loginPage"
+    private val loginPage = "ConnexionPage"
 
     private lateinit var structureViewModel: StructureViewModel
 
@@ -75,10 +75,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         db = AppDatabase.getDatabase(applicationContext)
-        val scanDao = db.scanDao()
         val accountDao = db.accountDao()
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
+        val scanViewModel = ScanViewModel()
 
         requestPermissions()
 
@@ -95,7 +95,6 @@ class MainActivity : ComponentActivity() {
                     navigateToLogin.value = false
                 }
             }
-            val scanViewModel = ScanViewModel(scanDao, db.resultDao(), db.sensorDao(), accountDao, 1L)
             val homePage = if (accountDao.get()?.token == null) loginPage else "HomePage"
             NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {
@@ -103,7 +102,7 @@ class MainActivity : ComponentActivity() {
                     SetDynamicStatusBar()
                 }
                 composable("ScanPage?structureId={structureId}") { backStackEntry ->
-                   val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
                     ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
