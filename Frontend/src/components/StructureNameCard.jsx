@@ -17,7 +17,7 @@ const StructureNameCard = ({structureName, isChoosed}) => {
     
     return (
         <div class={`items-center w-auto sm:w-[auto] rounded-[50px] px-[12px] py-[4px] gap-[8px] ${cardColor.bg}`}>
-            <p class={`${cardColor.text} font-poppins font-[600] text-[12px] sm:text-[14px] leading-[18px] sm:leading-[21px] tracking-[0%]`}>
+            <p class={`${cardColor.text} font-poppins font-[600] text-[14px] leading-[18px] sm:leading-[21px] tracking-[0%]`}>
                 {structureName}
             </p>
         </div>

@@ -1,21 +1,21 @@
-import { Trash2, X, ChevronDown } from 'lucide-solid';
+import { X, ChevronDown } from 'lucide-solid';
 import StructureNameCard from '../StructureNameCard';
 import { createSignal } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
 
 /**
- * Edit account modal component
+ * Add account modal component
  * @param {Function} closeModal The function to close the modal
  * @returns The Model compoanent
  */
-const EditAccountModal = ({ closeModal, userDetails}) => {
+const AddAccountModal = ({ closeModal }) => {
 
-    const [firstName, setFirstName] = createSignal(userDetails.firstName);
-    const [lastName, setLastName] = createSignal(userDetails.lastName);
-    const [login, setLogin] = createSignal(userDetails.login);
+    const [firstName, setFirstName] = createSignal("");
+    const [lastName, setLastName] = createSignal("");
+    const [login, setLogin] = createSignal("");
     const [password, setPassword] = createSignal("");
-    const [role, setRole] = createSignal(userDetails.role); 
-    const [accountState, setAccountState] = createSignal(userDetails.accountState);
+    const [role, setRole] = createSignal(""); 
+    const [accountState, setAccountState] = createSignal(true);
     const [error, setError] = createSignal([]);
 
     /**
@@ -59,22 +59,17 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
         e.preventDefault();
 
         validateUserAccountForm(firstName(), lastName(), login(), role(), password(), addError, removeError)
-
-        
     };
 
 
     return (
-        <div class="h-[100vh] items-center bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] absolute top-0 left-0 p-[25px]">
-            <div class="max-h-[100%]  overflow-y-auto  sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
+        <div class="h-[100vh] items-center bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] absolute top-0 left-0 p-[25px]">
+            <div class="max-h-[100%] overflow-y-auto sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
                 <div class="flex justify-between items-center w-full gap-[10px]">
                     <h1 class="font-poppins text-[20px] sm:text-[20px] font-[600] leading-[30px] sm:leading-[37.5px] tracking-[0%]">
-                        Edition de Compte
+                        Créer un Compte
                     </h1>
                     <div class="flex flex-wrap gap-[10px]">
-                        <button class="flex justify-center items-center w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-[50px] bg-[#F133271A]">
-                            <Trash2 color="#f13327" size={20} width={20} top={10} left={10}/>
-                        </button>
                         <button onClick={closeModal} class="flex justify-center items-center w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-[50px] bg-[#F2F2F4]">
                             <X />
                         </button>
@@ -86,8 +81,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                         <p class="text-[#F13327] font-poppins HeadLineMedium">{err}</p>
                     ))}
                 </div>
-                
-                <form action="" >
+                <form>
                     <div className="flex flex-wrap gap-[15px] lg:gap-[50px] text-[#181818] font-poppins">
                         <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
@@ -96,7 +90,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                                     id="lastname"
                                     required
                                     value={lastName()}
-                                    onChange={(e) => setLastName(e.target.value)}
+                                    onChange={(e) => setLastName(e.target.value)} 
                                     type="text"
                                     className="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]"
                                     minLength="1"
@@ -110,7 +104,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                                     id="firstname"
                                     required
                                     value={firstName()}
-                                    onChange={(e) => setFirstName(e.target.value)}
+                                    onChange={(e) => setFirstName(e.target.value)} 
                                     type="text"
                                     className="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]"
                                     minLength="1"
@@ -123,7 +117,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                                     id="id"
                                     required
                                     value={login()}
-                                    onChange={(e) => setLogin(e.target.value)}
+                                    onChange={(e) => setLogin(e.target.value)} 
                                     type="text"
                                     className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
                                     minLength="1"
@@ -134,7 +128,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
 
                         <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="password" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Mot de passe</label>
+                                <label htmlFor="password" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Mot de passe*</label>
                                 <input
                                     id="password"
                                     required
@@ -143,6 +137,8 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                                     type="password"
                                     placeholder="*******"
                                     className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
+                                    minLength="12"
+                                    maxLength="64"
                                 />
                             </div>
                             <div className="flex flex-col gap-[5px]">
@@ -168,12 +164,13 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="accountState" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Etat*</label>
+                            <label htmlFor="accountState" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Etat*</label>
                                 <div className="flex items-center w-full h-[37px] rounded-[10px] py-[8px] px-[16px] gap-[10px]">
                                     <input
                                         id="accountState"
+                                        name="accountState"
                                         checked={accountState()}
-                                        onChange={(e) => setAccountState(e.target.checked)}
+                                        onChange={(e) => setAccountState(e.target.checked)} 
                                         type="checkbox"
                                         className="w-[14px] h-auto bg-white border-2"
                                     />
@@ -188,31 +185,32 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                         </div>
                         
                     </div>
+                
 
-                    {<div class="flex flex-col w-[100%] h-auto gap-[5px] mt-[15px]">
-                        <p class="text-[#181818] opacity-[75%]">Ouvrages autorisés</p>
-                        <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
-                            <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
-                            <StructureNameCard structureName={"Pont de Tournon-sur-Rhône"} isChoosed={true}/>
-                            <StructureNameCard structureName={"Pegasus Bridge"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont Albert-Louppe"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont Boutiron"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont d’Ain"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont levant de La Seyne-sur-Mer"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont d’Èze"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont suspendu de Saint-Ilpize"} isChoosed={false}/>
-                        </div>
+                {<div class="flex flex-col w-[100%] h-auto gap-[5px] mt-[15px]">
+                    <p class="text-[#181818] opacity-[75%]">Ouvrages autorisés</p>
+                    <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
+                        <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
+                        <StructureNameCard structureName={"Pont de Tournon-sur-Rhône"} isChoosed={true}/>
+                        <StructureNameCard structureName={"Pegasus Bridge"} isChoosed={false}/>
+                        <StructureNameCard structureName={"Pont Albert-Louppe"} isChoosed={false}/>
+                        <StructureNameCard structureName={"Pont Boutiron"} isChoosed={false}/>
+                        <StructureNameCard structureName={"Pont d’Ain"} isChoosed={false}/>
+                        <StructureNameCard structureName={"Pont levant de La Seyne-sur-Mer"} isChoosed={false}/>
+                        <StructureNameCard structureName={"Pont d’Èze"} isChoosed={false}/>
+                        <StructureNameCard structureName={"Pont suspendu de Saint-Ilpize"} isChoosed={false}/>
                     </div>
-                    }
-                    <div class="md:flex md:flex-row-reverse mt-[10px]">
-                        <button type="submit" onClick={handleSubmit} class="w-[123px] h-auto rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-[#F2F2F4]">
-                            <p class="w-[91px] h-auto font-poppins font-[600] text-[14px] leading-[21px] tracking-[0%]">Mettre à jour</p>
-                        </button>
-                    </div>
+                </div>
+                }
+                <div class="md:flex md:flex-row-reverse mt-[10px]">
+                    <button type="submit" onClick={handleSubmit}  class="w-[72px] h-auto rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-[#181818]">
+                        <p class="w-[40px] h-auto text-white font-poppins font-[600] text-[14px] leading-[21px] tracking-[0%]">Créer</p>
+                    </button>
+                </div>
                 </form>
             </div>
         </div>
     )
 }
 
-export default EditAccountModal
+export default AddAccountModal

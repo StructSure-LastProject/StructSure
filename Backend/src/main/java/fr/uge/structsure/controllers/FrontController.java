@@ -1,8 +1,12 @@
 package fr.uge.structsure.controllers;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.savedrequest.DefaultSavedRequest;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +30,11 @@ public class FrontController {
      * @return the content of the index.html page
      */
     @GetMapping("*")
-    public ResponseEntity<String> forwardToIndex(HttpServletRequest request) {
+    public ResponseEntity<String> forwardToIndex(HttpServletRequest request, HttpSession session) {
+        var savedRequest = (DefaultSavedRequest) session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+        if (savedRequest != null && savedRequest.getRequestURI().startsWith("/api")){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         if (request.getRequestURI().startsWith("/api")) {
             return null; // Give up and lets another endpoint take care of this request
         }

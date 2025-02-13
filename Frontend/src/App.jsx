@@ -37,7 +37,7 @@ function App() {
         <Route path="/" component={RequireAuth(Home)} />
         <Route path="/account" component={RequireAuth(Account)} />
         <Route path="/structure" component={StructSureDetail} />
-        <Route path="/admin-panel" component={AdminPanel} />
+        <Route path="/admin-panel" component={RequireAuth(AdminPanel)} />
       </Router>
     </>
   )
