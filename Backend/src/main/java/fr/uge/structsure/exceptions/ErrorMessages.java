@@ -19,6 +19,7 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.STRUCTURE_NAME_EXCEED_LIMIT, new Error(422, "Le nom d'un ouvrage ne peut pas dépasser 64 caractères"));
         messages.put(ErrorIdentifier.STRUCTURE_NOTE_EXCEED_LIMIT, new Error(422, "La note d'un ouvrage ne peut pas dépasser 1000 caractères"));
 
+        messages.put(ErrorIdentifier.PLAN_NOT_FOUND, new Error(404, "Le plan est introuvable"));
         messages.put(ErrorIdentifier.PLAN_STRUCTURE_ID_IS_EMPTY, new Error(422, "Le champ id est requis"));
         messages.put(ErrorIdentifier.PLAN_FILE_INVALID_FORMAT, new Error(422, "Format du fichier non valide"));
         messages.put(ErrorIdentifier.PLAN_FILE_IS_EMPTY, new Error(422, "Le champ file est requis"));
