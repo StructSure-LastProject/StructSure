@@ -31,7 +31,7 @@ import fr.uge.structsure.alertes.Alerte
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
-import fr.uge.structsure.settings.presentation.SettingsPage
+import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.ScanPage
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
@@ -101,6 +101,7 @@ class MainActivity : ComponentActivity() {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
+                composable("SettingsPage"){ SettingsPage(navController) }
                 composable("ScanPage?structureId={structureId}") { backStackEntry ->
                     val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
                     ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
@@ -118,7 +119,7 @@ class MainActivity : ComponentActivity() {
                     Alerte(navController, state,name,lastState)
                     SetDynamicStatusBar()
                 }
-                composable("SettingsPage"){ SettingsPage() }
+
             }
         }
     }

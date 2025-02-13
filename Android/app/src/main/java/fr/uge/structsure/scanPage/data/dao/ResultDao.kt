@@ -10,6 +10,4 @@ interface ResultDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertResult(resultSensor : ResultSensors)
-
-
 }
