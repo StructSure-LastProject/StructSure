@@ -54,9 +54,9 @@ public interface SensorRepository extends JpaRepository<Sensor, Long> {
      */
     @Query("""
     SELECT sensor
-    FROM Plan plan
-    JOIN Structure structure ON plan.id = structure.id
-    JOIN Plan plan ON 
+    FROM Sensor sensor
+    JOIN Structure structure ON sensor.structure = structure
+    JOIN Plan plan ON plan.structure = structure
     WHERE plan = :plan
     """)
     List<Sensor> findByPlan(Plan plan);

@@ -66,7 +66,8 @@ public class SensorService {
         if (plan.isEmpty()) {
             throw new TraitementException(Error.PLAN_NOT_FOUND);
         }
-        var sensors = sensorRepository.
+        var sensors = sensorRepository.findByPlan(plan.get());
+        return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
     }
 
     /**
