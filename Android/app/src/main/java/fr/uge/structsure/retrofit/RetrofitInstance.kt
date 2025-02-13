@@ -24,7 +24,7 @@ object RetrofitInstance {
 
     private var tokenProvider: () -> String = {
         val account = fr.uge.structsure.MainActivity.db.accountDao().get()
-        account?.token ?: ""
+        account?.token.orEmpty()
     }
 
     /**
@@ -87,9 +87,9 @@ object RetrofitInstance {
      * @return The Retrofit instance.
      * @throws IllegalStateException if Retrofit has not been initialized.
      */
-    private fun getRetrofit(): Retrofit {
-        return retrofit ?: throw IllegalStateException("Retrofit n'a pas été initialisé.")
-    }
+    private fun getRetrofit(): Retrofit =
+        retrofit ?: throw IllegalStateException("Retrofit n'a pas été initialisé.")
+
     /**
      * Provides an instance of the `StructureApi` interface for making structure-related API calls.
      */
