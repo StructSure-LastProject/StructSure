@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
+import { createSignal, onMount, onCleanup } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
 import ModalAddPlan from './Plan/ModalAddPlan';
@@ -9,12 +9,19 @@ import { Plus } from 'lucide-solid';
  * @returns the component for the plans part
  */
 function StructureDetailPlans() {
+    const imageMoveLimit = 10;
+    const ZOOM_LIMIT = 4;
     const [ctxCanvas, setCtxCanvas] = createSignal("");
     const [zoomFactor, setZoomFactor] = createSignal(0);
     const [offsetX, setOffsetX] = createSignal(0);
     const [offsetY, setOffsetY] = createSignal(0);
-
+    const [baseOffsetX, setBaseOffsetX] = createSignal(0);
+    const [baseOffsetY, setBaseOffsetY] = createSignal(0);
+    const [imgRatio, setImgRatio] = createSignal(0);
+    const [canvasRatio, setCanvasRatio] = createSignal(0);
     const [isOpen, setIsOpen] = createSignal(false);
+    const [drawWidth, setDrawWidth] = createSignal(0);
+    const [drawHeight, setDrawHeight] = createSignal(0);
 
     /**
      * Opens the modal by setting the `isOpen` state to `true`.
@@ -37,9 +44,42 @@ function StructureDetailPlans() {
     let startX = 0;
     let startY = 0;
 
-    const lstSensors = [{x: 10, y: 200, state: "OK"}, {x : 20, y: 20, state: "NOK"}, 
+    const lstSensors = [{x: 100, y: 100, state: "OK"}, {x : 20, y: 20, state: "NOK"}, 
         {x : 60, y: 60, state: "DEFECTIVE"}, {x : 40, y: 40, state: "UNKNOWN"}
     ];
+
+    /**
+     * Returns the start image position x
+     * @param {Number} baseOffsetX the base offset x of the image
+     * @param {Number} offsetX the offset x of the image
+     * @param {Number} zoom the zoom number
+     * @returns start image position x
+     */
+    const getImgStartX = (baseOffsetX, offsetX, zoom) => {
+        const [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio(), canvasRatio(), zoom);
+        return baseOffsetX + offsetX - zoomX / 2;
+    };
+
+    /**
+     * Returns the start image position y
+     * @param {Number} baseOffsetX the base offset y of the image
+     * @param {Number} offsetX the offset y of the image
+     * @param {Number} zoom the zoom number
+     * @returns start image position y
+     */
+    const getImgStartY = (baseOffsetY, offsetY, zoom) => {
+        const [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio(), canvasRatio(), zoom);
+        return baseOffsetY + offsetY - zoomY / 2;
+    };
+
+    /**
+     * Returns the zoom with ratio from zoom number 
+     * @param {Number} zoom zoom number
+     * @returns the zoom with ratio
+     */
+    const getZoomRationFromZoomNumber = (zoom) => {
+        return zoomRatioFromZoomNumber(imgRatio(), canvasRatio(), zoom);
+    }
 
     /**
      * Draws the image in the canvas
@@ -62,18 +102,25 @@ function StructureDetailPlans() {
             baseOffsetX = (canvasRef.width - drawWidth) / 2;
             baseOffsetY = 0;
         }
-        // Appliquer le zoom
-        const zoom = zoomFactor();
+        setImgRatio(imgRatio);
+        setCanvasRatio(canvasRatio);
+        setBaseOffsetX(baseOffsetX);
+        setBaseOffsetY(baseOffsetY);
+        
         ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-        const [zoomX, zoomY] = zoomRatioFromZoomNumber(imgRatio, canvasRatio, zoom);
-        const imgStartX = baseOffsetX + offsetX() - zoomX / 2;
-        const imgStartY = baseOffsetY + offsetY() - zoomY / 2;
+        const imgStartX = getImgStartX(baseOffsetX, offsetX(), zoomFactor());
+        const imgStartY = getImgStartY(baseOffsetY, offsetY(), zoomFactor());
+        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+        const imgWidth = drawWidth + zoomX;
+        const imgHeight = drawHeight + zoomY;
+        setDrawWidth(drawWidth);
+        setDrawHeight(drawHeight);
         ctx.drawImage(
             img,
             imgStartX,
             imgStartY,
-            drawWidth + zoomX,
-            drawHeight + zoomY
+            imgWidth,
+            imgHeight
         );
         drawSensors(imgStartX, imgStartY, drawWidth, drawHeight, zoomX, zoomY);
     }
@@ -89,11 +136,9 @@ function StructureDetailPlans() {
      */
     const drawSensors = (imgStartX, imgStartY, drawWidth, drawHeight, zoomX, zoomY) => {
         const ctx = ctxCanvas();
-        // Facteurs d'échelle pour les capteurs
-        const scaleX = (drawWidth + zoomX) / drawWidth;
-        const scaleY = (drawHeight + zoomY) / drawHeight;
+        const scaleX = (drawWidth + zoomX) / img.width;
+        const scaleY = (drawHeight + zoomY) / img.height;
         lstSensors.forEach(sensor => {
-            // La position relative du capteur est mise à l'échelle de la même manière que l'image
             let bgColor = "";
             let borderColor = "";
             switch (sensor.state) {
@@ -117,16 +162,19 @@ function StructureDetailPlans() {
             
             const sensorCanvasX = imgStartX + sensor.x * scaleX;
             const sensorCanvasY = imgStartY + sensor.y * scaleY;
+            
             ctx.beginPath();
             ctx.arc(sensorCanvasX, sensorCanvasY, 10, 0, Math.PI * 2);
             ctx.fillStyle = bgColor;
             ctx.fill();
+            ctx.beginPath();
             ctx.arc(sensorCanvasX, sensorCanvasY, 12, 0, Math.PI * 2);
             ctx.fillStyle = borderColor;
             ctx.fill();
             ctx.closePath();
         });
     };
+    
 
     /**
      * Handles the resize event
@@ -202,7 +250,6 @@ function StructureDetailPlans() {
         const y = event.clientY - rect.top;
         setCClickX(x);
         setCClickY(y);
-        console.log("Clicked at:", x, y);
     };
 
     /**
@@ -222,7 +269,18 @@ function StructureDetailPlans() {
         event.preventDefault();
         if (event.ctrlKey) {
             const zoomChange = event.deltaY;
-            setZoomFactor((prev) => Math.max(0, prev + (-1 * zoomChange)));
+            let newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
+            const imgStartX = getImgStartX(baseOffsetX(), offsetX(), newZoom);
+            const imgStartY = getImgStartY(baseOffsetY(), offsetY(), newZoom);
+            const [zoomX, zoomY] = getZoomRationFromZoomNumber(newZoom);
+            const imgWidth = drawWidth() + zoomX;
+            const imgHeight = drawHeight() + zoomY;
+            if ((imgStartX + imgWidth) < imageMoveLimit || imgStartX > canvasRef.width - imageMoveLimit
+             || (imgStartY + imgHeight) < imageMoveLimit || imgStartY > canvasRef.height - imageMoveLimit
+             || zoomLimitReached(imgWidth, imgHeight)) {
+                return;
+            }
+            setZoomFactor(newZoom);
             drawImage();
         }
     };
@@ -240,6 +298,14 @@ function StructureDetailPlans() {
         }
     };
 
+
+    const zoomLimitReached = (newImgWidth, newImgHeight) => {
+        if (newImgWidth > ZOOM_LIMIT * drawWidth() || newImgHeight > ZOOM_LIMIT * drawHeight()) {
+            return true;
+        }
+        return false;
+    };
+
     /**
      * Handles the mouse move event
      * @param {MouseEvent} event the event of the mouse
@@ -248,7 +314,16 @@ function StructureDetailPlans() {
         event.preventDefault();
         if (isMouseDown) {
             const dx = event.clientX - startX;
-            const dy = event.clientY - startY;
+            const dy = event.clientY - startY; 
+            const imgStartX = getImgStartX(baseOffsetX(), dx, zoomFactor());
+            const imgStartY = getImgStartY(baseOffsetY(), dy, zoomFactor());
+            const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+            const imgWidth = drawWidth() + zoomX;
+            const imgHeight = drawHeight() + zoomY;
+            if ((imgStartX + imgWidth) < imageMoveLimit || imgStartX > canvasRef.width - imageMoveLimit
+             || (imgStartY + imgHeight) < imageMoveLimit || imgStartY > canvasRef.height - imageMoveLimit) {
+                return;
+            }
             setOffsetX(dx);
             setOffsetY(dy);
             drawImage();
