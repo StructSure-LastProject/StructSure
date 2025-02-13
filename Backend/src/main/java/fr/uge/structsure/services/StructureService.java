@@ -23,6 +23,7 @@ public class StructureService {
     private final StructureRepository structureRepository;
     private final PlanRepository planRepository;
     private final SensorRepository sensorRepository;
+    private final ScanRepository scanRepository;
     private final ResultRepository resultRepository;
 
     /**
@@ -33,11 +34,13 @@ public class StructureService {
      * @param resultRepository the result repository
      */
     @Autowired
-    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository, PlanRepository planRepository, ResultRepository resultRepository) {
+    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository,
+                            PlanRepository planRepository, ResultRepository resultRepository, ScanRepository scanRepository) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.planRepository = Objects.requireNonNull(planRepository);
         this.resultRepository = resultRepository;
+        this.scanRepository = Objects.requireNonNull(scanRepository);
     }
 
     /**
@@ -229,11 +232,10 @@ public class StructureService {
         var structure = structureOpt.get();
         var plans = planRepository.findByStructure(structure);
         var sensors = sensorRepository.findByStructure(structure);
-        System.err.println("Plans : " + plans);
-        System.err.println("Sensors : " + sensors);
-
+        var scans = scanRepository.findByStructure(structure);
         return new StructureDetailsResponseDTO(structure.getId(), structure.getName(),
                 structure.getNote(),
+                scans.stream().map(StructureDetailsResponseDTO.Scan::fromScanEntity).toList(),
                 plans.stream().map(StructureDetailsResponseDTO.Plan::fromPlanEntity).toList(),
                 sensors.stream().map(StructureDetailsResponseDTO.Sensor::fromSensorEntity).toList());
     }

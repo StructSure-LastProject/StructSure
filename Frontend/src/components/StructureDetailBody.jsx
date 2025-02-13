@@ -46,4 +46,3 @@ function StructureDetailBody() {
 }
 
 export default StructureDetailBody
-
