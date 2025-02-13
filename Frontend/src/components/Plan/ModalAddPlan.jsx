@@ -47,6 +47,7 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
    * @throws Will display an error message if the submission fails
    */
   const handleSubmit = async () => {
+    setError("")
     if (!name().trim()) {
       setError("Le nom est requis");
       return;
@@ -82,7 +83,7 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
       onSave(data());
       handleClose();
     } else {
-      setError(error() || "Une erreur est survenue");
+      setError(data()?.error || "Une erreur est survenue");
     }
 
     setIsSubmitting(false);
