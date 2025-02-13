@@ -1,19 +1,18 @@
 import logo from '/src/assets/logo.svg';
 import leftAccount from '/src/assets/leftAccount.svg';
 import accountButton from '/src/assets/accountButton.svg';
-import { A, useNavigate } from '@solidjs/router';
+import { A } from '@solidjs/router';
 
 /**
  * Component for the header
  * @returns component for the Header
  */
 function Header() {
-    const navigate = useNavigate();
 
     return (
         <div class="flex justify-between">
             <A href="/">
-                <img src={logo} class="w-236px" alt="Application logo" onClick={() => navigate("/")}/>
+                <img src={logo} class="w-236px" alt="Application logo" />
             </A>
             <div class="flex gap-x-25px items-center">
                 <A href="/admin-panel">

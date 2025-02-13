@@ -38,6 +38,8 @@ function App() {
         <Route path="/account" component={RequireAuth(Account)} />
         <Route path="/structure" component={StructSureDetail} />
         <Route path="/admin-panel" component={RequireAuth(AdminPanel)} />
+        <Route path="/structure/:structureId" component={RequireAuth(StructSureDetail)} />
+        <Route path="/admin-panel" component={AdminPanel} />
       </Router>
     </>
   )
