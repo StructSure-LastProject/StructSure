@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup } from "solid-js";
+import { createSignal, onMount, onCleanup, Show, createEffect } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
 import ModalAddPlan from './Plan/ModalAddPlan';
@@ -19,9 +19,31 @@ function StructureDetailPlans() {
     const [baseOffsetY, setBaseOffsetY] = createSignal(0);
     const [imgRatio, setImgRatio] = createSignal(0);
     const [canvasRatio, setCanvasRatio] = createSignal(0);
+    const [plans, setPlans] = createSignal([
+        { id: 1, createdAt: "2025-02-12 17:39:11.736" }
+    ]);
     const [isOpen, setIsOpen] = createSignal(false);
     const [drawWidth, setDrawWidth] = createSignal(0);
     const [drawHeight, setDrawHeight] = createSignal(0);
+
+    /**
+     * Add result of adding plan and log the list in the console
+     * @todo remove and make the plan details session dynamic
+     * @param result Result sended by ModalAddPlan
+     */
+    const handleSavePlan = (result) => {
+        const id = result.id;
+        const createdAt = result.createdAt || Date.now();
+
+        const newPlan = {
+            id: id,
+            createdAt: createdAt
+        };
+
+        setPlans(prev => [...prev, newPlan]);
+        console.log(plans());
+        closeModal();
+    };
 
     /**
      * Opens the modal by setting the `isOpen` state to `true`.
@@ -37,7 +59,7 @@ function StructureDetailPlans() {
     const closeModal = () => setIsOpen(false);
     const [cClickX, setCClickX] = createSignal(0);
     const [cClickY, setCClickY] = createSignal(0);
-    
+
     const img = new Image();
     let canvasRef;
     let isMouseDown = false;
@@ -159,7 +181,7 @@ function StructureDetailPlans() {
                     borderColor = "#6a6a6a40";
                     break;
             }
-            
+
             const sensorCanvasX = imgStartX + sensor.x * scaleX;
             const sensorCanvasY = imgStartY + sensor.y * scaleY;
             
@@ -176,9 +198,6 @@ function StructureDetailPlans() {
     };
     
 
-    /**
-     * Handles the resize event
-     */
     const handleResize = () => {
         fixDpi();
         drawImage();
@@ -377,7 +396,7 @@ function StructureDetailPlans() {
                     </button>
                 </div>
                 <Show when={isOpen()}>
-                    <ModalAddPlan isOpen={isOpen()} onClose={closeModal} />
+                    <ModalAddPlan isOpen={isOpen()} onSave={handleSavePlan} onClose={closeModal} structureId={1} />
                 </Show>
                 <StructureDetailSection />
             </div>

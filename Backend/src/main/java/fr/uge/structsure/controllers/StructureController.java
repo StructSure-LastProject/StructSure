@@ -92,6 +92,15 @@ public class StructureController {
     }
 
 
+    /**
+     * Handles the addition of a new plan to an existing structure.
+     * Processes a multipart request containing both the plan metadata and the plan file.
+     *
+     * @param id The ID of the structure to which the plan will be added
+     * @param request The DTO containing plan metadata (name and section)
+     * @param file The multipart file containing the plan image
+     * @return ResponseEntity containing either the created plan details or an error message
+     */
     @PostMapping("/{id}/plans")
     public ResponseEntity<?> addPlan(@PathVariable("id") Long id, @RequestPart("metadata") AddPlanRequestDTO request, @RequestPart("file") MultipartFile file) {
         try {

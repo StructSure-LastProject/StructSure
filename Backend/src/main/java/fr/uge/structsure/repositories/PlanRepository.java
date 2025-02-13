@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The repository of the plan entity
@@ -27,4 +28,6 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
      */
     List<Plan> findByStructure(Structure structure);
 
+    @Query("SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM Plan p WHERE p.imageUrl = :url")
+    boolean planFileAlreadyExists(String url);
 }

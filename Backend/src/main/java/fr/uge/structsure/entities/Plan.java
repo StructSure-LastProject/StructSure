@@ -17,20 +17,18 @@ public class Plan {
     private String name;
     private Boolean archived;
     private String imageUrl;
-    @NotBlank(message = "Section is required")
     @Size(max = 128, message = "Section must be less than 128 characters")
-    private String section;
+    private String section = "";
     @ManyToOne
     @JoinColumn(name = "structure_id", nullable = false)
     private Structure structure;
 
     public Plan() {}
 
-    public Plan(String imageUrl, Boolean archived, String name, String section, Structure structure) {
+    public Plan(String imageUrl, Boolean archived, String name, Structure structure) {
         this.imageUrl = imageUrl;
         this.archived = archived;
         this.name = name;
-        this.section = section;
         this.structure = structure;
     }
 
@@ -50,11 +48,11 @@ public class Plan {
         this.imageUrl = imageUrl;
     }
 
-    public @NotBlank(message = "Section is required") @Size(max = 128, message = "Section must be less than 128 characters") String getSection() {
+    public @Size(max = 128, message = "Section must be less than 128 characters") String getSection() {
         return section;
     }
 
-    public void setSection(@NotBlank(message = "Section is required") @Size(max = 128, message = "Section must be less than 128 characters") String section) {
+    public void setSection(@Size(max = 128, message = "Section must be less than 128 characters") String section) {
         this.section = section;
     }
     public long getId() {
