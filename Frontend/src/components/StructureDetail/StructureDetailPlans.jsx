@@ -8,7 +8,7 @@ import { Plus } from 'lucide-solid';
  * Shows the plans part
  * @returns the component for the plans part
  */
-function StructureDetailPlans() {
+function StructureDetailPlans(props) {
     const imageMoveLimit = 10;
     const ZOOM_LIMIT = 4;
     const [ctxCanvas, setCtxCanvas] = createSignal("");
@@ -65,10 +65,6 @@ function StructureDetailPlans() {
     let isMouseDown = false;
     let startX = 0;
     let startY = 0;
-
-    const lstSensors = [{x: 100, y: 100, state: "OK"}, {x : 20, y: 20, state: "NOK"}, 
-        {x : 60, y: 60, state: "DEFECTIVE"}, {x : 40, y: 40, state: "UNKNOWN"}
-    ];
 
     /**
      * Returns the start image position x
@@ -160,7 +156,7 @@ function StructureDetailPlans() {
         const ctx = ctxCanvas();
         const scaleX = (drawWidth + zoomX) / img.width;
         const scaleY = (drawHeight + zoomY) / img.height;
-        lstSensors.forEach(sensor => {
+        props.planSensors.forEach(sensor => {
             let bgColor = "";
             let borderColor = "";
             switch (sensor.state) {
@@ -231,6 +227,9 @@ function StructureDetailPlans() {
         setCtxCanvas(ctx);
         loadDetails();
         addMouseEvents();
+        createEffect(() => {
+            drawImage();
+        });
     })
 
     /**
