@@ -45,7 +45,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
      */
     const removeError = (errorMessage) => {
         setError(prevError => {
-            return prevError.filter(error => error !== errorMessage);
+            return prevError.filter(errorValue => errorValue !== errorMessage);
         });
     };
     
@@ -180,8 +180,8 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                                         className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] px-[16px] appearance-none"
                                     >
                                         {
-                                            roles.map((role, index) => (
-                                                <option key={index} value={role}>{role}</option>
+                                            roles.map((roleItem, index) => (
+                                                <option key={index} value={roleItem}>{roleItem}</option>
                                             ))
                                         }
                                     </select>

@@ -2,6 +2,7 @@ import add from '/src/assets/add.svg';
 import AccountDetails from './AccountDetails';
 import useFetch from "../hooks/useFetch";
 import { createResource, createSignal } from 'solid-js';
+import { useNavigate } from '@solidjs/router';
 import AddAccountModal from "./AdminPanel/AddAccountModal";
 
 /**
@@ -12,6 +13,8 @@ const AdminPanelBody = () => {
 
     const [users, setUsers] = createSignal([]);
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
+
+    const navigate = useNavigate();
 
     /**
      * Handle the add account click event by opening the modal

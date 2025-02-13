@@ -1,6 +1,6 @@
-import { Trash2, X, ChevronDown } from 'lucide-solid';
+import { X, ChevronDown } from 'lucide-solid';
 import StructureNameCard from '../StructureNameCard';
-import { createEffect, createSignal } from 'solid-js';
+import { createSignal } from 'solid-js';
 
 /**
  * Add account modal component
@@ -45,7 +45,7 @@ const AddAccountModal = ({ closeModal }) => {
      */
     const removeError = (errorMessage) => {
         setError(prevError => {
-            return prevError.filter(error => error !== errorMessage);
+            return prevError.filter(errorValue => errorValue !== errorMessage);
         });
     };
     
@@ -178,8 +178,8 @@ const AddAccountModal = ({ closeModal }) => {
                                         className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] px-[16px] appearance-none"
                                     >
                                         {
-                                            roles.map((role, index) => (
-                                                <option key={index} value={role}>{role}</option>
+                                            roles.map((roleItem, index) => (
+                                                <option key={index} value={roleItem}>{roleItem}</option>
                                             ))
                                         }
                                     </select>
