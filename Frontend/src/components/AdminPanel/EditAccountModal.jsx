@@ -61,7 +61,6 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
             lastName(),
             firstName(),
             login(),
-            password(),
             role(),
         ];
 
@@ -77,7 +76,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
             removeError(errorMessage)
         }
 
-        if (password().length < 12) {
+        if (password().length !== 0 && password().length < 12) {
             addError(passworErrorMessage)
         }
         else {
@@ -88,8 +87,8 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
 
 
     return (
-        <div class="bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] absolute top-0 left-0 p-[25px]">
-            <div class="sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
+        <div class="h-[100vh] items-center bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] absolute top-0 left-0 p-[25px]">
+            <div class="max-h-[100%]  overflow-y-auto  sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
                 <div class="flex justify-between items-center w-full gap-[10px]">
                     <h1 class="font-poppins text-[20px] sm:text-[20px] font-[600] leading-[30px] sm:leading-[37.5px] tracking-[0%]">
                         Edition de Compte
@@ -157,7 +156,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
 
                         <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="password" className="font-poppins HeadLineMedium text-[#181818]">Mot de passe*</label>
+                                <label htmlFor="password" className="font-poppins HeadLineMedium text-[#181818]">Mot de passe</label>
                                 <input
                                     id="password"
                                     required
@@ -200,14 +199,19 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                                         type="checkbox"
                                         className="w-[14px] h-auto bg-white border-2"
                                     />
-                                    <span className="font-poppins HeadLineMedium">Compte activé</span>
+                                    <span 
+                                        onClick={() => setAccountState(!accountState())} 
+                                        className="font-poppins HeadLineMedium cursor-pointer"
+                                    >
+                                        Compte activé
+                                    </span>
                                 </div>
                             </div>
                         </div>
                         
                     </div>
 
-                    {<div class="flex flex-col w-[100%] h-auto gap-[5px]">
+                    {<div class="flex flex-col w-[100%] h-auto gap-[5px] mt-[15px]">
                         <p class="text-[#181818] opacity-[75%]">Ouvrages autorisés</p>
                         <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
                             <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
@@ -222,7 +226,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                         </div>
                     </div>
                     }
-                    <div class="md:flex md:flex-row-reverse">
+                    <div class="md:flex md:flex-row-reverse mt-[10px]">
                         <button type="submit" onClick={handleSubmit} class="w-[123px] h-auto rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-[#F2F2F4]">
                             <p class="w-[91px] h-auto font-poppins font-[600] text-[14px] leading-[21px] tracking-[0%]">Mettre à jour</p>
                         </button>

@@ -88,8 +88,8 @@ const AddAccountModal = ({ closeModal }) => {
 
 
     return (
-        <div class="bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] absolute top-0 left-0 p-[25px]">
-            <div class="sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
+        <div class="h-[100vh] items-center bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] absolute top-0 left-0 p-[25px]">
+            <div class="max-h-[100%] overflow-y-auto sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
                 <div class="flex justify-between items-center w-full gap-[10px]">
                     <h1 class="font-poppins text-[20px] sm:text-[20px] font-[600] leading-[30px] sm:leading-[37.5px] tracking-[0%]">
                         Créer un Compte
@@ -106,7 +106,7 @@ const AddAccountModal = ({ closeModal }) => {
                         <p class="text-[#F13327] font-poppins HeadLineMedium">{err}</p>
                     ))}
                 </div>
-                <form action="" >
+                <form>
                     <div className="flex flex-wrap gap-[15px] lg:gap-[50px] text-[#181818] font-poppins">
                         <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
@@ -189,16 +189,22 @@ const AddAccountModal = ({ closeModal }) => {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="accountState" className="font-poppins HeadLineMedium text-[#181818]">Etat*</label>
+                            <label htmlFor="accountState" className="font-poppins HeadLineMedium text-[#181818]">Etat*</label>
                                 <div className="flex items-center w-full h-[37px] rounded-[10px] py-[8px] px-[16px] gap-[10px]">
                                     <input
                                         id="accountState"
+                                        name="accountState"
                                         checked={accountState()}
                                         onChange={(e) => setAccountState(e.target.checked)} 
                                         type="checkbox"
                                         className="w-[14px] h-auto bg-white border-2"
                                     />
-                                    <span className="font-poppins HeadLineMedium">Compte activé</span>
+                                    <span 
+                                        onClick={() => setAccountState(!accountState())} 
+                                        className="font-poppins HeadLineMedium cursor-pointer"
+                                    >
+                                        Compte activé
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -206,7 +212,7 @@ const AddAccountModal = ({ closeModal }) => {
                     </div>
                 
 
-                {<div class="flex flex-col w-[100%] h-auto gap-[5px]">
+                {<div class="flex flex-col w-[100%] h-auto gap-[5px] mt-[15px]">
                     <p class="text-[#181818] opacity-[75%]">Ouvrages autorisés</p>
                     <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
                         <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
