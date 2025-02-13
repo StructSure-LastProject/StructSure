@@ -24,6 +24,10 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
     const file = event.target.files[0];
     if (file) {
       const validTypes = ['image/jpeg', 'image/png'];
+      if (file.size > 2097152) {
+        setError("L'image ne doit pas dépasser 20Mo");
+        return;
+      }
       if (!validTypes.includes(file.type)) {
         setError("Le format du fichier doit être JPEG ou PNG");
         return;
