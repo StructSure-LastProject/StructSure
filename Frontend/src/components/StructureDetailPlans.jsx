@@ -1,5 +1,6 @@
 import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
 import plan from '/src/assets/plan.png';
+import planTest from '/src/assets/planTest.png';
 import StructureDetailSection from './StructureDetailSection';
 import ModalAddPlan from './Plan/ModalAddPlan';
 import { Plus } from 'lucide-solid';
@@ -9,7 +10,8 @@ import { Plus } from 'lucide-solid';
  * @returns the component for the plans part
  */
 function StructureDetailPlans() {
-    const imageMoveLimit = 10; 
+    const imageMoveLimit = 10;
+    const ZOOM_LIMIT = 4;
     const [ctxCanvas, setCtxCanvas] = createSignal("");
     const [zoomFactor, setZoomFactor] = createSignal(0);
     const [offsetX, setOffsetX] = createSignal(0);
@@ -43,7 +45,7 @@ function StructureDetailPlans() {
     let startX = 0;
     let startY = 0;
 
-    const lstSensors = [{x: 10, y: 200, state: "OK"}, {x : 20, y: 20, state: "NOK"}, 
+    const lstSensors = [{x: 100, y: 100, state: "OK"}, {x : 20, y: 20, state: "NOK"}, 
         {x : 60, y: 60, state: "DEFECTIVE"}, {x : 40, y: 40, state: "UNKNOWN"}
     ];
 
@@ -110,6 +112,7 @@ function StructureDetailPlans() {
         const imgStartX = getImgStartX(baseOffsetX, offsetX(), zoomFactor());
         const imgStartY = getImgStartY(baseOffsetY, offsetY(), zoomFactor());
         const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+        console.log("ZoomX: " + zoomX + ", ZoomY: " + zoomY + ", drawWidth: " + drawWidth + ", drawHeight: " + drawHeight);
         const imgWidth = drawWidth + zoomX;
         const imgHeight = drawHeight + zoomY;
         setDrawWidth(drawWidth);
@@ -275,9 +278,11 @@ function StructureDetailPlans() {
             const imgWidth = drawWidth() + zoomX;
             const imgHeight = drawHeight() + zoomY;
             if ((imgStartX + imgWidth) < imageMoveLimit || imgStartX > canvasRef.width - imageMoveLimit
-             || (imgStartY + imgHeight) < imageMoveLimit || imgStartY > canvasRef.height - imageMoveLimit) {
+             || (imgStartY + imgHeight) < imageMoveLimit || imgStartY > canvasRef.height - imageMoveLimit
+             || zoomLimitReached(imgWidth, imgHeight)) {
                 return;
             }
+            console.log("New Zoom factor: " + newZoom);
             setZoomFactor(newZoom);
             drawImage();
         }
@@ -294,6 +299,14 @@ function StructureDetailPlans() {
             startX = event.clientX - offsetX();
             startY = event.clientY - offsetY();
         }
+    };
+
+
+    const zoomLimitReached = (newImgWidth, newImgHeight) => {
+        if (newImgWidth > ZOOM_LIMIT * drawWidth() || newImgHeight > ZOOM_LIMIT * drawHeight()) {
+            return true;
+        }
+        return false;
     };
 
     /**
@@ -350,7 +363,7 @@ function StructureDetailPlans() {
      * Loads the details (images and draw it)
      */
     const loadDetails = () => {
-        loadAndDrawImage(plan);
+        loadAndDrawImage(planTest);
     };
     
     return (
