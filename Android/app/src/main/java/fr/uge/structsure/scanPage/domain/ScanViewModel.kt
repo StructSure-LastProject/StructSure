@@ -8,6 +8,7 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.cache.SensorCache
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.SensorDB
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,8 +62,24 @@ class ScanViewModel: ViewModel() {
         processChip(chipId)
     }
 
-    val sensorsScanned = MutableLiveData<List<ResultSensors>>()
     val sensorsNotScanned = MutableLiveData<List<SensorDB>>()
+
+    val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
+
+
+    /**
+     * Update the state of the sensors dynamically in the header of the scan page.
+     */
+    private fun updateSensorStateCounts() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val scannedSensors = resultDao.getAllSensorsScanned()
+            val stateCounts = SensorState.values().associateWith { state ->
+                scannedSensors.count { it.state == state.name }
+            }
+            sensorStateCounts.postValue(stateCounts)
+        }
+    }
+
 
     /**
      * Changes the structureId of the scanViewModel. This will reload
@@ -80,6 +97,25 @@ class ScanViewModel: ViewModel() {
             sensorCache.insertSensors(sensors)
         }
     }
+
+    /**
+     * Refreshes the states of the sensors after starting a scan.
+     */
+    private fun refreshSensorStates() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val sensors = sensorDao.getAllSensors(structureId!!)
+            val scannedResults = resultDao.getAllSensorsScanned()
+
+            val updatedSensors = sensors.map { sensor ->
+                val result = scannedResults.find { it.id == sensor.sensorId }
+                sensor.copy(state = result?.state ?: "UNKNOWN")
+            }
+
+            sensorsNotScanned.postValue(updatedSensors)
+        }
+    }
+
+
 
     /**
      * Adds a scanned RFID chip ID to the buffer for processing.
@@ -102,7 +138,8 @@ class ScanViewModel: ViewModel() {
         val otherPresent = rfidBuffer.contains(otherChipId)
         val newState = computeSensorState(sensor, chipId, otherPresent)
         updateSensorState(sensor, newState)
-        sensorsScanned.postValue(resultDao.getAllSensorsScanned())
+        refreshSensorStates()
+        updateSensorStateCounts()
     }
 
     /**
@@ -189,6 +226,7 @@ class ScanViewModel: ViewModel() {
             note = ""
         )
         activeScanId = scanDao.insertScan(newScan)
+        refreshSensorStates()
     }
 
     /**
@@ -216,10 +254,4 @@ class ScanViewModel: ViewModel() {
         }
     }
 
-    fun getAllSensorsDB() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val sensors = sensorDao.getAllSensors(structureId!!)
-            sensorCache.insertSensors(sensors)
-        }
-    }
 }

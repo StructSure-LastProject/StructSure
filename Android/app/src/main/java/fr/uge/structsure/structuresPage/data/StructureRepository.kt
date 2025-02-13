@@ -103,7 +103,7 @@ class StructureRepository(
                             sensor.sensorId.controlChip,
                             sensor.sensorId.measureChip,
                             sensor.name,
-                            sensor.note,
+                            "",
                             sensor.installationDate,
                             "", // TODO
                             sensor.x,

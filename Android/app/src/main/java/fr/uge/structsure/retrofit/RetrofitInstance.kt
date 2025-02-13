@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 /***
  * RetrofitInstance is a singleton class that provides an instance of the SensorApi interface.
  * The SensorApi interface is used to make API calls to the server.
- * The BASE_URL is the base URL of the server.
+ * The BASE_URL is the base URL of the server
  * The loggingInterceptor is used to log the network requests and responses.
  * The okHttpClient is used to build the Retrofit instance with the loggingInterceptor." +
  * The sensorApi is a lazy property that provides an instance of the SensorApi interface.
@@ -18,7 +18,7 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 object RetrofitInstance {
 
-    private const val BASE_URL = "https://dev.structsure.miumo.xyz"
+    private const val BASE_URL = "http://10.42.0.232:8080"
 
     private var tokenProvider: () -> String = {
         val account = MainActivity.db.accountDao().get()

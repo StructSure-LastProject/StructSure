@@ -17,6 +17,7 @@ interface ScanDao {
     @Insert
     fun insertScan(scan: ScanEntity): Long
 
+
     @Query("UPDATE scan SET end_timestamp = :endTime WHERE id = :scanId")
     suspend fun updateEndTimestamp(scanId: Long, endTime: String)
 

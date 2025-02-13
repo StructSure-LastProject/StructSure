@@ -13,7 +13,7 @@ import fr.uge.structsure.components.Page
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
-import fr.uge.structsure.scanPage.presentation.components.StructureWeather
+import fr.uge.structsure.scanPage.presentation.components.ScanWeather
 
 /**
  * Home screen of the application when the user starts a scan.
@@ -58,7 +58,7 @@ fun ScanPage(context: Context,
             )
         }
     ) { scrollState ->
-        StructureWeather(viewModel = scanViewModel, scrollState)
+        ScanWeather(viewModel = scanViewModel, scrollState)
         PlansView()
         SensorsList(viewModel = scanViewModel)
 
