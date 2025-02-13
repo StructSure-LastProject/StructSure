@@ -156,13 +156,13 @@ public class PlanService {
      */
     private void planMalformedPrecondition(AddPlanRequestDTO addPlanRequestDTO) throws TraitementException {
         Objects.requireNonNull(addPlanRequestDTO);
-        if(addPlanRequestDTO.name().isEmpty() || addPlanRequestDTO.name().length() > 32) {
+        if (addPlanRequestDTO.name().isEmpty() || addPlanRequestDTO.name().length() > 32) {
             throw new TraitementException(ErrorIdentifier.PLAN_NAME_EXCEED_LIMIT);
         }
-        if(addPlanRequestDTO.section() != null && addPlanRequestDTO.section().length() > 128) {
+        if (addPlanRequestDTO.section() != null && addPlanRequestDTO.section().length() > 128) {
             throw new TraitementException(ErrorIdentifier.PLAN_SECTION_EXCEED_LIMIT);
         }
-        if(addPlanRequestDTO.section() !=null && !addPlanRequestDTO.section().matches("^(?:[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*)?$")) {
+        if (addPlanRequestDTO.section() != null && !addPlanRequestDTO.section().matches("^(?:[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*)?$")) {
             throw new TraitementException(ErrorIdentifier.PLAN_SECTION_INVALID);
         }
     }
