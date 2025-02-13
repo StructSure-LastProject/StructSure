@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.presentation
+package fr.uge.structsure.scanPage.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.sp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Plan
 import fr.uge.structsure.components.Point
-import fr.uge.structsure.startScan.presentation.components.SensorState
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
@@ -49,7 +49,7 @@ import fr.uge.structsure.ui.theme.fonts
  * This composable is used to display the plans of the structure.
  */
 @Composable
-fun PlansView(modifier: Modifier = Modifier) {
+fun PlansView() {
     val selected = remember { mutableStateOf("Section OA/Plan 01") }
 
     Column(

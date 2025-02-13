@@ -14,7 +14,9 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CancellationException
@@ -153,7 +155,10 @@ class Cs108Connector(private val context: Context) {
      */
     private suspend fun waitForBleConnection(device: ReaderDevice): Boolean {
         var retry = 30
-        while (pairTask!!.isActive && retry-- > 0) {
+        while (retry-- > 0) {
+            coroutineScope {
+                ensureActive()
+            }
             if (MainActivity.csLibrary4A.isBleConnected) {
                 Cs108Connector.device = device
                 devices.remove(device)
@@ -174,12 +179,18 @@ class Cs108Connector(private val context: Context) {
      * Wait for the latest device to be ready for other operations.
      */
     private suspend fun waitForDeviceReady() {
-        while (pairTask!!.isActive && MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
-            delay(500L)
+        coroutineScope {
+            while (MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
+                ensureActive()
+                delay(500L)
+            }
         }
-        if (batteryTask == null) batteryTask = GlobalScope.launch { pollBattery() }
+        if (batteryTask == null) {
+            batteryTask = GlobalScope.launch { pollBattery() }
+        }
         println("[DeviceConnector] Device Ready")
     }
+
 
     /**
      * Ask continuously the cs108 library for any freshly read device
@@ -187,25 +198,33 @@ class Cs108Connector(private val context: Context) {
      */
     private suspend fun pollDevices() {
         try {
-            while (scanTask!!.isActive) {
-                val data = MainActivity.csLibrary4A.newDeviceScanned
-                if (data != null && checkPermission()) {
-                    if (data.device.type == BluetoothDevice.DEVICE_TYPE_LE && !isKnownDevice(data.device)) {
-                        println("[DeviceConnector] New device: name=" + data.device.name + ", address=" + data.device.address)
-                        val strInfo = if (data.device.bondState == 12) "BOND_BONDED\n" else ""
-                        val readerDevice = ReaderDevice(
-                            data.device.name,
-                            data.device.address,
-                            false,
-                            strInfo + "scanRecord=" + MainActivity.csLibrary4A.byteArrayToString(data.scanRecord),
-                            1,
-                            data.rssi.toDouble(),
-                            data.serviceUUID2p2
-                        )
-                        devices.add(readerDevice)
+            coroutineScope {
+                while (true) {
+                    ensureActive()
+                    val data = MainActivity.csLibrary4A.newDeviceScanned
+                    if (data != null && checkPermission()) {
+                        if (data.device.type == BluetoothDevice.DEVICE_TYPE_LE && !isKnownDevice(
+                                data.device
+                            )
+                        ) {
+                            println("[DeviceConnector] New device: name=" + data.device.name + ", address=" + data.device.address)
+                            val strInfo = if (data.device.bondState == 12) "BOND_BONDED\n" else ""
+                            val readerDevice = ReaderDevice(
+                                data.device.name,
+                                data.device.address,
+                                false,
+                                strInfo + "scanRecord=" + MainActivity.csLibrary4A.byteArrayToString(
+                                    data.scanRecord
+                                ),
+                                1,
+                                data.rssi.toDouble(),
+                                data.serviceUUID2p2
+                            )
+                            devices.add(readerDevice)
+                        }
+                    } else {
+                        delay(100L)
                     }
-                } else {
-                    delay(100L)
                 }
             }
         } catch (e: CancellationException) {
@@ -221,20 +240,23 @@ class Cs108Connector(private val context: Context) {
      */
     private suspend fun pollBattery() {
         try {
-            while (batteryTask!!.isActive) {
-                if (MainActivity.csLibrary4A.isBleConnected) {
-                    val lvl = MainActivity.csLibrary4A.getBatteryDisplay(false)
-                    val pos = lvl.indexOf('%')
-                    val level = if (pos == -1) 0 else lvl.substring(0, lvl.indexOf('%')).toInt()
-                    if (level != battery) {
-                        battery = level
+            coroutineScope {
+                while (true) {
+                    ensureActive()
+                    if (MainActivity.csLibrary4A.isBleConnected) {
+                        val lvl = MainActivity.csLibrary4A.getBatteryDisplay(false)
+                        val pos = lvl.indexOf('%')
+                        val level = if (pos == -1) 0 else lvl.substring(0, lvl.indexOf('%')).toInt()
+                        if (level != battery) {
+                            battery = level
+                            onBatteryChange(battery)
+                        }
+                    } else if (battery !=  -1) {
+                        battery = -1
                         onBatteryChange(battery)
                     }
-                } else if (battery !=  -1) {
-                    battery = -1
-                    onBatteryChange(battery)
+                    delay(2000L)
                 }
-                delay(2000L)
             }
         } catch (e: CancellationException) {
             // Interrupted

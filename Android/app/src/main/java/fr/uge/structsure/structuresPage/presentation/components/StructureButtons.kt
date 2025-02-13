@@ -104,7 +104,7 @@ fun PlaySupButton(
             color = Black,
             background = LightGray,
             onClick = {
-                navController.navigate("startScan?structureId=${structure.id}")
+                navController.navigate("ScanPage?structureId=${structure.id}")
             }
         )
         Button(

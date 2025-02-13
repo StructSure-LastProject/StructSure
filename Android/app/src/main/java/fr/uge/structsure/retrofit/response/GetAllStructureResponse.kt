@@ -1,7 +1,7 @@
 package fr.uge.structsure.retrofit.response
 
 import com.google.gson.annotations.SerializedName
-import fr.uge.structsure.startScan.presentation.components.SensorState
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 
 data class GetAllStructureResponse(
     @SerializedName("id") val id: Long,

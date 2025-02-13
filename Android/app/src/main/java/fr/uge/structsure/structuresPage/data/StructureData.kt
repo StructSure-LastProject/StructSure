@@ -2,7 +2,7 @@ package fr.uge.structsure.structuresPage.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import fr.uge.structsure.startScan.presentation.components.SensorState
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 
 @Entity(tableName = "structure")
 data class StructureData(

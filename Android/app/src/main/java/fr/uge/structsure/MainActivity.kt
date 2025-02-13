@@ -32,8 +32,8 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.settings.presentation.SettingsPage
-import fr.uge.structsure.startScan.domain.ScanViewModel
-import fr.uge.structsure.startScan.presentation.MainScreenStartSensor
+import fr.uge.structsure.scanPage.domain.ScanViewModel
+import fr.uge.structsure.scanPage.presentation.ScanPage
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /** Name of the login page to avoid string duplication */
-    private val loginPage = "loginPage"
+    private val loginPage = "ConnexionPage"
 
     private lateinit var structureViewModel: StructureViewModel
 
@@ -66,7 +66,6 @@ class MainActivity : ComponentActivity() {
         get() = bluetoothAdapter?.isEnabled == true
 
 
-
     private val viewModelFactory: StructureViewModelFactory by lazy {
         StructureViewModelFactory(db)
     }
@@ -76,11 +75,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         db = AppDatabase.getDatabase(applicationContext)
-        val scanDao = db.scanDao()
         val accountDao = db.accountDao()
-        val scanViewModel = ScanViewModel(scanDao)
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
+        val scanViewModel = ScanViewModel()
 
         requestPermissions()
 
@@ -103,9 +101,9 @@ class MainActivity : ComponentActivity() {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
-                composable("startScan?structureId={structureId}") { backStackEntry ->
+                composable("ScanPage?structureId={structureId}") { backStackEntry ->
                     val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                    MainScreenStartSensor(scanViewModel, structureId, connexionCS108, navController)
+                    ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
                 composable(loginPage) {
@@ -116,7 +114,7 @@ class MainActivity : ComponentActivity() {
                 composable("Alerte?state={state}&name={name}&lastState={lastState}") { backStackEntry ->
                     val state = backStackEntry.arguments?.getString("state")?.toBoolean() ?: true
                     val name = backStackEntry.arguments?.getString("name")?: "Unknown"
-                    val lastState = backStackEntry.arguments?.getString("lastState") ?: ""
+                    val lastState = backStackEntry.arguments?.getString("lastState").orEmpty()
                     Alerte(navController, state,name,lastState)
                     SetDynamicStatusBar()
                 }

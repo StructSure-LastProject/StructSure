@@ -3,6 +3,7 @@ package fr.uge.structsure.services;
 import fr.uge.structsure.dto.sensors.AddSensorAnswerDTO;
 import fr.uge.structsure.dto.sensors.AddSensorRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
+import fr.uge.structsure.dto.sensors.SensorFilterDTO;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
 import fr.uge.structsure.exceptions.TraitementException;
@@ -13,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -31,15 +31,8 @@ public class SensorService {
         this.structureRepository = structureRepository;
     }
 
-    public List<SensorDTO> getSensorDTOsByStructure(
-            Long structureId,
-            String tri,
-            String ordre,
-            String filtreEtat,
-            LocalTime dateInstallationMin,
-            LocalTime dateInstallationMax) {
-
-        var sensors = sensorRepository.findByStructureId(structureId);
+    public List<SensorDTO> getSensorDTOsByStructure(SensorFilterDTO filterDTO) {
+        var sensors = sensorRepository.findByStructureId(filterDTO.getStructureId());
         if (sensors.isEmpty()) {
             throw new RuntimeException("Ouvrage introuvable");
         }
@@ -47,9 +40,9 @@ public class SensorService {
         // Filtrage par état (archivé ou actif)
         sensors = sensors.stream()
                 .filter(sensor -> {
-                    if ("actif".equalsIgnoreCase(filtreEtat)) {
+                    if ("actif".equalsIgnoreCase(filterDTO.getFiltreEtat())) {
                         return Boolean.FALSE.equals(sensor.getArchived());
-                    } else if ("archivé".equalsIgnoreCase(filtreEtat)) {
+                    } else if ("archivé".equalsIgnoreCase(filterDTO.getFiltreEtat())) {
                         return Boolean.TRUE.equals(sensor.getArchived());
                     }
                     return true; // Aucun filtre
@@ -57,8 +50,8 @@ public class SensorService {
                 .collect(Collectors.toList());
 
         // Application du tri avec le design pattern Strategy
-        var comparator = SortStrategyFactory.getStrategy(tri).getComparator();
-        if ("desc".equalsIgnoreCase(ordre)) {
+        var comparator = SortStrategyFactory.getStrategy(filterDTO.getTri()).getComparator();
+        if ("desc".equalsIgnoreCase(filterDTO.getOrdre())) {
             comparator = comparator.reversed();
         }
 

@@ -3,19 +3,18 @@ package fr.uge.structsure.controllers;
 import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.plan.AddPlanRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
-import fr.uge.structsure.dto.structure.*;
+import fr.uge.structsure.dto.sensors.SensorFilterDTO;
+import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
+import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
 import fr.uge.structsure.services.SensorService;
-import fr.uge.structsure.utils.OrderEnum;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalTime;
 import java.util.List;
 
 import fr.uge.structsure.services.StructureService;
@@ -108,39 +107,13 @@ public class StructureController {
 
     /**
      * Endpoint pour récupérer la liste des capteurs d'un ouvrage donné avec options de tri et filtre.
-     *
-     * @param id               L'ID de l'ouvrage
-     * @param tri              Critère de tri : "nom", "etat", "dateDerniereInterrogation", "dateInstallation"
-     * @param ordre            Ordre de tri : "asc" ou "desc"
-     * @param filtreEtat       Filtre par état : "actif", "archivé", "défaillant"
-     * @param dateInstallationMin Date minimale pour l'installation des capteurs
-     * @param dateInstallationMax Date maximale pour l'installation des capteurs
+     * @param sensorFilterDTO Filtres de recherche
      * @return Liste des capteurs (DTO)
      */
     @GetMapping("/{id}/sensors")
-    public ResponseEntity<?> getSensorsByStructure(
-            @PathVariable("id") Long id,
-            @RequestParam(value = "tri", required = false, defaultValue = "nom") String tri,
-            @RequestParam(value = "ordre", required = false, defaultValue = "asc") String ordre,
-            @RequestParam(value = "filtreEtat", required = false) String filtreEtat,
-            @RequestParam(value = "dateInstallationMin", required = false)
-            @DateTimeFormat(pattern = "HH:mm:ss") LocalTime dateInstallationMin,
-            @RequestParam(value = "dateInstallationMax", required = false)
-            @DateTimeFormat(pattern = "HH:mm:ss") LocalTime dateInstallationMax) {
-
-        try {
-            List<SensorDTO> sensorDTOs = sensorService.getSensorDTOsByStructure(
-                    id, tri, ordre, filtreEtat, dateInstallationMin, dateInstallationMax);
-            return ResponseEntity.ok(sensorDTOs);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.unprocessableEntity().body(new ErrorResponse("422", e.getMessage()));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body(new ErrorResponse("404", "Ouvrage introuvable"));
-        }
-    }
-
-
-    public record ErrorResponse(String code, String message) {
+    public ResponseEntity<?> getSensorsByStructure(SensorFilterDTO sensorFilterDTO) {
+        List<SensorDTO> sensors = sensorService.getSensorDTOsByStructure(sensorFilterDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(sensors);
     }
 
     /**

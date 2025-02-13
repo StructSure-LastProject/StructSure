@@ -2,7 +2,6 @@ package fr.uge.structsure.structuresPage.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
 
 
 data class SensorId(val controlChip: String, val measureChip: String)
@@ -16,7 +15,7 @@ data class Sensor(
     val y: Double
 )
 
-@Entity(tableName = "sensor")
+@Entity(tableName = "sensors")
 data class SensorDB(
     @PrimaryKey val sensorId: String,
     val controlChip: String,

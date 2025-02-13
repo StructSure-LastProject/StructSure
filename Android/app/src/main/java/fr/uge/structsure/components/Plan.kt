@@ -27,7 +27,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import fr.uge.structsure.startScan.presentation.components.SensorState
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 import kotlin.math.sqrt
 
 data class Point(val x: Int, val y: Int, val state: SensorState)

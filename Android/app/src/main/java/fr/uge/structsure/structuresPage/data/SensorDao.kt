@@ -1,7 +1,6 @@
 package fr.uge.structsure.structuresPage.data
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
 
@@ -11,6 +10,9 @@ interface SensorDao {
     @Upsert
     fun upsertSensor(sensor: SensorDB)
 
-    @Query("DELETE FROM sensor WHERE structureId = :structureId")
+    @Query("DELETE FROM sensors WHERE structureId = :structureId")
     fun deleteSensorsByStructureId(structureId: Long)
+
+    @Query("SELECT * from sensors as s WHERE s.structureId = :id")
+    suspend fun getAllSensors(id: Long): List<SensorDB>
 }

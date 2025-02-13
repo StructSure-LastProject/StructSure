@@ -2,11 +2,14 @@ package fr.uge.structsure.bluetooth.cs108
 
 import com.csl.cslibrary4a.RfidReaderChipData
 import fr.uge.structsure.MainActivity
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CancellationException
@@ -56,12 +59,15 @@ class Cs108Scanner(private val callback: (RfidChip) -> Unit) {
      */
     private suspend fun pollRfid() {
         try {
-            while (task!!.isActive) {
-                val event = MainActivity.csLibrary4A.onRFIDEvent()
-                if (event != null) {
-                    callback(RfidChip(event))
-                } else {
-                    delay(100L)
+            coroutineScope {
+                while (true) {
+                    ensureActive()
+                    val event = MainActivity.csLibrary4A.onRFIDEvent()
+                    if (event != null) {
+                        callback(RfidChip(event))
+                    } else {
+                        delay(100L)
+                    }
                 }
             }
         } catch (e: CancellationException) {

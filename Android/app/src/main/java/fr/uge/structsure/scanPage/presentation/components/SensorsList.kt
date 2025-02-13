@@ -1,4 +1,4 @@
-package fr.uge.structsure.startScan.presentation.components
+package fr.uge.structsure.scanPage.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,9 +28,7 @@ val SENSORS_STATES_LIST = List(SENSORS_NUMBER) { SensorState.entries.toTypedArra
 
 @Preview(showBackground = true)
 @Composable
-fun SensorsList(
-    modifier: Modifier = Modifier
-) {
+fun SensorsList() {
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
         horizontalAlignment = Alignment.Start,
