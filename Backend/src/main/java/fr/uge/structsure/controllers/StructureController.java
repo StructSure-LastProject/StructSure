@@ -104,17 +104,6 @@ public class StructureController {
     }
 
     /**
-     * Endpoint pour récupérer la liste des capteurs d'un ouvrage donné avec options de tri et filtre.
-     * @param sensorFilterDTO Filtres de recherche
-     * @return Liste des capteurs (DTO)
-     */
-    @GetMapping("/{id}/sensors")
-    public ResponseEntity<?> getSensorsByStructure(SensorFilterDTO sensorFilterDTO) {
-        List<SensorDTO> sensors = sensorService.getSensorDTOsByStructure(sensorFilterDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(sensors);
-    }
-
-    /**
      * This method handle the structure endpoint to get all structures
      * @return List of structures
      */
