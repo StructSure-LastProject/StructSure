@@ -149,6 +149,7 @@ public class PlanService {
     /**
      * Validates the format and length of plan fields.
      * Ensures name length doesn't exceed 32 characters and section length doesn't exceed 128 characters.
+     * Ensures section is valid (only alphanumeric and '/' character allowed).
      *
      * @param addPlanRequestDTO The DTO containing plan details to be validated
      * @throws TraitementException if field lengths exceed their limits
@@ -156,10 +157,13 @@ public class PlanService {
     private void planMalformedPrecondition(AddPlanRequestDTO addPlanRequestDTO) throws TraitementException {
         Objects.requireNonNull(addPlanRequestDTO);
         if(addPlanRequestDTO.name().isEmpty() || addPlanRequestDTO.name().length() > 32) {
-            throw new TraitementException(ErrorIdentifier.PLAN_NAME_IS_EMPTY);
+            throw new TraitementException(ErrorIdentifier.PLAN_NAME_EXCEED_LIMIT);
         }
         if(addPlanRequestDTO.section() != null && addPlanRequestDTO.section().length() > 128) {
-            throw new TraitementException(ErrorIdentifier.PLAN_SESSION_EXCEED_LIMIT);
+            throw new TraitementException(ErrorIdentifier.PLAN_SECTION_EXCEED_LIMIT);
+        }
+        if(addPlanRequestDTO.section() !=null && !addPlanRequestDTO.section().matches("^[a-zA-Z0-9]+(/[a-zA-Z0-9]+)*$")) {
+            throw new TraitementException(ErrorIdentifier.PLAN_SECTION_INVALID);
         }
     }
 

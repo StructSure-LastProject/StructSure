@@ -24,8 +24,9 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.PLAN_FILE_IS_EMPTY, new Error(422, "Le champ file est requis"));
         messages.put(ErrorIdentifier.PLAN_NAME_IS_EMPTY, new Error(422, "Le champ name (metadata) est requis"));
         messages.put(ErrorIdentifier.PLAN_NAME_EXCEED_LIMIT, new Error(422, "Le champ name (metadata) dépasse le nombre de caractères (1-32 caractères)"));
-        messages.put(ErrorIdentifier.PLAN_SESSION_EXCEED_LIMIT, new Error(422, "Le champ session (metadata) dépasse le nombre de caractères (0-128 caractères)"));
+        messages.put(ErrorIdentifier.PLAN_SECTION_EXCEED_LIMIT, new Error(422, "Le champ section (metadata) dépasse le nombre de caractères (0-128 caractères)"));
         messages.put(ErrorIdentifier.PLAN_ALREADY_EXISTS, new Error(422, "Plan déjà existant"));
+        messages.put(ErrorIdentifier.PLAN_SECTION_INVALID, new Error(422, "Le champ section (metadata) est invalide"));
         messages.put(ErrorIdentifier.SERVER_ERROR, new Error(500, "Une erreur est survenue"));
 
         messages.put(ErrorIdentifier.SENSOR_CHIP_TAGS_IS_EMPTY, new Error(422, "Les champs [controlChip | measureChip] sont obligatoires"));

@@ -52,7 +52,11 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
       setError("Le nom est requis");
       return;
     }
-    setError("");
+    const RegEx = /^[a-zA-Z0-9]+(\/[a-zA-Z0-9]+)*$/i;
+    if (section().trim() && !RegEx.test(section().trim())) {
+      setError("Le format de la section est invalide");
+      return;
+    }
     if (!imageFile()) {
       setError("Une image est requise");
       return;
@@ -72,7 +76,7 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
     }));
     formData.append("file", imageFile());
 
-    const { fetchData, data, statusCode, error } = useFetch();
+    const { fetchData, data, statusCode } = useFetch();
 
     await fetchData(`/api/structures/${structureId}/plans`, {
       method: "POST",
@@ -112,8 +116,8 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
             <ErrorMessage message={error()} />
           </Show>
           <div class="space-y-4">
-            <ModalField label="Nom*" value={name()} onInput={(e) => setName(e.target.value)} placeholder="Zone 03" />
-            <ModalField label="Section" value={section()} onInput={(e) => setSection(e.target.value)} placeholder="OA/Aval" />
+            <ModalField label="Nom*" value={name()} maxLength={32} onInput={(e) => setName(e.target.value)} placeholder="Zone 03" />
+            <ModalField label="Section" value={section()} maxLength={128}  onInput={(e) => setSection(e.target.value)} placeholder="OA/Aval" />
             <ModalImage imageSignal={[imageData, setImageData]} onImageChange={handleImageChange} />
           </div>
         </div>
@@ -163,15 +167,17 @@ const ErrorMessage = ({ message }) => (
 
 /**
  * A form field component for text input
- * @param {label, value, onInput, placeholder} Props for field label and placeholder text
+ * @param {label, value, maxLength, onInput, placeholder} Props for field label and placeholder text
  */
-const ModalField = ({ label, value, onInput, placeholder }) => (
+const ModalField = ({ label, value, maxLength, onInput, placeholder }) => (
   <div>
     <label class="block text-sm font-medium">
       {label}
       <input
         type="text"
+        maxlength={maxLength}
         value={value}
+        pattern="[a-zA-Z0-9]+"
         onInput={onInput}
         placeholder={placeholder}
         class="mt-1 w-full px-3 py-2 border rounded-[10px]"
@@ -212,7 +218,7 @@ const ImagePreview = ({ imageData }) => (
       <img
         src={imageData()}
         alt="Plan ajouté"
-        class="w-full h-full rounded-[10px] object-fill"
+        class="w-full h-full rounded-[10px] object-cover"
       />
     ) : (
       <p class="text-center text-gray-500">Pas d'image sélectionnée</p>

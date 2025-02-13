@@ -15,7 +15,7 @@ public class Plan {
     @NotBlank(message = "Name is required")
     @Size(max = 32, message = "Name must be less than 32 characters")
     private String name;
-    private Boolean archived;
+    private boolean archived;
     private String imageUrl;
     @Size(max = 128, message = "Section must be less than 128 characters")
     private String section = "";
@@ -25,7 +25,7 @@ public class Plan {
 
     public Plan() {}
 
-    public Plan(String imageUrl, Boolean archived, String name, Structure structure) {
+    public Plan(String imageUrl, boolean archived, String name, Structure structure) {
         this.imageUrl = imageUrl;
         this.archived = archived;
         this.name = name;
