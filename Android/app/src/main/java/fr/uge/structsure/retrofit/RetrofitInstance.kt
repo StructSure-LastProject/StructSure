@@ -1,44 +1,44 @@
 package fr.uge.structsure.retrofit
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.util.Log
-import fr.uge.structsure.MainActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
 
-/***
- * RetrofitInstance is a singleton class that provides an instance of the SensorApi interface.
- * The SensorApi interface is used to make API calls to the server.
- * The BASE_URL is the base URL of the server
- * The loggingInterceptor is used to log the network requests and responses.
- * The okHttpClient is used to build the Retrofit instance with the loggingInterceptor." +
- * The sensorApi is a lazy property that provides an instance of the SensorApi interface.
- * The Retrofit instance is built with the BASE_URL, okHttpClient, and GsonConverterFactory.
+/**
+ * RetrofitInstance is a singleton object that provides Retrofit-based API service instances for the application.
+ * It dynamically initializes Retrofit with a provided base URL and supports token-based authentication.
+ *
+ * - `structureApi`: Provides access to the `StructureApi` interface for API calls related to structure operations.
+ * - `loginApi`: Provides access to the `LoginApi` interface for API calls related to login operations.
+ *
+ * The object handles:
+ * - Setting up OkHttpClient with interceptors for logging and token injection.
+ * - Providing lazy-loaded API service instances.
+ * - Ensuring Retrofit is initialized before usage.
  */
-
-
 object RetrofitInstance {
     private var retrofit: Retrofit? = null
     private var baseUrl: String? = null
 
     private var tokenProvider: () -> String = {
         val account = fr.uge.structsure.MainActivity.db.accountDao().get()
-        account?.token ?: ""
+        account?.token.orEmpty()
     }
 
+    /**
+     * An interceptor for logging network requests and responses.
+     * This is useful for debugging API interactions.
+     */
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        // Vous pouvez activer le log si besoin :
-        level = HttpLoggingInterceptor.Level.BODY
+       // level = HttpLoggingInterceptor.Level.BODY
     }
 
+    /**
+     * An interceptor for injecting the authentication token into API requests.
+     * If the server returns a 401 (Unauthorized), it triggers a navigation to the login screen.
+     */
     private val tokenInjector = { chain: Interceptor.Chain ->
         var request = chain.request()
         request = request.newBuilder()
@@ -51,13 +51,19 @@ object RetrofitInstance {
         response
     }
 
+    /**
+     * The OkHttpClient instance configured with interceptors for logging and token injection.
+     */
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
         .addInterceptor(tokenInjector)
         .build()
 
     /**
-     * Initialise Retrofit avec un base URL dynamique.
+     * Initializes Retrofit with a dynamic base URL.
+     *
+     * @param baseUrl The base URL of the server.
+     * @throws IllegalArgumentException if the provided base URL is invalid.
      */
     fun init(baseUrl: String) {
         this.baseUrl = baseUrl
@@ -68,17 +74,31 @@ object RetrofitInstance {
             .build()
     }
 
+    /**
+     * Checks if Retrofit has been initialized.
+     *
+     * @return `true` if Retrofit is initialized, `false` otherwise.
+     */
     fun isInitialized(): Boolean = retrofit != null
 
+    /**
+     * Retrieves the Retrofit instance.
+     *
+     * @return The Retrofit instance.
+     * @throws IllegalStateException if Retrofit has not been initialized.
+     */
+    private fun getRetrofit(): Retrofit =
+        retrofit ?: throw IllegalStateException("Retrofit n'a pas été initialisé.")
+
+    /**
+     * Provides an instance of the `StructureApi` interface for making structure-related API calls.
+     */
     val structureApi: StructureApi
-        get() = retrofit?.create(StructureApi::class.java)
-            ?: throw IllegalStateException("Retrofit n'a pas été initialisé.")
+        get() = getRetrofit().create(StructureApi::class.java)
 
+    /**
+     * Provides an instance of the `LoginApi` interface for making login-related API calls.
+     */
     val loginApi: LoginApi
-        get() = retrofit?.create(LoginApi::class.java)
-            ?: throw IllegalStateException("Retrofit n'a pas été initialisé.")
-
-    val serverStatus: ServerStatusApi
-        get() = retrofit?.create(ServerStatusApi::class.java)
-            ?: throw IllegalStateException("Retrofit n'a pas été initialisé.")
+        get() = getRetrofit().create(LoginApi::class.java)
 }

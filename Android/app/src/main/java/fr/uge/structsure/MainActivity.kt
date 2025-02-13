@@ -68,7 +68,6 @@ class MainActivity : ComponentActivity() {
         get() = bluetoothAdapter?.isEnabled == true
 
 
-
     private val viewModelFactory: StructureViewModelFactory by lazy {
         StructureViewModelFactory(db)
     }
@@ -99,13 +98,14 @@ class MainActivity : ComponentActivity() {
                     navigateToLogin.value = false
                 }
             }
+
             val homePage = if (accountDao.get()?.token == null) loginPage else "HomePage"
             NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
-                composable("SettingsPage") {
+                composable("SettingsPage") { SettingsPage(navController)
 
                 }
 
@@ -121,9 +121,9 @@ class MainActivity : ComponentActivity() {
                 composable("ScanPage"){ /*ScanPage(navController)*/ }
                 composable("Alerte?state={state}&name={name}&lastState={lastState}") { backStackEntry ->
                     val state = backStackEntry.arguments?.getString("state")?.toBoolean() ?: true
-                    val name = backStackEntry.arguments?.getString("name")?: "Unknown"
+                    val name = backStackEntry.arguments?.getString("name").orEmpty()
                     val lastState = backStackEntry.arguments?.getString("lastState").orEmpty()
-                    Alerte(navController, state,name,lastState)
+                    Alerte(navController, state, name, lastState)
                     SetDynamicStatusBar()
                 }
             }

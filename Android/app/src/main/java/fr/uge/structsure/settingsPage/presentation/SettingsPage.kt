@@ -173,8 +173,7 @@ private fun RangeSliderSensitivityInterog() {
  * @param url The URL string to validate.
  * @return True if the URL is valid, false otherwise.
  */
-private fun isValidUrl(url: String): Boolean {
-    return Patterns.WEB_URL.matcher(url).matches() && (url.startsWith("http://") || url.startsWith("https://"))
-}
+private fun isValidUrl(url: String): Boolean =
+    Patterns.WEB_URL.matcher(url).matches() && (url.startsWith("http://") || url.startsWith("https://"))
 
 
