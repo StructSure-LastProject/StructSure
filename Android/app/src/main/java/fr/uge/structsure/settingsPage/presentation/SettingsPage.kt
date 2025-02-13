@@ -3,13 +3,13 @@ package fr.uge.structsure.settingsPage.presentation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,38 +29,6 @@ import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.White
 
 /**
- * A composable function that represents a customized range slider for controlling the sensitivity of the interrogator.
- * The slider allows users to select a range of values within a specified range.
- */
-@Composable
-fun RangeSliderSensitivityInterog() {
-    var rangeStart by remember { mutableStateOf(45f) }
-    var rangeEnd by remember { mutableStateOf(100f) }
-
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Text(
-            text = "-${rangeStart.toInt()}dB .. -${rangeEnd.toInt()}dB",
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        RangeSlider(
-            value = rangeStart..rangeEnd,
-            onValueChange = { values ->
-                rangeStart = values.start
-                rangeEnd = values.endInclusive
-            },
-            valueRange = 45f..100f,
-            colors = SliderDefaults.colors(
-                activeTrackColor = Black,
-                inactiveTrackColor = LightGray,
-                thumbColor = Black
-            ),
-            modifier = Modifier.semantics { contentDescription = "Sensibilité de l’interrogateur" }
-        )
-    }
-}
-
-/**
  * A composable function that represents the settings page of the application.
  * The page includes options to configure server address and interrogator sensitivity.
  *
@@ -72,19 +40,19 @@ fun SettingsPage(navController: NavController) {
         backgroundColor = LightGray,
         decorated = true,
         navController = navController
-    ) { _ ->
+    ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start,
             modifier = Modifier
                 .background(color = White, shape = RoundedCornerShape(size = 20.dp))
-                .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
+                .padding(20.dp, 15.dp)
         ) {
             Column (
                 verticalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterVertically),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
-                ) {
+            ) {
                 Text(
                     text = "Réglages",
                     style = MaterialTheme.typography.titleLarge
@@ -104,11 +72,11 @@ fun SettingsPage(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(0.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start,
             ) {
-                var serverAdress by remember { mutableStateOf("") }
+                var serverAddress by remember { mutableStateOf("") }
                 InputText(
                     label = "Adresse du serveur",
-                    value = serverAdress,
-                    onChange = { s -> serverAdress = s }
+                    value = serverAddress,
+                    onChange = { s -> serverAddress = s }
                 )
             }
 
@@ -139,3 +107,37 @@ fun SettingsPage(navController: NavController) {
         }
     }
 }
+
+
+/**
+ * A composable function that represents a customized range slider for controlling the sensitivity of the interrogator.
+ * The slider allows users to select a range of values within a specified range.
+ */
+@Composable
+private fun RangeSliderSensitivityInterog() {
+    var rangeStart by remember { mutableFloatStateOf(45f) }
+    var rangeEnd by remember { mutableFloatStateOf(100f) }
+
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Text(
+            text = "-${rangeStart.toInt()}dB .. -${rangeEnd.toInt()}dB",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        RangeSlider(
+            value = rangeStart..rangeEnd,
+            onValueChange = { values ->
+                rangeStart = values.start
+                rangeEnd = values.endInclusive
+            },
+            valueRange = 45f..100f,
+            colors = SliderDefaults.colors(
+                activeTrackColor = Black,
+                inactiveTrackColor = LightGray,
+                thumbColor = Black
+            ),
+            modifier = Modifier.semantics { contentDescription = "Sensibilité de l’interrogateur" }
+        )
+    }
+}
+
