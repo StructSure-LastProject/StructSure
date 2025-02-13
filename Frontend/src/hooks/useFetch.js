@@ -18,9 +18,9 @@ const useFetch = () => {
   const fetchData = async (endpoint, requestData) => {
     setLoading(true);
         try {
-            const response = await fetch("http://localhost:8080" + endpoint, requestData);
+            const response = await fetch(endpoint, requestData);
             setStatusCode(response.status);
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!Array.of(500, 422, 404, 201, 200).includes(response.status.valueOf())) throw new Error('Network response was not ok');
             const jsonData = await response.json();
             setData(jsonData);
         } catch (err) {

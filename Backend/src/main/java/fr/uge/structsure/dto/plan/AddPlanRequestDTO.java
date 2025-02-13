@@ -8,8 +8,4 @@ import java.util.Objects;
 
 @JsonSerialize
 public record AddPlanRequestDTO(String name, String section) {
-    public AddPlanRequestDTO {
-        Objects.requireNonNull(name);
-        Objects.requireNonNull(section);
-    }
 }
