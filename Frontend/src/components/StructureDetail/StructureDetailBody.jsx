@@ -4,7 +4,7 @@ import StructureDetailRow from './StructureDetailRow';
 
 import { createEffect, createSignal } from "solid-js";
 
-import useFetch from '../hooks/useFetch';
+import useFetch from '../../hooks/useFetch';
 
 
 /**
