@@ -60,7 +60,7 @@ fun ScanPage(context: Context,
     ) { scrollState ->
         StructureWeather(viewModel = scanViewModel, scrollState)
         PlansView()
-        SensorsList()
+        SensorsList(viewModel = scanViewModel)
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()

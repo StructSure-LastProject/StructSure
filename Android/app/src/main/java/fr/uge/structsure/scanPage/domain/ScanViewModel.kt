@@ -61,6 +61,9 @@ class ScanViewModel: ViewModel() {
         processChip(chipId)
     }
 
+    val sensorsScanned = MutableLiveData<List<ResultSensors>>()
+    val sensorsNotScanned = MutableLiveData<List<SensorDB>>()
+
     /**
      * Changes the structureId of the scanViewModel. This will reload
      * the sensors if the given id is not the same as the saved one.
@@ -73,6 +76,7 @@ class ScanViewModel: ViewModel() {
         sensorCache.clearCache()
         viewModelScope.launch(Dispatchers.IO) {
             val sensors = sensorDao.getAllSensors(structureId)
+            sensorsNotScanned.postValue(sensors)
             sensorCache.insertSensors(sensors)
         }
     }
@@ -98,6 +102,7 @@ class ScanViewModel: ViewModel() {
         val otherPresent = rfidBuffer.contains(otherChipId)
         val newState = computeSensorState(sensor, chipId, otherPresent)
         updateSensorState(sensor, newState)
+        sensorsScanned.postValue(resultDao.getAllSensorsScanned())
     }
 
     /**
@@ -208,6 +213,13 @@ class ScanViewModel: ViewModel() {
             }
             rfidBuffer.stop()
             sensorCache.clearCache()
+        }
+    }
+
+    fun getAllSensorsDB() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val sensors = sensorDao.getAllSensors(structureId!!)
+            sensorCache.insertSensors(sensors)
         }
     }
 }
