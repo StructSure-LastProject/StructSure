@@ -1,6 +1,5 @@
-import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
+import { createSignal, onMount, onCleanup } from "solid-js";
 import plan from '/src/assets/plan.png';
-import planTest from '/src/assets/planTest.png';
 import StructureDetailSection from './StructureDetailSection';
 import ModalAddPlan from './Plan/ModalAddPlan';
 import { Plus } from 'lucide-solid';
@@ -112,7 +111,6 @@ function StructureDetailPlans() {
         const imgStartX = getImgStartX(baseOffsetX, offsetX(), zoomFactor());
         const imgStartY = getImgStartY(baseOffsetY, offsetY(), zoomFactor());
         const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
-        console.log("ZoomX: " + zoomX + ", ZoomY: " + zoomY + ", drawWidth: " + drawWidth + ", drawHeight: " + drawHeight);
         const imgWidth = drawWidth + zoomX;
         const imgHeight = drawHeight + zoomY;
         setDrawWidth(drawWidth);
@@ -271,7 +269,7 @@ function StructureDetailPlans() {
         event.preventDefault();
         if (event.ctrlKey) {
             const zoomChange = event.deltaY;
-            var newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
+            let newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
             const imgStartX = getImgStartX(baseOffsetX(), offsetX(), newZoom);
             const imgStartY = getImgStartY(baseOffsetY(), offsetY(), newZoom);
             const [zoomX, zoomY] = getZoomRationFromZoomNumber(newZoom);
@@ -282,7 +280,6 @@ function StructureDetailPlans() {
              || zoomLimitReached(imgWidth, imgHeight)) {
                 return;
             }
-            console.log("New Zoom factor: " + newZoom);
             setZoomFactor(newZoom);
             drawImage();
         }
@@ -363,7 +360,7 @@ function StructureDetailPlans() {
      * Loads the details (images and draw it)
      */
     const loadDetails = () => {
-        loadAndDrawImage(planTest);
+        loadAndDrawImage(plan);
     };
     
     return (
