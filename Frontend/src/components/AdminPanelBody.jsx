@@ -47,6 +47,9 @@ const AdminPanelBody = () => {
         if (statusCode() === 200) {
             setUsers(data());            
         }
+        else if (statusCode() === 401){
+            navigate("/login");
+        }   
         
     }
 

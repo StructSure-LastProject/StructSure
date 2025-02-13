@@ -14,39 +14,77 @@ const AddAccountModal = ({ closeModal }) => {
     const [login, setLogin] = createSignal("");
     const [password, setPassword] = createSignal("");
     const [role, setRole] = createSignal(""); 
-    const [accountState, setAccountState] = createSignal(false);
+    const [accountState, setAccountState] = createSignal(true);
     const [error, setError] = createSignal([]);
+
+    /**
+     * Roles
+     */
+    const roles = [
+        "Opérateur",
+        "Responsable",
+        "Admin"
+    ];
+
+    /**
+     * Add error message to show
+     * @param {string} newErrorMessage Error message 
+     */
+    const addError = (newErrorMessage) => {
+        setError(prevError => {
+            if (!prevError.includes(newErrorMessage)) {
+                return [...prevError, newErrorMessage];
+            }
+            return prevError;
+        });
+    };
+
+    /**
+     * Remove error message
+     * @param {string} errorMessage Error message to remove 
+     */
+    const removeError = (errorMessage) => {
+        setError(prevError => {
+            return prevError.filter(error => error !== errorMessage);
+        });
+    };
+    
+    
 
     /**
      * Handle the submit buttom
      */
-    const handleSubmit = () => {
-        const fields = {
-            "Nom" : lastName(),
-            "Prénom" : firstName(),
-            "Identifiant": login(),
-            "Mot de passe" : password(),
-            "Role" : role(),
-        };
-        const missingFields = Object.values(fields)
-                            .map((field, index) => field === "" ? index : -1)
-                            .filter(field => field !== -1)
-                            .map(element => Object.keys(fields)[element]).join(", ");
-        
-        if (missingFields !== "") {
-            const newErrorMessage = `Assurez-vous que tous les champs marqués d'un astérisque (*) sont complétés : ${missingFields}`;
-            setError(prevError => {
-                prevError = prevError.filter(error => error.toLowerCase().startsWith(newErrorMessage));
-                if (!prevError.includes(newErrorMessage)) {
-                    return [...prevError, newErrorMessage];
-                }
-                return prevError;
-            });
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const fields = [
+            lastName(),
+            firstName(),
+            login(),
+            password(),
+            role(),
+        ];
+
+        const missingFields = Object.values(fields).map(item => item === "" ? 1 : 0).filter(field => field !== 0);
+        const errorMessage = "Assurez-vous que tous les champs marqués d'un astérisque (*) sont complétés.";
+        const passworErrorMessage = "Le champ mot de passe doit contenir entre 12 et 64 caractères";
+
+        if (missingFields.length > 0) {
+            addError(errorMessage)
         }
-                            
+        else {
+            removeError(errorMessage)
+        }
 
-    }
+        if (password().length < 12) {
+            addError(passworErrorMessage)
+        }
+        else {
+            removeError(passworErrorMessage)
+        }
 
+
+    };
 
 
     return (
@@ -64,53 +102,110 @@ const AddAccountModal = ({ closeModal }) => {
                 </div>
 
                 <div>
-                    <p class="text-[#F13327] font-poppins HeadLineMedium">{error().map(item => (
-                        <p>{item}</p>
-                    ))}</p>
+                    {error().map(err => (
+                        <p class="text-[#F13327] font-poppins HeadLineMedium">{err}</p>
+                    ))}
                 </div>
-                <div class="flex flex-wrap gap-[15px] lg:gap-[50px] text-[#181818] font-poppins">
-                    <div class="flex flex-col w-full lg:w-[338px] gap-[15px]">
-                        <div class="flex flex-col gap-[5px]">
-                            <p class="font-poppins HeadLineMedium text-[#181818]">Nom*</p>
-                            <input required value={lastName()} onInput={(e) => setLastName(e.target.value)} type="text" class="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]" />
-                        </div>
-                        <div class="flex flex-col gap-[5px]">
-                            <p class="font-poppins HeadLineMedium text-[#181818]">Prénom*</p>
-                            <input required value={firstName()} onInput={(e) => setFirstName(e.target.value)} type="text" class="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]" />
-                        </div>
-                        <div class="flex flex-col gap-[5px]">
-                            <p class="font-poppins HeadLineMedium text-[#181818]">Identifiant*</p>
-                            <input required value={login()} onInput={(e) => setLogin(e.target.value)} type="email" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]" />
-                        </div>
-                    </div>
-                <div class="flex flex-col w-full lg:w-[338px] gap-[15px]">
-                    <div class="flex flex-col gap-[5px]">
-                        <p class="font-poppins HeadLineMedium text-[#181818]">Mot de passe*</p>
-                        <input required value={password()} onInput={(e) => setPassword(e.target.value)} type="password" placeholder="*******" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]" />
-                    </div>
-                    <div class="flex flex-col gap-[5px]">
-                        <p class="font-poppins HeadLineMedium text-[#181818]">Role*</p>
-                        <div class="relative">
-                            <select required value={role()} onChange={(e) => setRole(e.target.value)} name="roles" id="roles" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] px-[16px] appearance-none">
-                                <option value="Opérateur">Opérateur</option>
-                                <option value="Responsable">Responsable</option>
-                                <option value="Admin">Admin</option>
-                            </select>
-                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
-                                <ChevronDown size={20} strokeWidth={2.5} />
+                <form action="" >
+                    <div className="flex flex-wrap gap-[15px] lg:gap-[50px] text-[#181818] font-poppins">
+                        <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="lastname" className="font-poppins HeadLineMedium text-[#181818]">Nom*</label>
+                                <input
+                                    id="lastname"
+                                    required
+                                    value={lastName()}
+                                    onChange={(e) => setLastName(e.target.value)} 
+                                    type="text"
+                                    className="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]"
+                                    minLength="1"
+                                    maxLength="64"
+                                />
+
+                            </div>
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="firstname" className="font-poppins HeadLineMedium text-[#181818]">Prénom*</label>
+                                <input
+                                    id="firstname"
+                                    required
+                                    value={firstName()}
+                                    onChange={(e) => setFirstName(e.target.value)} 
+                                    type="text"
+                                    className="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]"
+                                    minLength="1"
+                                    maxLength="64"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="id" className="font-poppins HeadLineMedium text-[#181818]">Identifiant*</label>
+                                <input
+                                    id="id"
+                                    required
+                                    value={login()}
+                                    onChange={(e) => setLogin(e.target.value)} 
+                                    type="text"
+                                    className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
+                                    minLength="1"
+                                    maxLength="128"
+                                />
                             </div>
                         </div>
 
-                    </div>
-                    <div class="flex flex-col gap-[5px]">
-                        <p class="font-poppins HeadLineMedium text-[#181818]">Etat*</p>
-                        <div class="flex items-center w-full h-[37px] rounded-[10px] py-[8px] px-[16px] gap-[10px]">
-                            <input required checked={accountState()} onChange={(e) => setAccountState(e.target.checked)} type="checkbox" class="w-[14px] h-auto bg-white border-2" />
-                            <span class="font-poppins HeadLineMedium">Compte activé</span>
+                        <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="password" className="font-poppins HeadLineMedium text-[#181818]">Mot de passe*</label>
+                                <input
+                                    id="password"
+                                    required
+                                    value={password()}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    type="password"
+                                    placeholder="*******"
+                                    className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
+                                    minLength="12"
+                                    maxLength="64"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="role" className="font-poppins HeadLineMedium text-[#181818]">Role*</label>
+                                <div className="relative">
+                                    <select
+                                        id="role"
+                                        required
+                                        value={role()}
+                                        onChange={(e) => setRole(e.target.value)}
+                                        name="roles"
+                                        className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] px-[16px] appearance-none"
+                                    >
+                                        {
+                                            roles.map((role, index) => (
+                                                <option key={index} value={role}>{role}</option>
+                                            ))
+                                        }
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
+                                        <ChevronDown size={20} strokeWidth={2.5} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="accountState" className="font-poppins HeadLineMedium text-[#181818]">Etat*</label>
+                                <div className="flex items-center w-full h-[37px] rounded-[10px] py-[8px] px-[16px] gap-[10px]">
+                                    <input
+                                        id="accountState"
+                                        checked={accountState()}
+                                        onChange={(e) => setAccountState(e.target.checked)} 
+                                        type="checkbox"
+                                        className="w-[14px] h-auto bg-white border-2"
+                                    />
+                                    <span className="font-poppins HeadLineMedium">Compte activé</span>
+                                </div>
+                            </div>
                         </div>
+                        
                     </div>
-                </div>
-            </div>    
+                
+
                 {<div class="flex flex-col w-[100%] h-auto gap-[5px]">
                     <p class="text-[#181818] opacity-[75%]">Ouvrages autorisés</p>
                     <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
@@ -126,11 +221,12 @@ const AddAccountModal = ({ closeModal }) => {
                     </div>
                 </div>
                 }
-                <div class="md:flex md:flex-row-reverse">
-                    <button onClick={handleSubmit}  class="w-[72px] h-auto rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-[#181818]">
+                <div class="md:flex md:flex-row-reverse mt-[10px]">
+                    <button type="submit" onClick={handleSubmit}  class="w-[72px] h-auto rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-[#181818]">
                         <p class="w-[40px] h-auto text-white font-poppins font-[600] text-[14px] leading-[21px] tracking-[0%]">Créer</p>
                     </button>
                 </div>
+                </form>
             </div>
         </div>
     )

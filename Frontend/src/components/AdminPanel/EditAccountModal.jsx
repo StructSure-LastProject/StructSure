@@ -15,8 +15,76 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
     const [password, setPassword] = createSignal("");
     const [role, setRole] = createSignal(userDetails.role); 
     const [accountState, setAccountState] = createSignal(userDetails.accountState);
+    const [error, setError] = createSignal([]);
+
+    /**
+     * Roles
+     */
+    const roles = [
+        "Opérateur",
+        "Responsable",
+        "Admin"
+    ];
+
+    /**
+     * Add error message to show
+     * @param {string} newErrorMessage Error message 
+     */
+    const addError = (newErrorMessage) => {
+        setError(prevError => {
+            if (!prevError.includes(newErrorMessage)) {
+                return [...prevError, newErrorMessage];
+            }
+            return prevError;
+        });
+    };
+
+    /**
+     * Remove error message
+     * @param {string} errorMessage Error message to remove 
+     */
+    const removeError = (errorMessage) => {
+        setError(prevError => {
+            return prevError.filter(error => error !== errorMessage);
+        });
+    };
+    
+    
+
+    /**
+     * Handle the submit buttom
+     */
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const fields = [
+            lastName(),
+            firstName(),
+            login(),
+            password(),
+            role(),
+        ];
+
+        const missingFields = Object.values(fields).map(item => item === "" ? 1 : 0).filter(field => field !== 0);
+        const errorMessage = "Assurez-vous que tous les champs marqués d'un astérisque (*) sont complétés.";
+        const passworErrorMessage = "Le champ mot de passe doit contenir entre 12 et 64 caractères";
 
 
+        if (missingFields.length > 0) {
+            addError(errorMessage)
+        }
+        else {
+            removeError(errorMessage)
+        }
+
+        if (password().length < 12) {
+            addError(passworErrorMessage)
+        }
+        else {
+            removeError(passworErrorMessage)
+        }
+
+    };
 
 
     return (
@@ -37,73 +105,129 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                 </div>
 
                 <div>
-                    <p class="text-[#F13327] font-poppins HeadLineMedium">Error</p>
+                    {error().map(err => (
+                        <p class="text-[#F13327] font-poppins HeadLineMedium">{err}</p>
+                    ))}
                 </div>
                 
-                <div class="flex flex-wrap gap-[15px] lg:gap-[50px] text-[#181818] font-poppins">
-                    <div class="flex flex-col w-full lg:w-[338px] gap-[15px]">
-                        <div class="flex flex-col gap-[5px]">
-                            <p class="font-poppins HeadLineMedium text-[#181818]">Nom*</p>
-                            <input value={lastName()} type="text" class="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]" />
-                        </div>
-                        <div class="flex flex-col gap-[5px]">
-                            <p class="font-poppins HeadLineMedium text-[#181818]">Prénom*</p>
-                            <input value={firstName()} type="text" class="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]" />
-                        </div>
-                        <div class="flex flex-col gap-[5px]">
-                            <p class="font-poppins HeadLineMedium text-[#181818]">Identifiant*</p>
-                            <input value={login()} type="text" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]" />
-                        </div>
-                    </div>
-                <div class="flex flex-col w-full lg:w-[338px] gap-[15px]">
-                    <div class="flex flex-col gap-[5px]">
-                        <p class="font-poppins HeadLineMedium text-[#181818]">Mot de passe*</p>
-                        <input value={password()} type="password" placeholder="*******" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]" />
-                    </div>
-                    <div class="flex flex-col gap-[5px]">
-                        <p class="font-poppins HeadLineMedium text-[#181818]">Role*</p>
-                        <div class="relative">
-                            <select value={role()} name="roles" id="roles" class="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] px-[16px] appearance-none">
-                                <option value="Opérateur">Opérateur</option>
-                                <option value="Responsable">Responsable</option>
-                                <option value="Admin">Admin</option>
-                            </select>
-                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
-                                <ChevronDown size={20} strokeWidth={2.5} />
+                <form action="" >
+                    <div className="flex flex-wrap gap-[15px] lg:gap-[50px] text-[#181818] font-poppins">
+                        <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="lastname" className="font-poppins HeadLineMedium text-[#181818]">Nom*</label>
+                                <input
+                                    id="lastname"
+                                    required
+                                    value={lastName()}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    type="text"
+                                    className="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]"
+                                    minLength="1"
+                                    maxLength="64"
+                                />
+
+                            </div>
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="firstname" className="font-poppins HeadLineMedium text-[#181818]">Prénom*</label>
+                                <input
+                                    id="firstname"
+                                    required
+                                    value={firstName()}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    type="text"
+                                    className="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]"
+                                    minLength="1"
+                                    maxLength="64"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="id" className="font-poppins HeadLineMedium text-[#181818]">Identifiant*</label>
+                                <input
+                                    id="id"
+                                    required
+                                    value={login()}
+                                    onChange={(e) => setLogin(e.target.value)}
+                                    type="text"
+                                    className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
+                                    minLength="1"
+                                    maxLength="128"
+                                />
                             </div>
                         </div>
 
+                        <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="password" className="font-poppins HeadLineMedium text-[#181818]">Mot de passe*</label>
+                                <input
+                                    id="password"
+                                    required
+                                    value={password()}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    type="password"
+                                    placeholder="*******"
+                                    className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="role" className="font-poppins HeadLineMedium text-[#181818]">Role*</label>
+                                <div className="relative">
+                                    <select
+                                        id="role"
+                                        required
+                                        value={role()}
+                                        onChange={(e) => setRole(e.target.value)}
+                                        name="roles"
+                                        className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] px-[16px] appearance-none"
+                                    >
+                                        {
+                                            roles.map((role, index) => (
+                                                <option key={index} value={role}>{role}</option>
+                                            ))
+                                        }
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
+                                        <ChevronDown size={20} strokeWidth={2.5} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-[5px]">
+                                <label htmlFor="accountState" className="font-poppins HeadLineMedium text-[#181818]">Etat*</label>
+                                <div className="flex items-center w-full h-[37px] rounded-[10px] py-[8px] px-[16px] gap-[10px]">
+                                    <input
+                                        id="accountState"
+                                        checked={accountState()}
+                                        onChange={(e) => setAccountState(e.target.checked)}
+                                        type="checkbox"
+                                        className="w-[14px] h-auto bg-white border-2"
+                                    />
+                                    <span className="font-poppins HeadLineMedium">Compte activé</span>
+                                </div>
+                            </div>
+                        </div>
+                        
                     </div>
-                    <div class="flex flex-col gap-[5px]">
-                        <p class="font-poppins HeadLineMedium text-[#181818]">Etat*</p>
-                        <div class="flex items-center w-full h-[37px] rounded-[10px] py-[8px] px-[16px] gap-[10px]">
-                            <input checked={accountState() ? "checked" : ""} type="checkbox" class="w-[14px] h-auto bg-white border-2" />
-                            <span class="font-poppins HeadLineMedium">Compte activé</span>
+
+                    {<div class="flex flex-col w-[100%] h-auto gap-[5px]">
+                        <p class="text-[#181818] opacity-[75%]">Ouvrages autorisés</p>
+                        <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
+                            <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
+                            <StructureNameCard structureName={"Pont de Tournon-sur-Rhône"} isChoosed={true}/>
+                            <StructureNameCard structureName={"Pegasus Bridge"} isChoosed={false}/>
+                            <StructureNameCard structureName={"Pont Albert-Louppe"} isChoosed={false}/>
+                            <StructureNameCard structureName={"Pont Boutiron"} isChoosed={false}/>
+                            <StructureNameCard structureName={"Pont d’Ain"} isChoosed={false}/>
+                            <StructureNameCard structureName={"Pont levant de La Seyne-sur-Mer"} isChoosed={false}/>
+                            <StructureNameCard structureName={"Pont d’Èze"} isChoosed={false}/>
+                            <StructureNameCard structureName={"Pont suspendu de Saint-Ilpize"} isChoosed={false}/>
                         </div>
                     </div>
-                </div>
-            </div>
-
-                {<div class="flex flex-col w-[100%] h-auto gap-[5px]">
-                    <p class="text-[#181818] opacity-[75%]">Ouvrages autorisés</p>
-                    <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
-                        <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
-                        <StructureNameCard structureName={"Pont de Tournon-sur-Rhône"} isChoosed={true}/>
-                        <StructureNameCard structureName={"Pegasus Bridge"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont Albert-Louppe"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont Boutiron"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont d’Ain"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont levant de La Seyne-sur-Mer"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont d’Èze"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont suspendu de Saint-Ilpize"} isChoosed={false}/>
+                    }
+                    <div class="md:flex md:flex-row-reverse">
+                        <button type="submit" onClick={handleSubmit} class="w-[123px] h-auto rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-[#F2F2F4]">
+                            <p class="w-[91px] h-auto font-poppins font-[600] text-[14px] leading-[21px] tracking-[0%]">Mettre à jour</p>
+                        </button>
                     </div>
-                </div>
-                }
-                <div class="md:flex md:flex-row-reverse">
-                    <button class="w-[123px] h-auto rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-[#F2F2F4]">
-                        <p class="w-[91px] h-auto font-poppins font-[600] text-[14px] leading-[21px] tracking-[0%]">Mettre à jour</p>
-                    </button>
-                </div>
+                </form>
             </div>
         </div>
     )
