@@ -29,13 +29,11 @@ import java.util.Objects;
 public class StructureController {
 
     private final StructureService structureService;
-    private final SensorService sensorService;
     private final PlanService planService;
 
     @Autowired
-    public StructureController(StructureService structureService, SensorService sensorService, PlanService planService) {
+    public StructureController(StructureService structureService, PlanService planService) {
         this.structureService = Objects.requireNonNull(structureService);
-        this.sensorService = Objects.requireNonNull(sensorService);
         this.planService = planService;
     }
 
@@ -103,17 +101,6 @@ public class StructureController {
             var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
             return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
         }
-    }
-
-    /**
-     * Endpoint pour récupérer la liste des capteurs d'un ouvrage donné avec options de tri et filtre.
-     * @param sensorFilterDTO Filtres de recherche
-     * @return Liste des capteurs (DTO)
-     */
-    @GetMapping("/{id}/sensors")
-    public ResponseEntity<?> getSensorsByStructure(SensorFilterDTO sensorFilterDTO) {
-        List<SensorDTO> sensors = sensorService.getSensorDTOsByStructure(sensorFilterDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(sensors);
     }
 
     /**

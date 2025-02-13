@@ -12,7 +12,7 @@ const AdminPanel = () => {
         <Header />
         <div class="pt-[3%] flex flex-col gap-[15px] sm:mx-auto lg:max-w-[1250px] h-auto" >
             <AdminPanelBody />
-            <AdminPanelBottom/>
+            <AdminPanelBottom />
         </div>
     </div>
   )
