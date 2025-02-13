@@ -70,6 +70,7 @@ class ScanViewModel: ViewModel() {
         if (this.structureId == structureId) return
         this.structureId = structureId
         this.activeScanId = null
+        sensorCache.clearCache()
         viewModelScope.launch(Dispatchers.IO) {
             val sensors = sensorDao.getAllSensors(structureId)
             sensorCache.insertSensors(sensors)
