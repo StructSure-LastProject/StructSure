@@ -1,6 +1,6 @@
 import { useParams } from '@solidjs/router';
 import Header from '../components/Header';
-import StructureDetailBody from '../components/StructureDetailBody';
+import StructureDetailBody from '../components/StructureDetail/StructureDetailBody';
 
 
 /**
