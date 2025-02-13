@@ -37,6 +37,7 @@ fun ScanPage(context: Context,
 
     Page(
         Modifier.padding(bottom = 100.dp),
+        navController = navController,
         bottomBar = {
             ToolBar(
                 currentState = currentState.value,

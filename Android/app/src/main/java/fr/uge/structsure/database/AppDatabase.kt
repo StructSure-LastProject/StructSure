@@ -8,10 +8,12 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.connexionPage.data.AccountEntity
-import fr.uge.structsure.startScan.data.ScanEntity
-import fr.uge.structsure.startScan.data.StructureEntity
-import fr.uge.structsure.startScan.data.dao.ScanDao
-import fr.uge.structsure.startScan.data.dao.StructurePlanDao
+import fr.uge.structsure.scanPage.data.ResultSensors
+import fr.uge.structsure.scanPage.data.ScanEntity
+import fr.uge.structsure.scanPage.data.StructureEntity
+import fr.uge.structsure.scanPage.data.dao.ResultDao
+import fr.uge.structsure.scanPage.data.dao.ScanDao
+import fr.uge.structsure.scanPage.data.dao.StructurePlanDao
 import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.structuresPage.data.PlanDao
 import fr.uge.structsure.structuresPage.data.SensorDB
@@ -29,8 +31,8 @@ import fr.uge.structsure.structuresPage.data.StructureData
  */
 @Database(
     entities = [ScanEntity::class, StructureEntity::class, AccountEntity::class,
-        StructureData::class, SensorDB::class, PlanDB::class],
-    version = 7,
+        StructureData::class, SensorDB::class, PlanDB::class, ResultSensors::class],
+    version = 8,
     exportSchema = false
 )
 /**
@@ -74,4 +76,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun structurePlanDao(): StructurePlanDao
     abstract fun planDao(): PlanDao
     abstract fun sensorDao(): SensorDao
+    abstract fun resultDao(): ResultDao
 }
