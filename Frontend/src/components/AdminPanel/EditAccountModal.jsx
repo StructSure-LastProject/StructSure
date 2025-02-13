@@ -1,6 +1,7 @@
 import { Trash2, X, ChevronDown } from 'lucide-solid';
 import StructureNameCard from '../StructureNameCard';
 import { createSignal } from 'solid-js';
+import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
 
 /**
  * Edit account modal component
@@ -57,32 +58,9 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const fields = [
-            lastName(),
-            firstName(),
-            login(),
-            role(),
-        ];
+        validateUserAccountForm(firstName(), lastName(), login(), role(), password(), addError, removeError)
 
-        const missingFields = Object.values(fields).map(item => item === "" ? 1 : 0).filter(field => field !== 0);
-        const errorMessage = "Assurez-vous que tous les champs marqués d'un astérisque (*) sont complétés.";
-        const passworErrorMessage = "Le champ mot de passe doit contenir entre 12 et 64 caractères";
-
-
-        if (missingFields.length > 0) {
-            addError(errorMessage)
-        }
-        else {
-            removeError(errorMessage)
-        }
-
-        if (password().length !== 0 && password().length < 12) {
-            addError(passworErrorMessage)
-        }
-        else {
-            removeError(passworErrorMessage)
-        }
-
+        
     };
 
 
@@ -113,7 +91,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                     <div className="flex flex-wrap gap-[15px] lg:gap-[50px] text-[#181818] font-poppins">
                         <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="lastname" className="font-poppins HeadLineMedium text-[#181818]">Nom*</label>
+                                <label htmlFor="lastname" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Nom*</label>
                                 <input
                                     id="lastname"
                                     required
@@ -127,7 +105,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
 
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="firstname" className="font-poppins HeadLineMedium text-[#181818]">Prénom*</label>
+                                <label htmlFor="firstname" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Prénom*</label>
                                 <input
                                     id="firstname"
                                     required
@@ -140,7 +118,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                                 />
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="id" className="font-poppins HeadLineMedium text-[#181818]">Identifiant*</label>
+                                <label htmlFor="id" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Identifiant*</label>
                                 <input
                                     id="id"
                                     required
@@ -156,7 +134,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
 
                         <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="password" className="font-poppins HeadLineMedium text-[#181818]">Mot de passe</label>
+                                <label htmlFor="password" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Mot de passe</label>
                                 <input
                                     id="password"
                                     required
@@ -168,7 +146,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                                 />
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="role" className="font-poppins HeadLineMedium text-[#181818]">Role*</label>
+                                <label htmlFor="role" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Role*</label>
                                 <div className="relative">
                                     <select
                                         id="role"
@@ -190,7 +168,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="accountState" className="font-poppins HeadLineMedium text-[#181818]">Etat*</label>
+                                <label htmlFor="accountState" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Etat*</label>
                                 <div className="flex items-center w-full h-[37px] rounded-[10px] py-[8px] px-[16px] gap-[10px]">
                                     <input
                                         id="accountState"
