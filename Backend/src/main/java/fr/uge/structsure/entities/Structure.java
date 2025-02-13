@@ -28,7 +28,6 @@ public class Structure {
         this.name = Objects.requireNonNull(name);
         this.note = Objects.requireNonNull(note);
         this.archived = archived;
-
     }
     public Structure(String name, String note) {
         this.name = Objects.requireNonNull(name);

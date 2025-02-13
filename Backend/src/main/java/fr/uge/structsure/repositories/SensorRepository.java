@@ -1,6 +1,7 @@
 
 package fr.uge.structsure.repositories;
 
+import fr.uge.structsure.entities.Plan;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.SensorId;
 import fr.uge.structsure.entities.Structure;
@@ -45,6 +46,20 @@ public interface SensorRepository extends JpaRepository<Sensor, Long> {
      * @return list of the sensors
      */
     List<Sensor> findByStructure(Structure structure);
+
+    /**
+     * Will find sensors prensent in a Plan
+     * @param plan the plan
+     * @return List<Sensor> list of the sensors
+     */
+    @Query("""
+    SELECT sensor
+    FROM Plan plan
+    JOIN Structure structure ON plan.id = structure.id
+    JOIN Plan plan ON 
+    WHERE plan = :plan
+    """)
+    List<Sensor> findByPlan(Plan plan);
 
     /**
      * Counts the number of sensors in the structure

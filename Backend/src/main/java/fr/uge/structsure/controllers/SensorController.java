@@ -45,13 +45,29 @@ public class SensorController {
     }
 
     /**
-     * Endpoint pour récupérer la liste des capteurs d'un ouvrage donné avec options de tri et filtre.
-     * @return Liste des capteurs (DTO)
+     * Endpoint to get the list of sensors present in a structure
+     * @return List of sensors
      */
-    @GetMapping("/structures/{id}/sensors")
-    public ResponseEntity<?> getSensorsByStructure(@PathVariable("id") long id) {
+    @GetMapping("/structures/{structureId}/sensors")
+    public ResponseEntity<?> getSensorsByStructure(@PathVariable("structureId") long structureId) {
         try {
-            List<SensorDTO> sensorDTOs = sensorService.getSensors(id);
+            List<SensorDTO> sensorDTOs = sensorService.getSensorsByStructureId(structureId);
+            return ResponseEntity.ok(sensorDTOs);
+        } catch (TraitementException e) {
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
+            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        }
+    }
+
+    /**
+     * Endpoint to get the lis of sensors prensent in a plan
+     * @return List of the sensors
+     */
+    @GetMapping("/structures/{structureId}/plan/{planId}/sensors")
+    public ResponseEntity<?> getSensorsByPlan(@PathVariable("structureId") long structureId,
+                                              @PathVariable("planId") long planId) {
+        try {
+            List<SensorDTO> sensorDTOs = sensorService.getSensorsByPlanId(structureId, planId);
             return ResponseEntity.ok(sensorDTOs);
         } catch (TraitementException e) {
             return e.toResponseEntity();

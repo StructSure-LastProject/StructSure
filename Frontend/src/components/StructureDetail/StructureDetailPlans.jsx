@@ -1,7 +1,7 @@
 import { createSignal, onMount, onCleanup, Show, createEffect } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
-import ModalAddPlan from './Plan/ModalAddPlan';
+import ModalAddPlan from '../Plan/ModalAddPlan';
 import { Plus } from 'lucide-solid';
 
 /**
