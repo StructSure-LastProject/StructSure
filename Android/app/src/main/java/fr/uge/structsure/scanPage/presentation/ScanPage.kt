@@ -5,15 +5,22 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import fr.uge.structsure.MainActivity
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Page
+import fr.uge.structsure.scanPage.data.dao.ResultDao
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
 import fr.uge.structsure.scanPage.presentation.components.StructureWeather
+import fr.uge.structsure.structuresPage.data.Sensor
+import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.structuresPage.data.SensorId
 
 /**
  * Home screen of the application when the user starts a scan.
@@ -31,6 +38,11 @@ fun ScanPage(context: Context,
              structureId: Long,
              connexionCS108: Cs108Connector,
              navController: NavController) {
+
+
+    val resultsDao = remember { MainActivity.db.resultDao() }
+    val sensorDao = remember { MainActivity.db.sensorDao() }
+    val sensors = remember { computeSensorStates(resultsDao, scanViewModel.activeScanId?:0, sensorDao.getAllSensors(structureId)) }
 
     val currentState = scanViewModel.currentScanState.observeAsState(initial = ScanState.NOT_STARTED)
     scanViewModel.setStructure(structureId)
@@ -59,7 +71,7 @@ fun ScanPage(context: Context,
     ) { scrollState ->
         StructureWeather(viewModel = scanViewModel, scrollState)
         PlansView()
-        SensorsList()
+        SensorsList(sensors)
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -71,4 +83,19 @@ fun ScanPage(context: Context,
             navController.navigate("Alerte?state=${it.state}&name=${it.sensorName}&lastState=${it.lastStateSensor}")
         }
    }
+}
+
+/**
+ * Build a list of sensors with their states from the current scan
+ * @param resultsDao DB access to the scan results
+ * @param scanId ID of the current scan to get results for
+ * @param sensors the sensors targeted in the active scan
+ * @return the list of sensor with their state
+ */
+private fun computeSensorStates(resultsDao: ResultDao, scanId: Long, sensors: List<SensorDB>): List<Sensor> {
+    val results = resultsDao.getResults(scanId.toInt()).associateBy({ it.id }, { SensorState.from(it.state) })
+    return sensors.map { s ->
+        val scanState = results[s.sensorId]?:SensorState.UNKNOWN
+        Sensor(SensorId(s.controlChip, s.measureChip), s.name, s.note, s.installationDate, s.x, s.y, scanState)
+    }
 }

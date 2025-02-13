@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,20 +16,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
+import fr.uge.structsure.structuresPage.data.Sensor
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 
-// Temporary variables for the sensors list
-const val SENSORS_NUMBER = 30
-val SENSORS_STATES_LIST = List(SENSORS_NUMBER) { SensorState.entries.toTypedArray().random() }
-
-@Preview(showBackground = true)
 @Composable
-fun SensorsList() {
+fun SensorsList(sensors: List<Sensor>) {
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
         horizontalAlignment = Alignment.Start,
@@ -50,12 +46,12 @@ fun SensorsList() {
             Button(R.drawable.plus, "Add", Color.White, Color.Black)
         }
 
-        List()
+        List(sensors)
     }
 }
 
 @Composable
-private fun List() {
+private fun List(sensors: List<Sensor>) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
     LazyColumn (
@@ -67,10 +63,9 @@ private fun List() {
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
         horizontalAlignment = Alignment.Start,
     ) {
-        items(SENSORS_NUMBER) { index ->
-            // SensorItem -> display of a sensor
-            SensorBean(Modifier.fillMaxWidth(), "Capteur $index", SENSORS_STATES_LIST[index]) {
-                println("Sensor $index")
+        items(sensors) { sensor ->
+            SensorBean(Modifier.fillMaxWidth(), sensor.name, sensor.state!!) {
+                println(sensor.name)
             }
         }
     }

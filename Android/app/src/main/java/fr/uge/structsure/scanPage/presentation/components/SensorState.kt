@@ -10,5 +10,9 @@ enum class SensorState(val color : Color) {
     OK(Ok),
     NOK(Red),
     DEFECTIVE(Gray), // Orange color
-    UNKNOWN(Unknown)
+    UNKNOWN(Unknown);
+
+    companion object {
+        fun from(name: String): SensorState? = entries.firstOrNull { it.name == name }
+    }
 }

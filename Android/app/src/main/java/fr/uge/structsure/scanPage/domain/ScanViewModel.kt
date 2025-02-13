@@ -45,7 +45,7 @@ class ScanViewModel: ViewModel() {
     val currentScanState = MutableLiveData(ScanState.NOT_STARTED)
 
     // ID of the currently active scan
-    private var activeScanId: Long? = null
+    var activeScanId: Long? = null
 
     // Sensor cache for managing sensor states in memory
     private val sensorCache = SensorCache()

@@ -14,5 +14,5 @@ interface SensorDao {
     fun deleteSensorsByStructureId(structureId: Long)
 
     @Query("SELECT * from sensors as s WHERE s.structureId = :id")
-    suspend fun getAllSensors(id: Long): List<SensorDB>
+    fun getAllSensors(id: Long): List<SensorDB>
 }
