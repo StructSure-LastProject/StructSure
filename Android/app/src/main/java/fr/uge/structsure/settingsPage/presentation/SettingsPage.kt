@@ -1,5 +1,6 @@
 package fr.uge.structsure.settingsPage.presentation
 
+import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,26 +26,21 @@ import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.components.InputText
 import fr.uge.structsure.components.Page
 import fr.uge.structsure.retrofit.RetrofitInstance
-import fr.uge.structsure.retrofit.ServerRepository
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
 
-
 /**
- * A composable function that represents the settings page of the application.
- * The page includes options to configure server address and interrogator sensitivity.
+ * SettingsPage is a composable function that renders the settings screen of the application.
+ * Users can update server configuration and interrogator sensitivity from this page.
  *
- * @param navController A NavController to handle navigation between pages (optional).
+ * @param navController NavController instance for handling navigation between screens.
  */
 @Composable
 fun SettingsPage(navController: NavController) {
     var serverAddress by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-    val serverRepository = remember { ServerRepository() }
 
     Page(
         backgroundColor = LightGray,
@@ -114,25 +110,29 @@ fun SettingsPage(navController: NavController) {
             }
 
             RangeSliderSensitivityInterog()
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()) {
                 ButtonText("Annuler", null, Black, LightGray, onClick = { navController.popBackStack() })
+
                 ButtonText("Enregistrer", null, White, Black, onClick = {
-                            if (serverAddress.isNotBlank()) {
-                                    RetrofitInstance.init(serverAddress)
-                                    navController.popBackStack()
-                            } else {
-                                errorMessage = "l'adresse du serveur n'est pas renseignée"
-                            }
+                    if (serverAddress.isBlank()) {
+                        errorMessage = "Veuillez renseigner l'adresse du serveur"
+                    } else if (!isValidUrl(serverAddress)) {
+                        errorMessage = "Veuillez entrer une URL valide du serveur"
+                    } else {
+                        RetrofitInstance.init(serverAddress)
+                        errorMessage = ""
+                        navController.popBackStack()
+                    }
                 })
 
             }
         }
     }
 }
-
 
 /**
  * A composable function that represents a customized range slider for controlling the sensitivity of the interrogator.
@@ -165,3 +165,16 @@ private fun RangeSliderSensitivityInterog() {
         )
     }
 }
+
+
+/**
+ * Validates whether the provided URL is valid and starts with "http://" or "https://".
+ *
+ * @param url The URL string to validate.
+ * @return True if the URL is valid, false otherwise.
+ */
+private fun isValidUrl(url: String): Boolean {
+    return Patterns.WEB_URL.matcher(url).matches() && (url.startsWith("http://") || url.startsWith("https://"))
+}
+
+
