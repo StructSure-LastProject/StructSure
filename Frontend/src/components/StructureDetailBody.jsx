@@ -28,7 +28,7 @@ function StructureDetailBody(props) {
         };
 
         const { fetchData, statusCode, data, errorFetch } = useFetch();
-        await fetchData("/api/structures/" + structureId + "/sensors", requestData);
+        await fetchData(`/api/structures/${structureId}/sensors`, requestData);
         if (statusCode() === 200) {
             setSensors(data());
         } else if (statusCode() === 404) {
@@ -48,12 +48,10 @@ function StructureDetailBody(props) {
         };
 
         const { fetchData, statusCode, data, errorFetch } = useFetch();
-        await fetchData("/api/structures/" + structureId, requestData);
+        await fetchData(`/api/structures/${structureId}`, requestData);
         if (statusCode() === 200) {
             setStructureDetails(data());
-            console.log("detailsFetchRequest : ", data());
         } else if (statusCode() === 404) {
-        
         }
     };
 

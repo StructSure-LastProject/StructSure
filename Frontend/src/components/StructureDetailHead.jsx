@@ -1,5 +1,4 @@
 import { Download, Plus } from 'lucide-solid';
-import { createEffect } from 'solid-js';
 
 /**
  * Show the head part of the structure detail
