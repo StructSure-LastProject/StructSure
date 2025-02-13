@@ -28,12 +28,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import fr.uge.structsure.scanPage.presentation.components.SensorState
+import fr.uge.structsure.structuresPage.data.Sensor
+import fr.uge.structsure.structuresPage.data.SensorId
 import kotlin.math.sqrt
 
 data class Point(val x: Int, val y: Int, val state: SensorState)
 
 @Composable
-fun Plan(@DrawableRes image: Int, points: MutableList<Point>) {
+fun Plan(@DrawableRes image: Int, sensors: MutableList<Sensor>) {
     val painter = painterResource(image)
     val factor = remember(image) { Factor(painter.intrinsicSize) }
 
@@ -68,8 +70,8 @@ fun Plan(@DrawableRes image: Int, points: MutableList<Point>) {
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(
-                        onTap = { pos -> onTap(factor, size.toSize(), scale, offset, pos, points) },
-                        onLongPress = { pos -> onTap(factor, size.toSize(), scale, offset, pos, points, true) }
+                        onTap = { pos -> onTap(factor, size.toSize(), scale, offset, pos, sensors) },
+                        onLongPress = { pos -> onTap(factor, size.toSize(), scale, offset, pos, sensors, true) }
                     )
                 }
                 .graphicsLayer(
@@ -78,11 +80,14 @@ fun Plan(@DrawableRes image: Int, points: MutableList<Point>) {
                 )
         )
 
-        Canvas(Modifier.fillMaxSize()) {
+        Canvas(Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(0.dp)
+        )) {
             val transformPoint = factor.transformPoint(size)
-            points.forEach {
-                val panned = imgToCanvas(offset, scale, size, transformPoint, factor.offset, it.x, it.y)
-                point(size, panned.x, panned.y, it.state)
+            sensors.forEach {
+                val panned = imgToCanvas(offset, scale, size, transformPoint, factor.offset, it.x.toInt(), it.y.toInt())
+                point(size, panned.x, panned.y, it.state?:SensorState.UNKNOWN)
             }
         }
     }
@@ -97,48 +102,56 @@ fun Plan(@DrawableRes image: Int, points: MutableList<Point>) {
  * @param scale the level of zoom currently applied to the image
  * @param offset the level of pan currently applied to the image
  * @param pos the position of the click in the canvas
- * @param points all the points contained in the plan
+ * @param sensors all the points contained in the plan
  * @param long true if the press was a long press, false otherwise
  */
-private fun onTap(factor: Factor, size: Size, scale: Float, offset: Offset, pos: Offset, points: MutableList<Point>, long: Boolean = false) {
+private fun onTap(factor: Factor, size: Size, scale: Float, offset: Offset, pos: Offset, sensors: MutableList<Sensor>, long: Boolean = false) {
     val range = (30 / factor.transform / scale).toInt()
     val imgPos = canvasToImg(offset, scale, size, factor.transformPoint(size), factor.offset, pos.x, pos.y)
-    val imgPoint = Point(imgPos.x.toInt(), imgPos.y.toInt(), SensorState.NOK)
-    for (i in 0 ..< points.size) {
-        if (imgPoint.inRange(points[i], range)) {
-            if (long) onPointLongPress(points, i) else onPointTap(points, i)
+    val imgX = imgPos.x.toInt()
+    val imgY = imgPos.y.toInt()
+    for (i in 0 ..< sensors.size) {
+        if (sensors[i].inRange(imgX, imgY, range)) {
+            if (long) onPointLongPress(sensors, i) else onPointTap(sensors, i)
             return
         }
     }
-    if (!long) onVoidTap(points, imgPos.x.toInt(), imgPos.y.toInt())
+    if (!long) onVoidTap(sensors, imgPos.x.toInt(), imgPos.y.toInt())
 }
 
 /**
  * Action to run when one point is pressed.
- * @param points the list of points that contains the pressed point
+ * @param sensors the list of points that contains the pressed point
  * @param x coordinate of the click in the image
  * @param y coordinate of the click in the image
  */
-private fun onVoidTap(points: MutableList<Point>, x: Int, y: Int) {
-    points.add(Point(x, y, SensorState.DEFECTIVE))
+private fun onVoidTap(sensors: MutableList<Sensor>, x: Int, y: Int) {
+    sensors.add(Sensor(
+        SensorId("TapA", "TapB"),
+        "New Sensor", "", "", x.toDouble(), y.toDouble(), SensorState.DEFECTIVE
+    ))
 }
 
 /**
  * Action to run when one point is pressed.
- * @param points the list of points that contains the pressed point
+ * @param sensors the list of points that contains the pressed point
  * @param i the index of the point in the list
  */
-private fun onPointTap(points: MutableList<Point>, i: Int) {
-    points[i] = Point(points[i].x, points[i].y, if (points[i].state == SensorState.NOK) SensorState.OK else SensorState.NOK)
+private fun onPointTap(sensors: MutableList<Sensor>, i: Int) {
+    val sensor = sensors[i]
+    sensors[i] = Sensor(
+        sensor.sensorId, sensor.name, sensor.note, sensor.installationDate,
+        sensor.x, sensor.y, if (sensor.state == SensorState.NOK) SensorState.OK else SensorState.NOK
+    )
 }
 
 /**
  * Action to run when one point is pressed for a long time
- * @param points the list of points that contains the pressed point
+ * @param sensors the list of points that contains the pressed point
  * @param i the index of the point in the list
  */
-private fun onPointLongPress(points: MutableList<Point>, i: Int) {
-    points.removeAt(i)
+private fun onPointLongPress(sensors: MutableList<Sensor>, i: Int) {
+    sensors.removeAt(i)
 }
 
 /**
@@ -207,21 +220,23 @@ private fun canvasToImg(pan: Offset, zoom: Float, size: Size, transformPoint: Fl
     )
 }
 
+
 /**
- * Checks if the given point is in range of this point or too far
- * @param point the point to try to reach
+ * Checks if the given point is in range of this sensor or too far
+ * @param x the x coordinate in the image for check range with
+ * @param y the y coordinate in the image for check range with
  * @param range the maximum allowed distance between points
  * @return true if in range, false otherwise
  */
-private fun Point.inRange(point: Point, range: Int): Boolean {
-    val dx = point.x - x
-    val dy = point.y - y
+private fun Sensor.inRange(x: Int, y: Int, range: Int): Boolean {
+    val dx = this.x - x
+    val dy = this.y - y
 
     // Square range check (much faster)
     if (dx * dx + dy * dy > range * range) return false
 
     // Pythagore for exact values
-    return sqrt((dx * dx + dy * dy).toDouble()) <= range
+    return sqrt((dx * dx + dy * dy)) <= range
 }
 
 /**

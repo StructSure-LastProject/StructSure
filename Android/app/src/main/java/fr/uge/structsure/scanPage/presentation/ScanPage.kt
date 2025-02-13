@@ -70,7 +70,7 @@ fun ScanPage(context: Context,
         }
     ) { scrollState ->
         StructureWeather(viewModel = scanViewModel, scrollState)
-        PlansView()
+        PlansView(sensors)
         SensorsList(sensors)
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
@@ -92,10 +92,10 @@ fun ScanPage(context: Context,
  * @param sensors the sensors targeted in the active scan
  * @return the list of sensor with their state
  */
-private fun computeSensorStates(resultsDao: ResultDao, scanId: Long, sensors: List<SensorDB>): List<Sensor> {
+private fun computeSensorStates(resultsDao: ResultDao, scanId: Long, sensors: List<SensorDB>): MutableList<Sensor> {
     val results = resultsDao.getResults(scanId.toInt()).associateBy({ it.id }, { SensorState.from(it.state) })
     return sensors.map { s ->
         val scanState = results[s.sensorId]?:SensorState.UNKNOWN
-        Sensor(SensorId(s.controlChip, s.measureChip), s.name, s.note, s.installationDate, s.x, s.y, scanState)
-    }
+        Sensor(SensorId(s.controlChip, s.measureChip), s.name, s.note?:"", s.installationDate, s.x, s.y, scanState)
+    }.toMutableList()
 }

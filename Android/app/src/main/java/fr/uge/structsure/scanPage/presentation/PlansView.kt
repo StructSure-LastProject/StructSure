@@ -18,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,8 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Plan
-import fr.uge.structsure.components.Point
-import fr.uge.structsure.scanPage.presentation.components.SensorState
+import fr.uge.structsure.structuresPage.data.Sensor
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
@@ -49,7 +47,7 @@ import fr.uge.structsure.ui.theme.fonts
  * This composable is used to display the plans of the structure.
  */
 @Composable
-fun PlansView() {
+fun PlansView(sensors: MutableList<Sensor>) {
     val selected = remember { mutableStateOf("Section OA/Plan 01") }
 
     Column(
@@ -59,7 +57,7 @@ fun PlansView() {
         Text(
             modifier = Modifier.padding(horizontal = 20.dp),
             style = Typography.titleLarge,
-            text = "Plans",
+            text = "Plans"
         )
 
         Column(
@@ -70,11 +68,7 @@ fun PlansView() {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            val points = remember { mutableStateListOf(
-                Point(0, 0, SensorState.OK),
-                Point(100, 100, SensorState.OK)
-            ) }
-            Plan(R.drawable.oa_plan, points)
+            Plan(R.drawable.plan, sensors)
 
             Spacer( Modifier.fillMaxWidth().height(1.dp).background(LightGray) )
 
