@@ -73,7 +73,8 @@ class ScanViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val scannedSensors = resultDao.getAllResults()
             val stateCounts = SensorState.entries.associateWith { state ->
-                scannedSensors.count { it.state == state.name }
+                if (state == SensorState.UNKNOWN) sensorCache.size() - scannedSensors.size
+                else scannedSensors.count { it.state == state.name }
             }
             sensorStateCounts.postValue(stateCounts)
         }
@@ -93,6 +94,10 @@ class ScanViewModel: ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val sensors = sensorDao.getAllSensors(structureId)
             sensorsNotScanned.postValue(sensors)
+            val stateCounts = SensorState.entries.associateWith { state ->
+                if (state == SensorState.UNKNOWN) sensors.size else 0
+            }
+            sensorStateCounts.postValue(stateCounts)
             sensorCache.insertSensors(sensors)
         }
     }

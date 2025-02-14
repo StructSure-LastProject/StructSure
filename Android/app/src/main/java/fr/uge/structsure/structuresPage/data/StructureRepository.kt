@@ -4,15 +4,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import fr.uge.structsure.MainActivity
 import fr.uge.structsure.retrofit.RetrofitInstance
-import fr.uge.structsure.scanPage.data.dao.ResultDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Optional
 
-class StructureRepository(
-): ViewModel() {
+class StructureRepository : ViewModel() {
 
     private val structureDao = MainActivity.db.structureDao()
     private val planDao = MainActivity.db.planDao()
