@@ -1,5 +1,5 @@
 import { For, createResource, createSignal } from "solid-js";
-import { A } from '@solidjs/router';
+import { A, useNavigate } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 import { TriangleAlert, CircleAlert, Check, SquareDashed, FolderSync } from 'lucide-solid';
 
@@ -12,6 +12,8 @@ function StructSureBody() {
     const [structures, setStructures] = createSignal([]);
 
     const [error, setError] = createSignal("");
+
+    const navigate = useNavigate();
 
     /**
      * Fetch the structures
@@ -74,7 +76,7 @@ function StructSureBody() {
         <div class="flex flex-col lg:grid 2xl:grid lg:grid-cols-3 2xl:grid-cols-4 rounded-[20px] gap-4">
             <For each={structures()}>
                 {(item) => (
-                    <A href={`/structure/${item.id}`}>
+                    <A href={`/structures/${item.id}`}>
                         <div class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full">
                             <div class="w-7 h-7 flex justify-center items-center">
                                 { getIconFromStateAndArchived(item.state, item.archived) }
