@@ -13,4 +13,7 @@ interface PlanDao {
 
     @Query("DELETE FROM sensors WHERE structureId = :structureId")
     fun deletePlansByStructureId(structureId: Long)
+
+    @Query("SELECT * FROM `plan` WHERE id = :structureId")
+    suspend fun getPlansByStructureId(structureId: Long): List<PlanDB>
 }

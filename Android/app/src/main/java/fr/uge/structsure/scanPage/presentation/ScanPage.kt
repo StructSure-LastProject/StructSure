@@ -8,8 +8,10 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import fr.uge.structsure.MainActivity
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Page
+import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
@@ -28,6 +30,7 @@ import fr.uge.structsure.scanPage.presentation.components.ScanWeather
 @Composable
 fun ScanPage(context: Context,
              scanViewModel: ScanViewModel,
+             planViewModel: PlanViewModel,
              structureId: Long,
              connexionCS108: Cs108Connector,
              navController: NavController) {
@@ -61,6 +64,7 @@ fun ScanPage(context: Context,
         ScanWeather(viewModel = scanViewModel, scrollState)
         PlansView()
         SensorsList(viewModel = scanViewModel)
+
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()

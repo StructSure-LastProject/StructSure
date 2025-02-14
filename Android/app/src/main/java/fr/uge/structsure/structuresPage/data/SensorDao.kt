@@ -6,7 +6,6 @@ import androidx.room.Upsert
 
 @Dao
 interface SensorDao {
-
     @Upsert
     fun upsertSensor(sensor: SensorDB)
 
