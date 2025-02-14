@@ -4,15 +4,19 @@ import { Download, Plus } from 'lucide-solid';
  * Show the head part of the structure detail
  * @returns the component for the head part
  */
-function StructureDetailHead() {
+function StructureDetailHead(props) {
     
     return (
         <div class="flex flex-col gap-y-2.5">
             <p class="prose font-poppins title">Viaduc de Sylans</p>
             <div class="flex gap-x-[10px]">
                 <select class="px-4 py-2 w-full h-10 rounded-[20px] font-poppins font-1">
-                    <option value="0">Scan 03</option>
-                    <option value="1">Scan 04</option>
+                    <option value="-1">Aucun Scan Sélectionné</option>
+                    <For each={props.scans}>
+                        {(scan) => (
+                            <option value={scan.id}>{ scan.name }</option>
+                        )}
+                    </For>
                 </select>
                 <button class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
                     <Download />

@@ -1,6 +1,5 @@
-import check from '/src/assets/check.svg';
 import { For, createResource, createSignal } from "solid-js";
-import { useNavigate } from '@solidjs/router';
+import { A, useNavigate } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 import { TriangleAlert, CircleAlert, Check, SquareDashed, FolderSync } from 'lucide-solid';
 
@@ -63,7 +62,7 @@ function StructSureBody() {
         switch (state) {
             case "NOK":
                 return <TriangleAlert color='#F13327' className="w-full" />;
-            case "DEFAULTER":
+            case "DEFECTIVE":
                 return <CircleAlert color='#F19327' className="w-full" />;
             case "OK":
                 return <Check color='#25B61F' className="w-full" />;
@@ -77,15 +76,17 @@ function StructSureBody() {
         <div class="flex flex-col lg:grid 2xl:grid lg:grid-cols-3 2xl:grid-cols-4 rounded-[20px] gap-4">
             <For each={structures()}>
                 {(item) => (
-                    <div class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full">
-                        <div class="w-7 h-7 flex justify-center items-center">
-                            { getIconFromStateAndArchived(item.state, item.archived) }
+                    <A href={`/structures/${item.id}`}>
+                        <div class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full">
+                            <div class="w-7 h-7 flex justify-center items-center">
+                                { getIconFromStateAndArchived(item.state, item.archived) }
+                            </div>
+                            <div class="flex flex-col">
+                                <h1 class="font-poppins poppins text-base font-semibold text-base">{item.name}</h1>
+                                <p class="font-poppins poppins text-base font-normal text-sm text-[#181818]/50">{item.numberOfSensors} capteurs</p>
+                            </div>
                         </div>
-                        <div class="flex flex-col">
-                            <h1 class="font-poppins poppins text-base font-semibold text-base">{item.name}</h1>
-                            <p class="font-poppins poppins text-base font-normal text-sm text-[#181818]/50">{item.numberOfSensors} capteurs</p>
-                        </div>
-                    </div>
+                    </A>
                 )}
             </For>
         </div>

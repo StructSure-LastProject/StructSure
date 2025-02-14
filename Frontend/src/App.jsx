@@ -33,11 +33,12 @@ function App() {
   return (
     <>
       <Router>
-        <Route path="/login" component={Login} />
         <Route path="/" component={RequireAuth(Home)} />
+        <Route path="/login" component={Login} />
         <Route path="/account" component={RequireAuth(Account)} />
-        <Route path="/structure" component={StructSureDetail} />
         <Route path="/admin-panel" component={RequireAuth(AdminPanel)} />
+        <Route path="/structures/:structureId" component={RequireAuth(StructSureDetail)} />
+        <Route path="/admin-panel" component={AdminPanel} />
       </Router>
     </>
   )
