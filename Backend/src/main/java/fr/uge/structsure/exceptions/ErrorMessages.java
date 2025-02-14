@@ -21,7 +21,8 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.STRUCTURE_NAME_EXCEED_LIMIT, new Error(422, "Le nom d'un ouvrage ne peut pas dépasser 64 caractères"));
         messages.put(ErrorIdentifier.STRUCTURE_NOTE_EXCEED_LIMIT, new Error(422, "La note d'un ouvrage ne peut pas dépasser 1000 caractères"));
 
-        messages.put(ErrorIdentifier.PLAN_STRUCTURE_ID_IS_EMPTY, new Error(422, "Le champ id est requis"));
+        messages.put(ErrorIdentifier.PLAN_STRUCTURE_ID_IS_EMPTY, new Error(422, "Le champ structureId est requis"));
+        messages.put(ErrorIdentifier.PLAN_STRUCTURE_NOT_FOUND, new Error(404, "Ouvrage introuvable"));
         messages.put(ErrorIdentifier.PLAN_FILE_INVALID_FORMAT, new Error(422, "Format du fichier non valide"));
         messages.put(ErrorIdentifier.PLAN_FILE_IS_EMPTY, new Error(422, "Le champ file est requis"));
         messages.put(ErrorIdentifier.PLAN_NAME_IS_EMPTY, new Error(422, "Le champ name (metadata) est requis"));
@@ -30,6 +31,11 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.PLAN_ALREADY_EXISTS, new Error(422, "Plan déjà existant"));
         messages.put(ErrorIdentifier.PLAN_SECTION_INVALID, new Error(422, "Le champ section (metadata) est invalide"));
         messages.put(ErrorIdentifier.SERVER_ERROR, new Error(500, "Une erreur est survenue"));
+
+        messages.put(ErrorIdentifier.PLAN_ID_IS_EMPTY, new Error(422, "Le champ planId est requis"));
+        messages.put(ErrorIdentifier.PLAN_NOT_FOUND, new Error(404, "Plan introuvable"));
+        messages.put(ErrorIdentifier.PLAN_SECTION_IS_EMPTY, new Error(422, "Le champ section (metadata) est requis"));
+        messages.put(ErrorIdentifier.PLAN_IS_ARCHIVED, new Error(409, "Le plan à été archivé"));
 
         messages.put(ErrorIdentifier.SENSOR_CHIP_TAGS_IS_EMPTY, new Error(422, "Les champs [controlChip | measureChip] sont obligatoires"));
         messages.put(ErrorIdentifier.SENSOR_NAME_IS_EMPTY, new Error(422, "Le champ name est obligatoire"));
