@@ -25,7 +25,6 @@ import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 
-
 /**
  * A composable function that displays a list of sensors during a scan.
  *
@@ -65,14 +64,9 @@ fun SensorsList(viewModel: ScanViewModel) {
                 horizontalAlignment = Alignment.Start,
             ) {
                 items(sensors) { sensor ->
-                    val state = when (sensor.state) {
-                        "OK" -> SensorState.OK
-                        "NOK" -> SensorState.NOK
-                        "DEFECTIVE" -> SensorState.DEFECTIVE
-                        else -> SensorState.UNKNOWN
-                    }
-                    SensorBean(Modifier.fillMaxWidth(), sensor.name, state) {
-                        println("Sensor ${sensor.name}")
+                    val state = SensorState.from(sensor.state)
+                    val sensorName = "Capteur ${sensor.name}"
+                    SensorBean(Modifier.fillMaxWidth(), sensorName, state) {
                     }
                 }
             }

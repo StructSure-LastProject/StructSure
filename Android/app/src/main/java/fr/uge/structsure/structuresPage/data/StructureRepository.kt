@@ -3,6 +3,7 @@ package fr.uge.structsure.structuresPage.data
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import fr.uge.structsure.retrofit.RetrofitInstance
+import fr.uge.structsure.scanPage.data.dao.ResultDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -12,7 +13,8 @@ import java.util.Optional
 class StructureRepository(
     private val structureDao: StructureDao,
     private val planDao: PlanDao,
-    private val sensorDao: SensorDao
+    private val sensorDao: SensorDao,
+    private val resultDao: ResultDao
 ): ViewModel() {
     private fun getApiInterface() = RetrofitInstance.structureApi
 
@@ -103,7 +105,7 @@ class StructureRepository(
                             sensor.sensorId.controlChip,
                             sensor.sensorId.measureChip,
                             sensor.name,
-                            "",
+                            sensor.note ?: "No note available",
                             sensor.installationDate,
                             "", // TODO
                             sensor.x,
@@ -121,6 +123,9 @@ class StructureRepository(
     fun deleteStructure(structure: StructureData){
         CoroutineScope(Dispatchers.IO).launch {
             sensorDao.deleteSensorsByStructureId(structure.id)
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            resultDao.deleteResults()
         }
         CoroutineScope(Dispatchers.IO).launch {
             planDao.deletePlansByStructureId(structure.id)

@@ -66,14 +66,13 @@ class ScanViewModel: ViewModel() {
 
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
 
-
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
      */
     private fun updateSensorStateCounts() {
         viewModelScope.launch(Dispatchers.IO) {
-            val scannedSensors = resultDao.getAllSensorsScanned()
-            val stateCounts = SensorState.values().associateWith { state ->
+            val scannedSensors = resultDao.getAllResults()
+            val stateCounts = SensorState.entries.associateWith { state ->
                 scannedSensors.count { it.state == state.name }
             }
             sensorStateCounts.postValue(stateCounts)
@@ -103,8 +102,8 @@ class ScanViewModel: ViewModel() {
      */
     private fun refreshSensorStates() {
         viewModelScope.launch(Dispatchers.IO) {
-            val sensors = sensorDao.getAllSensors(structureId!!)
-            val scannedResults = resultDao.getAllSensorsScanned()
+            val sensors = sensorDao.getAllSensors(structureId?: return@launch)
+            val scannedResults = resultDao.getAllResults()
 
             val updatedSensors = sensors.map { sensor ->
                 val result = scannedResults.find { it.id == sensor.sensorId }
@@ -227,6 +226,7 @@ class ScanViewModel: ViewModel() {
         )
         activeScanId = scanDao.insertScan(newScan)
         refreshSensorStates()
+        updateSensorStateCounts()
     }
 
     /**

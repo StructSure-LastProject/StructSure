@@ -46,12 +46,12 @@ private val Int.toPx: Int get() = (this * getSystem().displayMetrics.density).to
  */
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun ScanWeather(viewModel: ScanViewModel?, scrollState: ScrollState) {
+fun ScanWeather(viewModel: ScanViewModel, scrollState: ScrollState) {
     var isSticky by remember { mutableStateOf(false) }
     val offset = (20 + 35 + 50).toPx // Size of the header + margins
 
     // Observe the state counts from the view model
-    val stateCounts = viewModel?.sensorStateCounts?.observeAsState(emptyMap())?.value ?: emptyMap<SensorState, Int>()
+    val stateCounts = viewModel.sensorStateCounts.observeAsState(emptyMap()).value ?: emptyMap()
 
     // Sticky Weather
     LaunchedEffect(scrollState.value) {
@@ -94,7 +94,7 @@ fun ScanWeather(viewModel: ScanViewModel?, scrollState: ScrollState) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                SensorState.values().forEach { state ->
+                SensorState.entries.forEach { state ->
                     val count = stateCounts[state] ?: 0
                     SensorBean(value = count.toString(), state = state)
                 }
