@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -54,20 +55,18 @@ fun SensorsList(viewModel: ScanViewModel) {
             Button(R.drawable.plus, "Add", Color.White, Color.Black)
         }
 
-        Box(modifier = Modifier.heightIn(max = 400.dp)) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = White, shape = RoundedCornerShape(size = 20.dp))
-                    .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
-                horizontalAlignment = Alignment.Start,
-            ) {
-                items(sensors) { sensor ->
-                    val state = SensorState.from(sensor.state)
-                    val sensorName = "Capteur ${sensor.name}"
-                    SensorBean(Modifier.fillMaxWidth(), sensorName, state) {
-                    }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 400.dp)
+                .background(color = White, shape = RoundedCornerShape(size = 20.dp))
+                .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            items(sensors) { sensor ->
+                val state = SensorState.from(sensor.state)
+                SensorBean(Modifier.fillMaxWidth(), sensor.name, state) {
                 }
             }
         }
