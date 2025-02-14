@@ -6,9 +6,25 @@ import fr.uge.structsure.ui.theme.Ok
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.Unknown
 
-enum class SensorState(val color : Color) {
+/**
+ * Represents the state of a sensor with an associated color for UI representation.
+ *
+ * @param color The color associated with the sensor state.
+ */
+enum class SensorState(val color: Color) {
     OK(Ok),
     NOK(Red),
-    DEFECTIVE(Gray), // Orange color
-    UNKNOWN(Unknown)
+    DEFECTIVE(Gray),
+    UNKNOWN(Unknown);
+
+    companion object {
+        /**
+         * Converts a string to the corresponding `SensorState`.
+         *
+         * @param name The string representing the sensor state.
+         * @return The corresponding `SensorState`, or `UNKNOWN` if no match is found.
+         */
+        fun from(name: String): SensorState =
+            entries.firstOrNull { it.name.equals(name, ignoreCase = true) } ?: UNKNOWN
+    }
 }

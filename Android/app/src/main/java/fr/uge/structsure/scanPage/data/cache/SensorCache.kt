@@ -96,6 +96,16 @@ class SensorCache {
     }
 
     /**
+     * Counts the number of sensor in the cache
+     * @return how many sensor are present
+     */
+    fun size(): Int {
+        synchronized(lock) {
+            return sensorMap.size
+        }
+    }
+
+    /**
      * Clears the entire cache.
      */
     fun clearCache() {

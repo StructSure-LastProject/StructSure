@@ -8,6 +8,7 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.cache.SensorCache
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.SensorDB
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,6 +62,25 @@ class ScanViewModel: ViewModel() {
         processChip(chipId)
     }
 
+    val sensorsNotScanned = MutableLiveData<List<SensorDB>>()
+
+    val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
+
+    /**
+     * Update the state of the sensors dynamically in the header of the scan page.
+     */
+    private fun updateSensorStateCounts() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val scannedSensors = resultDao.getAllResults()
+            val stateCounts = SensorState.entries.associateWith { state ->
+                if (state == SensorState.UNKNOWN) sensorCache.size() - scannedSensors.size
+                else scannedSensors.count { it.state == state.name }
+            }
+            sensorStateCounts.postValue(stateCounts)
+        }
+    }
+
+
     /**
      * Changes the structureId of the scanViewModel. This will reload
      * the sensors if the given id is not the same as the saved one.
@@ -73,9 +93,33 @@ class ScanViewModel: ViewModel() {
         sensorCache.clearCache()
         viewModelScope.launch(Dispatchers.IO) {
             val sensors = sensorDao.getAllSensors(structureId)
+            sensorsNotScanned.postValue(sensors)
+            val stateCounts = SensorState.entries.associateWith { state ->
+                if (state == SensorState.UNKNOWN) sensors.size else 0
+            }
+            sensorStateCounts.postValue(stateCounts)
             sensorCache.insertSensors(sensors)
         }
     }
+
+    /**
+     * Refreshes the states of the sensors after starting a scan.
+     */
+    private fun refreshSensorStates() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val sensors = sensorDao.getAllSensors(structureId?: return@launch)
+            val scannedResults = resultDao.getAllResults()
+
+            val updatedSensors = sensors.map { sensor ->
+                val result = scannedResults.find { it.id == sensor.sensorId }
+                sensor.copy(state = result?.state ?: "UNKNOWN")
+            }
+
+            sensorsNotScanned.postValue(updatedSensors)
+        }
+    }
+
+
 
     /**
      * Adds a scanned RFID chip ID to the buffer for processing.
@@ -98,6 +142,8 @@ class ScanViewModel: ViewModel() {
         val otherPresent = rfidBuffer.contains(otherChipId)
         val newState = computeSensorState(sensor, chipId, otherPresent)
         updateSensorState(sensor, newState)
+        refreshSensorStates()
+        updateSensorStateCounts()
     }
 
     /**
@@ -184,6 +230,8 @@ class ScanViewModel: ViewModel() {
             note = ""
         )
         activeScanId = scanDao.insertScan(newScan)
+        refreshSensorStates()
+        updateSensorStateCounts()
     }
 
     /**
@@ -210,4 +258,5 @@ class ScanViewModel: ViewModel() {
             sensorCache.clearCache()
         }
     }
+
 }

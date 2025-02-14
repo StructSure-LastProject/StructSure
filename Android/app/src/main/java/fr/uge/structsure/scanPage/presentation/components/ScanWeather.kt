@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,13 +36,6 @@ import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.White
 
-@Preview
-@Composable
-fun StructureSummaryPreview() {
-    Box(Modifier.background(LightGray)) {
-        StructureWeather(null, ScrollState(0))
-    }
-}
 
 private val Int.toDp: Dp get() = (this / getSystem().displayMetrics.density).toInt().dp
 private val Int.toPx: Int get() = (this * getSystem().displayMetrics.density).toInt()
@@ -52,9 +46,12 @@ private val Int.toPx: Int get() = (this * getSystem().displayMetrics.density).to
  */
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun StructureWeather(viewModel: ScanViewModel?, scrollState: ScrollState) {
+fun ScanWeather(viewModel: ScanViewModel, scrollState: ScrollState) {
     var isSticky by remember { mutableStateOf(false) }
     val offset = (20 + 35 + 50).toPx // Size of the header + margins
+
+    // Observe the state counts from the view model
+    val stateCounts = viewModel.sensorStateCounts.observeAsState(emptyMap()).value ?: emptyMap()
 
     // Sticky Weather
     LaunchedEffect(scrollState.value) {
@@ -74,9 +71,7 @@ fun StructureWeather(viewModel: ScanViewModel?, scrollState: ScrollState) {
             },
         verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.Top),
         horizontalAlignment = Alignment.Start,
-
     ) {
-        /* Structure name and note button */
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -93,15 +88,15 @@ fun StructureWeather(viewModel: ScanViewModel?, scrollState: ScrollState) {
                 background = White
             )
         }
-        /* Structure weather */
         Box {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                repeat(4) { index ->
-                    SensorBean(value = (index + 21).toString(), state = SensorState.entries[index % 4])
+                SensorState.entries.forEach { state ->
+                    val count = stateCounts[state] ?: 0
+                    SensorBean(value = count.toString(), state = state)
                 }
             }
             Box (

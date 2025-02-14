@@ -14,7 +14,7 @@ class StructureViewModelFactory(private val db: AppDatabase) : ViewModelProvider
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(StructureViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return StructureViewModel(StructureRepository(db.structureDao(), db.planDao(), db.sensorDao())) as T
+            return StructureViewModel(StructureRepository()) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
