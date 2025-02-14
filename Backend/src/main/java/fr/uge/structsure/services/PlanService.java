@@ -110,7 +110,7 @@ public class PlanService {
             throw new TraitementException(ErrorIdentifier.SERVER_ERROR);
         }
 
-        var plan = new Plan(filePath, false, name, structure);
+        var plan = new Plan(filePath, false, name, section, structure);
         Plan savedPlan;
         try {
             savedPlan = planRepository.save(plan);

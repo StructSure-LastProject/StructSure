@@ -25,11 +25,12 @@ public class Plan {
 
     public Plan() {}
 
-    public Plan(String imageUrl, boolean archived, String name, Structure structure) {
+    public Plan(String imageUrl, boolean archived, String name, String section, Structure structure) {
         this.imageUrl = imageUrl;
         this.archived = archived;
         this.name = name;
         this.structure = structure;
+        this.section = section;
     }
 
     public @NotBlank(message = "Name is required") @Size(max = 32, message = "Name must be less than 32 characters") String getName() {
