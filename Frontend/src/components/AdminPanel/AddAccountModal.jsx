@@ -18,6 +18,7 @@ const AddAccountModal = ({ closeModal }) => {
     const [role, setRole] = createSignal(""); 
     const [accountState, setAccountState] = createSignal(true);
     const [errorModal, setErrorModal] = createSignal([]);
+    const [apiError, setApiError] = createSignal("");
 
     /**
      * Roles
@@ -60,10 +61,12 @@ const AddAccountModal = ({ closeModal }) => {
         e.preventDefault();
 
         validateUserAccountForm(firstName(), lastName(), login(), role(), password(), addError, removeError, true)
+        
 
-        const { fetchData, data, error, statusCode } = useFetch();
+        const { fetchData, error, statusCode } = useFetch();
         const token = localStorage.getItem("token");
-    
+        
+
         if (errorModal().length === 0) {
             const requestBody = {
                 "firstname": firstName(),
@@ -84,22 +87,16 @@ const AddAccountModal = ({ closeModal }) => {
     
             await fetchData("/api/accounts", requestData);
             
-            
-            if (statusCode() === 201) {
-                closeModal()
+            let creationError = "";
+            if(error() !== null){
+                creationError = error().errorData.error;
             }
-            else if (statusCode() === 422) {
-                const creationError = error().errorData.error;
-                addError(creationError);
-
-                setTimeout(() => {
-                    setFirstName(""); 
-                    setLastName(""); 
-                    setLogin(""); 
-                    setPassword(""); 
-                    setRole("");
-                    removeError(creationError); 
-                }, 2000);
+            if (statusCode() === 201) {
+                closeModal();
+                setApiError("");
+            }
+            else if (statusCode() === 422) {            
+                setApiError(creationError);
             }
             
         }
@@ -125,6 +122,9 @@ const AddAccountModal = ({ closeModal }) => {
                     {errorModal().map(err => (
                         <p class="text-[#F13327] font-poppins HeadLineMedium">{err}</p>
                     ))}
+                    {
+                        <p class="text-[#F13327] font-poppins HeadLineMedium">{apiError()}</p>
+                    }
                 </div>
                 <form>
                     <div className="flex flex-wrap gap-[15px] lg:gap-[50px] text-[#181818] font-poppins">
