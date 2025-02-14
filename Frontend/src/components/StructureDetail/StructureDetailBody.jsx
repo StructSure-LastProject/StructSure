@@ -32,9 +32,9 @@ function StructureDetailBody(props) {
         await fetchData(`/api/structures/${structureId}/sensors`, requestData);
         if (statusCode() === 200) {
             setSensors(data());
-        } else if (statusCode() === 404) {
-        
-        }
+        }// Uncomment this when error barre is developped
+        // else if (statusCode() === 404) {
+        // }
     };
 
     /**
@@ -73,8 +73,9 @@ function StructureDetailBody(props) {
         await fetchData(`/api/structures/${structureId}/plan/${planId}/sensors`, requestData);
         if (statusCode() === 200) {
             setPlanSensors(data());
-        } else if (statusCode() === 404) {
-        }
+        } // Uncomment this when error barre is developped
+        // else if (statusCode() === 404) {
+        // }
     };
 
     createEffect(() => {

@@ -64,7 +64,7 @@ class SensorServiceTest {
         when(resultRepository.existsResultWithNokState(sensor)).thenReturn(false);
         when(resultRepository.existsResultWithDefectiveState(sensor)).thenReturn(false);
 
-        List<SensorDTO> sensors = sensorService.getSensors(structureId);
+        List<SensorDTO> sensors = sensorService.getSensorsByStructureId(structureId);
 
         assertNotNull(sensors);
         assertEquals(1, sensors.size());

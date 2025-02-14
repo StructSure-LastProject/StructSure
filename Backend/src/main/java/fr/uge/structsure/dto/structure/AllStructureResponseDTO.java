@@ -1,7 +1,6 @@
 package fr.uge.structsure.dto.structure;
 
 import fr.uge.structsure.entities.State;
-import fr.uge.structsure.utils.StateEnum;
 
 import java.util.Objects;
 
