@@ -44,7 +44,7 @@ fun AccountInformationsView(dao: AccountDao, navController: NavController) {
                     description = "Log out button that disconnect users who click on it.",
                     onClick = {
                         dao.disconnect(dao.get()!!.login)
-                        navController.navigate("loginPage")
+                        navController.navigate("ConnexionPage")
                     }
                 )
             }

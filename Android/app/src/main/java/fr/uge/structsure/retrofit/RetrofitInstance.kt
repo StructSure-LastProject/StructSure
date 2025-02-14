@@ -36,6 +36,13 @@ object RetrofitInstance {
     }
 
     /**
+     * Retrieves the current base URL.
+     *
+     * @return The current base URL or null if not initialized.
+     */
+    fun getBaseUrl(): String? = baseUrl
+
+    /**
      * An interceptor for injecting the authentication token into API requests.
      * If the server returns a 401 (Unauthorized), it triggers a navigation to the login screen.
      */
