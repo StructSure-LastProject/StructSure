@@ -131,7 +131,6 @@ fun SettingsPage(navController: NavController, accountDao: AccountDao) {
                         if (currentUser != null) {
                             accountDao.disconnect(currentUser.login)
                         }
-
                         if (serverAddress != RetrofitInstance.getBaseUrl()) {
                             PreferencesManager.saveServerUrl(context, serverAddress)
                             RetrofitInstance.init(serverAddress)
