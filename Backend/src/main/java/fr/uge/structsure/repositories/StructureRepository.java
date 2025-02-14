@@ -29,4 +29,26 @@ public interface StructureRepository extends JpaRepository<Structure, Long> {
      */
     Optional<Structure> findById(long id);
 
+
+    @Query("""
+        SELECT new fr.uge.structsure.dto.structure.AllStructureResponseDTO(
+        s.id,
+        s.name,
+        COALESCE(COUNT(DISTINCT sensor.sensorId), 0),
+        COALESCE(COUNT(DISTINCT plan.id), 0),
+        CASE
+             WHEN COUNT(DISTINCT sensor.sensorId) = 0 THEN 'UNKNOWN'
+             WHEN SUM(CASE WHEN result.state = fr.uge.structsure.entities.State.DEFECTIVE THEN 1 ELSE 0 END) > 0 THEN 'DEFECTIVE'
+             WHEN SUM(CASE WHEN result.state = fr.uge.structsure.entities.State.NOK THEN 1 ELSE 0 END) > 0 THEN 'NOK'
+             ELSE 'OK'
+         END,
+         s.archived
+        )
+        FROM Structure s,
+        Sensor sensor,
+        Result result,
+        Plan plan
+        GROUP BY s.id
+    """)
+    List<AllStructureResponseDTO> findStructuresWithState();
 }

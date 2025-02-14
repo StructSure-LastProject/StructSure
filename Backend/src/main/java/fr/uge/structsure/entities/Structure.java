@@ -19,7 +19,6 @@ public class Structure {
         this.name = Objects.requireNonNull(name);
         this.note = Objects.requireNonNull(note);
         this.archived = archived;
-
     }
 
     public long getId() {
