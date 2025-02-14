@@ -106,7 +106,7 @@ class StructureRepository : ViewModel() {
                             sensor.sensorId.controlChip,
                             sensor.sensorId.measureChip,
                             sensor.name,
-                            sensor.note,
+                            sensor.note ?: "",
                             sensor.installationDate,
                             "", // TODO
                             sensor.x,

@@ -4,10 +4,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,9 +18,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,17 +31,18 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import fr.uge.structsure.R
-import fr.uge.structsure.components.Plan
-import fr.uge.structsure.components.Point
-import fr.uge.structsure.scanPage.domain.ScanViewModel
-import fr.uge.structsure.scanPage.presentation.components.SensorState
+import fr.uge.structsure.scanPage.domain.PlanViewModel
+import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
@@ -50,8 +54,13 @@ import fr.uge.structsure.ui.theme.fonts
  * This composable is used to display the plans of the structure.
  */
 @Composable
-fun PlansView(viewModel: ScanViewModel) {
-    val selected = remember { mutableStateOf("Section OA/Plan 01") }
+fun PlansView(viewModel: PlanViewModel, structureId: Long) {
+    LaunchedEffect(Unit) {
+        viewModel.fetchPlansForStructure(structureId)
+    }
+
+    val plans by viewModel.plans.observeAsState(emptyList())
+    val selectedPlan = remember { mutableStateOf<PlanDB?>(null) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -71,71 +80,71 @@ fun PlansView(viewModel: ScanViewModel) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            val points = remember { mutableStateListOf(
-                Point(0, 0, SensorState.OK),
-                Point(100, 100, SensorState.OK)
-            ) }
-            Plan(R.drawable.oa_plan, points)
+            val planToDisplay = selectedPlan.value ?: plans.firstOrNull()
+            if (planToDisplay != null) {
+                DynamicPlan(planToDisplay)
+            }
 
-            Spacer( Modifier.fillMaxWidth().height(1.dp).background(LightGray) )
+            Spacer(
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(LightGray) )
 
-            PlanSelector(selected)
+            PlanSelector(plans, selectedPlan)
         }
     }
 }
+
+@Composable
+fun DynamicPlan(plan: PlanDB) {
+    val imageUrl = plan.imageUrl
+    val painter = rememberAsyncImagePainter(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(imageUrl)
+            .crossfade(true)
+            .build(),
+        contentScale = ContentScale.Crop
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(LightGray),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painter,
+            contentDescription = "Plan Image",
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
 
 /**
  * Menu enabling to chose a plan among the existing ones.
  */
 @Composable
-private fun PlanSelector(selected: MutableState<String>) {
-
-    // TODO Use real data here
-    // LazyColumn(
-    //     verticalArrangement = Arrangement.spacedBy(8.dp),
-    //     modifier = Modifier
-    //         .fillMaxWidth()
-    //         .height(200.dp)
-    // )
+private fun PlanSelector(plans: List<PlanDB>, selectedPlan: MutableState<PlanDB?>) {
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        Section("Section OA") {
-            Section("Sous-section") {
-                PlanItem("Plan 01", selected.value == "Section OA/Sous-section/Plan 01" ) {
-                    selected.value = "Section OA/Sous-section/Plan 01"
+        plans.groupBy { it.section }.forEach { (section, sectionPlans) ->
+            Section(section) {
+                sectionPlans.forEach { plan ->
+                    PlanItem(plan.name, selectedPlan.value == plan) {
+                        selectedPlan.value = plan
+                    }
                 }
-                PlanItem("Plan 02", selected.value == "Section OA/Sous-section/Plan 02" ) {
-                    selected.value = "Section OA/Sous-section/Plan 02"
-                }
-                PlanItem("Plan 03", selected.value == "Section OA/Sous-section/Plan 03" ) {
-                    selected.value = "Section OA/Sous-section/Plan 03"
-                }
-            }
-            PlanItem("Plan 01", selected.value == "Section OA/Plan 01" ) {
-                selected.value = "Section OA/Plan 01"
-            }
-            PlanItem("Plan 02", selected.value == "Section OA/Plan 02" ) {
-                selected.value = "Section OA/Plan 02"
-            }
-            PlanItem("Plan 03", selected.value == "Section OA/Plan 03" ) {
-                selected.value = "Section OA/Plan 03"
-            }
-        }
-        Section("Section OB") {
-            PlanItem("Plan 05", selected.value == "Section OB/Plan 05" ) {
-                selected.value = "Section OB/Plan 05"
-            }
-            PlanItem("Plan 06", selected.value == "Section OB/Plan 06" ) {
-                selected.value = "Section OB/Plan 06"
-            }
-            PlanItem("Plan 07", selected.value == "Section OB/Plan 07" ) {
-                selected.value = "Section OB/Plan 07"
             }
         }
     }
 }
+
 
 /**
  * Item corresponding to a plan section (a group of plans) in the
@@ -160,7 +169,9 @@ private fun Section(name: String, children:  @Composable (ColumnScope.() -> Unit
             painter = painterResource(R.drawable.chevron_down),
             contentDescription = "Chevron",
             contentScale = ContentScale.Fit,
-            modifier = Modifier.size(16.dp).rotate(if (collapsed) -90f else 0f)
+            modifier = Modifier
+                .size(16.dp)
+                .rotate(if (collapsed) -90f else 0f)
         )
         Text(
             name,
@@ -172,7 +183,9 @@ private fun Section(name: String, children:  @Composable (ColumnScope.() -> Unit
     if (!collapsed)  {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(start = 17.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 17.dp),
             content = children
         )
     }

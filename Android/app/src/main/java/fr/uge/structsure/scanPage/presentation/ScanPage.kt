@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
+import fr.uge.structsure.MainActivity
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.components.InputTextArea
@@ -32,6 +33,7 @@ import fr.uge.structsure.components.Page
 import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.components.Title
+import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
@@ -53,6 +55,7 @@ import fr.uge.structsure.ui.theme.LightGray
 @Composable
 fun ScanPage(context: Context,
              scanViewModel: ScanViewModel,
+             planViewModel: PlanViewModel,
              structureId: Long,
              connexionCS108: Cs108Connector,
              navController: NavController) {

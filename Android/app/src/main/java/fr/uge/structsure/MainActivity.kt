@@ -33,6 +33,8 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Connector.Companion.bluetoothAdapt
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.retrofit.RetrofitInstance
+import fr.uge.structsure.scanPage.domain.PlanViewModel
+import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.ScanPage
 import fr.uge.structsure.settingsPage.presentation.SettingsPage
@@ -200,8 +202,7 @@ private fun ComponentActivity.SetDynamicStatusBar() {
                 lightScrim = defaultSystemBarColor,
                 darkScrim = defaultSystemBarColor,
                 detectDarkMode = { r ->
-                    MainActivity.darkStatusBar.get()
-                        ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
+                    MainActivity.darkStatusBar.get() ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
                 }
             )
         )
