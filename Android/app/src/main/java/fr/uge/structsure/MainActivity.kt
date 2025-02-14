@@ -29,11 +29,14 @@ import androidx.navigation.compose.rememberNavController
 import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.alertes.Alerte
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
+import fr.uge.structsure.components.CustomToast
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
-import fr.uge.structsure.settingsPage.presentation.SettingsPage
+import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.ScanPage
+import fr.uge.structsure.settingsPage.presentation.PreferencesManager
+import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
@@ -51,7 +54,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /** Name of the login page to avoid string duplication */
-    private val loginPage = "ConnexionPage"
+    private val connexionPage = "ConnexionPage"
 
     private lateinit var structureViewModel: StructureViewModel
 
@@ -75,10 +78,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         db = AppDatabase.getDatabase(applicationContext)
+        RetrofitInstance.initFromPreferences(applicationContext)
+
         val accountDao = db.accountDao()
+        val scanViewModel = ScanViewModel()
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
-        val scanViewModel = ScanViewModel()
 
         requestPermissions()
 
@@ -91,35 +96,35 @@ class MainActivity : ComponentActivity() {
             connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
             navigateToLogin.observeAsState(false).value.let {
                 if (it) {
-                    navController.navigate(loginPage)
+                    navController.navigate(connexionPage)
                     navigateToLogin.value = false
                 }
             }
-            val homePage = if (accountDao.get()?.token == null) loginPage else "HomePage"
+
+            val homePage = if (RetrofitInstance.isInitialized() && accountDao.get()?.token != null) "HomePage" else connexionPage
             NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
-                composable("SettingsPage"){ SettingsPage(navController) }
+                composable("SettingsPage") { SettingsPage(navController) }
                 composable("ScanPage?structureId={structureId}") { backStackEntry ->
-                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
                     ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
-                composable(loginPage) {
+                composable(connexionPage) {
                     ConnexionCard(navController, accountDao)
                     SetDynamicStatusBar()
                 }
                 composable("ScanPage"){ /*ScanPage(navController)*/ }
                 composable("Alerte?state={state}&name={name}&lastState={lastState}") { backStackEntry ->
                     val state = backStackEntry.arguments?.getString("state")?.toBoolean() ?: true
-                    val name = backStackEntry.arguments?.getString("name")?: "Unknown"
+                    val name = backStackEntry.arguments?.getString("name").orEmpty()
                     val lastState = backStackEntry.arguments?.getString("lastState").orEmpty()
-                    Alerte(navController, state,name,lastState)
+                    Alerte(navController, state, name, lastState)
                     SetDynamicStatusBar()
                 }
-
             }
         }
     }

@@ -32,10 +32,17 @@ suspend fun auth(login:String, password:String, dao: AccountDao, navController: 
 }
 
 private fun getApiInterface(): LoginApi {
+    if (!RetrofitInstance.isInitialized()) {
+        throw IllegalStateException("Retrofit n'a pas été initialisé. Configurez l'adresse du serveur.")
+    }
     return RetrofitInstance.loginApi
 }
 
+
 private suspend fun getFromApi(login: String, password: String): Optional<UserAuthResponse> {
+    if(!RetrofitInstance.isInitialized()){
+        return Optional.empty()
+    }
     return withContext(Dispatchers.IO) {
         val apiInterface = getApiInterface()
         val call = apiInterface.userAuth(Datamodel(login, password))
