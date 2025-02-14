@@ -10,12 +10,14 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
@@ -25,6 +27,7 @@ import androidx.navigation.NavController
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.components.InputText
 import fr.uge.structsure.components.Page
+import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
@@ -38,21 +41,22 @@ import fr.uge.structsure.ui.theme.White
  * @param navController NavController instance for handling navigation between screens.
  */
 @Composable
-fun SettingsPage(navController: NavController) {
-    var serverAddress by remember { mutableStateOf("") }
+fun SettingsPage(navController: NavController, accountDao: AccountDao) {
+    var serverAddress by remember { mutableStateOf(RetrofitInstance.getBaseUrl().orEmpty()) }
     var errorMessage by remember { mutableStateOf("") }
+    var context = LocalContext.current
 
     Page(
         backgroundColor = LightGray,
         decorated = true,
         navController = navController
-    ) { _ ->
+    ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start,
             modifier = Modifier
                 .background(color = White, shape = RoundedCornerShape(size = 20.dp))
-                .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
+                .padding(20.dp, 15.dp)
         ) {
             Column (
                 verticalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterVertically),
@@ -123,9 +127,19 @@ fun SettingsPage(navController: NavController) {
                     } else if (!isValidUrl(serverAddress)) {
                         errorMessage = "Veuillez entrer une URL valide du serveur"
                     } else {
-                        RetrofitInstance.init(serverAddress)
-                        errorMessage = ""
-                        navController.popBackStack()
+                        val currentUser = accountDao.get()
+                        if (currentUser != null) {
+                            accountDao.disconnect(currentUser.login)
+                        }
+
+                        if (serverAddress != RetrofitInstance.getBaseUrl()) {
+                            PreferencesManager.saveServerUrl(context, serverAddress)
+                            RetrofitInstance.init(serverAddress)
+                            errorMessage = ""
+                            navController.navigate("ConnexionPage")
+                        } else {
+                            errorMessage = "L'adresse du serveur n'a pas changé. Vous êtes déjà connecté."
+                        }
                     }
                 })
 
@@ -140,8 +154,8 @@ fun SettingsPage(navController: NavController) {
  */
 @Composable
 private fun RangeSliderSensitivityInterog() {
-    var rangeStart by remember { mutableStateOf(45f) }
-    var rangeEnd by remember { mutableStateOf(100f) }
+    var rangeStart by remember { mutableFloatStateOf(45f) }
+    var rangeEnd by remember { mutableFloatStateOf(100f) }
 
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Text(

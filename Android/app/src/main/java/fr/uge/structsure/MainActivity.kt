@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -35,6 +34,7 @@ import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.ScanPage
+import fr.uge.structsure.settingsPage.presentation.PreferencesManager
 import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /** Name of the login page to avoid string duplication */
-    private val loginPage = "loginPage"
+    private val connexionPage = "ConnexionPage"
 
     private lateinit var structureViewModel: StructureViewModel
 
@@ -77,6 +77,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         db = AppDatabase.getDatabase(applicationContext)
+        val serverUrl = PreferencesManager.getServerUrl(applicationContext)
+        if (!serverUrl.isNullOrEmpty()) {
+            RetrofitInstance.init(serverUrl)
+        }
 
         val accountDao = db.accountDao()
         val scanViewModel = ScanViewModel()
@@ -94,18 +98,18 @@ class MainActivity : ComponentActivity() {
             connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
             navigateToLogin.observeAsState(false).value.let {
                 if (it) {
-                    navController.navigate(loginPage)
+                    navController.navigate(connexionPage)
                     navigateToLogin.value = false
                 }
             }
 
-            val homePage = if (accountDao.get()?.token == null) loginPage else "HomePage"
+            val homePage = if (RetrofitInstance.isInitialized() && accountDao.get()?.token != null) "HomePage" else connexionPage
             NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
-                composable("SettingsPage") { SettingsPage(navController)
+                composable("SettingsPage") { SettingsPage(navController, accountDao)
 
                 }
 
@@ -114,7 +118,7 @@ class MainActivity : ComponentActivity() {
                     ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
-                composable(loginPage) {
+                composable(connexionPage) {
                     ConnexionCard(navController, accountDao)
                     SetDynamicStatusBar()
                 }
