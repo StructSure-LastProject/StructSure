@@ -24,6 +24,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import fr.uge.structsure.MainActivity
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.components.InputText
 import fr.uge.structsure.components.Page
@@ -41,10 +42,11 @@ import fr.uge.structsure.ui.theme.White
  * @param navController NavController instance for handling navigation between screens.
  */
 @Composable
-fun SettingsPage(navController: NavController, accountDao: AccountDao) {
+fun SettingsPage(navController: NavController) {
     var serverAddress by remember { mutableStateOf(RetrofitInstance.getBaseUrl().orEmpty()) }
     var errorMessage by remember { mutableStateOf("") }
-    var context = LocalContext.current
+    val context = LocalContext.current
+    val accountDao = MainActivity.db.accountDao()
 
     Page(
         backgroundColor = LightGray,
