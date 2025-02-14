@@ -1,5 +1,8 @@
 package fr.uge.structsure.retrofit
 
+import android.content.Context
+import fr.uge.structsure.MainActivity
+import fr.uge.structsure.settingsPage.presentation.PreferencesManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -23,7 +26,7 @@ object RetrofitInstance {
     private var baseUrl: String? = null
 
     private var tokenProvider: () -> String = {
-        val account = fr.uge.structsure.MainActivity.db.accountDao().get()
+        val account = MainActivity.db.accountDao().get()
         account?.token.orEmpty()
     }
 
@@ -53,7 +56,7 @@ object RetrofitInstance {
             .build()
         val response = chain.proceed(request)
         if (response.code == 401) {
-            fr.uge.structsure.MainActivity.navigateToLogin.postValue(true)
+            MainActivity.navigateToLogin.postValue(true)
         }
         response
     }
@@ -79,6 +82,18 @@ object RetrofitInstance {
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+    }
+
+    /**
+     * Initializes Retrofit by fetching the server URL from SharedPreferences.
+     *
+     * @param context The application context used to access SharedPreferences.
+     */
+    fun initFromPreferences(context: Context) {
+        val savedUrl = PreferencesManager.getServerUrl(context)
+        if (!savedUrl.isNullOrEmpty()) {
+            init(savedUrl)
+        }
     }
 
     /**

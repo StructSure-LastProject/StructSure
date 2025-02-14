@@ -29,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.alertes.Alerte
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
+import fr.uge.structsure.components.CustomToast
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.retrofit.RetrofitInstance
@@ -77,10 +78,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         db = AppDatabase.getDatabase(applicationContext)
-        val serverUrl = PreferencesManager.getServerUrl(applicationContext)
-        if (!serverUrl.isNullOrEmpty()) {
-            RetrofitInstance.init(serverUrl)
-        }
+        RetrofitInstance.initFromPreferences(applicationContext)
 
         val accountDao = db.accountDao()
         val scanViewModel = ScanViewModel()
@@ -109,12 +107,9 @@ class MainActivity : ComponentActivity() {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
-                composable("SettingsPage") { SettingsPage(navController, accountDao)
-
-                }
-
-                composable("startScan?structureId={structureId}") { backStackEntry ->
-                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                composable("SettingsPage") { SettingsPage(navController) }
+                composable("ScanPage?structureId={structureId}") { backStackEntry ->
+                val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
                     ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
