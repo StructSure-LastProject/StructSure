@@ -13,8 +13,6 @@ function StructSureBody() {
 
     const [error, setError] = createSignal("");
 
-    const navigate = useNavigate();
-
     /**
      * Fetch the structures
      * @param {String} url the url for the server
