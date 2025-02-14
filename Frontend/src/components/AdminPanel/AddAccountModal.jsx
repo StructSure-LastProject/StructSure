@@ -2,6 +2,7 @@ import { X, ChevronDown } from 'lucide-solid';
 import StructureNameCard from '../StructureNameCard';
 import { createSignal } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
+import useFetch from '../../hooks/useFetch';
 
 /**
  * Add account modal component
@@ -16,7 +17,7 @@ const AddAccountModal = ({ closeModal }) => {
     const [password, setPassword] = createSignal("");
     const [role, setRole] = createSignal(""); 
     const [accountState, setAccountState] = createSignal(true);
-    const [error, setError] = createSignal([]);
+    const [errorModal, setErrorModal] = createSignal([]);
 
     /**
      * Roles
@@ -32,7 +33,7 @@ const AddAccountModal = ({ closeModal }) => {
      * @param {string} newErrorMessage Error message 
      */
     const addError = (newErrorMessage) => {
-        setError(prevError => {
+        setErrorModal(prevError => {
             if (!prevError.includes(newErrorMessage)) {
                 return [...prevError, newErrorMessage];
             }
@@ -45,7 +46,7 @@ const AddAccountModal = ({ closeModal }) => {
      * @param {string} errorMessage Error message to remove 
      */
     const removeError = (errorMessage) => {
-        setError(prevError => {
+        setErrorModal(prevError => {
             return prevError.filter(errorValue => errorValue !== errorMessage);
         });
     };
@@ -55,10 +56,54 @@ const AddAccountModal = ({ closeModal }) => {
     /**
      * Handle the submit buttom
      */
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        validateUserAccountForm(firstName(), lastName(), login(), role(), password(), addError, removeError)
+        validateUserAccountForm(firstName(), lastName(), login(), role(), password(), addError, removeError, true)
+
+        const { fetchData, data, error, statusCode } = useFetch();
+        const token = localStorage.getItem("token");
+    
+        if (errorModal().length === 0) {
+            const requestBody = {
+                "firstname": firstName(),
+                "lastname": lastName(),
+                "login": login(),
+                "role": role(),
+                "password": password()
+            };
+    
+            const requestData = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(requestBody),
+            };
+    
+            await fetchData("/api/accounts", requestData);
+            
+            
+            if (statusCode() === 201) {
+                closeModal()
+            }
+            else if (statusCode() === 422) {
+                const creationError = error().errorData.error;
+                addError(creationError);
+
+                setTimeout(() => {
+                    setFirstName(""); 
+                    setLastName(""); 
+                    setLogin(""); 
+                    setPassword(""); 
+                    setRole("");
+                    removeError(creationError); 
+                }, 2000);
+            }
+            
+        }
+        
     };
 
 
@@ -77,7 +122,7 @@ const AddAccountModal = ({ closeModal }) => {
                 </div>
 
                 <div>
-                    {error().map(err => (
+                    {errorModal().map(err => (
                         <p class="text-[#F13327] font-poppins HeadLineMedium">{err}</p>
                     ))}
                 </div>

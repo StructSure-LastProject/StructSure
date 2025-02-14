@@ -8,14 +8,18 @@
  * @param {Function} addError 
  * @param {Function} removeError 
  */
-export const validateUserAccountForm = (firstName, lastName, login, role, password, addError, removeError) => {
-
+export const validateUserAccountForm = (firstName, lastName, login, role, password, addError, removeError, isPasswordRequired) => {
+    
     const fields = [
         lastName,
         firstName,
         login,
         role,
     ];
+
+    if (isPasswordRequired) {
+        fields.push(password);
+    }
 
     /**
      * Test is the variable contains only letters

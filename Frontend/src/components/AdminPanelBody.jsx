@@ -27,7 +27,8 @@ const AdminPanelBody = () => {
      * Close the add account modal
      */
      const closeAddAccountModal = () => {
-        setIsAddModalOpen(false); 
+        setIsAddModalOpen(false);
+        fetchUserDetails() 
     };
 
     /**
