@@ -7,6 +7,7 @@ import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
+import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,15 @@ import fr.uge.structsure.services.StructureService;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 @RestController
@@ -104,6 +114,36 @@ public class StructureController {
         } catch (TraitementException e) {
             var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
             return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        }
+    }
+
+
+    @GetMapping("/{id}/plans/image")
+    public ResponseEntity<?> downloadPlanImage(@PathVariable("id") Long id) {
+        try {
+            var plan = planService.getPlanById(id);
+
+            if (plan.getImageUrl() == null || plan.getImageUrl().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Image URL not found for the specified plan.");
+            }
+
+            Path imagePath = Paths.get(plan.getImageUrl());
+            File imageFile = imagePath.toFile();
+            if (!imageFile.exists()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Image file does not exist at the specified path.");
+            }
+
+            Resource resource = new UrlResource(imagePath.toUri());
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+
+
+        } catch (TraitementException e) {
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
+            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error loading image.");
         }
     }
 

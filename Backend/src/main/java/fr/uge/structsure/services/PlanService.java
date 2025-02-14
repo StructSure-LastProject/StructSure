@@ -186,4 +186,17 @@ public class PlanService {
             throw new TraitementException(ErrorIdentifier.SERVER_ERROR);
         }
     }
+
+    /**
+     * Retrieves a plan by its ID.
+     *
+     * @param id
+     * @return
+     * @throws TraitementException
+     */
+    public Plan getPlanById(Long id) throws TraitementException {
+        return planRepository.findById(id)
+                .orElseThrow(() -> new TraitementException(ErrorIdentifier.PLAN_NOT_FOUND));
+    }
+
 }

@@ -44,6 +44,7 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.SENSOR_INSTALLATION_DATE_INVALID_FORMAT, new Error(422, "La date d’installation doit être au format AAAA-MM-JJ"));
         messages.put(ErrorIdentifier.SENSOR_CHIP_TAGS_ARE_IDENTICAL, new Error(422, "Les tags sont identiques"));
         messages.put(ErrorIdentifier.LIST_STRUCTURES_EMPTY, new Error(404, "Aucun ouvrage enregistré dans le système"));
+        messages.put(ErrorIdentifier.PLAN_NOT_FOUND, new Error(404, "Plan introuvable"));
     }
 
     /**
