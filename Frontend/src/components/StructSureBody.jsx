@@ -1,5 +1,5 @@
 import { For, createResource, createSignal } from "solid-js";
-import { A, useNavigate } from '@solidjs/router';
+import { A } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 import { TriangleAlert, CircleAlert, Check, SquareDashed, FolderSync } from 'lucide-solid';
 
