@@ -32,7 +32,8 @@ public class FrontController {
     @GetMapping("*")
     public ResponseEntity<String> forwardToIndex(HttpServletRequest request, HttpSession session) {
         var savedRequest = (DefaultSavedRequest) session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
-        if (savedRequest != null && savedRequest.getRequestURI().startsWith("/api")){
+        if (request.getRequestURI().startsWith("/login") && savedRequest != null && savedRequest.getRequestURI().startsWith("/api")){
+            // Request targeting the API that got redirected to the login page
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         if (request.getRequestURI().startsWith("/api")) {
