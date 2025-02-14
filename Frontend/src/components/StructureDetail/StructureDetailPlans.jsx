@@ -41,7 +41,6 @@ function StructureDetailPlans(props) {
         };
 
         setPlans(prev => [...prev, newPlan]);
-        console.log(plans());
         closeModal();
     };
 
@@ -287,7 +286,7 @@ function StructureDetailPlans(props) {
         event.preventDefault();
         if (event.ctrlKey) {
             const zoomChange = event.deltaY;
-            let newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
+            const newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
             const imgStartX = getImgStartX(baseOffsetX(), offsetX(), newZoom);
             const imgStartY = getImgStartY(baseOffsetY(), offsetY(), newZoom);
             const [zoomX, zoomY] = getZoomRationFromZoomNumber(newZoom);
@@ -318,10 +317,7 @@ function StructureDetailPlans(props) {
 
 
     const zoomLimitReached = (newImgWidth, newImgHeight) => {
-        if (newImgWidth > ZOOM_LIMIT * drawWidth() || newImgHeight > ZOOM_LIMIT * drawHeight()) {
-            return true;
-        }
-        return false;
+        return newImgWidth > ZOOM_LIMIT * drawWidth() || newImgHeight > ZOOM_LIMIT * drawHeight();
     };
 
     /**
