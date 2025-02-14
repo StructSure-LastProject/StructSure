@@ -4,6 +4,8 @@ package fr.uge.structsure.exceptions;
  * Represents the identifiers for the errors
  */
 public enum ErrorIdentifier {
+    INVALID_USER_ACCOUNT_FIELDS,
+    MISSING_USER_ACCOUNT_FIELDS,
     USER_ALREADY_EXISTS,
     ROLE_NOT_EXISTS,
     LOGIN_PASSWORD_NOT_CORRECT,

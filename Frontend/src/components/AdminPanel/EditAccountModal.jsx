@@ -16,7 +16,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
     const [password, setPassword] = createSignal("");
     const [role, setRole] = createSignal(userDetails.role); 
     const [accountState, setAccountState] = createSignal(userDetails.accountState);
-    const [error, setError] = createSignal([]);
+    const [errorModal, setErrorModal] = createSignal([]);
 
     /**
      * Roles
@@ -32,7 +32,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
      * @param {string} newErrorMessage Error message 
      */
     const addError = (newErrorMessage) => {
-        setError(prevError => {
+        setErrorModal(prevError => {
             if (!prevError.includes(newErrorMessage)) {
                 return [...prevError, newErrorMessage];
             }
@@ -45,7 +45,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
      * @param {string} errorMessage Error message to remove 
      */
     const removeError = (errorMessage) => {
-        setError(prevError => {
+        setErrorModal(prevError => {
             return prevError.filter(errorValue => errorValue !== errorMessage);
         });
     };
@@ -58,7 +58,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        validateUserAccountForm(firstName(), lastName(), login(), role(), password(), addError, removeError)
+        validateUserAccountForm(firstName(), lastName(), login(), role(), password(), addError, removeError, false)
 
         
     };
@@ -82,7 +82,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                 </div>
 
                 <div>
-                    {error().map(err => (
+                    {errorModal().map(err => (
                         <p class="text-[#F13327] font-poppins HeadLineMedium">{err}</p>
                     ))}
                 </div>

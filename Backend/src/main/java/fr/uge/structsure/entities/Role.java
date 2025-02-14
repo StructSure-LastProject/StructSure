@@ -29,4 +29,20 @@ public enum Role {
         Objects.requireNonNull(value);
         this.value = value;
     }
+
+    /**
+     * Method to get the Role enum constant based on the string value.
+     *
+     * @param value the string value to match.
+     * @return the corresponding Role enum constant.
+     * @throws IllegalArgumentException if no match is found.
+     */
+    public static Role fromValue(String value) {
+        for (Role role : Role.values()) {
+            if (role.value.equals(value)) {
+                return role;
+            }
+        }
+        throw new IllegalArgumentException("This role does not exist : " + value);
+    }
 }

@@ -20,11 +20,23 @@ const useFetch = () => {
         try {
             const response = await fetch(endpoint, requestData);
             setStatusCode(response.status);
-            if (!Array.of(500, 422, 404, 201, 200).includes(response.status.valueOf())) throw new Error('Network response was not ok');
-            const jsonData = await response.json();
-            setData(jsonData);
+            if (response.ok) {    
+                const jsonData = await response.json();
+                setData(jsonData);
+            }
+            else {
+                const errorData = await response.json();
+                setError({
+                    statusCode: response.status,
+                    errorData
+                });
+            }
         } catch (err) {
-            setError(err);
+            const errorData = { message: err.message || "Network or server error occurred" };
+            setError({
+                statusCode: 500,
+                errorData
+            });
         } finally {
             setLoading(false);
         }   

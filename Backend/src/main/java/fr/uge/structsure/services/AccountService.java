@@ -11,6 +11,7 @@ import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.ErrorIdentifier;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
+import fr.uge.structsure.utils.userAccountRequestValidation.UserAccountRequestValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +19,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -51,12 +53,20 @@ public class AccountService {
      * @throws TraitementException Thrown if no user is found or the role does not exist
      */
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) throws TraitementException {
+        Objects.requireNonNull(registerRequestDTO);
+        if (checkIfNullInCreateNewUserAccountRequest(registerRequestDTO)){
+            throw new TraitementException(ErrorIdentifier.MISSING_USER_ACCOUNT_FIELDS);
+        }
+        if(!validateCreateNewUserAccountRequest(registerRequestDTO)){
+            throw new TraitementException(ErrorIdentifier.INVALID_USER_ACCOUNT_FIELDS);
+        }
+
         if (accountRepository.findByLogin(registerRequestDTO.login()).isPresent()) {
             throw new TraitementException(ErrorIdentifier.USER_ALREADY_EXISTS);
         }
         Role role;
         try {
-            role = Role.valueOf(registerRequestDTO.role());
+            role = Role.fromValue(registerRequestDTO.role());
         } catch (IllegalArgumentException e) {
             throw new TraitementException(ErrorIdentifier.ROLE_NOT_EXISTS);
         }
@@ -110,5 +120,33 @@ public class AccountService {
                 )
             )
             .toList();
+    }
+
+    /**
+     * Check if the request contains some null fields
+     * @param registerRequestDTO The request DTO
+     * @return true if a null found or false
+     */
+    private boolean checkIfNullInCreateNewUserAccountRequest(RegisterRequestDTO registerRequestDTO){
+        Objects.requireNonNull(registerRequestDTO);
+        return registerRequestDTO.firstname() == null
+                && registerRequestDTO.lastname() == null
+                && registerRequestDTO.login() == null
+                && registerRequestDTO.role() == null
+                && registerRequestDTO.password() == null;
+    }
+
+    /**
+     * Validate the request fields
+     * @param registerRequestDTO The request DTO
+     * @return true for valid or false for invalid
+     */
+    private boolean validateCreateNewUserAccountRequest(RegisterRequestDTO registerRequestDTO){
+        Objects.requireNonNull(registerRequestDTO);
+        return UserAccountRequestValidation.containsNonLetters(registerRequestDTO.firstname())
+                || UserAccountRequestValidation.containsNonLetters(registerRequestDTO.lastname())
+                || UserAccountRequestValidation.loginValidator(registerRequestDTO.login())
+                || Arrays.stream(Role.values()).anyMatch(role -> role.value.equals(registerRequestDTO.role())
+                && (registerRequestDTO.password().length() >= 12 && registerRequestDTO.password().length() <= 64));
     }
 }

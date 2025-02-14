@@ -10,7 +10,9 @@ public class ErrorMessages {
     private static final HashMap<ErrorIdentifier, Error> messages = new HashMap<>();
 
     static {
-        messages.put(ErrorIdentifier.USER_ALREADY_EXISTS, new Error(422, "Nom utilisateur déjà existant"));
+        messages.put(ErrorIdentifier.MISSING_USER_ACCOUNT_FIELDS, new Error(422, "Des champs sont manquants"));
+        messages.put(ErrorIdentifier.INVALID_USER_ACCOUNT_FIELDS, new Error(422, "Les champs sont invalides"));
+        messages.put(ErrorIdentifier.USER_ALREADY_EXISTS, new Error(422, "Identifiant déjà utilisé"));
         messages.put(ErrorIdentifier.ROLE_NOT_EXISTS, new Error(422, "Role inconnue"));
         messages.put(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT, new Error(404, "Login ou mot de passe incorrect"));
         messages.put(ErrorIdentifier.STRUCTURE_NAME_ALREADY_EXISTS, new Error(422, "Nom d'ouvrage déjà existant"));
