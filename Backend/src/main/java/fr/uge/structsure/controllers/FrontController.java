@@ -3,7 +3,9 @@ package fr.uge.structsure.controllers;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.security.web.savedrequest.SavedRequest;
@@ -11,6 +13,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * Controller that serves the frontend as a SinglePageApplication, no
@@ -30,16 +35,37 @@ public class FrontController {
      * @return the content of the index.html page
      */
     @GetMapping("*")
-    public ResponseEntity<String> forwardToIndex(HttpServletRequest request, HttpSession session) {
+    public ResponseEntity<?> forwardToIndex(HttpServletRequest request, HttpSession session) {
         var savedRequest = (DefaultSavedRequest) session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+        ResponseEntity<?> response;
         if (request.getRequestURI().startsWith("/login") && savedRequest != null && savedRequest.getRequestURI().startsWith("/api")){
             // Request targeting the API that got redirected to the login page
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            response = new ResponseEntity<>(HTML, HttpStatus.UNAUTHORIZED);
+        } else if (request.getRequestURI().startsWith("/api")) {
+            response = null; // Give up and lets another endpoint take care of this request
+        } else if (request.getRequestURI().contains("..")) {
+            response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } else if (request.getRequestURI().contains(".")) {
+            response = tryLoad(request.getRequestURI())
+                .orElse(ResponseEntity.notFound().build());
+        } else {
+            response = ResponseEntity.ok(HTML);
         }
-        if (request.getRequestURI().startsWith("/api")) {
-            return null; // Give up and lets another endpoint take care of this request
+        return response;
+    }
+
+    private static Optional<ResponseEntity<InputStreamResource>> tryLoad(String path) {
+        ClassPathResource resource = new ClassPathResource("static" + path);
+        try {
+            var inputStream = new InputStreamResource(resource.getInputStream());
+            return Optional.of(
+                ResponseEntity.ok()
+                    .contentType(MediaType.valueOf(Files.probeContentType(Path.of(path))))
+                    .body(inputStream)
+            );
+        } catch (IOException e) {
+            return Optional.empty();
         }
-        return ResponseEntity.ok(HTML);
     }
 
     /**
