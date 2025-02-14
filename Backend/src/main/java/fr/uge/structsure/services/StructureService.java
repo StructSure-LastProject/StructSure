@@ -161,7 +161,7 @@ public class StructureService {
      * @throws TraitementException if there is no structure in the database we throw this exception
      */
     public List<AllStructureResponseDTO> getAllStructure() throws TraitementException {
-        var structures = structureRepository.findAll();
+        /*var structures = structureRepository.findAll();
         if (structures.isEmpty()) {
             throw new TraitementException(ErrorIdentifier.LIST_STRUCTURES_EMPTY);
         }
@@ -172,7 +172,9 @@ public class StructureService {
                         getState(structure),
                         structure.getArchived()
                 )
-        ).toList();
+        ).toList();*/
+        System.err.println("Here");
+        return structureRepository.findStructuresWithState();
     }
 
     /**
