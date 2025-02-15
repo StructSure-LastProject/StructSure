@@ -8,7 +8,6 @@ import android.os.Build
 import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.ActivityCompat
 import com.csl.cslibrary4a.ReaderDevice
-import fr.uge.structsure.MainActivity
 import fr.uge.structsure.MainActivity.Companion.csLibrary4A
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -32,6 +31,7 @@ class Cs108Connector(private val context: Context) {
             private set
         var device: ReaderDevice? = null
             private set
+        var isConnected: Boolean = csLibrary4A.isBleConnected
         var isReady: Boolean = false
             private set
     }
@@ -56,7 +56,7 @@ class Cs108Connector(private val context: Context) {
     @OptIn(DelicateCoroutinesApi::class)
     fun start() {
         if (scanTask != null) return
-        MainActivity.csLibrary4A.scanLeDevice(true)
+        csLibrary4A.scanLeDevice(true)
         scanTask = GlobalScope.launch { pollDevices() }
         println("[DeviceConnector] Scan started")
     }
@@ -66,7 +66,7 @@ class Cs108Connector(private val context: Context) {
      */
     fun stop() {
         if (scanTask == null) return
-        MainActivity.csLibrary4A.scanLeDevice(false)
+        csLibrary4A.scanLeDevice(false)
         runBlocking {
             scanTask!!.cancelAndJoin()
         }
@@ -85,7 +85,7 @@ class Cs108Connector(private val context: Context) {
         pairTask = GlobalScope.launch {
             var bleConnected: Boolean? = null
             try {
-                MainActivity.csLibrary4A.connect(device)
+                csLibrary4A.connect(device)
                 bleConnected = waitForBleConnection(device)
                 if (!bleConnected) return@launch
                 waitForDeviceReady()
@@ -106,7 +106,7 @@ class Cs108Connector(private val context: Context) {
     fun disconnect() {
         if (device != null) {
             println("[DeviceConnector] Disconnected from device")
-            MainActivity.csLibrary4A.disconnect(false)
+            csLibrary4A.disconnect(false)
             devices.remove(device)
             device!!.isConnected = false
             devices.add(device!!)
@@ -159,7 +159,7 @@ class Cs108Connector(private val context: Context) {
             coroutineScope {
                 ensureActive()
             }
-            if (MainActivity.csLibrary4A.isBleConnected) {
+            if (csLibrary4A.isBleConnected) {
                 Cs108Connector.device = device
                 devices.remove(device)
                 device.isConnected = true
@@ -180,7 +180,7 @@ class Cs108Connector(private val context: Context) {
      */
     private suspend fun waitForDeviceReady() {
         coroutineScope {
-            while (MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
+            while (csLibrary4A.mrfidToWriteSize() != 0) {
                 ensureActive()
                 delay(500L)
             }
@@ -201,7 +201,7 @@ class Cs108Connector(private val context: Context) {
             coroutineScope {
                 while (true) {
                     ensureActive()
-                    val data = MainActivity.csLibrary4A.newDeviceScanned
+                    val data = csLibrary4A.newDeviceScanned
                     if (data != null && checkPermission()) {
                         if (data.device.type == BluetoothDevice.DEVICE_TYPE_LE && !isKnownDevice(
                                 data.device
@@ -213,7 +213,7 @@ class Cs108Connector(private val context: Context) {
                                 data.device.name,
                                 data.device.address,
                                 false,
-                                strInfo + "scanRecord=" + MainActivity.csLibrary4A.byteArrayToString(
+                                strInfo + "scanRecord=" + csLibrary4A.byteArrayToString(
                                     data.scanRecord
                                 ),
                                 1,
@@ -243,15 +243,15 @@ class Cs108Connector(private val context: Context) {
             coroutineScope {
                 while (true) {
                     ensureActive()
-                    if (MainActivity.csLibrary4A.isBleConnected) {
-                        val lvl = MainActivity.csLibrary4A.getBatteryDisplay(false)
+                    if (csLibrary4A.isBleConnected) {
+                        val lvl = csLibrary4A.getBatteryDisplay(false)
                         val pos = lvl.indexOf('%')
                         val level = if (pos == -1) 0 else lvl.substring(0, lvl.indexOf('%')).toInt()
                         if (level != battery) {
                             battery = level
                             onBatteryChange(battery)
                         }
-                    } else if (battery !=  -1) {
+                    } else if (battery != -1) {
                         battery = -1
                         onBatteryChange(battery)
                     }

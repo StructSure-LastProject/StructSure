@@ -2,7 +2,6 @@ package fr.uge.structsure.bluetooth.cs108
 
 import com.csl.cslibrary4a.RfidReaderChipData
 import fr.uge.structsure.MainActivity
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -64,7 +63,7 @@ class Cs108Scanner(private val callback: (RfidChip) -> Unit) {
                     ensureActive()
                     val event = MainActivity.csLibrary4A.onRFIDEvent()
                     if (event != null) {
-                        callback(RfidChip(event))
+                        callback(RfidChip(MainActivity.csLibrary4A, event))
                     } else {
                         delay(100L)
                     }

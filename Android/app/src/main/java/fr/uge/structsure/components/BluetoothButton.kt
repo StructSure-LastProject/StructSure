@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import fr.uge.structsure.MainActivity.Companion.csLibrary4A
 import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.presentation.BluetoothPage
@@ -45,7 +44,7 @@ import fr.uge.structsure.ui.theme.White
  */
 @Composable
 fun BluetoothButton(connexion: Cs108Connector) {
-    val isBluetoothConnected = csLibrary4A.isBleConnected
+    val isBluetoothConnected = Cs108Connector.isConnected
 
     var batteryLevel by remember { mutableIntStateOf(Cs108Connector.battery) }
     var showPopUp by remember { mutableStateOf(false) }
