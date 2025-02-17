@@ -53,13 +53,14 @@ import fr.uge.structsure.ui.theme.fonts
  * @param viewModel the view model used to fetch the plan image
  */
 @Composable
-fun PlansView(planId: Long, viewModel: PlanViewModel) {
+fun PlansView(structureId: Long, viewModel: PlanViewModel) {
     val selected = remember { mutableStateOf("Section OA/Plan 01") }
     val planBitmap by viewModel.planImage.observeAsState()
+    // val plans by viewModel.plans.observeAsState(initial = emptyList()) // for selectors
     val points = remember { mutableStateListOf<Point>() }
 
-    LaunchedEffect(planId) {
-        viewModel.fetchPlanImage(planId)
+    LaunchedEffect(structureId) {
+        viewModel.loadPlans(structureId)
     }
 
     Column(

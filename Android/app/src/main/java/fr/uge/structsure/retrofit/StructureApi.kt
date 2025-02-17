@@ -15,6 +15,9 @@ interface StructureApi {
     @GET("/api/structures/android/{id}")
     fun getStructureDetails(@Path("id") id: Long): Call<GetStructureDetailsResponse>
 
-    @GET("/api/structures/{id}/plans/image")
-    suspend fun downloadPlanImage(@Path("id") id: Long): Response<ResponseBody>
+    @GET("api/structures/{id}/plans/{planId}/image")
+    suspend fun downloadPlanImage(
+        @Path("id") structureId: Long,
+        @Path("planId") planId: Long
+    ): Response<ResponseBody>
 }

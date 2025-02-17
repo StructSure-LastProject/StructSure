@@ -11,12 +11,9 @@ interface PlanDao {
     @Upsert
     fun upsertPlan(plan: PlanDB)
 
-    @Query("DELETE FROM sensors WHERE structureId = :structureId")
+    @Query("DELETE FROM `plan` WHERE structureId = :structureId")
     fun deletePlansByStructureId(structureId: Long)
 
-    @Query("SELECT * FROM `plan` WHERE id = :structureId")
+    @Query("SELECT * FROM `plan`  WHERE structureId = :structureId")
     suspend fun getPlansByStructureId(structureId: Long): List<PlanDB>
-
-    @Query("SELECT section FROM `plan` WHERE id = :planId")
-    suspend fun getSectionOfApLan(planId: Long): String
 }

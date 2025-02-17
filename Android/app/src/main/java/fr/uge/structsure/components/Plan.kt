@@ -67,7 +67,7 @@ fun Plan(image: Bitmap, points: MutableList<Point>) {
             contentDescription = "Plan",
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) {
+                .pointerInput(Unit) {  /* Zoom and pane the image*/
                     detectTransformGestures { centroid, pan, zoom, _ ->
                         val adjustment = centroid * (1 - zoom)
                         offset = (offset + pan) * zoom + adjustment
