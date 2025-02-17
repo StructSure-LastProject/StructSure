@@ -91,9 +91,7 @@ public class PlanService {
 
         var directory = computeDirectory(noSection, structureId, metadata.section());
         var filePath = Path.of(directory.toString(), Objects.requireNonNull(multipartFile.getOriginalFilename()));
-        var name = plan.getName().equals(metadata.name()) ? plan.getName(
-
-        ) : metadata.name();
+        var name = plan.getName().equals(metadata.name()) ? plan.getName() : metadata.name();
         var section = plan.getSection().equals(metadata.section()) ? plan.getSection() : metadata.section();
 
         plan.setName(name);
