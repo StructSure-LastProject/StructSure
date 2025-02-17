@@ -17,6 +17,12 @@ const AccountDetails = ({fetchUserDetails ,firstName, lastName, login, role, isE
      * Handle the edit account click event by opening the modal
      */
     const handleEditAccountClick = () => {
+        if (localStorage.getItem("login") === "StructSureAdmin" && login === "StructSureAdmin") {
+            return;
+        }
+        if (role === "Admin" && localStorage.getItem("login") !== "StructSureAdmin") {
+            return;
+        }
         setIsEditModalOpen(true); 
     };
 
@@ -49,7 +55,8 @@ const AccountDetails = ({fetchUserDetails ,firstName, lastName, login, role, isE
     
     return (
         <div>
-            <button onClick={handleEditAccountClick} class={`${!isEnabled ? "opacity-[50%]" : ""} flex justify-between items-center py-[10px] px-[25px] bg-white rounded-[20px] w-full h-auto`}>
+            <button onClick={handleEditAccountClick} class={`${!isEnabled ? "opacity-[50%]" : ""}  
+                ${(role === "Admin" && localStorage.getItem("login") !== "StructSureAdmin") || (login === "StructSureAdmin" && localStorage.getItem("login") === "StructSureAdmin") ? "cursor-not-allowed" : ""} flex justify-between items-center py-[10px] px-[25px] bg-white rounded-[20px] w-full h-auto`}>
                 <div class="flex flex-col text-start w-full sm:w-[200px] md:w-[219px] h-auto">
                     <h2 class="text-lg font-poppins title-medium-name">{firstName} {lastName}</h2>
                     <span class="font-poppins HeadLineMedium text-gray-500">{login}</span>

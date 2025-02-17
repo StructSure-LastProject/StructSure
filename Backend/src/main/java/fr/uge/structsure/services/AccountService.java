@@ -13,6 +13,12 @@ import fr.uge.structsure.exceptions.ErrorIdentifier;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
 import fr.uge.structsure.utils.userAccountRequestValidation.UserAccountRequestValidation;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.io.DecodingException;
+import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,12 +29,14 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Account service class
  */
 @Service
 public class AccountService {
+    private static final String SUPER_ADMIN_LOGIN = "StructSureAdmin";
     private final AccountRepository accountRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
@@ -158,17 +166,10 @@ public class AccountService {
      * @return RegisterResponseDTO The login of the user
      * @throws TraitementException thrown if login or role not exist and also thrown if super-admin role was requested to change
      */
-    public RegisterResponseDTO updateRole(String login, RoleRequest roleRequest) throws TraitementException {
+    public RegisterResponseDTO updateRole(String login, RoleRequest roleRequest, HttpServletRequest request) throws TraitementException {
         Objects.requireNonNull(roleRequest);
-
-        var userAccount = accountRepository.findByLogin(login);
-        if (userAccount.isEmpty()){
-            throw new TraitementException(ErrorIdentifier.USER_ACCOUNT_NOT_FOUND);
-        }
-        if (userAccount.get().getLogin().equals("StructsureAdmin") && userAccount.get().getRole() == Role.ADMIN){
-            throw new TraitementException(ErrorIdentifier.SUPER_ADMIN_ACCOUNT_CANT_BE_MODIFIED);
-        }
-
+        var userSessionAccount = checkTokenValidity(request);
+        var userAccount = userAccountOperationChecker(login, userSessionAccount);
         Role role;
         try {
             role = Role.fromValue(roleRequest.role());
@@ -176,10 +177,62 @@ public class AccountService {
             throw new TraitementException(ErrorIdentifier.ROLE_NOT_EXISTS);
         }
 
-        var user = userAccount.get();
-        user.setRole(role);
-        accountRepository.save(user);
+        if (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) &&
+                userSessionAccount.getRole() == Role.ADMIN &&
+                userAccount.getRole() != Role.ADMIN &&
+                Role.ADMIN == role
+        ){
+            throw new TraitementException(ErrorIdentifier.UNAUTHORIZED_OPERATION);
+        }
+        userAccount.setRole(role);
+        accountRepository.save(userAccount);
+        return new RegisterResponseDTO(userAccount.getLogin());
+    }
 
-        return new RegisterResponseDTO(user.getLogin());
+    /**
+     * Check if is possible to change role of the given user
+     * @param login The login
+     * @param userSessionAccount User that requested the operation
+     * @return Optional<Account> Return the account if exist
+     * @throws TraitementException thrown custom exceptions
+     */
+    private Account userAccountOperationChecker(String login, Account userSessionAccount) throws TraitementException {
+        Objects.requireNonNull(login);
+        Objects.requireNonNull(userSessionAccount);
+        var userAccount = accountRepository.findByLogin(login);
+        if (userAccount.isEmpty()){
+            throw new TraitementException(ErrorIdentifier.USER_ACCOUNT_NOT_FOUND);
+        }
+        if (userAccount.get().getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.get().getRole() == Role.ADMIN){
+            throw new TraitementException(ErrorIdentifier.SUPER_ADMIN_ACCOUNT_CANT_BE_MODIFIED);
+        }
+
+        if (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.get().getRole() == Role.ADMIN){
+            throw new TraitementException(ErrorIdentifier.ADMIN_ACCOUNT_CANT_BE_MODIFIED_BY_AN_ADMIN_ACCOUNT);
+        }
+        return userAccount.get();
+    }
+
+    /**
+     * Check the validity of the JWT TOKEN
+     * @param request The HTTP Request
+     * @return Optional<Account> Return the account if exist
+     * @throws TraitementException thrown JWT token extract exception into custom exception
+     */
+    private Account checkTokenValidity(HttpServletRequest request) throws TraitementException {
+        Objects.requireNonNull(request);
+        Optional<Account> account;
+        try {
+            var token = request.getHeader("authorization");
+            if (token.startsWith("Bearer ")) token = token.substring(7);
+            account = accountRepository.findByLogin(jwtUtils.extractUsername(token));
+        } catch (UnsupportedJwtException | MalformedJwtException | DecodingException | SignatureException | ExpiredJwtException | IllegalArgumentException | NullPointerException e){
+            throw new TraitementException(ErrorIdentifier.INVALID_TOKEN);
+        }
+
+        if (account.isEmpty()){
+            throw new TraitementException(ErrorIdentifier.INVALID_TOKEN);
+        }
+        return account.get();
     }
 }
