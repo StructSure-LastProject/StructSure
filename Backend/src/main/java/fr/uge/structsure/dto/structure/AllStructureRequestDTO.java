@@ -6,21 +6,21 @@ import fr.uge.structsure.utils.OrderEnum;
 import java.util.Objects;
 
 @JsonSerialize
-public record AllStructureRequestDTO(String searchByName, SortTypeEnum sortTypeEnum, OrderEnum order) {
+public record AllStructureRequestDTO(String searchByName, OrderByColumn orderByColumnName, OrderEnum orderType) {
     public AllStructureRequestDTO {
         Objects.requireNonNull(searchByName);
-        Objects.requireNonNull(sortTypeEnum);
-        Objects.requireNonNull(order);
+        Objects.requireNonNull(orderByColumnName);
+        Objects.requireNonNull(orderType);
     }
 
-    public enum SortTypeEnum {
+    public enum OrderByColumn {
         STATE("state"),
         NUMBER_OF_SENSORS("numberOfSensors"),
         NAME("name");
 
         private final String value;
 
-        SortTypeEnum(String value) {
+        OrderByColumn(String value) {
             this.value = value;
         }
 
