@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.MainActivity.Companion.db
+import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
@@ -217,6 +218,10 @@ class ScanViewModel: ViewModel() {
      * @param structureId ID of the structure to scan.
      */
     fun createNewScan(structureId: Long) {
+        if (!Cs108Connector.isReady) {
+            sensorMessages.postValue("Interrogateur non connecté")
+            return
+        }
         cs108Scanner.start()
         currentScanState.postValue(ScanState.STARTED)
         alertMessages.postValue(null)
