@@ -9,7 +9,7 @@ import fr.uge.structsure.dto.userAccount.RoleRequest;
 import fr.uge.structsure.dto.userAccount.UserAccountResponseDTO;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
-import fr.uge.structsure.exceptions.ErrorIdentifier;
+import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
 import fr.uge.structsure.utils.userAccountRequestValidation.UserAccountRequestValidation;
@@ -64,20 +64,20 @@ public class AccountService {
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) throws TraitementException {
         Objects.requireNonNull(registerRequestDTO);
         if (checkIfNullInCreateNewUserAccountRequest(registerRequestDTO)){
-            throw new TraitementException(ErrorIdentifier.MISSING_USER_ACCOUNT_FIELDS);
+            throw new TraitementException(Error.MISSING_USER_ACCOUNT_FIELDS);
         }
         if(!validateCreateNewUserAccountRequest(registerRequestDTO)){
-            throw new TraitementException(ErrorIdentifier.INVALID_USER_ACCOUNT_FIELDS);
+            throw new TraitementException(Error.INVALID_USER_ACCOUNT_FIELDS);
         }
 
         if (accountRepository.findByLogin(registerRequestDTO.login()).isPresent()) {
-            throw new TraitementException(ErrorIdentifier.USER_ALREADY_EXISTS);
+            throw new TraitementException(Error.USER_ALREADY_EXISTS);
         }
         Role role;
         try {
             role = Role.fromValue(registerRequestDTO.role());
         } catch (IllegalArgumentException e) {
-            throw new TraitementException(ErrorIdentifier.ROLE_NOT_EXISTS);
+            throw new TraitementException(Error.ROLE_NOT_EXISTS);
         }
         var account = new Account(registerRequestDTO.login(), new BCryptPasswordEncoder().encode(registerRequestDTO.password()),
                 registerRequestDTO.firstname(), registerRequestDTO.lastname(),
@@ -105,9 +105,9 @@ public class AccountService {
                         accountDetails.getLogin(), accountDetails.getFirstname(), accountDetails.getLastname(),
                         accountDetails.getRole().toString());
             }
-            throw new TraitementException(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT);
+            throw new TraitementException(Error.LOGIN_PASSWORD_NOT_CORRECT);
         } catch (AuthenticationException e) {
-            throw new TraitementException(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT);
+            throw new TraitementException(Error.LOGIN_PASSWORD_NOT_CORRECT);
         }
     }
 
@@ -174,7 +174,7 @@ public class AccountService {
         try {
             role = Role.fromValue(roleRequest.role());
         } catch (IllegalArgumentException e) {
-            throw new TraitementException(ErrorIdentifier.ROLE_NOT_EXISTS);
+            throw new TraitementException(Error.ROLE_NOT_EXISTS);
         }
 
         if (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) &&
@@ -182,7 +182,7 @@ public class AccountService {
                 userAccount.getRole() != Role.ADMIN &&
                 Role.ADMIN == role
         ){
-            throw new TraitementException(ErrorIdentifier.UNAUTHORIZED_OPERATION);
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
         }
         userAccount.setRole(role);
         accountRepository.save(userAccount);
@@ -201,14 +201,14 @@ public class AccountService {
         Objects.requireNonNull(userSessionAccount);
         var userAccount = accountRepository.findByLogin(login);
         if (userAccount.isEmpty()){
-            throw new TraitementException(ErrorIdentifier.USER_ACCOUNT_NOT_FOUND);
+            throw new TraitementException(Error.USER_ACCOUNT_NOT_FOUND);
         }
         if (userAccount.get().getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.get().getRole() == Role.ADMIN){
-            throw new TraitementException(ErrorIdentifier.SUPER_ADMIN_ACCOUNT_CANT_BE_MODIFIED);
+            throw new TraitementException(Error.SUPER_ADMIN_ACCOUNT_CANT_BE_MODIFIED);
         }
 
         if (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.get().getRole() == Role.ADMIN){
-            throw new TraitementException(ErrorIdentifier.ADMIN_ACCOUNT_CANT_BE_MODIFIED_BY_AN_ADMIN_ACCOUNT);
+            throw new TraitementException(Error.ADMIN_ACCOUNT_CANT_BE_MODIFIED_BY_AN_ADMIN_ACCOUNT);
         }
         return userAccount.get();
     }
@@ -227,11 +227,11 @@ public class AccountService {
             if (token.startsWith("Bearer ")) token = token.substring(7);
             account = accountRepository.findByLogin(jwtUtils.extractUsername(token));
         } catch (UnsupportedJwtException | MalformedJwtException | DecodingException | SignatureException | ExpiredJwtException | IllegalArgumentException | NullPointerException e){
-            throw new TraitementException(ErrorIdentifier.INVALID_TOKEN);
+            throw new TraitementException(Error.INVALID_TOKEN);
         }
 
         if (account.isEmpty()){
-            throw new TraitementException(ErrorIdentifier.INVALID_TOKEN);
+            throw new TraitementException(Error.INVALID_TOKEN);
         }
         return account.get();
     }

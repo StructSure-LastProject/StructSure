@@ -1,9 +1,7 @@
 package fr.uge.structsure.controllers;
 
-import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
-import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +27,7 @@ public class AuthenticationController {
         try {
             return ResponseEntity.status(200).body(accountService.register(registerRequestDTO));
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 
@@ -39,8 +36,7 @@ public class AuthenticationController {
         try {
             return ResponseEntity.status(200).body(accountService.login(loginRequestDTO));
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 

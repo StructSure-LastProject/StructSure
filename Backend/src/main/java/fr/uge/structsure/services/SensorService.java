@@ -3,15 +3,13 @@ package fr.uge.structsure.services;
 import fr.uge.structsure.dto.sensors.AddSensorAnswerDTO;
 import fr.uge.structsure.dto.sensors.AddSensorRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
-import fr.uge.structsure.dto.sensors.SensorFilterDTO;
 import fr.uge.structsure.entities.Sensor;
-import fr.uge.structsure.exceptions.ErrorIdentifier;
+import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.StateEnum;
-import fr.uge.structsure.utils.sort.SortStrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +18,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class SensorService {
@@ -45,7 +42,7 @@ public class SensorService {
     public List<SensorDTO> getSensors(long structureId) throws TraitementException {
         var structure = structureRepository.findById(structureId);
         if (structure.isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.STRUCTURE_ID_NOT_FOUND);
+            throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
         var sensors = sensorRepository.findByStructureId(structureId);
         return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
@@ -88,19 +85,19 @@ public class SensorService {
         sensorEmptyPrecondition(request);
         sensorMalformedPrecondition(request);
         if (request.measureChip().equals(request.controlChip())) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_CHIP_TAGS_ARE_IDENTICAL);
+            throw new TraitementException(Error.SENSOR_CHIP_TAGS_ARE_IDENTICAL);
         }
         var structure = structureRepository.findById(request.structureId());
         if (structure.isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_STRUCTURE_NOT_FOUND);
+            throw new TraitementException(Error.SENSOR_STRUCTURE_NOT_FOUND);
         }
         var alreadyUsedName = sensorRepository.findByName(request.name());
         if (alreadyUsedName.isPresent()) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_NAME_ALREADY_EXISTS);
+            throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
         }
         var alreadyUsedSensorId = !sensorRepository.findByChipTag(request.controlChip()).isEmpty();
         if (alreadyUsedSensorId) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
+            throw new TraitementException(Error.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
         }
         var sensor = new Sensor(request.controlChip(),
                 request.measureChip(),
@@ -127,13 +124,13 @@ public class SensorService {
     private void sensorEmptyPrecondition(AddSensorRequestDTO request) throws TraitementException {
         Objects.requireNonNull(request);
         if (request.controlChip() == null || request.measureChip() == null) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_CHIP_TAGS_IS_EMPTY);
+            throw new TraitementException(Error.SENSOR_CHIP_TAGS_IS_EMPTY);
         }
         if (request.name() == null) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_NAME_IS_EMPTY);
+            throw new TraitementException(Error.SENSOR_NAME_IS_EMPTY);
         }
         if (request.installationDate() == null || request.installationDate().isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_INSTALLATION_DATE_IS_EMPTY);
+            throw new TraitementException(Error.SENSOR_INSTALLATION_DATE_IS_EMPTY);
         }
     }
 
@@ -148,22 +145,22 @@ public class SensorService {
      */
     private void sensorMalformedPrecondition(AddSensorRequestDTO request) throws TraitementException {
         if (request.controlChip().isEmpty() || request.controlChip().length() > 32) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_CHIP_TAGS_EXCEED_LIMIT);
+            throw new TraitementException(Error.SENSOR_CHIP_TAGS_EXCEED_LIMIT);
         }
         if (request.measureChip().isEmpty() || request.measureChip().length() > 32) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_CHIP_TAGS_EXCEED_LIMIT);
+            throw new TraitementException(Error.SENSOR_CHIP_TAGS_EXCEED_LIMIT);
         }
         if (request.name().isEmpty() || request.name().length() > 32) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_NAME_EXCEED_LIMIT);
+            throw new TraitementException(Error.SENSOR_NAME_EXCEED_LIMIT);
         }
         if (request.note() != null && request.note().length() > 1000) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_NOTE_EXCEED_LIMIT);
+            throw new TraitementException(Error.SENSOR_NOTE_EXCEED_LIMIT);
         }
         var formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd");
         try {
             LocalDate.parse(request.installationDate(), formatter);
         } catch (DateTimeParseException e) {
-            throw new TraitementException(ErrorIdentifier.SENSOR_INSTALLATION_DATE_INVALID_FORMAT);
+            throw new TraitementException(Error.SENSOR_INSTALLATION_DATE_INVALID_FORMAT);
         }
     }
 }

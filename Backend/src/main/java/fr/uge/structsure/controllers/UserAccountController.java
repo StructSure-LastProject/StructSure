@@ -1,10 +1,7 @@
 package fr.uge.structsure.controllers;
 
-import fr.uge.structsure.config.JwtUtils;
-import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.dto.userAccount.RoleRequest;
-import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,8 +51,7 @@ public class UserAccountController {
         try {
             return ResponseEntity.status(201).body(accountService.register(registerRequestDTO));
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 
@@ -72,9 +68,8 @@ public class UserAccountController {
         Objects.requireNonNull(roleRequest);
         try {
             return ResponseEntity.status(200).body(accountService.updateRole(login, roleRequest, request));
-        } catch (TraitementException e){
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        } catch (TraitementException e) {
+            return e.toResponseEntity();
         }
     }
 

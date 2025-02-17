@@ -2,8 +2,8 @@ package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.plan.*;
 import fr.uge.structsure.entities.Plan;
-import fr.uge.structsure.exceptions.ErrorIdentifier;
 import fr.uge.structsure.exceptions.TraitementException;
+import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.repositories.PlanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,11 +56,11 @@ public class PlanService {
         planMalformedPrecondition(metadata);
         planConsistencyPrecondition(file);
         var noSection = metadata.section() == null || metadata.section().isEmpty();
-        var structure = structureService.existStructure(structureId).orElseThrow(() -> new TraitementException(ErrorIdentifier.PLAN_STRUCTURE_NOT_FOUND));
+        var structure = structureService.existStructure(structureId).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
         var directory = computeDirectory(noSection, structureId, metadata.section());
         var filePath = directory + File.separator + file.getOriginalFilename();
         if (planRepository.planFileAlreadyExists(filePath)) {
-            throw new TraitementException(ErrorIdentifier.PLAN_ALREADY_EXISTS);
+            throw new TraitementException(Error.PLAN_ALREADY_EXISTS);
         }
         managedFilesDirectory(directory);
         var savedPlan = handleAddPlan(directory, file, new Plan(filePath, metadata.name(), metadata.section(), structure));
@@ -83,7 +83,7 @@ public class PlanService {
         planMalformedPrecondition(metadata);
         planConsistencyPrecondition(multipartFile);
         var noSection = metadata.section() == null || metadata.section().isEmpty();
-        var plan = planRepository.findById(planId).orElseThrow(() -> new TraitementException(ErrorIdentifier.PLAN_NOT_FOUND));
+        var plan = planRepository.findById(planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
         var planFile = Path.of(plan.getImageUrl());
 
         var directory = computeDirectory(noSection, structureId, metadata.section());
@@ -131,7 +131,7 @@ public class PlanService {
             file.transferTo(filePath);
         } catch (IOException e) {
             log.severe("IOException when uploading file to server : " + e.getMessage());
-            throw new TraitementException(ErrorIdentifier.SERVER_ERROR);
+            throw new TraitementException(Error.SERVER_ERROR);
         }
     }
 
@@ -155,7 +155,7 @@ public class PlanService {
             }
         } catch (IOException e) {
             log.severe("IOException when moving file in the server (from '" + source + "' to '"+ dest + "') : " + e.getMessage());
-            throw new TraitementException(ErrorIdentifier.SERVER_ERROR);
+            throw new TraitementException(Error.SERVER_ERROR);
         }
     }
 
@@ -174,7 +174,7 @@ public class PlanService {
             }
         } catch (IOException e) {
             log.severe("IOException when deleting file in the server : " + e.getMessage());
-            throw new TraitementException(ErrorIdentifier.SERVER_ERROR);
+            throw new TraitementException(Error.SERVER_ERROR);
         }
     }
 
@@ -244,7 +244,7 @@ public class PlanService {
         } catch (Exception e) {
             log.severe("IOException when adding plan to db : " + e.getMessage());
             deleteFile(filePath);
-            throw new TraitementException(ErrorIdentifier.SERVER_ERROR);
+            throw new TraitementException(Error.SERVER_ERROR);
         }
         return savedPlan;
     }
@@ -259,7 +259,7 @@ public class PlanService {
     private void planConsistencyPrecondition(MultipartFile file) throws TraitementException {
         var mimeType = file.getContentType();
         if (mimeType == null || !ALLOWED_MIME_TYPES.contains(mimeType)) {
-            throw new TraitementException(ErrorIdentifier.PLAN_FILE_INVALID_FORMAT);
+            throw new TraitementException(Error.PLAN_FILE_INVALID_FORMAT);
         }
     }
 
@@ -274,13 +274,13 @@ public class PlanService {
     private void planEmptyPrecondition(Long structureId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
         Objects.requireNonNull(metadata);
         if (structureId == null) {
-            throw new TraitementException(ErrorIdentifier.PLAN_STRUCTURE_ID_IS_EMPTY);
+            throw new TraitementException(Error.PLAN_STRUCTURE_ID_IS_EMPTY);
         }
         if (metadata.name() == null || metadata.name().isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.PLAN_NAME_IS_EMPTY);
+            throw new TraitementException(Error.PLAN_NAME_IS_EMPTY);
         }
         if (file == null || file.isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.PLAN_FILE_IS_EMPTY);
+            throw new TraitementException(Error.PLAN_FILE_IS_EMPTY);
         }
     }
 
@@ -296,19 +296,19 @@ public class PlanService {
     private void planEmptyPrecondition(Long structureId, Long planId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
         Objects.requireNonNull(metadata);
         if (structureId == null) {
-            throw new TraitementException(ErrorIdentifier.PLAN_STRUCTURE_ID_IS_EMPTY);
+            throw new TraitementException(Error.PLAN_STRUCTURE_ID_IS_EMPTY);
         }
         if (planId == null) {
-            throw new TraitementException(ErrorIdentifier.PLAN_ID_IS_EMPTY);
+            throw new TraitementException(Error.PLAN_ID_IS_EMPTY);
         }
         if (metadata.name() == null || metadata.name().isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.PLAN_NAME_IS_EMPTY);
+            throw new TraitementException(Error.PLAN_NAME_IS_EMPTY);
         }
         if (metadata.section() == null) {
-            throw new TraitementException(ErrorIdentifier.PLAN_SECTION_IS_EMPTY);
+            throw new TraitementException(Error.PLAN_SECTION_IS_EMPTY);
         }
         if (file == null || file.isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.PLAN_FILE_IS_EMPTY);
+            throw new TraitementException(Error.PLAN_FILE_IS_EMPTY);
         }
     }
 
@@ -323,13 +323,13 @@ public class PlanService {
     private void planMalformedPrecondition(PlanMetadataDTO metadata) throws TraitementException {
         Objects.requireNonNull(metadata);
         if(metadata.name().isEmpty() || metadata.name().length() > 32) {
-            throw new TraitementException(ErrorIdentifier.PLAN_NAME_EXCEED_LIMIT);
+            throw new TraitementException(Error.PLAN_NAME_EXCEED_LIMIT);
         }
         if(metadata.section() != null && metadata.section().length() > 128) {
-            throw new TraitementException(ErrorIdentifier.PLAN_SECTION_EXCEED_LIMIT);
+            throw new TraitementException(Error.PLAN_SECTION_EXCEED_LIMIT);
         }
         if(metadata.section() !=null && !metadata.section().matches("^(?:[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*)?$")) {
-            throw new TraitementException(ErrorIdentifier.PLAN_SECTION_INVALID);
+            throw new TraitementException(Error.PLAN_SECTION_INVALID);
         }
     }
 
@@ -345,7 +345,7 @@ public class PlanService {
             Files.createDirectories(path);
         } catch (IOException e) {
             log.warning("IOException when looking and/or directories of the path : '" + path + "' : " + e.getMessage());
-            throw new TraitementException(ErrorIdentifier.SERVER_ERROR);
+            throw new TraitementException(Error.SERVER_ERROR);
         }
     }
 }
