@@ -2,6 +2,7 @@ package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
+import fr.uge.structsure.dto.structure.AllStructureRequestDTO;
 import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
@@ -146,9 +147,9 @@ public class StructureController {
      * @return List of structures
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllStructure() {
+    public ResponseEntity<?> getAllStructure(AllStructureRequestDTO allStructureRequestDTO){
         try {
-            return ResponseEntity.status(200).body(structureService.getAllStructure());
+            return ResponseEntity.status(200).body(structureService.getAllStructure(allStructureRequestDTO));
         } catch (TraitementException e) {
             return e.toResponseEntity();
         }
