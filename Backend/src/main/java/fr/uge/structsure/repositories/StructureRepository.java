@@ -56,9 +56,9 @@ public interface StructureRepository extends JpaRepository<Structure, Long> {
         LEFT JOIN Plan plan ON plan.structure = s
         WHERE LOWER(s.name) LIKE LOWER(CONCAT('%', :containsName, '%'))
         GROUP BY s.id
-        ORDER BY :sortTypeEnum ASC
+        ORDER BY COUNT(DISTINCT sensor.sensorId.measureChip) ASC
     """)
-    List<AllStructureResponseDTO> findAllStructuresWithStateAsc(AllStructureRequestDTO.SortTypeEnum sortTypeEnum, String containsName);
+    List<AllStructureResponseDTO> findAllStructuresWithStateAsc(String orderColumn, String containsName);
 
     /**
      * Returns the list of structures sorted by sortTypeEnum in desc order and for each one its state, number of sensors,
@@ -85,7 +85,7 @@ public interface StructureRepository extends JpaRepository<Structure, Long> {
         LEFT JOIN Plan plan ON plan.structure = s
         WHERE LOWER(s.name) LIKE LOWER(CONCAT('%', :containsName, '%'))
         GROUP BY s.id
-        ORDER BY :sortTypeEnum DESC
+        ORDER BY :orderColumn DESC
     """)
-    List<AllStructureResponseDTO> findAllStructuresWithStateDesc(AllStructureRequestDTO.SortTypeEnum sortTypeEnum, String containsName);
+    List<AllStructureResponseDTO> findAllStructuresWithStateDesc(String orderColumn, String containsName);
 }
