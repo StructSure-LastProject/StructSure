@@ -25,6 +25,8 @@ function StructureDetailPlans(props) {
     const [isOpen, setIsOpen] = createSignal(false);
     const [drawWidth, setDrawWidth] = createSignal(0);
     const [drawHeight, setDrawHeight] = createSignal(0);
+    const [error, setError] = createSignal("");
+
 
     /**
      * Add result of adding plan and log the list in the console
@@ -175,6 +177,9 @@ function StructureDetailPlans(props) {
                     bgColor = "#6A6A6A";
                     borderColor = "#6a6a6a40";
                     break;
+                default:
+                    setError("L'etat du sensor inconnu");
+                    break;
             }
 
             const sensorCanvasX = imgStartX + sensor.x * scaleX;
@@ -193,6 +198,9 @@ function StructureDetailPlans(props) {
     };
     
 
+    /**
+     * Handles the resize event
+     */
     const handleResize = () => {
         fixDpi();
         drawImage();
@@ -316,6 +324,12 @@ function StructureDetailPlans(props) {
     };
 
 
+    /**
+     * Checks if the zoom limit is reached
+     * @param {number} newImgWidth the new image width (after zoom)
+     * @param {number} newImgHeight the new image height (after zoom)
+     * @returns true if limit reached and false if not
+     */
     const zoomLimitReached = (newImgWidth, newImgHeight) => {
         return newImgWidth > ZOOM_LIMIT * drawWidth() || newImgHeight > ZOOM_LIMIT * drawHeight();
     };
