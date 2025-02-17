@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * This class regroups all the endpoints controllers for the sensor
+ */
 @RestController
 @RequestMapping("/api")
 public class SensorController {

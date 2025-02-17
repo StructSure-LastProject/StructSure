@@ -20,6 +20,9 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * This class regroups all the services available for the sensor
+ */
 @Service
 public class SensorService {
     private final SensorRepository sensorRepository;
@@ -27,6 +30,13 @@ public class SensorService {
     private final ResultRepository resultRepository;
     private final PlanRepository planRepository;
 
+    /**
+     * Initialise the sensor service
+     * @param sensorRepository the sensor repository
+     * @param structureRepository the structure repository
+     * @param resultRepository the result repository
+     * @param planRepository the plan repository
+     */
     @Autowired
     public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository, PlanRepository planRepository) {
         this.sensorRepository = sensorRepository;
