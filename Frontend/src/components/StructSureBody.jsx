@@ -18,12 +18,13 @@ function StructSureBody() {
     /**
      * Fetch the structures
      * @param {String} url the url for the server
-     * @param {String} name the name of the structure
-     * @param {String} sortBy the sort by string
+     * @param {String} containsName the name of the structure
+     * @param {String} orderBy the sort by string
      * @param {String} orderBy the order by string
      */
-    const structuresFetchRequest = async (url) => {
-        const token = localStorage.getItem("token");        
+    const structuresFetchRequest = async (url, searchByName, orderByColumnName, orderType) => {
+        const token = localStorage.getItem("token");       
+        const urlWithParams = `${url}?searchByName=${encodeURIComponent(searchByName)}&orderByColumnName=${encodeURIComponent(orderByColumnName)}&orderType=${encodeURIComponent(orderType)}`;
         
         const requestData = {
             method: "GET",
@@ -34,7 +35,7 @@ function StructSureBody() {
         };
 
         const { fetchData, statusCode, data, errorFetch } = useFetch();
-        await fetchData(url, requestData);
+        await fetchData(urlWithParams, requestData);
  
 
         if (statusCode() === 200) {
@@ -47,7 +48,7 @@ function StructSureBody() {
         }
     };
 
-    createResource(() => structuresFetchRequest("/api/structures"));
+    createResource(() => structuresFetchRequest("/api/structures", "", "STATE", "DESC"));
 
     /**
      * Return the corresponding icon based on the state and if the structure is archived or not

@@ -4,6 +4,7 @@ import fr.uge.structsure.dto.structure.AllStructureRequestDTO;
 import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
 import fr.uge.structsure.entities.*;
 import fr.uge.structsure.utils.OrderEnum;
+import fr.uge.structsure.utils.StateEnum;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -18,23 +19,28 @@ public class StructureRepositoryCriteriaQuery {
     @PersistenceContext
     EntityManager em;
 
+    /**
+     * Returns the list of structures sorted by sortTypeEnum and for each one its state, number of sensors,
+     * number of plans and if it's archived
+     * @return List<AllStructureResponseDTO> list of the structures
+     */
     public List<AllStructureResponseDTO> findAllStructuresWithState(AllStructureRequestDTO allStructureRequestDTO) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<AllStructureResponseDTO> cq = cb.createQuery(AllStructureResponseDTO.class);
-        Root<Structure> structure = cq.from(Structure.class);
-        Join<Structure, Sensor> sensor = structure.join("sensors", JoinType.LEFT);
-        Join<Sensor, Result> result = sensor.join("results", JoinType.LEFT);
-        Join<Structure, Plan> plan = structure.join("plans", JoinType.LEFT);
+        var cb = em.getCriteriaBuilder();
+        var cq = cb.createQuery(AllStructureResponseDTO.class);
+        var structure = cq.from(Structure.class);
+        var sensor = structure.join("sensors", JoinType.LEFT);
+        var result = sensor.join("results", JoinType.LEFT);
+        var plan = structure.join("plans", JoinType.LEFT);
 
-        Expression<Long> countMeasureChip = cb.countDistinct(sensor.get("sensorId").get("measureChip"));
-        Expression<Long> countPlans = cb.countDistinct(plan.get("id"));
-        Expression<Long> countDefective = cb.sum(cb.<Long>selectCase()
+        var countMeasureChip = cb.countDistinct(sensor.get("sensorId").get("measureChip"));
+        var countPlans = cb.countDistinct(plan.get("id"));
+        var countDefective = cb.sum(cb.<Long>selectCase()
                 .when(cb.equal(result.get("state"), State.DEFECTIVE), 1L)
                 .otherwise(0L));
-        Expression<Long> countNok = cb.sum(cb.<Long>selectCase()
+        var countNok = cb.sum(cb.<Long>selectCase()
                 .when(cb.equal(result.get("state"), State.NOK), 1L)
                 .otherwise(0L));
-        Expression<String> state = cb.<String>selectCase()
+        var state = cb.<String>selectCase()
                 .when(cb.equal(cb.countDistinct(sensor.get("sensorId")), 0L), "UNKNOWN")
                 .when(cb.greaterThan(countDefective, 0L), "DEFECTIVE")
                 .when(cb.greaterThan(countNok, 0L), "NOK")
@@ -49,12 +55,12 @@ public class StructureRepositoryCriteriaQuery {
                 structure.get("archived")
         ));
 
-        Predicate namePredicate = cb.like(cb.lower(structure.get("name")), "%" + allStructureRequestDTO.searchByName().toLowerCase() + "%");
+        var namePredicate = cb.like(cb.lower(structure.get("name")), "%" + allStructureRequestDTO.searchByName().toLowerCase() + "%");
         cq.where(namePredicate);
         cq.groupBy(structure.get("id"));
 
         Expression<?> orderExpression;
-        switch (allStructureRequestDTO.sortTypeEnum()) {
+        switch (allStructureRequestDTO.orderByColumnName()) {
             case NUMBER_OF_SENSORS -> orderExpression = countMeasureChip;
             case NAME -> orderExpression = structure.get("name");
             case STATE -> orderExpression = cb.selectCase()
@@ -64,7 +70,7 @@ public class StructureRepositoryCriteriaQuery {
                     .when(cb.equal(state, "OK"), 3);
             default -> orderExpression = structure.get("id");
         }
-        switch (allStructureRequestDTO.order()) {
+        switch (allStructureRequestDTO.orderType()) {
             case ASC -> cq.orderBy(cb.desc(orderExpression));
             case DESC -> cq.orderBy(cb.asc(orderExpression));
         };
