@@ -1,5 +1,6 @@
 package fr.uge.structsure.settingsPage.presentation
 
+import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,27 +16,36 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import fr.uge.structsure.MainActivity
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.components.InputText
 import fr.uge.structsure.components.Page
+import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
+import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
 
 /**
- * A composable function that represents the settings page of the application.
- * The page includes options to configure server address and interrogator sensitivity.
+ * SettingsPage is a composable function that renders the settings screen of the application.
+ * Users can update server configuration and interrogator sensitivity from this page.
  *
- * @param navController A NavController to handle navigation between pages (optional).
+ * @param navController NavController instance for handling navigation between screens.
  */
 @Composable
 fun SettingsPage(navController: NavController) {
+    var serverAddress by remember { mutableStateOf(RetrofitInstance.getBaseUrl().orEmpty()) }
+    var errorMessage by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val accountDao = MainActivity.db.accountDao()
+
     Page(
         backgroundColor = LightGray,
         decorated = true,
@@ -72,12 +82,20 @@ fun SettingsPage(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(0.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start,
             ) {
-                var serverAddress by remember { mutableStateOf("") }
                 InputText(
                     label = "Adresse du serveur",
                     value = serverAddress,
                     onChange = { s -> serverAddress = s }
                 )
+
+                if (errorMessage.isNotEmpty()) {
+                    Text(
+                        text = errorMessage,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Red,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
             Column(
@@ -102,12 +120,33 @@ fun SettingsPage(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()) {
                 ButtonText("Annuler", null, Black, LightGray, onClick = { navController.popBackStack() })
-                ButtonText("Enregistrer", null, White, Black, onClick = { /* TODO: Enregister Action */ })
+
+                ButtonText("Enregistrer", null, White, Black, onClick = {
+                    if (serverAddress.isBlank()) {
+                        errorMessage = "Veuillez renseigner l'adresse du serveur"
+                    } else if (!isValidUrl(serverAddress)) {
+                        errorMessage = "Veuillez entrer une URL valide du serveur"
+                    } else {
+                        val currentUser = accountDao.get()
+                        if (currentUser != null) {
+                            accountDao.disconnect(currentUser.login)
+                        }
+                        if (serverAddress != RetrofitInstance.getBaseUrl()) {
+                            PreferencesManager.saveServerUrl(context, serverAddress)
+                            PreferencesManager.clearServerUrl(context)
+                            RetrofitInstance.init(serverAddress)
+                            errorMessage = ""
+                            navController.navigate("ConnexionPage")
+                        } else {
+                            errorMessage = "L'adresse du serveur n'a pas changé. Vous êtes déjà connecté."
+                        }
+                    }
+                })
+
             }
         }
     }
 }
-
 
 /**
  * A composable function that represents a customized range slider for controlling the sensitivity of the interrogator.
@@ -140,4 +179,15 @@ private fun RangeSliderSensitivityInterog() {
         )
     }
 }
+
+
+/**
+ * Validates whether the provided URL is valid and starts with "http://" or "https://".
+ *
+ * @param url The URL string to validate.
+ * @return True if the URL is valid, false otherwise.
+ */
+private fun isValidUrl(url: String): Boolean =
+    Patterns.WEB_URL.matcher(url).matches() && (url.startsWith("http://") || url.startsWith("https://"))
+
 
