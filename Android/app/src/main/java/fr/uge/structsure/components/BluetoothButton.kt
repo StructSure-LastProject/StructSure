@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,7 +45,7 @@ import fr.uge.structsure.ui.theme.White
  */
 @Composable
 fun BluetoothButton(connexion: Cs108Connector) {
-    val isBluetoothConnected = Cs108Connector.isConnected
+    val isBluetoothConnected = Cs108Connector.isBleConnected.observeAsState().value?:false
 
     var batteryLevel by remember { mutableIntStateOf(Cs108Connector.battery) }
     var showPopUp by remember { mutableStateOf(false) }

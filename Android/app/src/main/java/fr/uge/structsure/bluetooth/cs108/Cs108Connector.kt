@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.MutableLiveData
@@ -24,23 +25,54 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CancellationException
 
-
+/**
+ * Proxy for the csLibrary4A library that makes interacting with the
+ * RFID interrogator simpler.
+ * This class provides all methods useful to monitor and interact with
+ * connection state of the interrogator. Once connected, RFID chips
+ * can be read using Cs108Scanner
+ */
 class Cs108Connector(private val context: Context) {
     companion object {
+        /** The label of this class for the logs */
+        private const val LOG_TAG = "TinyRFID-Connector"
+
+        /** Saves the background task that scan for nearby devices */
         private var scanTask: Job? = null
+
+        /** Saves the background task that handle device pairing */
         private var pairTask: Job? = null
+
+        /** Saves the background task that updates the battery level */
         private var batteryTask: Job? = null
+
+        /** The currently known battery level, -1 if the device is not ready */
         var battery: Int = -1
             private set
+
+        /** Dynamic list of compatible BLE devices detected by Cs108 lib */
         var devices: MutableList<ReaderDevice> = mutableStateListOf()
             private set
+
+        /** The currently connected device if any */
         var device: ReaderDevice? = null
             private set
-        var isConnected: Boolean = csLibrary4A.isBleConnected
+
+        /** Whether or not a BLE device is connected and ready to be used */
         var isReady: Boolean = false
             private set
+
+        /** Whether or not the bluetooth function is enabled on the phone */
         val isBleEnabled = MutableLiveData(BluetoothAdapter.getDefaultAdapter().isEnabled)
+
+        /** Whether or not a bluetooth device is connected */
         val isBleConnected = MutableLiveData(false)
+
+        /**
+         * Function that receives broadcast related to the bluetooth
+         * state changes. It changes isBleEnabled and isBleConnected
+         * variables when the bluetooth is turned ON/OFF on the phone.
+         */
         val bluetoothAdapter: BroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val action = intent.action
@@ -83,7 +115,7 @@ class Cs108Connector(private val context: Context) {
         if (scanTask != null) return
         csLibrary4A.scanLeDevice(true)
         scanTask = GlobalScope.launch { pollDevices() }
-        println("[DeviceConnector] Scan started")
+        Log.d(LOG_TAG, "Nearby devices scan started")
     }
 
     /**
@@ -121,7 +153,7 @@ class Cs108Connector(private val context: Context) {
                 // Interrupted
             }
             if (bleConnected == null) onBleConnected(false)
-            println("[DeviceConnector] Connection ended")
+            Log.i(LOG_TAG, "Device connection done: ${if (bleConnected == true) "success" else "failure"}")
             pairTask = null
         }
     }
@@ -131,14 +163,13 @@ class Cs108Connector(private val context: Context) {
      */
     fun disconnect() {
         if (device != null) {
-            println("[DeviceConnector] Disconnected from device")
             csLibrary4A.disconnect(false)
             devices.remove(device)
             device!!.isConnected = false
             device = null
             isReady = false
             isBleConnected.postValue(false)
-            println("[DeviceConnector] Disconnected from device")
+            Log.i(LOG_TAG, "Disconnected from device")
         }
     }
 
@@ -192,13 +223,13 @@ class Cs108Connector(private val context: Context) {
                 device.isConnected = true
                 devices.add(device)
                 onBleConnected(true)
-                println("[DeviceConnector] BLE connected")
+                Log.d(LOG_TAG, "Device connected: ${device.name}")
                 return true
             }
             delay(500L)
         }
         onBleConnected(false)
-        println("[DeviceConnector] BLE timeout")
+        Log.w(LOG_TAG, "Device connection failed: timeout")
         return false
     }
 
@@ -215,7 +246,7 @@ class Cs108Connector(private val context: Context) {
         if (batteryTask == null) {
             batteryTask = GlobalScope.launch { pollBattery() }
         }
-        println("[DeviceConnector] Device Ready")
+        Log.d(LOG_TAG, "Connected device is now ready")
     }
 
     /**
@@ -249,7 +280,7 @@ class Cs108Connector(private val context: Context) {
         } catch (e: CancellationException) {
             // Interrupted
         }
-        println("[DeviceConnector] Scan stopped")
+        Log.d(LOG_TAG, "Nearby devices scan stopped")
         scanTask = null
     }
 
@@ -286,7 +317,7 @@ class Cs108Connector(private val context: Context) {
         } catch (e: CancellationException) {
             // Interrupted
         }
-        println("[DeviceConnector] Battery poll stopped")
+        Log.d(LOG_TAG, "Battery polling stopped")
         batteryTask = null
     }
 

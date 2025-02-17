@@ -1,5 +1,6 @@
 package fr.uge.structsure.bluetooth.cs108
 
+import android.util.Log
 import com.csl.cslibrary4a.RfidReaderChipData
 import fr.uge.structsure.MainActivity
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -21,6 +22,7 @@ import java.util.concurrent.CancellationException
  */
 class Cs108Scanner(private val callback: (RfidChip) -> Unit) {
     companion object {
+        private const val LOG_TAG = "TinyRFID-Scanner"
         private var task: Job? = null
     }
 
@@ -33,7 +35,7 @@ class Cs108Scanner(private val callback: (RfidChip) -> Unit) {
         if (task != null) return
         MainActivity.csLibrary4A.startOperation(RfidReaderChipData.OperationTypes.TAG_INVENTORY_COMPACT)
         task = GlobalScope.launch { pollRfid() }
-        println("[TinyRfid] Scan started")
+        Log.d(LOG_TAG, "RFID scan started")
     }
 
     /**
@@ -72,7 +74,7 @@ class Cs108Scanner(private val callback: (RfidChip) -> Unit) {
         } catch (e: CancellationException) {
             // Interrupted
         }
-        println("[TinyRfid] Scan stopped")
+        Log.d(LOG_TAG, "RFID scan stopped")
         task = null
     }
 
