@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
     companion object {
         var darkStatusBar: AtomicBoolean = AtomicBoolean(true)
         lateinit var csLibrary4A: Cs108Library4A
+
         /** Live data use to trigger redirect to the login page */
         val navigateToLogin = MutableLiveData<Boolean>()
         lateinit var db: AppDatabase
@@ -82,7 +83,8 @@ class MainActivity : ComponentActivity() {
 
         val accountDao = db.accountDao()
         val scanViewModel = ScanViewModel()
-        structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
+        structureViewModel =
+            ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
 
         requestPermissions()
@@ -92,8 +94,24 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val navController = rememberNavController()
             val connexionCS108 = Cs108Connector(context)
-            connexionCS108.onBleConnected { success -> runOnUiThread { if (!success) Toast.makeText(context, "Echec d'appairage Bluetooth", Toast.LENGTH_SHORT).show() } }
-            connexionCS108.onReady { runOnUiThread { Toast.makeText(context, "Interrogateur inititialisé!", Toast.LENGTH_SHORT).show() } }
+            connexionCS108.onBleConnected { success ->
+                runOnUiThread {
+                    if (!success) Toast.makeText(
+                        context,
+                        "Echec d'appairage Bluetooth",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            connexionCS108.onReady {
+                runOnUiThread {
+                    Toast.makeText(
+                        context,
+                        "Interrogateur inititialisé!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
             navigateToLogin.observeAsState(false).value.let {
                 if (it) {
                     navController.navigate(connexionPage)
@@ -101,7 +119,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            val homePage = if (RetrofitInstance.isInitialized() && accountDao.get()?.token != null) "HomePage" else connexionPage
+            val homePage =
+                if (RetrofitInstance.isInitialized() && accountDao.get()?.token != null) "HomePage" else connexionPage
             NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
@@ -109,7 +128,8 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("SettingsPage") { SettingsPage(navController) }
                 composable("ScanPage?structureId={structureId}") { backStackEntry ->
-                val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                    val structureId =
+                        backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
                     ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
@@ -117,7 +137,7 @@ class MainActivity : ComponentActivity() {
                     ConnexionCard(navController, accountDao)
                     SetDynamicStatusBar()
                 }
-                composable("ScanPage"){ /*ScanPage(navController)*/ }
+                composable("ScanPage") { /*ScanPage(navController)*/ }
                 composable("Alerte?state={state}&name={name}&lastState={lastState}") { backStackEntry ->
                     val state = backStackEntry.arguments?.getString("state")?.toBoolean() ?: true
                     val name = backStackEntry.arguments?.getString("name").orEmpty()
@@ -188,8 +208,9 @@ private fun ComponentActivity.SetDynamicStatusBar() {
             SystemBarStyle.auto(
                 lightScrim = defaultSystemBarColor,
                 darkScrim = defaultSystemBarColor,
-                detectDarkMode = {r ->
-                    MainActivity.darkStatusBar.get() ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
+                detectDarkMode = { r ->
+                    MainActivity.darkStatusBar.get()
+                        ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
                 }
             )
         )

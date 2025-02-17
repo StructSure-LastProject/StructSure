@@ -2,6 +2,11 @@ package fr.uge.structsure.settingsPage.presentation
 
 import android.content.Context
 import android.content.SharedPreferences
+import fr.uge.structsure.database.AppDatabase
+import fr.uge.structsure.structuresPage.data.StructureRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * PreferencesManager is a utility object for managing application preferences using SharedPreferences.
@@ -47,4 +52,25 @@ object PreferencesManager {
      */
     fun getServerUrl(context: Context): String? =
         getPreferences(context).getString(SERVER_URL_KEY, null)
+
+
+    /**
+     * Clears the server URL from SharedPreferences.
+     * This method is used when the user logs out of the application.
+     * The server URL is removed to ensure that the user must log in again to access the application.
+     * This method is also used when the user changes the server URL.
+     *
+     * @param context The context used to access SharedPreferences.
+     *
+     */
+    fun clearServerUrl(context: Context) {
+        val db = AppDatabase.getDatabase(context)
+        val structureRepository = StructureRepository(db.structureDao(), db.planDao(), db.sensorDao())
+        CoroutineScope(Dispatchers.IO).launch {
+            val structures = db.structureDao().getAllStructures()
+            structures.forEach { structure ->
+                structureRepository.deleteStructure(structure)
+            }
+        }
+    }
 }

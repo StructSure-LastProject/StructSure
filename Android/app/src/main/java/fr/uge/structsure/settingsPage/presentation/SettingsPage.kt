@@ -13,7 +13,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,7 +27,6 @@ import fr.uge.structsure.MainActivity
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.components.InputText
 import fr.uge.structsure.components.Page
-import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
@@ -135,6 +133,7 @@ fun SettingsPage(navController: NavController) {
                         }
                         if (serverAddress != RetrofitInstance.getBaseUrl()) {
                             PreferencesManager.saveServerUrl(context, serverAddress)
+                            PreferencesManager.clearServerUrl(context)
                             RetrofitInstance.init(serverAddress)
                             errorMessage = ""
                             navController.navigate("ConnexionPage")
