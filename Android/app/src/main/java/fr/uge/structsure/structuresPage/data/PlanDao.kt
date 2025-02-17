@@ -16,4 +16,7 @@ interface PlanDao {
 
     @Query("SELECT * FROM `plan` WHERE id = :structureId")
     suspend fun getPlansByStructureId(structureId: Long): List<PlanDB>
+
+    @Query("SELECT section FROM `plan` WHERE id = :planId")
+    suspend fun getSectionOfApLan(planId: Long): String
 }

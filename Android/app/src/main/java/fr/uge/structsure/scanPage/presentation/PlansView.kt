@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,36 +31,36 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import fr.uge.structsure.R
+import fr.uge.structsure.components.Plan
+import fr.uge.structsure.components.Point
 import fr.uge.structsure.scanPage.domain.PlanViewModel
-import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 import fr.uge.structsure.ui.theme.fonts
 
-
 /**
  * This composable is used to display the plans of the structure.
+ * @param planId the id of the plan to display
+ * @param viewModel the view model used to fetch the plan image
  */
 @Composable
-fun PlansView(viewModel: PlanViewModel, structureId: Long) {
-    LaunchedEffect(Unit) {
-        viewModel.fetchPlansForStructure(structureId)
-    }
+fun PlansView(planId: Long, viewModel: PlanViewModel) {
+    val selected = remember { mutableStateOf("Section OA/Plan 01") }
+    val planBitmap by viewModel.planImage.observeAsState()
+    val points = remember { mutableStateListOf<Point>() }
 
-    val plans by viewModel.plans.observeAsState(emptyList())
-    val selectedPlan = remember { mutableStateOf<PlanDB?>(null) }
+    LaunchedEffect(planId) {
+        viewModel.fetchPlanImage(planId)
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -80,70 +80,36 @@ fun PlansView(viewModel: PlanViewModel, structureId: Long) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            val planToDisplay = selectedPlan.value ?: plans.firstOrNull()
-            if (planToDisplay != null) {
-                DynamicPlan(planToDisplay)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                planBitmap?.let {
+                    Plan(
+                        image = it,
+                        points = points
+                    )
+                } ?: Text(
+                    text = "Loading...",
+                    modifier = Modifier.align(Alignment.Center),
+                    style = Typography.titleMedium
+                )
             }
-
             Spacer(
                 Modifier
                     .fillMaxWidth()
                     .height(1.dp)
                     .background(LightGray) )
 
-            PlanSelector(plans, selectedPlan)
+            PlanSelector(selected)
         }
     }
 }
 
-@Composable
-fun DynamicPlan(plan: PlanDB) {
-    val imageUrl = plan.imageUrl
-    val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(imageUrl)
-            .crossfade(true)
-            .build(),
-        contentScale = ContentScale.Crop
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(400.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(LightGray),
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painter,
-            contentDescription = "Plan Image",
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-
-/**
- * Menu enabling to chose a plan among the existing ones.
- */
-@Composable
-private fun PlanSelector(plans: List<PlanDB>, selectedPlan: MutableState<PlanDB?>) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(5.dp),
-        horizontalAlignment = Alignment.Start
-    ) {
-        plans.groupBy { it.section }.forEach { (section, sectionPlans) ->
-            Section(section) {
-                sectionPlans.forEach { plan ->
-                    PlanItem(plan.name, selectedPlan.value == plan) {
-                        selectedPlan.value = plan
-                    }
-                }
-            }
-        }
-    }
-}
 
 
 /**
@@ -188,6 +154,60 @@ private fun Section(name: String, children:  @Composable (ColumnScope.() -> Unit
                 .padding(start = 17.dp),
             content = children
         )
+    }
+}
+
+
+/**
+ * Menu enabling to chose a plan among the existing ones.
+ */
+@Composable
+private fun PlanSelector(selected: MutableState<String>) {
+
+    // TODO Use real data here
+    // LazyColumn(
+    //     verticalArrangement = Arrangement.spacedBy(8.dp),
+    //     modifier = Modifier
+    //         .fillMaxWidth()
+    //         .height(200.dp)
+    // )
+    Column(
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Section("Section OA") {
+            Section("Sous-section") {
+                PlanItem("Plan 01", selected.value == "Section OA/Sous-section/Plan 01" ) {
+                    selected.value = "Section OA/Sous-section/Plan 01"
+                }
+                PlanItem("Plan 02", selected.value == "Section OA/Sous-section/Plan 02" ) {
+                    selected.value = "Section OA/Sous-section/Plan 02"
+                }
+                PlanItem("Plan 03", selected.value == "Section OA/Sous-section/Plan 03" ) {
+                    selected.value = "Section OA/Sous-section/Plan 03"
+                }
+            }
+            PlanItem("Plan 01", selected.value == "Section OA/Plan 01" ) {
+                selected.value = "Section OA/Plan 01"
+            }
+            PlanItem("Plan 02", selected.value == "Section OA/Plan 02" ) {
+                selected.value = "Section OA/Plan 02"
+            }
+            PlanItem("Plan 03", selected.value == "Section OA/Plan 03" ) {
+                selected.value = "Section OA/Plan 03"
+            }
+        }
+        Section("Section OB") {
+            PlanItem("Plan 05", selected.value == "Section OB/Plan 05" ) {
+                selected.value = "Section OB/Plan 05"
+            }
+            PlanItem("Plan 06", selected.value == "Section OB/Plan 06" ) {
+                selected.value = "Section OB/Plan 06"
+            }
+            PlanItem("Plan 07", selected.value == "Section OB/Plan 07" ) {
+                selected.value = "Section OB/Plan 07"
+            }
+        }
     }
 }
 

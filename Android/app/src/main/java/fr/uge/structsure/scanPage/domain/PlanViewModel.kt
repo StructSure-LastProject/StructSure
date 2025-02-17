@@ -1,23 +1,34 @@
 package fr.uge.structsure.scanPage.domain
 
+import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import fr.uge.structsure.MainActivity.Companion.db
-import fr.uge.structsure.structuresPage.data.PlanDB
-import kotlinx.coroutines.Dispatchers
+import fr.uge.structsure.structuresPage.data.StructureRepository
 import kotlinx.coroutines.launch
 
-
+/**
+ * ViewModel responsible for managing the plan image fetching process.
+ * It interacts with the repository to fetch the plan image.
+ * The plan image is then displayed in the UI.
+ *
+ */
 class PlanViewModel : ViewModel() {
-    private val planDao = db.planDao()
 
-    val plans = MutableLiveData<List<PlanDB>>()
+    private val repository = StructureRepository()
+    val planImage = MutableLiveData<Bitmap?>()
 
-    fun fetchPlansForStructure(structureId: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val fetchedPlans = planDao.getPlansByStructureId(structureId)
-            plans.postValue(fetchedPlans)
+    fun fetchPlanImage(planId: Long) {
+        viewModelScope.launch {
+            try {
+            val bitmap = repository.downloadPlanImage(planId)
+            planImage.postValue(bitmap)
+
+            } catch (e: Exception) {
+                Log.e("PlanViewModel", "Failed to fetch plan image", e)
+                planImage.postValue(null)
+            }
         }
     }
 }

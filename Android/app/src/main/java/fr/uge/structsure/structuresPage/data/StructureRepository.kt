@@ -1,5 +1,7 @@
 package fr.uge.structsure.structuresPage.data
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import fr.uge.structsure.MainActivity
@@ -133,6 +135,30 @@ class StructureRepository : ViewModel() {
         }
         CoroutineScope(Dispatchers.IO).launch {
             structureDao.deleteStructure(structure)
+        }
+    }
+
+    /**
+     * Fetches the plan image from the server.
+     * @param planId the id of the plan to fetch
+     * @return the plan image as a Bitmap
+     */
+    suspend fun downloadPlanImage(planId: Long): Bitmap? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = RetrofitInstance.structureApi.downloadPlanImage(planId)
+                if (response.isSuccessful) {
+                    response.body()?.byteStream()?.use { inputStream ->
+                        BitmapFactory.decodeStream(inputStream)
+                    }
+                } else {
+                    Log.e("StructureRepository", "Failed to fetch plan image: ${response.message()}")
+                    null
+                }
+            } catch (e: Exception) {
+                Log.e("StructureRepository", "Error downloading plan image", e)
+                null
+            }
         }
     }
 

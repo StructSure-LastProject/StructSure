@@ -90,6 +90,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.material)
     implementation(libs.material3)
-    implementation(libs.coil.compose)
-
 }
