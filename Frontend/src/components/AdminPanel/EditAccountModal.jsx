@@ -2,13 +2,14 @@ import { Trash2, X, ChevronDown } from 'lucide-solid';
 import StructureNameCard from '../StructureNameCard';
 import { createSignal } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
+import useFetch from '../../hooks/useFetch';
 
 /**
  * Edit account modal component
  * @param {Function} closeModal The function to close the modal
  * @returns The Model compoanent
  */
-const EditAccountModal = ({ closeModal, userDetails}) => {
+const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
     const [firstName, setFirstName] = createSignal(userDetails.firstName);
     const [lastName, setLastName] = createSignal(userDetails.lastName);
@@ -17,6 +18,7 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
     const [role, setRole] = createSignal(userDetails.role); 
     const [accountState, setAccountState] = createSignal(userDetails.accountState);
     const [errorModal, setErrorModal] = createSignal([]);
+    const [apiError, setApiError] = createSignal("");
 
     /**
      * Roles
@@ -55,13 +57,78 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
     /**
      * Handle the submit buttom
      */
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         validateUserAccountForm(firstName(), lastName(), login(), role(), password(), addError, removeError, false)
 
+        const { fetchData, error, statusCode } = useFetch();
+        const token = localStorage.getItem("token")
+        
+        if (errorModal().length === 0) {
+            const updatedFields = [];
+
+            if (firstName() !== userDetails.firstName) updatedFields.push("firstname");
+            if (lastName() !== userDetails.lastName) updatedFields.push("lastname");
+            if (login() !== userDetails.login) updatedFields.push("login");
+            if (role() !== userDetails.role) updatedFields.push("role");
+            if (accountState() !== userDetails.accountState) updatedFields.push("accountState");
+
+            if (updatedFields.length === 0) {
+                setApiError("");
+                return;
+            }
+
+            
+            /**
+             * Create the body of the request
+             * @param {object} requestBody 
+             * @param {string} token 
+             * @returns json object
+             */
+            const createRequestData = (requestBody) => {
+                return {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(requestBody),
+                };
+            }
+       
+        
+            
+            if (updatedFields.includes("role")) {
+                await fetchData(`/api/accounts/${login()}/role`, createRequestData(
+                    {
+                        role: role()
+                    }
+                ));
+            }
+
+            
+            let editError = "";
+            if(error() !== null){
+                editError = error().errorData.error;
+            }
+            if (statusCode() === 200) {
+                closeModal();
+                fetchUserDetails();
+                setApiError("");
+            }
+            else if (statusCode() === 404){
+                setApiError(editError);
+            }
+            else if (statusCode() === 422) {            
+                setApiError(editError);
+            }
+            
+        }
         
     };
+
+
 
 
     return (
@@ -85,6 +152,9 @@ const EditAccountModal = ({ closeModal, userDetails}) => {
                     {errorModal().map(err => (
                         <p class="text-[#F13327] font-poppins HeadLineMedium">{err}</p>
                     ))}
+                    {
+                        <p class="text-[#F13327] font-poppins HeadLineMedium">{apiError()}</p>
+                    }
                 </div>
                 
                 <form action="" >

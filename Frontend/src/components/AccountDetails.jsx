@@ -9,7 +9,7 @@ import EditAccountModal from "./AdminPanel/EditAccountModal";
  * @param {String} role role of the user 
  * @returns the component for the account details
  */
-const AccountDetails = ({firstName, lastName, login, role, isEnabled}) => {
+const AccountDetails = ({fetchUserDetails ,firstName, lastName, login, role, isEnabled}) => {
 
     const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
     
@@ -65,7 +65,8 @@ const AccountDetails = ({firstName, lastName, login, role, isEnabled}) => {
                 </div>
             </button>
             {isEditModalOpen() && (
-                <EditAccountModal 
+                <EditAccountModal
+                    fetchUserDetails={fetchUserDetails} 
                     closeModal={closeEditAccountModal} 
                     userDetails={{
                         firstName: firstName,

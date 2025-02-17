@@ -13,7 +13,9 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.MISSING_USER_ACCOUNT_FIELDS, new Error(422, "Des champs sont manquants"));
         messages.put(ErrorIdentifier.INVALID_USER_ACCOUNT_FIELDS, new Error(422, "Les champs sont invalides"));
         messages.put(ErrorIdentifier.USER_ALREADY_EXISTS, new Error(422, "Identifiant déjà utilisé"));
-        messages.put(ErrorIdentifier.ROLE_NOT_EXISTS, new Error(422, "Role inconnue"));
+        messages.put(ErrorIdentifier.USER_ACCOUNT_NOT_FOUND, new Error(404, "Compte utilisateur non trouvé"));
+        messages.put(ErrorIdentifier.SUPER_ADMIN_ACCOUNT_CANT_BE_MODIFIED, new Error(422, "Le rôle d’un compte super-administrateur ne peut pas être modifié"));
+        messages.put(ErrorIdentifier.ROLE_NOT_EXISTS, new Error(422, "Rôle inconnu"));
         messages.put(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT, new Error(404, "Login ou mot de passe incorrect"));
         messages.put(ErrorIdentifier.STRUCTURE_NAME_ALREADY_EXISTS, new Error(422, "Nom d'ouvrage déjà existant"));
         messages.put(ErrorIdentifier.STRUCTURE_NAME_IS_EMPTY, new Error(422, "Le nom d'un ouvrage ne peut pas être vide"));

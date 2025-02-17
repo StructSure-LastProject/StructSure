@@ -5,6 +5,7 @@ import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.LoginResponseDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterResponseDTO;
+import fr.uge.structsure.dto.userAccount.RoleRequest;
 import fr.uge.structsure.dto.userAccount.UserAccountResponseDTO;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
@@ -148,5 +149,37 @@ public class AccountService {
                 || UserAccountRequestValidation.loginValidator(registerRequestDTO.login())
                 || Arrays.stream(Role.values()).anyMatch(role -> role.value.equals(registerRequestDTO.role())
                 && (registerRequestDTO.password().length() >= 12 && registerRequestDTO.password().length() <= 64));
+    }
+
+    /**
+     * Service that will update the user role
+     * @param login Login of the user
+     * @param roleRequest The new role of the user
+     * @return RegisterResponseDTO The login of the user
+     * @throws TraitementException thrown if login or role not exist and also thrown if super-admin role was requested to change
+     */
+    public RegisterResponseDTO updateRole(String login, RoleRequest roleRequest) throws TraitementException {
+        Objects.requireNonNull(roleRequest);
+
+        var userAccount = accountRepository.findByLogin(login);
+        if (userAccount.isEmpty()){
+            throw new TraitementException(ErrorIdentifier.USER_ACCOUNT_NOT_FOUND);
+        }
+        if (userAccount.get().getLogin().equals("StructsureAdmin") && userAccount.get().getRole() == Role.ADMIN){
+            throw new TraitementException(ErrorIdentifier.SUPER_ADMIN_ACCOUNT_CANT_BE_MODIFIED);
+        }
+
+        Role role;
+        try {
+            role = Role.fromValue(roleRequest.role());
+        } catch (IllegalArgumentException e) {
+            throw new TraitementException(ErrorIdentifier.ROLE_NOT_EXISTS);
+        }
+
+        var user = userAccount.get();
+        user.setRole(role);
+        accountRepository.save(user);
+
+        return new RegisterResponseDTO(user.getLogin());
     }
 }

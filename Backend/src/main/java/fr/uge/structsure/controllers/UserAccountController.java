@@ -2,6 +2,7 @@ package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
+import fr.uge.structsure.dto.userAccount.RoleRequest;
 import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
@@ -55,4 +56,24 @@ public class UserAccountController {
             return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
         }
     }
+
+
+    /**
+     * Update the role for a user
+     * @param login User login
+     * @param roleRequest The new role
+     * @return RegisterResponseDTO The login of the user account
+     */
+    @PutMapping("/accounts/{login}/role")
+    public ResponseEntity<?> updateRole(@PathVariable("login") String login, @RequestBody RoleRequest roleRequest){
+        Objects.requireNonNull(login);
+        Objects.requireNonNull(roleRequest);
+        try {
+            return ResponseEntity.status(200).body(accountService.updateRole(login, roleRequest));
+        } catch (TraitementException e){
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
+            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        }
+    }
+
 }
