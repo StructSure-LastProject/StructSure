@@ -25,7 +25,6 @@ import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CancellationException
 
 
-@OptIn(DelicateCoroutinesApi::class)
 class Cs108Connector(private val context: Context) {
     companion object {
         private var scanTask: Job? = null
@@ -73,7 +72,6 @@ class Cs108Connector(private val context: Context) {
 
     init {
         csLibrary4A.setBatteryDisplaySetting(1)
-        GlobalScope.launch { pollBleState() }
     }
 
     /**
@@ -115,6 +113,7 @@ class Cs108Connector(private val context: Context) {
                 csLibrary4A.connect(device)
                 bleConnected = waitForBleConnection(device)
                 if (!bleConnected) return@launch
+                isBleConnected.postValue(true)
                 waitForDeviceReady()
                 onDeviceReady()
                 isReady = true
@@ -122,7 +121,7 @@ class Cs108Connector(private val context: Context) {
                 // Interrupted
             }
             if (bleConnected == null) onBleConnected(false)
-            println("[DeviceConnector] Connection stopped")
+            println("[DeviceConnector] Connection ended")
             pairTask = null
         }
     }
@@ -136,9 +135,10 @@ class Cs108Connector(private val context: Context) {
             csLibrary4A.disconnect(false)
             devices.remove(device)
             device!!.isConnected = false
-            devices.add(device!!)
             device = null
             isReady = false
+            isBleConnected.postValue(false)
+            println("[DeviceConnector] Disconnected from device")
         }
     }
 
@@ -229,11 +229,7 @@ class Cs108Connector(private val context: Context) {
                     ensureActive()
                     val data = csLibrary4A.newDeviceScanned
                     if (data != null && checkPermission()) {
-                        if (data.device.type == BluetoothDevice.DEVICE_TYPE_LE && !isKnownDevice(
-                                data.device
-                            )
-                        ) {
-                            println("[DeviceConnector] New device: name=" + data.device.name + ", address=" + data.device.address)
+                        if (data.device.type == BluetoothDevice.DEVICE_TYPE_LE) {
                             val strInfo = if (data.device.bondState == 12) "BOND_BONDED\n" else ""
                             val readerDevice = ReaderDevice(
                                 data.device.name,
@@ -246,11 +242,10 @@ class Cs108Connector(private val context: Context) {
                                 data.rssi.toDouble(),
                                 data.serviceUUID2p2
                             )
-                            devices.add(readerDevice)
+                            upsertDevice(readerDevice)
                         }
-                    } else {
-                        delay(100L)
                     }
+                    delay(1000L)
                 }
             }
         } catch (e: CancellationException) {
@@ -277,45 +272,17 @@ class Cs108Connector(private val context: Context) {
                             battery = level
                             onBatteryChange(battery)
                         }
-                    } else if (battery != -1) {
+                    } else if (battery !=  -1) {
+                        /* Handle device disconnection */
                         battery = -1
-                        onBatteryChange(battery)
+                        onBatteryChange(-1)
+                        disconnect()
+                        // Restart the scan to be able to discover the device back
+                        csLibrary4A.scanLeDevice(false)
+                        csLibrary4A.scanLeDevice(true)
+                        break
                     }
                     delay(2000L)
-                }
-            }
-        } catch (e: CancellationException) {
-            // Interrupted
-        }
-        println("[DeviceConnector] Battery poll stopped")
-        batteryTask = null
-    }
-
-    /**
-     * Check in loop if the device is connected or disconnected and
-     * the BLE activation state.
-     */
-    private suspend fun pollBleState() {
-        var lastState = csLibrary4A.isBleConnected
-        isBleConnected.postValue(csLibrary4A.isBleConnected)
-        try {
-            coroutineScope {
-                while (true) {
-                    ensureActive()
-                    val state = csLibrary4A.isBleConnected
-                    println("[BLE] $state -> ${device?.isConnected}")
-                    if (lastState != state) {
-                        isBleConnected.postValue(state)
-                        if (!state) {
-                            devices.remove(device)
-                            device = null
-                            // Restart the scan to be able to discover the device back
-                            csLibrary4A.scanLeDevice(false)
-                            csLibrary4A.scanLeDevice(true)
-                        }
-                        lastState = state
-                    }
-                    delay(500L)
                 }
             }
         } catch (e: CancellationException) {
@@ -342,10 +309,15 @@ class Cs108Connector(private val context: Context) {
      * @param device the reader to search for
      * @return true if already seen, false otherwise
      */
-    private fun isKnownDevice(device: BluetoothDevice): Boolean {
-        for (i in devices.indices) {    // Increment the match counter if already seen
-            if (devices[i].address == device.address) return true
+    private fun upsertDevice(device: ReaderDevice) {
+        for (i in devices.indices) {
+            if (devices[i].address == device.address) {
+                /* Update */
+                devices[i] = device
+                return
+            }
         }
-        return false
+        /* Insert */
+        devices.add(device)
     }
 }
