@@ -1,12 +1,16 @@
 package fr.uge.structsure.bluetooth.cs108
 
 import android.Manifest
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.MutableLiveData
 import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.MainActivity.Companion.csLibrary4A
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -20,6 +24,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CancellationException
 
+
+@OptIn(DelicateCoroutinesApi::class)
 class Cs108Connector(private val context: Context) {
     companion object {
         private var scanTask: Job? = null
@@ -34,6 +40,26 @@ class Cs108Connector(private val context: Context) {
         var isConnected: Boolean = csLibrary4A.isBleConnected
         var isReady: Boolean = false
             private set
+        val isBleEnabled = MutableLiveData(BluetoothAdapter.getDefaultAdapter().isEnabled)
+        val isBleConnected = MutableLiveData(false)
+        val bluetoothAdapter: BroadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val action = intent.action
+
+                if (action == BluetoothAdapter.ACTION_STATE_CHANGED) {
+                    val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
+                    when (state) {
+                        BluetoothAdapter.STATE_OFF -> {
+                            isBleEnabled.postValue(false)
+                            isBleConnected.postValue(false)
+                        }
+                        BluetoothAdapter.STATE_ON -> {
+                            isBleEnabled.postValue(true)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /** Hook used just after device bluetooth connection success */
@@ -47,6 +73,7 @@ class Cs108Connector(private val context: Context) {
 
     init {
         csLibrary4A.setBatteryDisplaySetting(1)
+        GlobalScope.launch { pollBleState() }
     }
 
     /**
@@ -191,7 +218,6 @@ class Cs108Connector(private val context: Context) {
         println("[DeviceConnector] Device Ready")
     }
 
-
     /**
      * Ask continuously the cs108 library for any freshly read device
      * and adds it to the devices list if not added yet
@@ -256,6 +282,40 @@ class Cs108Connector(private val context: Context) {
                         onBatteryChange(battery)
                     }
                     delay(2000L)
+                }
+            }
+        } catch (e: CancellationException) {
+            // Interrupted
+        }
+        println("[DeviceConnector] Battery poll stopped")
+        batteryTask = null
+    }
+
+    /**
+     * Check in loop if the device is connected or disconnected and
+     * the BLE activation state.
+     */
+    private suspend fun pollBleState() {
+        var lastState = csLibrary4A.isBleConnected
+        isBleConnected.postValue(csLibrary4A.isBleConnected)
+        try {
+            coroutineScope {
+                while (true) {
+                    ensureActive()
+                    val state = csLibrary4A.isBleConnected
+                    println("[BLE] $state -> ${device?.isConnected}")
+                    if (lastState != state) {
+                        isBleConnected.postValue(state)
+                        if (!state) {
+                            devices.remove(device)
+                            device = null
+                            // Restart the scan to be able to discover the device back
+                            csLibrary4A.scanLeDevice(false)
+                            csLibrary4A.scanLeDevice(true)
+                        }
+                        lastState = state
+                    }
+                    delay(500L)
                 }
             }
         } catch (e: CancellationException) {
