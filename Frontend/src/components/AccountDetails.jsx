@@ -9,7 +9,7 @@ import EditAccountModal from "./AdminPanel/EditAccountModal";
  * @param {String} role role of the user 
  * @returns the component for the account details
  */
-const AccountDetails = ({firstName, lastName, login, role, isEnabled}) => {
+const AccountDetails = ({fetchUserDetails ,firstName, lastName, login, role, isEnabled}) => {
 
     const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
     
@@ -17,6 +17,12 @@ const AccountDetails = ({firstName, lastName, login, role, isEnabled}) => {
      * Handle the edit account click event by opening the modal
      */
     const handleEditAccountClick = () => {
+        if (localStorage.getItem("login") === "StructSureAdmin" && login === "StructSureAdmin") {
+            return;
+        }
+        if (role === "Admin" && localStorage.getItem("login") !== "StructSureAdmin") {
+            return;
+        }
         setIsEditModalOpen(true); 
     };
 
@@ -49,7 +55,8 @@ const AccountDetails = ({firstName, lastName, login, role, isEnabled}) => {
     
     return (
         <div>
-            <button onClick={handleEditAccountClick} class={`${!isEnabled ? "opacity-[50%]" : ""} flex justify-between items-center py-[10px] px-[25px] bg-white rounded-[20px] w-full h-auto`}>
+            <button onClick={handleEditAccountClick} class={`${!isEnabled ? "opacity-[50%]" : ""}  
+                ${(role === "Admin" && localStorage.getItem("login") !== "StructSureAdmin") || (login === "StructSureAdmin" && localStorage.getItem("login") === "StructSureAdmin") ? "cursor-not-allowed" : ""} flex justify-between items-center py-[10px] px-[25px] bg-white rounded-[20px] w-full h-auto`}>
                 <div class="flex flex-col text-start w-full sm:w-[200px] md:w-[219px] h-auto">
                     <h2 class="text-lg font-poppins title-medium-name">{firstName} {lastName}</h2>
                     <span class="font-poppins HeadLineMedium text-gray-500">{login}</span>
@@ -65,7 +72,8 @@ const AccountDetails = ({firstName, lastName, login, role, isEnabled}) => {
                 </div>
             </button>
             {isEditModalOpen() && (
-                <EditAccountModal 
+                <EditAccountModal
+                    fetchUserDetails={fetchUserDetails} 
                     closeModal={closeEditAccountModal} 
                     userDetails={{
                         firstName: firstName,

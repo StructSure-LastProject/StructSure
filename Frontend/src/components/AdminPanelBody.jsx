@@ -76,7 +76,7 @@ const AdminPanelBody = () => {
                 <For each={users()}>
                     {
                         (item) => (
-                            <AccountDetails firstName={item.firstName} lastName={item.lastName} login={item.login} role={item.role} isEnabled={item.enabled} />
+                            <AccountDetails fetchUserDetails={fetchUserDetails} firstName={item.firstName} lastName={item.lastName} login={item.login} role={item.role} isEnabled={item.enabled} />
                         )
                     }
                 </For>
