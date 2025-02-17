@@ -21,5 +21,8 @@ interface ScanDao {
     @Query("UPDATE scan SET end_timestamp = :endTime WHERE id = :scanId")
     suspend fun updateEndTimestamp(scanId: Long, endTime: String)
 
+    @Query("SELECT * FROM scan WHERE id = :scanId")
+    suspend fun getScanById(scanId: Long): ScanEntity
+
 }
 
