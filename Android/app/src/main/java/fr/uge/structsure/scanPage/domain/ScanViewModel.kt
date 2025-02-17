@@ -9,6 +9,7 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.cache.SensorCache
+import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.SensorDB
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +37,9 @@ class ScanViewModel: ViewModel() {
 
     /** ID of the structure being scanned */
     private var structureId: Long? = null
+
+    /** Repository to interact with the scan database */
+    private val scanRepository: ScanRepository = ScanRepository()
 
     // Scanner hardware for reading RFID chips
     private val cs108Scanner =
@@ -66,6 +70,8 @@ class ScanViewModel: ViewModel() {
     val sensorsNotScanned = MutableLiveData<List<SensorDB>>()
 
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
+
+    val scanUploadState = MutableLiveData<ScanUploadState>()
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -253,15 +259,42 @@ class ScanViewModel: ViewModel() {
      */
     fun stopScan() {
         viewModelScope.launch(Dispatchers.IO) {
-            cs108Scanner.stop()
-            currentScanState.postValue(ScanState.STOPPED)
-            val now = Timestamp(System.currentTimeMillis()).toString()
-            activeScanId?.let { scanId ->
-                scanDao.updateEndTimestamp(scanId, now)
+            try {
+                // Arrêt du matériel
+                cs108Scanner.stop()
+                currentScanState.postValue(ScanState.STOPPED)
+
+                val now = Timestamp(System.currentTimeMillis()).toString()
+
+                activeScanId?.let { scanId ->
+                    // Mise à jour de la base de données locale
+                    scanRepository.updateScanEndTime(scanId, now)
+
+                    // Récupération et conversion des résultats
+                    val results = scanRepository.getAllScanResults()
+                    val scanRequest = scanRepository.convertToScanRequest(
+                        scanId = scanId,
+                        launchDate = now,
+                        note = "",
+                        results = results
+                    )
+
+                    // Envoi au serveur
+                    scanRepository.submitScanResults(scanRequest)
+                        .onSuccess {
+                            scanUploadState.postValue(ScanUploadState.Success)
+                        }
+                        .onFailure { error ->
+                            scanUploadState.postValue(ScanUploadState.Error(error.message ?: "Unknown error"))
+                        }
+                }
+            } catch (e: Exception) {
+                scanUploadState.postValue(ScanUploadState.Error(e.message ?: "Unknown error"))
+            } finally {
+                // Nettoyage
+                rfidBuffer.stop()
+                sensorCache.clearCache()
             }
-            rfidBuffer.stop()
-            sensorCache.clearCache()
         }
     }
-
 }
