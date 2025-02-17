@@ -5,6 +5,7 @@ import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.AllStructureRequestDTO;
 import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.TraitementException;
+import fr.uge.structsure.repositories.StructureRepositoryCriteriaQuery;
 import fr.uge.structsure.services.PlanService;
 import fr.uge.structsure.services.StructureService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ public class StructureController {
 
     private final StructureService structureService;
     private final PlanService planService;
+
 
     @Autowired
     public StructureController(StructureService structureService, PlanService planService) {

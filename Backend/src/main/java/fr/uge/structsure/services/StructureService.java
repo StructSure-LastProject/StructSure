@@ -24,6 +24,8 @@ public class StructureService {
     private final ScanRepository scanRepository;
     private final ResultRepository resultRepository;
 
+    private final StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery;
+
     /**
      * The consturctor for the structure service
      * @param structureRepository the structure repository
@@ -33,12 +35,14 @@ public class StructureService {
      */
     @Autowired
     public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository,
-                            PlanRepository planRepository, ResultRepository resultRepository, ScanRepository scanRepository) {
+                            PlanRepository planRepository, ResultRepository resultRepository, ScanRepository scanRepository,
+                            StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.planRepository = Objects.requireNonNull(planRepository);
         this.resultRepository = resultRepository;
         this.scanRepository = Objects.requireNonNull(scanRepository);
+        this.structureRepositoryCriteriaQuery = structureRepositoryCriteriaQuery;
     }
 
     /**
@@ -162,12 +166,7 @@ public class StructureService {
      * @throws TraitementException if there is no structure in the database we throw this exception
      */
     public List<AllStructureResponseDTO> getAllStructure(AllStructureRequestDTO allStructureRequestDTO) throws TraitementException {
-         List<AllStructureResponseDTO> structures = switch (allStructureRequestDTO.order()) {
-            case ASC -> structureRepository.findAllStructuresWithStateAsc(AllStructureRequestDTO.SortTypeEnum.NUMBER_OF_SENSORS,
-                        allStructureRequestDTO.searchByName());
-            case DESC -> structureRepository.findAllStructuresWithStateDesc(AllStructureRequestDTO.SortTypeEnum.NUMBER_OF_SENSORS,
-                        allStructureRequestDTO.searchByName());
-        };
+        List<AllStructureResponseDTO> structures = structureRepositoryCriteriaQuery.findAllStructuresWithState(allStructureRequestDTO);
         if (structures.isEmpty()) {
             throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);
         }

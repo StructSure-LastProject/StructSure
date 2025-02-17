@@ -14,8 +14,18 @@ public record AllStructureRequestDTO(String searchByName, SortTypeEnum sortTypeE
     }
 
     public enum SortTypeEnum {
-        STATE,
-        NUMBER_OF_SENSORS,
-        NAME
+        STATE("state"),
+        NUMBER_OF_SENSORS("numberOfSensors"),
+        NAME("name");
+
+        private final String value;
+
+        SortTypeEnum(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }
