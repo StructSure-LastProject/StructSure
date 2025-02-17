@@ -5,6 +5,7 @@ import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.*;
+import fr.uge.structsure.utils.OrderEnum;
 import fr.uge.structsure.utils.StateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -160,19 +161,17 @@ public class StructureService {
      * @return List<AllStructureResponseDTO> the list containing of the structures
      * @throws TraitementException if there is no structure in the database we throw this exception
      */
-    public List<AllStructureResponseDTO> getAllStructure() throws TraitementException {
-        var structures = structureRepository.findAll();
+    public List<AllStructureResponseDTO> getAllStructure(AllStructureRequestDTO allStructureRequestDTO) throws TraitementException {
+         List<AllStructureResponseDTO> structures = switch (allStructureRequestDTO.order()) {
+            case ASC -> structureRepository.findAllStructuresWithStateAsc(AllStructureRequestDTO.SortTypeEnum.NUMBER_OF_SENSORS,
+                        allStructureRequestDTO.searchByName());
+            case DESC -> structureRepository.findAllStructuresWithStateDesc(AllStructureRequestDTO.SortTypeEnum.NUMBER_OF_SENSORS,
+                        allStructureRequestDTO.searchByName());
+        };
         if (structures.isEmpty()) {
             throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);
         }
-        return structures.stream().map(
-                structure -> new AllStructureResponseDTO(structure.getId(), structure.getName(),
-                     sensorRepository.countByStructure(structure),
-                        planRepository.countByStructure(structure),
-                        getState(structure),
-                        structure.getArchived()
-                )
-        ).toList();
+        return structures;
     }
 
     /**
