@@ -2,7 +2,7 @@ package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.structure.*;
 import fr.uge.structsure.entities.Structure;
-import fr.uge.structsure.exceptions.ErrorIdentifier;
+import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.*;
 import fr.uge.structsure.utils.StateEnum;
@@ -57,13 +57,13 @@ public class StructureService {
      * @throws TraitementException  if:
      *         <ul>
      *           <li>The name of the structure is null or empty
-     *               ({@code ErrorIdentifier.STRUCTURE_NAME_IS_EMPTY}).</li>
+     *               ({@code Error.STRUCTURE_NAME_IS_EMPTY}).</li>
      *           <li>The name of the structure exceeds 64 characters
-     *               ({@code ErrorIdentifier.STRUCTURE_NAME_EXCEED_LIMIT}).</li>
+     *               ({@code Error.STRUCTURE_NAME_EXCEED_LIMIT}).</li>
      *           <li>The note of the structure exceeds 1000 characters
-     *               ({@code ErrorIdentifier.STRUCTURE_NOTE_EXCEED_LIMIT}).</li>
+     *               ({@code Error.STRUCTURE_NOTE_EXCEED_LIMIT}).</li>
      *           <li>A structure with the same name already exists
-     *               ({@code ErrorIdentifier.STRUCTURE_NAME_ALREADY_EXISTS}).</li>
+     *               ({@code Error.STRUCTURE_NAME_ALREADY_EXISTS}).</li>
      *         </ul>
      */
     public AddStructureAnswerDTO createStructure(AddStructureRequestDTO addStructureRequestDTO) throws TraitementException {
@@ -90,13 +90,13 @@ public class StructureService {
      * @throws TraitementException  if:
      *         <ul>
      *           <li>The name of the structure is null or empty
-     *               ({@code ErrorIdentifier.STRUCTURE_NAME_IS_EMPTY}).</li>
+     *               ({@code Error.STRUCTURE_NAME_IS_EMPTY}).</li>
      *           <li>The name of the structure exceeds 64 characters
-     *               ({@code ErrorIdentifier.STRUCTURE_NAME_EXCEED_LIMIT}).</li>
+     *               ({@code Error.STRUCTURE_NAME_EXCEED_LIMIT}).</li>
      *           <li>The note of the structure exceeds 1000 characters
-     *               ({@code ErrorIdentifier.STRUCTURE_NOTE_EXCEED_LIMIT}).</li>
+     *               ({@code Error.STRUCTURE_NOTE_EXCEED_LIMIT}).</li>
      *           <li>A structure with the specified ID does not exist
-     *               ({@code ErrorIdentifier.STRUCTURE_ID_NOT_FOUND}).</li>
+     *               ({@code Error.STRUCTURE_ID_NOT_FOUND}).</li>
      *         </ul>
      */
     public EditStructureResponseDTO editStructure(Long id, AddStructureRequestDTO editStructureRequestDTO) throws TraitementException {
@@ -104,7 +104,7 @@ public class StructureService {
         Objects.requireNonNull(id);
         var exists = structureRepository.findById(id);
         if (exists.isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.STRUCTURE_ID_NOT_FOUND);
+            throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
         exists.get().setNote(editStructureRequestDTO.note());
         exists.get().setName(editStructureRequestDTO.name());
@@ -128,29 +128,29 @@ public class StructureService {
      * @throws TraitementException  if:
      *         <ul>
      *           <li>The name of the structure is null or empty
-     *               ({@code ErrorIdentifier.STRUCTURE_NAME_IS_EMPTY}).</li>
+     *               ({@code Error.STRUCTURE_NAME_IS_EMPTY}).</li>
      *           <li>The name of the structure exceeds 64 characters
-     *               ({@code ErrorIdentifier.STRUCTURE_NAME_EXCEED_LIMIT}).</li>
+     *               ({@code Error.STRUCTURE_NAME_EXCEED_LIMIT}).</li>
      *           <li>The note of the structure exceeds 1000 characters
-     *               ({@code ErrorIdentifier.STRUCTURE_NOTE_EXCEED_LIMIT}).</li>
+     *               ({@code Error.STRUCTURE_NOTE_EXCEED_LIMIT}).</li>
      *           <li>A structure with the same name already exists
-     *               ({@code ErrorIdentifier.STRUCTURE_NAME_ALREADY_EXISTS}).</li>
+     *               ({@code Error.STRUCTURE_NAME_ALREADY_EXISTS}).</li>
      *         </ul>
      */
     private void structurePrecondition(AddStructureRequestDTO addStructureRequestDTO) throws TraitementException {
         Objects.requireNonNull(addStructureRequestDTO);
         if (addStructureRequestDTO.name() == null || addStructureRequestDTO.name().isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.STRUCTURE_NAME_IS_EMPTY);
+            throw new TraitementException(Error.STRUCTURE_NAME_IS_EMPTY);
         }
         if (addStructureRequestDTO.name().length() > 1000) {
-            throw new TraitementException(ErrorIdentifier.STRUCTURE_NOTE_EXCEED_LIMIT);
+            throw new TraitementException(Error.STRUCTURE_NOTE_EXCEED_LIMIT);
         }
         if (addStructureRequestDTO.name().length() > 64) {
-            throw new TraitementException(ErrorIdentifier.STRUCTURE_NAME_EXCEED_LIMIT);
+            throw new TraitementException(Error.STRUCTURE_NAME_EXCEED_LIMIT);
         }
         var exists = structureRepository.findByName(addStructureRequestDTO.name());
         if (exists.isPresent()) {
-            throw new TraitementException(ErrorIdentifier.STRUCTURE_NAME_ALREADY_EXISTS);
+            throw new TraitementException(Error.STRUCTURE_NAME_ALREADY_EXISTS);
         }
     }
 
@@ -163,7 +163,7 @@ public class StructureService {
     public List<AllStructureResponseDTO> getAllStructure() throws TraitementException {
         var structures = structureRepository.findAll();
         if (structures.isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.LIST_STRUCTURES_EMPTY);
+            throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);
         }
         return structures.stream().map(
                 structure -> new AllStructureResponseDTO(structure.getId(), structure.getName(),
@@ -224,7 +224,7 @@ public class StructureService {
     public StructureDetailsResponseDTO structureDetail(long id) throws TraitementException {
         var structureOpt = structureRepository.findById(id);
         if (structureOpt.isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.STRUCTURE_ID_NOT_FOUND);
+            throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
         var structure = structureOpt.get();
         var plans = planRepository.findByStructure(structure);

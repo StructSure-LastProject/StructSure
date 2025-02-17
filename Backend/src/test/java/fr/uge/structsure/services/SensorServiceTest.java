@@ -5,7 +5,7 @@ import fr.uge.structsure.dto.sensors.AddSensorRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.Structure;
-import fr.uge.structsure.exceptions.ErrorIdentifier;
+import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
@@ -49,7 +49,7 @@ class SensorServiceTest {
         when(structureRepository.findById(structureId)).thenReturn(Optional.empty());
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.getSensors(structureId));
-        assertEquals(ErrorIdentifier.STRUCTURE_ID_NOT_FOUND, exception.getErrorIdentifier());
+        assertEquals(Error.STRUCTURE_ID_NOT_FOUND, exception.error);
     }
 
     @Test
@@ -78,7 +78,7 @@ class SensorServiceTest {
         when(structureRepository.findById(request.structureId())).thenReturn(Optional.empty());
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
-        assertEquals(ErrorIdentifier.SENSOR_STRUCTURE_NOT_FOUND, exception.getErrorIdentifier());
+        assertEquals(Error.SENSOR_STRUCTURE_NOT_FOUND, exception.error);
     }
 
     @Test
@@ -88,7 +88,7 @@ class SensorServiceTest {
         when(sensorRepository.findByName(request.name())).thenReturn(Optional.of(new Sensor()));
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
-        assertEquals(ErrorIdentifier.SENSOR_NAME_ALREADY_EXISTS, exception.getErrorIdentifier());
+        assertEquals(Error.SENSOR_NAME_ALREADY_EXISTS, exception.error);
     }
 
     @Test
@@ -115,7 +115,7 @@ class SensorServiceTest {
         AddSensorRequestDTO request = new AddSensorRequestDTO(1L, null, "chip2", "Sensor1", "", "2023-02-01", 1.0, 1.0);
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
-        assertEquals(ErrorIdentifier.SENSOR_CHIP_TAGS_IS_EMPTY, exception.getErrorIdentifier());
+        assertEquals(Error.SENSOR_CHIP_TAGS_IS_EMPTY, exception.error);
     }
 
     // Test sensorMalformedPrecondition (indirectly tested through createSensor)
@@ -124,6 +124,6 @@ class SensorServiceTest {
         AddSensorRequestDTO request = new AddSensorRequestDTO(1L, "chip1", "chip2", "Sensor1", "", "invalid-date", 1.0, 1.0);
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
-        assertEquals(ErrorIdentifier.SENSOR_INSTALLATION_DATE_INVALID_FORMAT, exception.getErrorIdentifier());
+        assertEquals(Error.SENSOR_INSTALLATION_DATE_INVALID_FORMAT, exception.error);
     }
 }

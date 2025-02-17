@@ -2,13 +2,11 @@ package fr.uge.structsure.services;
 
 import fr.uge.structsure.config.JwtUtils;
 import fr.uge.structsure.dto.auth.LoginRequestDTO;
-import fr.uge.structsure.dto.auth.LoginResponseDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
-import fr.uge.structsure.dto.auth.RegisterResponseDTO;
 import fr.uge.structsure.dto.userAccount.UserAccountResponseDTO;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
-import fr.uge.structsure.exceptions.ErrorIdentifier;
+import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,7 +58,7 @@ class AccountServiceTest {
 
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(registerRequestDTO));
 
-        assertEquals(ErrorIdentifier.USER_ALREADY_EXISTS, exception.getErrorIdentifier());
+        assertEquals(Error.USER_ALREADY_EXISTS, exception.error);
         verify(accountRepository, never()).save(any());
     }
 
@@ -70,7 +68,7 @@ class AccountServiceTest {
 
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(invalidRoleRequest));
 
-        assertEquals(ErrorIdentifier.ROLE_NOT_EXISTS, exception.getErrorIdentifier());
+        assertEquals(Error.ROLE_NOT_EXISTS, exception.error);
         verify(accountRepository, never()).save(any());
     }
 
@@ -80,7 +78,7 @@ class AccountServiceTest {
 
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.login(loginRequestDTO));
 
-        assertEquals(ErrorIdentifier.LOGIN_PASSWORD_NOT_CORRECT, exception.getErrorIdentifier());
+        assertEquals(Error.LOGIN_PASSWORD_NOT_CORRECT, exception.error);
     }
 
     @Test
@@ -98,7 +96,7 @@ class AccountServiceTest {
         assertNotNull(response);
         assertEquals(1, response.size());
 
-        UserAccountResponseDTO userAccountResponse = response.get(0);
+        UserAccountResponseDTO userAccountResponse = response.getFirst();
         assertEquals("John", userAccountResponse.firstName());
         assertEquals("Doe", userAccountResponse.lastName());
         assertEquals("testuser", userAccountResponse.login());

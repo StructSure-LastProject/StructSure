@@ -1,10 +1,8 @@
 package fr.uge.structsure.controllers;
 
-import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.StructureResponseDTO;
-import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +50,7 @@ public class StructureController {
             var structure = structureService.createStructure(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 
@@ -72,8 +69,7 @@ public class StructureController {
             var structure = planService.editPlan(id, planId, metadataDTO, file);
             return ResponseEntity.status(HttpStatus.OK).body(structure);
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 
@@ -101,8 +97,7 @@ public class StructureController {
             var structure = structureService.editStructure(id, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 
@@ -122,8 +117,7 @@ public class StructureController {
             var structure = planService.createPlan(id, metadataDTO, file);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 
@@ -136,8 +130,7 @@ public class StructureController {
         try {
             return ResponseEntity.status(200).body(structureService.getAllStructure());
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 
@@ -159,8 +152,7 @@ public class StructureController {
             var detail = structureService.structureDetail(id);
             return ResponseEntity.status(200).body(detail);
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 }
