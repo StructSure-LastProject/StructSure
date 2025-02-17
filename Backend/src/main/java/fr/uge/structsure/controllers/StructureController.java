@@ -57,8 +57,17 @@ public class StructureController {
         }
     }
 
-/*    @PutMapping("/{id}/plans/{planId")
-    public ResponseEntity<?> addPlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, @RequestPart("metadata") PlanMetadataDTO metadataDTO, @RequestPart("file") MultipartFile file) {
+    /**
+     * Updates a plan within a structure.
+     *
+     * @param id The ID of the structure containing the plan
+     * @param planId The ID of the plan to edit
+     * @param metadataDTO The DTO containing updated plan metadata
+     * @param file The new file for the plan
+     * @return ResponseEntity containing either the updated plan details or an error message
+     */
+    @PutMapping("/{id}/plans/{planId}")
+    public ResponseEntity<?> editPlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, @RequestPart("metadata") PlanMetadataDTO metadataDTO, @RequestPart("file") MultipartFile file) {
         try {
             var structure = planService.editPlan(id, planId, metadataDTO, file);
             return ResponseEntity.status(HttpStatus.OK).body(structure);
@@ -66,7 +75,7 @@ public class StructureController {
             var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
             return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
         }
-    }*/
+    }
 
     /**
      * Updates an existing structure in the system.
