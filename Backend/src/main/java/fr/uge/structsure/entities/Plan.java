@@ -1,10 +1,7 @@
 package fr.uge.structsure.entities;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-
-import java.io.File;
 
 @Entity
 public class Plan {
@@ -15,7 +12,7 @@ public class Plan {
     @NotBlank(message = "Name is required")
     @Size(max = 32, message = "Name must be less than 32 characters")
     private String name;
-    private boolean archived;
+    private boolean archived = false;
     private String imageUrl;
     @Size(max = 128, message = "Section must be less than 128 characters")
     private String section = "";
@@ -25,9 +22,14 @@ public class Plan {
 
     public Plan() {}
 
-    public Plan(String imageUrl, boolean archived, String name, String section, Structure structure) {
+    public Plan(String imageUrl, String name, Structure structure) {
         this.imageUrl = imageUrl;
-        this.archived = archived;
+        this.name = name;
+        this.structure = structure;
+    }
+
+    public Plan(String imageUrl, String name, String section, Structure structure) {
+        this.imageUrl = imageUrl;
         this.name = name;
         this.structure = structure;
         this.section = section;

@@ -1,7 +1,7 @@
 package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.ErrorDTO;
-import fr.uge.structsure.dto.plan.AddPlanRequestDTO;
+import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.ErrorMessages;
@@ -58,6 +58,26 @@ public class StructureController {
     }
 
     /**
+     * Updates a plan within a structure.
+     *
+     * @param id The ID of the structure containing the plan
+     * @param planId The ID of the plan to edit
+     * @param metadataDTO The DTO containing updated plan metadata
+     * @param file The new file for the plan
+     * @return ResponseEntity containing either the updated plan details or an error message
+     */
+    @PutMapping("/{id}/plans/{planId}")
+    public ResponseEntity<?> editPlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, @RequestPart("metadata") PlanMetadataDTO metadataDTO, @RequestPart("file") MultipartFile file) {
+        try {
+            var structure = planService.editPlan(id, planId, metadataDTO, file);
+            return ResponseEntity.status(HttpStatus.OK).body(structure);
+        } catch (TraitementException e) {
+            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
+            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+        }
+    }
+
+    /**
      * Updates an existing structure in the system.
      * This method handles HTTP PUT requests to update the name and/or note of a structure
      * identified by its ID. It delegates the update operation to the service layer.
@@ -92,14 +112,14 @@ public class StructureController {
      * Processes a multipart request containing both the plan metadata and the plan file.
      *
      * @param id The ID of the structure to which the plan will be added
-     * @param request The DTO containing plan metadata (name and section)
+     * @param metadataDTO The DTO containing plan metadata (name and section)
      * @param file The multipart file containing the plan image
      * @return ResponseEntity containing either the created plan details or an error message
      */
     @PostMapping("/{id}/plans")
-    public ResponseEntity<?> addPlan(@PathVariable("id") Long id, @RequestPart("metadata") AddPlanRequestDTO request, @RequestPart("file") MultipartFile file) {
+    public ResponseEntity<?> addPlan(@PathVariable("id") Long id, @RequestPart("metadata") PlanMetadataDTO metadataDTO, @RequestPart("file") MultipartFile file) {
         try {
-            var structure = planService.createPlan(id, request, file);
+            var structure = planService.createPlan(id, metadataDTO, file);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
             var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
