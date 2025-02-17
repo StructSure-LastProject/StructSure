@@ -1,10 +1,7 @@
 package fr.uge.structsure.entities;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-
-import java.io.File;
 
 @Entity
 public class Plan {
