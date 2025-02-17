@@ -228,22 +228,20 @@ class Cs108Connector(private val context: Context) {
                 while (true) {
                     ensureActive()
                     val data = csLibrary4A.newDeviceScanned
-                    if (data != null && checkPermission()) {
-                        if (data.device.type == BluetoothDevice.DEVICE_TYPE_LE) {
-                            val strInfo = if (data.device.bondState == 12) "BOND_BONDED\n" else ""
-                            val readerDevice = ReaderDevice(
-                                data.device.name,
-                                data.device.address,
-                                false,
-                                strInfo + "scanRecord=" + csLibrary4A.byteArrayToString(
-                                    data.scanRecord
-                                ),
-                                1,
-                                data.rssi.toDouble(),
-                                data.serviceUUID2p2
-                            )
-                            upsertDevice(readerDevice)
-                        }
+                    if (data != null && checkPermission() && data.device.type == BluetoothDevice.DEVICE_TYPE_LE) {
+                        val strInfo = if (data.device.bondState == 12) "BOND_BONDED\n" else ""
+                        val readerDevice = ReaderDevice(
+                            data.device.name,
+                            data.device.address,
+                            false,
+                            strInfo + "scanRecord=" + csLibrary4A.byteArrayToString(
+                                data.scanRecord
+                            ),
+                            1,
+                            data.rssi.toDouble(),
+                            data.serviceUUID2p2
+                        )
+                        upsertDevice(readerDevice)
                     }
                     delay(1000L)
                 }
