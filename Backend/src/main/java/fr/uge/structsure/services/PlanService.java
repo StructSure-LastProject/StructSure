@@ -61,9 +61,7 @@ public class PlanService {
      */
     public AddPlanResponseDTO createPlan(Long structureId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
         Objects.requireNonNull(metadata);
-        planEmptyPrecondition(structureId, metadata, file);
-        planMalformedPrecondition(metadata);
-        planConsistencyPrecondition(file);
+        addPlanAsserts(structureId, metadata, file);
         var noSection = metadata.section() == null || metadata.section().isEmpty();
         var structure = structureService.existStructure(structureId).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
         var directory = computeDirectory(noSection, structureId, metadata.section());
@@ -77,6 +75,20 @@ public class PlanService {
     }
 
     /**
+     * Performs all the checks on the arguments of the function (add plan)
+     *
+     * @param structureId The ID of the structure to which the plan will be attached
+     * @param metadata The DTO containing plan details (name and section)
+     * @param file The multipart file containing the plan image
+     * @throws TraitementException if validation fails
+     */
+    private void addPlanAsserts(Long structureId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
+        planEmptyPrecondition(structureId, metadata, file);
+        planMalformedPrecondition(metadata);
+        planConsistencyPrecondition(file);
+    }
+
+    /**
      * Edits an existing plan with new metadata and optionally a new file.
      *
      * @param structureId The ID of the structure containing the plan
@@ -86,29 +98,44 @@ public class PlanService {
      * @return EditPlanResponseDTO containing the edited plan's ID
      * @throws TraitementException if validation fails or if there are issues during plan editing
      */
-    public EditPlanResponseDTO editPlan(Long structureId, Long planId, PlanMetadataDTO metadata, MultipartFile multipartFile) throws TraitementException {
+    public EditPlanResponseDTO editPlan(Long structureId, Long planId, PlanMetadataDTO metadata, Optional<MultipartFile> multipartFile) throws TraitementException {
         Objects.requireNonNull(metadata);
-        planEmptyPrecondition(structureId, planId, metadata, multipartFile);
-        planMalformedPrecondition(metadata);
-        planConsistencyPrecondition(multipartFile);
+        editPlanAsserts(structureId, planId, metadata, multipartFile);
         var noSection = metadata.section() == null || metadata.section().isEmpty();
         var plan = planRepository.findById(planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
         var planFile = Path.of(plan.getImageUrl());
 
-        var directory = computeDirectory(noSection, structureId, metadata.section());
-        var filePath = Path.of(directory.toString(), Objects.requireNonNull(multipartFile.getOriginalFilename()));
         var name = plan.getName().equals(metadata.name()) ? plan.getName() : metadata.name();
         var section = plan.getSection().equals(metadata.section()) ? plan.getSection() : metadata.section();
+        var directory = computeDirectory(noSection, structureId, metadata.section());
+        var fileName = multipartFile.map(MultipartFile::getOriginalFilename).orElse(planFile.getFileName().toString());
+        var filePath = Path.of(directory.toString(), fileName);
 
         plan.setName(name);
         plan.setSection(section);
         plan.setImageUrl(filePath.toString());
-        Optional<MultipartFile> file = multipartFile.getOriginalFilename().equals(planFile.getFileName().toString()) ? Optional.empty() : Optional.of(multipartFile);
         if (!noSection) {
             managedFilesDirectory(directory);
         }
-        var savedPlan = handleEditPlan(planFile, filePath, file, plan);
+        var savedPlan = handleEditPlan(planFile, filePath, multipartFile, plan);
         return new EditPlanResponseDTO(savedPlan.getId());
+    }
+
+    /**
+     * Performs all the checks on the arguments of the function (edit plan)
+     *
+     * @param structureId The ID of the structure containing the plan
+     * @param planId The ID of the plan to edit
+     * @param metadata The new metadata for the plan
+     * @param multipartFile The new file for the plan (optional)
+     * @throws TraitementException if validation fails
+     */
+    private void editPlanAsserts(Long structureId, Long planId, PlanMetadataDTO metadata, Optional<MultipartFile> multipartFile) throws TraitementException {
+        planEmptyPrecondition(structureId, planId, metadata);
+        planMalformedPrecondition(metadata);
+        if (multipartFile.isPresent()) {
+            planConsistencyPrecondition(multipartFile.get());
+        }
     }
 
     /**
@@ -299,10 +326,9 @@ public class PlanService {
      * @param structureId The ID of the structure to be validated
      * @param planId The ID of the plan to be validated
      * @param metadata The DTO containing plan details to be validated
-     * @param file The multipart file to be validated
      * @throws TraitementException if any required field is null or empty
      */
-    private void planEmptyPrecondition(Long structureId, Long planId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
+    private void planEmptyPrecondition(Long structureId, Long planId, PlanMetadataDTO metadata) throws TraitementException {
         Objects.requireNonNull(metadata);
         if (structureId == null) {
             throw new TraitementException(Error.PLAN_STRUCTURE_ID_IS_EMPTY);
