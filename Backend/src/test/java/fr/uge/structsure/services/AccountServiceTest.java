@@ -58,7 +58,7 @@ class AccountServiceTest {
 
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(registerRequestDTO));
 
-        assertEquals(Error.USER_ALREADY_EXISTS, exception.getError());
+        assertEquals(Error.USER_ALREADY_EXISTS, exception.error);
         verify(accountRepository, never()).save(any());
     }
 
@@ -68,7 +68,7 @@ class AccountServiceTest {
 
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(invalidRoleRequest));
 
-        assertEquals(Error.ROLE_NOT_EXISTS, exception.getError());
+        assertEquals(Error.ROLE_NOT_EXISTS, exception.error);
         verify(accountRepository, never()).save(any());
     }
 
@@ -78,7 +78,7 @@ class AccountServiceTest {
 
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.login(loginRequestDTO));
 
-        assertEquals(Error.LOGIN_PASSWORD_NOT_CORRECT, exception.getError());
+        assertEquals(Error.LOGIN_PASSWORD_NOT_CORRECT, exception.error);
     }
 
     @Test
@@ -96,7 +96,7 @@ class AccountServiceTest {
         assertNotNull(response);
         assertEquals(1, response.size());
 
-        UserAccountResponseDTO userAccountResponse = response.get(0);
+        UserAccountResponseDTO userAccountResponse = response.getFirst();
         assertEquals("John", userAccountResponse.firstName());
         assertEquals("Doe", userAccountResponse.lastName());
         assertEquals("testuser", userAccountResponse.login());
