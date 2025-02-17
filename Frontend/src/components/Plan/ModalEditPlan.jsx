@@ -1,4 +1,4 @@
-import {createSignal, Show} from "solid-js";
+import { createSignal, Show } from "solid-js";
 import useFetch from "../../hooks/useFetch.js";
 import ModalHeader from "./ModalHeader.jsx";
 import ErrorMessage from "./ErrorMessage.jsx";
@@ -6,14 +6,19 @@ import ModalField from "./ModalField.jsx";
 import ModalImage from "./ModalImage.jsx";
 
 /**
- * Modal for adding a plan.
- * Displaus a form to enter a name, a section and an image.
- * @param {isOpen, onClose, onSave, structureId} param Props passed to the component
- * @returns The modal component for adding a plan
+ * Modal for editing a plan.
+ * Displays a form to edit name, section and optionally update the image.
+ * @param {Object} props Component properties
+ * @param {boolean} props.isOpen Whether the modal is open
+ * @param {Function} props.onClose Callback to close the modal
+ * @param {Function} props.onSave Callback after successful save
+ * @param {number} props.structureId ID of the structure
+ * @param {Object} props.plan Current plan data
+ * @returns {JSX.Element} The modal component for editing a plan
  */
-const Modal = ({ isOpen, onClose, onSave, structureId }) => {
-  const [name, setName] = createSignal("");
-  const [section, setSection] = createSignal("");
+const Modal = ({ isOpen, onClose, onSave, structureId, plan }) => {
+  const [name, setName] = createSignal(plan.name || "");
+  const [section, setSection] = createSignal(plan.section || "");
   const [imageData, setImageData] = createSignal(null);
   const [imageFile, setImageFile] = createSignal(null);
   const [errorMsg, setError] = createSignal("");
@@ -21,7 +26,7 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
 
   /**
    * Handles image file input change.
-   * @param {*} event - The file input change event
+   * @param {Event} event - The file input change event
    */
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -46,15 +51,12 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
   };
 
   /**
-   * Handles the form submission for adding a new plan.
-   * Validates the form data, creates a FormData object with the plan metadata and file,
-   * and sends it to the server.
-   *
-   * @returns {Promise<void>} A promise that resolves when the submission is complete
-   * @throws Will display an error message if the submission fails
+   * Handles the form submission for editing a plan.
+   * Validates the form data and sends it to the server.
+   * @returns {Promise<void>}
    */
   const handleSubmit = async () => {
-    setError("")
+    setError("");
     if (!name().trim()) {
       setError("Le nom est requis");
       return;
@@ -64,13 +66,8 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
       setError("Le format de la section est invalide");
       return;
     }
-    if (!imageFile()) {
-      setError("Une image est requise");
-      return;
-    }
 
     setIsSubmitting(true);
-    setError("");
 
     const formData = new FormData();
     const metadata = {
@@ -81,16 +78,19 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
     formData.append("metadata", new Blob([JSON.stringify(metadata)], {
       type: "application/json"
     }));
-    formData.append("file", imageFile());
+
+    if (imageFile()) {
+      formData.append("file", imageFile());
+    }
 
     const { fetchData, data, statusCode, error } = useFetch();
 
-    await fetchData(`/api/structures/${structureId}/plans`, {
-      method: "POST",
+    await fetchData(`/api/structures/${structureId}/plans/${plan.id}`, {
+      method: "PUT",
       body: formData
     });
 
-    if (statusCode() === 201) {
+    if (statusCode() === 200) {
       onSave(data());
       handleClose();
     } else {
@@ -101,13 +101,11 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
   };
 
   /**
-   * Resets the modal state and closes it.
-   * Clears all form fields including name, section, image data,
-   * and any error messages before calling the onClose callback.
+   * Resets the modal state and closes it
    */
   const handleClose = () => {
-    setName("");
-    setSection("");
+    setName(plan.name || "");
+    setSection(plan.section || "");
     setImageData(null);
     setImageFile(null);
     setError("");
@@ -118,14 +116,35 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
     <Show when={isOpen}>
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
         <div class="bg-white p-6 rounded-[20px] shadow-lg w-96">
-          <ModalHeader onClose={handleClose} onSubmit={handleSubmit} isSubmitting={isSubmitting()} />
+          <ModalHeader
+            title="Modifier le Plan"
+            onClose={handleClose}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting()}
+          />
           <Show when={errorMsg()}>
             <ErrorMessage message={errorMsg()} />
           </Show>
           <div class="space-y-4">
-            <ModalField label="Nom*" value={name()} maxLength={32} onInput={(e) => setName(e.target.value)} placeholder="Zone 03" />
-            <ModalField label="Section" value={section()} maxLength={128}  onInput={(e) => setSection(e.target.value)} placeholder="OA/Aval" />
-            <ModalImage imageSignal={[imageData, setImageData]} onImageChange={handleImageChange} />
+            <ModalField
+              label="Nom*"
+              value={name()}
+              maxLength={32}
+              onInput={(e) => setName(e.target.value)}
+              placeholder="Zone 03"
+            />
+            <ModalField
+              label="Section"
+              value={section()}
+              maxLength={128}
+              onInput={(e) => setSection(e.target.value)}
+              placeholder="OA/Aval"
+            />
+            <ModalImage
+              imageSignal={[imageData, setImageData]}
+              onImageChange={handleImageChange}
+              currentImageUrl={plan.imageUrl}
+            />
           </div>
         </div>
       </div>

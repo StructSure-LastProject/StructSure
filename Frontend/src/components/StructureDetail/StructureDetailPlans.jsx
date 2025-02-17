@@ -398,7 +398,7 @@ function StructureDetailPlans(props) {
                     <p class="prose font-poppins title">Plans</p>
                     <button 
                       title="Ajouter un plan" 
-                      onClick={openModal} 
+                      onClick={openModal}
                       class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
                     >
                         <Plus color="black"/>
