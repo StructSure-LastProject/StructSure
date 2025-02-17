@@ -61,7 +61,7 @@ public class PlanService {
         var filePath = directory + File.separator + file.getOriginalFilename();
         if (planRepository.planFileAlreadyExists(filePath)) {
             throw new TraitementException(ErrorIdentifier.PLAN_ALREADY_EXISTS);
-        };
+        }
         managedFilesDirectory(directory);
         var savedPlan = handleAddPlan(directory, file, new Plan(filePath, metadata.name(), metadata.section(), structure));
         return new AddPlanResponseDTO(savedPlan.getId(), new Timestamp(System.currentTimeMillis()).toString());
@@ -179,17 +179,19 @@ public class PlanService {
     }
 
     /**
-     * Deletes a directory if it is empty. Used for cleanup after file operations.
+     * Deletes a directory and all its parent if they are empty. Used
+     * for cleanup after file operations.
      *
      * @param path the path of the directory to check and potentially delete
      * @throws IOException if an error occurs while accessing or deleting the directory
      */
     private void deleteEmptyParentDirectory(Path path) throws IOException {
-        try (var dirStream = Files.newDirectoryStream(path)) {
-            if (!dirStream.iterator().hasNext()) {
+        if (!path.getFileName().toString().equals(uploadDir)) return; // security to avoid removing root directory
+        try (var files = Files.list(path)) {
+            if (files.findAny().isEmpty()) {
                 Files.delete(path);
+                deleteEmptyParentDirectory(path.getParent());
             }
-        } catch (DirectoryNotEmptyException ignored) {
         }
     }
 
