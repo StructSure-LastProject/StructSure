@@ -68,10 +68,10 @@ fun BluetoothPage(bleConnexion: Cs108Connector, onClose: () -> Unit) {
             val devices = remember { Cs108Connector.devices }
             if (bleEnabled.value == false) {
                 BleDisabled()
-            } else if (devices.isEmpty()) {
+            } else if (devices.value.isEmpty()) {
                 NoBleDevice()
             } else {
-                DevicesList(devices) { device ->
+                DevicesList(devices.value) { device ->
                     if (!device.isConnected) bleConnexion.connect(device) else bleConnexion.disconnect()
                 }
             }
@@ -139,7 +139,7 @@ private fun Device(device: ReaderDevice, onClick: () -> Unit) {
  * @param callback the action to run when a device is clicked
  */
 @Composable
-private fun DevicesList(devices:  MutableList<ReaderDevice>, callback: (ReaderDevice) -> Unit) {
+private fun DevicesList(devices:  List<ReaderDevice>, callback: (ReaderDevice) -> Unit) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.Top),
         horizontalAlignment = Alignment.Start

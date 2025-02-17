@@ -9,7 +9,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.MutableLiveData
 import com.csl.cslibrary4a.ReaderDevice
@@ -37,6 +36,9 @@ class Cs108Connector(private val context: Context) {
         /** The label of this class for the logs */
         private const val LOG_TAG = "TinyRFID-Connector"
 
+        /** List with timeout to smooth real world data */
+        private val timedDevices = TimedDevicesList(3000)
+
         /** Saves the background task that scan for nearby devices */
         private var scanTask: Job? = null
 
@@ -51,8 +53,7 @@ class Cs108Connector(private val context: Context) {
             private set
 
         /** Dynamic list of compatible BLE devices detected by Cs108 lib */
-        var devices: MutableList<ReaderDevice> = mutableStateListOf()
-            private set
+        var devices = timedDevices.devices
 
         /** The currently connected device if any */
         var device: ReaderDevice? = null
@@ -147,6 +148,7 @@ class Cs108Connector(private val context: Context) {
                 if (!bleConnected) return@launch
                 isBleConnected.postValue(true)
                 waitForDeviceReady()
+                if (Cs108Connector.device == null) return@launch
                 onDeviceReady()
                 isReady = true
             } catch (e: CancellationException) {
@@ -164,8 +166,10 @@ class Cs108Connector(private val context: Context) {
     fun disconnect() {
         if (device != null) {
             csLibrary4A.disconnect(false)
-            devices.remove(device)
-            device!!.isConnected = false
+            device?.let {
+                timedDevices.remove(it)
+                it.isConnected = false
+            }
             device = null
             isReady = false
             isBleConnected.postValue(false)
@@ -219,9 +223,7 @@ class Cs108Connector(private val context: Context) {
             }
             if (csLibrary4A.isBleConnected) {
                 Cs108Connector.device = device
-                devices.remove(device)
                 device.isConnected = true
-                devices.add(device)
                 onBleConnected(true)
                 Log.d(LOG_TAG, "Device connected: ${device.name}")
                 return true
@@ -236,13 +238,21 @@ class Cs108Connector(private val context: Context) {
     /**
      * Wait for the latest device to be ready for other operations.
      */
+    @OptIn(DelicateCoroutinesApi::class)
     private suspend fun waitForDeviceReady() {
+        var interrupted = false
         coroutineScope {
             while (csLibrary4A.mrfidToWriteSize() != 0) {
                 ensureActive()
+                if (!csLibrary4A.isBleConnected) {
+                    deviceDisconnected()
+                    interrupted = true
+                    return@coroutineScope
+                }
                 delay(500L)
             }
         }
+        if (interrupted) return // Failed to pair
         if (batteryTask == null) {
             batteryTask = GlobalScope.launch { pollBattery() }
         }
@@ -272,9 +282,10 @@ class Cs108Connector(private val context: Context) {
                             data.rssi.toDouble(),
                             data.serviceUUID2p2
                         )
-                        upsertDevice(readerDevice)
+                        timedDevices.add(readerDevice)
+                    } else {
+                        delay(100L)
                     }
-                    delay(1000L)
                 }
             }
         } catch (e: CancellationException) {
@@ -303,15 +314,10 @@ class Cs108Connector(private val context: Context) {
                         }
                     } else if (battery !=  -1) {
                         /* Handle device disconnection */
-                        battery = -1
-                        onBatteryChange(-1)
-                        disconnect()
-                        // Restart the scan to be able to discover the device back
-                        csLibrary4A.scanLeDevice(false)
-                        csLibrary4A.scanLeDevice(true)
+                        deviceDisconnected()
                         break
                     }
-                    delay(2000L)
+                    delay(1000L)
                 }
             }
         } catch (e: CancellationException) {
@@ -333,20 +339,17 @@ class Cs108Connector(private val context: Context) {
     }
 
     /**
-     * Checks if a device this the same address of the given one has
-     * already be scanned or not.
-     * @param device the reader to search for
-     * @return true if already seen, false otherwise
+     * Handle device disconnection by updated BLE states variables
+     * and devices list
      */
-    private fun upsertDevice(device: ReaderDevice) {
-        for (i in devices.indices) {
-            if (devices[i].address == device.address) {
-                /* Update */
-                devices[i] = device
-                return
-            }
+    private fun deviceDisconnected() {
+        battery = -1
+        onBatteryChange(-1)
+        disconnect()
+        // Restart the scan to be able to discover the device back
+        if (scanTask != null) {
+            csLibrary4A.scanLeDevice(false)
+            csLibrary4A.scanLeDevice(true)
         }
-        /* Insert */
-        devices.add(device)
     }
 }
