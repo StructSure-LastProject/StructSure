@@ -342,9 +342,6 @@ public class PlanService {
         if (metadata.section() == null) {
             throw new TraitementException(Error.PLAN_SECTION_IS_EMPTY);
         }
-        if (file == null || file.isEmpty()) {
-            throw new TraitementException(Error.PLAN_FILE_IS_EMPTY);
-        }
     }
 
     /**
