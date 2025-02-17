@@ -65,7 +65,7 @@ object PreferencesManager {
      */
     fun clearServerUrl(context: Context) {
         val db = AppDatabase.getDatabase(context)
-        val structureRepository = StructureRepository(db.structureDao(), db.planDao(), db.sensorDao())
+        val structureRepository = StructureRepository()
         CoroutineScope(Dispatchers.IO).launch {
             val structures = db.structureDao().getAllStructures()
             structures.forEach { structure ->
