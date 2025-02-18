@@ -1,6 +1,8 @@
 package fr.uge.structsure.dto.structure;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.uge.structsure.exceptions.Error;
+import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.utils.OrderEnum;
 
 import java.util.Objects;
@@ -13,12 +15,6 @@ import java.util.Objects;
  */
 @JsonSerialize
 public record AllStructureRequestDTO(String searchByName, OrderByColumn orderByColumnName, OrderEnum orderType) {
-    public AllStructureRequestDTO {
-        Objects.requireNonNull(searchByName);
-        Objects.requireNonNull(orderByColumnName);
-        Objects.requireNonNull(orderType);
-    }
-
     /**
      * The orderByColumn enum
      */
@@ -39,6 +35,12 @@ public record AllStructureRequestDTO(String searchByName, OrderByColumn orderByC
 
         public String getValue() {
             return value;
+        }
+    }
+
+    public void checkPrsenceOfRequiredFields() throws TraitementException {
+        if (Objects.isNull(searchByName) || Objects.isNull(orderType) || Objects.isNull(orderByColumnName)) {
+            throw new TraitementException(Error.MISSING_USER_ACCOUNT_FIELDS);
         }
     }
 }
