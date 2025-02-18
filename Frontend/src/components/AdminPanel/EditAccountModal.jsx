@@ -74,6 +74,8 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
             if (login() !== userDetails.login) updatedFields.push("login");
             if (role() !== userDetails.role) updatedFields.push("role");
             if (accountState() !== userDetails.accountState) updatedFields.push("accountState");
+            if (password() !== "") updatedFields.push("password");
+
 
             if (updatedFields.length === 0) {
                 setApiError("");
@@ -108,6 +110,15 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                     }
                 ));
             }
+
+            if(updatedFields.includes("password")){
+                await fetchData(`/api/accounts/${login()}/reset-password`, createRequestData(
+                    {
+                        password: password()
+                    }
+                ));
+            }
+            
 
             
             let editError = "";

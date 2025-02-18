@@ -1,6 +1,7 @@
 package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
+import fr.uge.structsure.dto.userAccount.PasswordRequest;
 import fr.uge.structsure.dto.userAccount.RoleRequest;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
@@ -31,13 +32,19 @@ public class UserAccountController {
 
     /**
      * Returns the user list
+     * @param request The HTTP Request
      * @return UserAccountResponseDTO The list of user details
      */
     @GetMapping("/accounts")
-    public ResponseEntity<?> getUserAccounts(){
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(accountService.getUserAccounts());
+    public ResponseEntity<?> getUserAccounts(HttpServletRequest request){
+        try{
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(accountService.getUserAccounts(request));
+        }
+        catch (TraitementException e){
+            return e.toResponseEntity();
+        }
     }
 
     /**
@@ -72,5 +79,25 @@ public class UserAccountController {
             return e.toResponseEntity();
         }
     }
+
+    /**
+     * Update the password
+     * @param login User login
+     * @param passwordRequest The new password
+     * @param request The HTTP Request
+     * @return RegisterResponseDTO The login of the user account
+     */
+    @PutMapping("/accounts/{login}/reset-password")
+    public ResponseEntity<?> updateRole(@PathVariable("login") String login, @RequestBody PasswordRequest passwordRequest, HttpServletRequest request) {
+        Objects.requireNonNull(login);
+        Objects.requireNonNull(passwordRequest);
+        try {
+            return ResponseEntity.status(200).body(accountService.updatePassword(login, passwordRequest, request));
+        } catch (TraitementException e) {
+            return e.toResponseEntity();
+        }
+    }
+
+
 
 }
