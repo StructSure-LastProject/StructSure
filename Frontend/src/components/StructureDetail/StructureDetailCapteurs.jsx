@@ -1,12 +1,18 @@
 import { ArrowDownNarrowWide, Filter, Plus, Trash2 } from 'lucide-solid';
-import { createEffect } from 'solid-js';
+import { createEffect, createSignal } from 'solid-js';
 
 /**
  * Show the sensors part of the structure detail page
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({sensors}) {;
+function StructureDetailCapteurs({sensors}) {
+    const [error, setError] = createSignal("");
 
+    /**
+     * Returns the sensor color (div) corresponding for its state
+     * @param {Object} sensor the sensor
+     * @returns the div with the corresponding color
+     */
     const getSensorStatusColor = (sensor) => {
         let colorsClasses = "";
         switch(sensor.state) {
@@ -21,6 +27,9 @@ function StructureDetailCapteurs({sensors}) {;
                 break;
             case "DEFECTIVE":
                 colorsClasses = "bg-[#F19327] border-yellow-200";
+                break;
+            default:
+                setError("L'etat du sensor inconnu");
                 break;
         }
         return <div class={`w-[12px] h-[12px] rounded-[50px] border-2 ${colorsClasses}`}></div>;

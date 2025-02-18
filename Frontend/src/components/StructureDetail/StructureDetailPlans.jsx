@@ -1,14 +1,14 @@
 import { createSignal, onMount, onCleanup, Show, createEffect } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
-import ModalAddPlan from './Plan/ModalAddPlan';
+import ModalAddPlan from '../Plan/ModalAddPlan';
 import { Plus } from 'lucide-solid';
 
 /**
  * Shows the plans part
  * @returns the component for the plans part
  */
-function StructureDetailPlans() {
+function StructureDetailPlans(props) {
     const imageMoveLimit = 10;
     const ZOOM_LIMIT = 4;
     const [ctxCanvas, setCtxCanvas] = createSignal("");
@@ -25,6 +25,8 @@ function StructureDetailPlans() {
     const [isOpen, setIsOpen] = createSignal(false);
     const [drawWidth, setDrawWidth] = createSignal(0);
     const [drawHeight, setDrawHeight] = createSignal(0);
+    const [error, setError] = createSignal("");
+
 
     /**
      * Add result of adding plan and log the list in the console
@@ -41,7 +43,6 @@ function StructureDetailPlans() {
         };
 
         setPlans(prev => [...prev, newPlan]);
-        console.log(plans());
         closeModal();
     };
 
@@ -65,10 +66,6 @@ function StructureDetailPlans() {
     let isMouseDown = false;
     let startX = 0;
     let startY = 0;
-
-    const lstSensors = [{x: 100, y: 100, state: "OK"}, {x : 20, y: 20, state: "NOK"}, 
-        {x : 60, y: 60, state: "DEFECTIVE"}, {x : 40, y: 40, state: "UNKNOWN"}
-    ];
 
     /**
      * Returns the start image position x
@@ -160,7 +157,7 @@ function StructureDetailPlans() {
         const ctx = ctxCanvas();
         const scaleX = (drawWidth + zoomX) / img.width;
         const scaleY = (drawHeight + zoomY) / img.height;
-        lstSensors.forEach(sensor => {
+        props.planSensors.forEach(sensor => {
             let bgColor = "";
             let borderColor = "";
             switch (sensor.state) {
@@ -180,6 +177,9 @@ function StructureDetailPlans() {
                     bgColor = "#6A6A6A";
                     borderColor = "#6a6a6a40";
                     break;
+                default:
+                    setError("L'etat du sensor inconnu");
+                    break;
             }
 
             const sensorCanvasX = imgStartX + sensor.x * scaleX;
@@ -198,6 +198,9 @@ function StructureDetailPlans() {
     };
     
 
+    /**
+     * Handles the resize event
+     */
     const handleResize = () => {
         fixDpi();
         drawImage();
@@ -231,6 +234,9 @@ function StructureDetailPlans() {
         setCtxCanvas(ctx);
         loadDetails();
         addMouseEvents();
+        createEffect(() => {
+            drawImage();
+        });
     })
 
     /**
@@ -288,7 +294,7 @@ function StructureDetailPlans() {
         event.preventDefault();
         if (event.ctrlKey) {
             const zoomChange = event.deltaY;
-            let newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
+            const newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
             const imgStartX = getImgStartX(baseOffsetX(), offsetX(), newZoom);
             const imgStartY = getImgStartY(baseOffsetY(), offsetY(), newZoom);
             const [zoomX, zoomY] = getZoomRationFromZoomNumber(newZoom);
@@ -318,11 +324,14 @@ function StructureDetailPlans() {
     };
 
 
+    /**
+     * Checks if the zoom limit is reached
+     * @param {number} newImgWidth the new image width (after zoom)
+     * @param {number} newImgHeight the new image height (after zoom)
+     * @returns true if limit reached and false if not
+     */
     const zoomLimitReached = (newImgWidth, newImgHeight) => {
-        if (newImgWidth > ZOOM_LIMIT * drawWidth() || newImgHeight > ZOOM_LIMIT * drawHeight()) {
-            return true;
-        }
-        return false;
+        return newImgWidth > ZOOM_LIMIT * drawWidth() || newImgHeight > ZOOM_LIMIT * drawHeight();
     };
 
     /**

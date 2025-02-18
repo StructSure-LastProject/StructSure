@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The repository of the plan entity
@@ -18,6 +19,14 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
      * @return the number
      */
     long countByStructure(Structure structure);
+
+    /**
+     * Will find the plan by its id, and also that is present in the structure
+     * @param structure the structure
+     * @param planId the plan id
+     * @return Optional<Plan> an optional with the plan or an optional empty if there is no plan
+     */
+    Optional<Plan> findByStructureAndId(Structure structure, long planId);
 
     /**
      * Find the list of the plans in the structure
