@@ -2,8 +2,8 @@ package fr.uge.structsure
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -29,13 +29,12 @@ import androidx.navigation.compose.rememberNavController
 import com.csl.cslibrary4a.Cs108Library4A
 import fr.uge.structsure.alertes.Alerte
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
-import fr.uge.structsure.components.CustomToast
+import fr.uge.structsure.bluetooth.cs108.Cs108Connector.Companion.bluetoothAdapter
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.ScanPage
-import fr.uge.structsure.settingsPage.presentation.PreferencesManager
 import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
@@ -59,17 +58,6 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var structureViewModel: StructureViewModel
 
-    private val bluetoothManager by lazy {
-        applicationContext.getSystemService(BluetoothManager::class.java)
-    }
-    private val bluetoothAdapter by lazy {
-        bluetoothManager?.adapter
-    }
-
-    private val isBluetoothEnabled: Boolean
-        get() = bluetoothAdapter?.isEnabled == true
-
-
     private val viewModelFactory: StructureViewModelFactory by lazy {
         StructureViewModelFactory(db)
     }
@@ -86,6 +74,8 @@ class MainActivity : ComponentActivity() {
         structureViewModel =
             ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
+        val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+        registerReceiver(bluetoothAdapter, filter)
 
         requestPermissions()
 
@@ -156,6 +146,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         csLibrary4A.disconnect(true)
+        unregisterReceiver(bluetoothAdapter)
         super.onDestroy()
     }
 
@@ -171,7 +162,7 @@ class MainActivity : ComponentActivity() {
                 permissions[Manifest.permission.BLUETOOTH_CONNECT] == true
             } else true
 
-            if (canEnableBluetooth && !isBluetoothEnabled) {
+            if (canEnableBluetooth) {
                 enableBluetoothLauncher.launch(
                     Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 )
