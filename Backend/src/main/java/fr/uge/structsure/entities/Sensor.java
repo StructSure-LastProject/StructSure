@@ -26,13 +26,16 @@ public class Sensor {
     @JoinColumn(name = "structure_id", nullable = true)
     private Structure structure;
 
-    /*
-    @Convert(converter = LocalTimeConverter.class)
-    private LocalTime installationDate;
-     */
+    @Temporal(TemporalType.DATE)
+    Date installationDate;
 
+
+
+     /*
     @Column(columnDefinition = "TEXT")
     private String installationDate;
+
+      */
 
     @Column(columnDefinition = "REAL")
     private Double x;
@@ -54,7 +57,7 @@ public class Sensor {
 
     }
 
-    public Sensor(String controlChip, String measureChip, String name, String note, String installationDate, Double x, Double y, Boolean archived, Structure structure) {
+    public Sensor(String controlChip, String measureChip, String name, String note, Date installationDate, Double x, Double y, Boolean archived, Structure structure) {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
         Objects.requireNonNull(name);
@@ -101,11 +104,11 @@ public class Sensor {
         this.note = note;
     }
 
-    public String getInstallationDate() {
+    public Date getInstallationDate() {
         return installationDate;
     }
 
-    public void setInstallationDate(String installationDate) {
+    public void setInstallationDate(Date installationDate) {
         this.installationDate = installationDate;
     }
 
