@@ -1,8 +1,6 @@
 package fr.uge.structsure.services;
 
-import fr.uge.structsure.dto.sensors.AddSensorAnswerDTO;
-import fr.uge.structsure.dto.sensors.AddSensorRequestDTO;
-import fr.uge.structsure.dto.sensors.SensorDTO;
+import fr.uge.structsure.dto.sensors.*;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
@@ -14,6 +12,8 @@ import fr.uge.structsure.utils.StateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -52,13 +52,14 @@ public class SensorService {
      * @return List<SensorDTO> list of sensors
      * @throws TraitementException if there is no structure with the id
      */
-    public List<SensorDTO> getSensorsByStructureId(long structureId) throws TraitementException {
+    public List<SensorDTO> getSensors(long structureId, AllSensorsByStructureRequestDTO request) throws TraitementException {
         var structure = structureRepository.findById(structureId);
         if (structure.isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
         var sensors = sensorRepository.findByStructureId(structureId);
         return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
+
     }
 
     /**
@@ -131,15 +132,20 @@ public class SensorService {
         if (alreadyUsedSensorId) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
         }
-        var sensor = new Sensor(request.controlChip(),
-                request.measureChip(),
-                request.name(),
-                request.note() == null ? "": request.note(),
-                request.installationDate(),
-                request.x(),
-                request.y(),
-                false,
-                structure.get());
+        Sensor sensor = null;
+        try {
+            sensor = new Sensor(request.controlChip(),
+                    request.measureChip(),
+                    request.name(),
+                    request.note() == null ? "": request.note(),
+                    new SimpleDateFormat("dd-MM-yyyy").parse(request.installationDate()),
+                    request.x(),
+                    request.y(),
+                    false,
+                    structure.get());
+        } catch (ParseException e) {
+            throw new TraitementException(ErrorIdentifier.DATE_FORMAT_ERROR);
+        }
         var saved = sensorRepository.save(sensor);
         return new AddSensorAnswerDTO(saved.getSensorId().getControlChip(), saved.getSensorId().getMeasureChip());
     }
