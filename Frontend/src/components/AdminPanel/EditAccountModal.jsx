@@ -13,12 +13,12 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
     const [firstName, setFirstName] = createSignal(userDetails.firstName);
     const [lastName, setLastName] = createSignal(userDetails.lastName);
-    const [login, setLogin] = createSignal(userDetails.login);
     const [password, setPassword] = createSignal("");
     const [role, setRole] = createSignal(userDetails.role); 
     const [accountState, setAccountState] = createSignal(userDetails.accountState);
     const [errorModal, setErrorModal] = createSignal([]);
     const [apiError, setApiError] = createSignal("");
+    const login = userDetails.login;
 
     /**
      * Roles
@@ -60,7 +60,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        validateUserAccountForm(firstName(), lastName(), login(), role(), password(), addError, removeError, false)
+        validateUserAccountForm(firstName(), lastName(), login, role(), password(), addError, removeError, false)
 
         const { fetchData, error, statusCode } = useFetch();
         const token = localStorage.getItem("token")
@@ -130,7 +130,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                 requestBody.accountState = accountState();
             }
             
-            await fetchData(`/api/accounts/reset`, createRequestData(requestBody));
+            await fetchData("/api/accounts/reset", createRequestData(requestBody));
 
             
             let editError = "";
@@ -216,7 +216,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                                 <input
                                     id="id"
                                     required
-                                    value={userDetails.login}
+                                    value={login}
                                     type="text"
                                     className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px] opacity-[70%]"
                                     minLength="1"
