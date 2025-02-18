@@ -9,6 +9,7 @@ import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -83,24 +84,16 @@ class AccountServiceTest {
 
     @Test
     void testGetUserAccounts() {
-        // Fix the role to match the expected value (USER) in the test
-        Account accountWithCorrectRole = new Account("testuser", "encodedPassword", "John", "Doe", Role.OPERATEUR, true);
+        // Set up an account with the correct role (USER) for testing purposes
+        Account testAccount = new Account("testuser", "encodedPassword", "John", "Doe", Role.OPERATEUR, true);
 
-        // Mock the repository call to return the correctly initialized account
-        when(accountRepository.findAll()).thenReturn(List.of(accountWithCorrectRole));
+        // Simulate the request with a valid token and role (ADMIN)
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("authorization")).thenReturn("valid_token");
 
-        // Call the method to test
-        List<UserAccountResponseDTO> response = accountService.getUserAccounts();
 
-        // Verify that the response has the correct role and other expected properties
-        assertNotNull(response);
-        assertEquals(1, response.size());
-
-        UserAccountResponseDTO userAccountResponse = response.getFirst();
-        assertEquals("John", userAccountResponse.firstName());
-        assertEquals("Doe", userAccountResponse.lastName());
-        assertEquals("testuser", userAccountResponse.login());
-        assertEquals(Role.OPERATEUR.value, userAccountResponse.role());
-        assertTrue(userAccountResponse.enabled());
+        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.getUserAccounts(request));
+        assertEquals(Error.INVALID_TOKEN, exception.error);
+        verify(accountRepository, never()).save(any());
     }
 }

@@ -13,12 +13,12 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
     const [firstName, setFirstName] = createSignal(userDetails.firstName);
     const [lastName, setLastName] = createSignal(userDetails.lastName);
-    const [login, setLogin] = createSignal(userDetails.login);
     const [password, setPassword] = createSignal("");
     const [role, setRole] = createSignal(userDetails.role); 
     const [accountState, setAccountState] = createSignal(userDetails.accountState);
     const [errorModal, setErrorModal] = createSignal([]);
     const [apiError, setApiError] = createSignal("");
+    const login = userDetails.login;
 
     /**
      * Roles
@@ -60,7 +60,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        validateUserAccountForm(firstName(), lastName(), login(), role(), password(), addError, removeError, false)
+        validateUserAccountForm(firstName(), lastName(), login, role(), password(), addError, removeError, false)
 
         const { fetchData, error, statusCode } = useFetch();
         const token = localStorage.getItem("token")
@@ -71,9 +71,10 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
             if (firstName() !== userDetails.firstName) updatedFields.push("firstname");
             if (lastName() !== userDetails.lastName) updatedFields.push("lastname");
-            if (login() !== userDetails.login) updatedFields.push("login");
             if (role() !== userDetails.role) updatedFields.push("role");
             if (accountState() !== userDetails.accountState) updatedFields.push("accountState");
+            if (password() !== "") updatedFields.push("password");
+
 
             if (updatedFields.length === 0) {
                 setApiError("");
@@ -81,33 +82,55 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                 return;
             }
 
-            
+
+            const requestBody = {
+                firstname: userDetails.firstName,
+                lastname: userDetails.lastName,
+                login: userDetails.login,
+                role: userDetails.role,
+                password: "",
+                accountState: userDetails.accountState,
+            }
+
+
             /**
              * Create the body of the request
              * @param {object} requestBody 
              * @param {string} token 
              * @returns json object
              */
-            const createRequestData = (requestBody) => {
+            const createRequestData = (requestData) => {
                 return {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`
                     },
-                    body: JSON.stringify(requestBody),
+                    body: JSON.stringify(requestData),
                 };
             }
-       
-        
             
-            if (updatedFields.includes("role")) {
-                await fetchData(`/api/accounts/${login()}/role`, createRequestData(
-                    {
-                        role: role()
-                    }
-                ));
+            if(updatedFields.includes("firstname")){
+                requestBody.firstname = firstName();
             }
+
+            if(updatedFields.includes("lastname")){
+                requestBody.lastname = lastName();
+            }
+
+            if (updatedFields.includes("role")) {
+                requestBody.role = role();
+            }
+
+            if(updatedFields.includes("password")){
+                requestBody.password = password();
+            }
+
+            if(updatedFields.includes("accountState")){
+                requestBody.accountState = accountState();
+            }
+            
+            await fetchData("/api/accounts/reset", createRequestData(requestBody));
 
             
             let editError = "";
@@ -129,7 +152,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         }
         
     };
-
 
 
 
@@ -194,12 +216,12 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                                 <input
                                     id="id"
                                     required
-                                    value={login()}
-                                    onChange={(e) => setLogin(e.target.value)}
+                                    value={login}
                                     type="text"
-                                    className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
+                                    className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px] opacity-[70%]"
                                     minLength="1"
                                     maxLength="128"
+                                    disabled
                                 />
                             </div>
                         </div>

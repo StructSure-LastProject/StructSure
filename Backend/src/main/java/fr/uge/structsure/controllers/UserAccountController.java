@@ -1,7 +1,7 @@
 package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
-import fr.uge.structsure.dto.userAccount.RoleRequest;
+import fr.uge.structsure.dto.userAccount.UserUpdateRequestDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,13 +31,19 @@ public class UserAccountController {
 
     /**
      * Returns the user list
+     * @param request The HTTP Request
      * @return UserAccountResponseDTO The list of user details
      */
     @GetMapping("/accounts")
-    public ResponseEntity<?> getUserAccounts(){
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(accountService.getUserAccounts());
+    public ResponseEntity<?> getUserAccounts(HttpServletRequest request){
+        try{
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(accountService.getUserAccounts(request));
+        }
+        catch (TraitementException e){
+            return e.toResponseEntity();
+        }
     }
 
     /**
@@ -57,17 +63,15 @@ public class UserAccountController {
 
 
     /**
-     * Update the role for a user
-     * @param login User login
-     * @param roleRequest The new role
+     * Update the role information
+     * @param userUpdateRequestDTO The new information of user
      * @return RegisterResponseDTO The login of the user account
      */
-    @PutMapping("/accounts/{login}/role")
-    public ResponseEntity<?> updateRole(@PathVariable("login") String login, @RequestBody RoleRequest roleRequest, HttpServletRequest request) {
-        Objects.requireNonNull(login);
-        Objects.requireNonNull(roleRequest);
+    @PutMapping("/accounts/reset")
+    public ResponseEntity<?> updateUserAccount(@RequestBody UserUpdateRequestDTO userUpdateRequestDTO, HttpServletRequest request) {
+        Objects.requireNonNull(userUpdateRequestDTO);
         try {
-            return ResponseEntity.status(200).body(accountService.updateRole(login, roleRequest, request));
+            return ResponseEntity.status(200).body(accountService.updateUserAccount(userUpdateRequestDTO, request));
         } catch (TraitementException e) {
             return e.toResponseEntity();
         }
