@@ -122,14 +122,13 @@ public class StructureController {
     /**
      * Retrieves the image of a plan within a structure.
      *
-     * @param id The ID of the structure containing the plan
      * @param planId The ID of the plan whose image is to be retrieved
      * @return ResponseEntity containing the plan image if successful, or an error message if the operation fails
      */
-    @GetMapping("/{id}/plans/{planId}/image")
-    public ResponseEntity<?> downloadPlanImage(@PathVariable("id") Long id, @PathVariable("planId") Long planId) {
+    @GetMapping("/plans/{planId}/image")
+    public ResponseEntity<?> downloadPlanImage(@PathVariable("planId") Long planId) {
         try {
-            var imageResponse = planService.downloadPlanImage(id, planId);
+            var imageResponse = planService.downloadPlanImage(planId);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION,
                             "inline; filename=\"" + imageResponse.filename() + "\"")

@@ -8,6 +8,8 @@ import fr.uge.structsure.entities.Plan;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.repositories.PlanRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -27,11 +29,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 @Service
 public class PlanService {
-    private final Logger log = Logger.getLogger(this.getClass().getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlanService.class);
     private final PlanRepository planRepository;
     private final StructureService structureService;
 
@@ -39,8 +40,8 @@ public class PlanService {
     private String uploadDir;
 
     private static final List<MediaType> ALLOWED_MIME_TYPES = Arrays.asList(
-            MediaType.IMAGE_JPEG,
-            MediaType.IMAGE_PNG
+        MediaType.IMAGE_JPEG,
+        MediaType.IMAGE_PNG
     );
 
     @Autowired
@@ -138,7 +139,7 @@ public class PlanService {
         try {
             file.transferTo(filePath);
         } catch (IOException e) {
-            log.severe("IOException when uploading file to server : " + e.getMessage());
+            LOGGER.error("IOException when uploading file to server", e);
             throw new TraitementException(Error.SERVER_ERROR);
         }
     }
@@ -162,7 +163,7 @@ public class PlanService {
                 deleteEmptyParentDirectory(parent);
             }
         } catch (IOException e) {
-            log.severe("IOException when moving file in the server (from '" + source + "' to '"+ dest + "') : " + e.getMessage());
+            LOGGER.error("IOException when moving file in the server (from '{}' to '{}')", source, dest, e);
             throw new TraitementException(Error.SERVER_ERROR);
         }
     }
@@ -181,7 +182,7 @@ public class PlanService {
                 deleteEmptyParentDirectory(parent);
             }
         } catch (IOException e) {
-            log.severe("IOException when deleting file in the server : " + e.getMessage());
+            LOGGER.error("IOException when deleting file in the server", e);
             throw new TraitementException(Error.SERVER_ERROR);
         }
     }
@@ -223,7 +224,7 @@ public class PlanService {
         try {
             savedPlan = planRepository.save(plan);
         } catch (Exception e) {
-            log.severe("Exception when editing plan to db : " + e.getMessage());
+            LOGGER.error("Exception when editing plan to db", e);
             managedFilesDirectory(sourceFilePath.getParent());
             moveFile(targetFilePath, sourceFilePath);
             if (file.isPresent()) {
@@ -250,7 +251,7 @@ public class PlanService {
         try {
             savedPlan = planRepository.save(plan);
         } catch (Exception e) {
-            log.severe("IOException when adding plan to db : " + e.getMessage());
+            LOGGER.error("IOException when adding plan to db", e);
             deleteFile(filePath);
             throw new TraitementException(Error.SERVER_ERROR);
         }
@@ -352,7 +353,7 @@ public class PlanService {
         try {
             Files.createDirectories(path);
         } catch (IOException e) {
-            log.warning("IOException when looking and/or directories of the path : '" + path + "' : " + e.getMessage());
+            LOGGER.warn("IOException when looking and/or directories of the path : '{}'", path, e);
             throw new TraitementException(Error.SERVER_ERROR);
         }
     }
@@ -361,40 +362,30 @@ public class PlanService {
      * Downloads the image of a plan.
      * The image is retrieved from the server and returned as a DTO containing the image resource and metadata.
      *
-     * @param structureId The ID of the structure containing the plan
      * @param planId The ID of the plan to download
      * @return PlanImageResponseDTO containing the image resource and metadata
      * @throws TraitementException if the plan is not found, structure is not found, or if there are issues retrieving the image
      */
-    public PlanImageResponseDTO downloadPlanImage(Long structureId, Long planId) throws TraitementException {
-        if (structureId == null) {
-            throw new TraitementException(Error.PLAN_STRUCTURE_ID_IS_EMPTY);
-        }
+    public PlanImageResponseDTO downloadPlanImage(Long planId) throws TraitementException {
         if (planId == null) {
             throw new TraitementException(Error.PLAN_ID_IS_EMPTY);
         }
 
-        var structure = structureService.existStructure(structureId)
-                .orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
         var plan = planRepository.findById(planId)
                 .orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
-
-        if (!plan.getStructure().equals(structure)) {
-            throw new TraitementException(Error.PLAN_STRUCTURE_MISMATCH);
-        }
 
         var imageUrl = plan.getImageUrl();
         var imagePath = Paths.get(imageUrl).normalize();
 
         try {
             if (!Files.exists(imagePath)) {
-                log.warning("Plan image not found at path: " + imagePath);
+                LOGGER.warn("Plan image not found at path: {}", imagePath);
                 throw new TraitementException(Error.PLAN_FILE_NOT_FOUND);
             }
 
             var mediaType = MediaTypeFactory.getMediaType(imagePath.getFileName().toString()).orElseThrow(() -> new TraitementException(Error.PLAN_FILE_INVALID_FORMAT));
             if (!ALLOWED_MIME_TYPES.contains(mediaType)){
-                log.warning("Image file with wrong media type: " + imagePath);
+                LOGGER.warn("Image file with wrong media type: {}", imagePath);
                 throw new TraitementException(Error.PLAN_FILE_INVALID_FORMAT);
             }
 
@@ -406,7 +397,7 @@ public class PlanService {
                     mediaType
             );
         } catch (IOException e) {
-            log.severe("IOException when retrieving plan image: " + e.getMessage());
+            LOGGER.error("IOException when retrieving plan image", e);
             throw new TraitementException(Error.SERVER_ERROR);
         }
     }
