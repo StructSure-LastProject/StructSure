@@ -1,14 +1,14 @@
 package fr.uge.structsure.scanPage.domain
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.structuresPage.data.StructureRepository
-import kotlinx.coroutines.launch
-import android.content.Context
 import fr.uge.structsure.utils.FileUtils
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel responsible for managing the plans and their images.
@@ -34,16 +34,13 @@ class PlanViewModel : ViewModel() {
     fun loadPlans(context: Context, structureId: Long) {
         viewModelScope.launch {
             try {
-                val planId = db.planDao().getPlanByStructureId(structureId)
-                if (planId != null) {
+                db.planDao().getPlanByStructureId(structureId).forEach { planId ->
                     val localPath = FileUtils.getLocalPlanImage(context, planId)
                     if (localPath != null) {
                         planImagePath.value = localPath
                     } else {
                         fetchPlanImage(context, planId)
                     }
-                } else {
-                    Log.e("PlanViewModel", "No plan found for structure $structureId")
                 }
             } catch (e: Exception) {
                 Log.e("PlanViewModel", "Error loading plan", e)

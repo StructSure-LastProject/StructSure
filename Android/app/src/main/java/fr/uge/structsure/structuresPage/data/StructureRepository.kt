@@ -84,7 +84,7 @@ class StructureRepository : ViewModel() {
     }
 
 
-    suspend fun downloadStructure(structure: StructureData) {
+    suspend fun downloadStructure(structure: StructureData, context: Context) {
         val optionalResult = getStructureDetailsFromApi(structure.id)
         if(optionalResult.isPresent) {
             val result = optionalResult.get()
@@ -99,6 +99,7 @@ class StructureRepository : ViewModel() {
                             structure.id
                         )
                     )
+                    downloadPlanImage(context, plan.id)
                 }
 
                 result.sensors.forEach { sensor ->
@@ -150,10 +151,12 @@ class StructureRepository : ViewModel() {
                 val response = RetrofitInstance.structureApi.downloadPlanImage(planId)
                 if (response.isSuccessful) {
                     response.body()?.byteStream()?.let { inputStream ->
-                        FileUtils.savePlanImageToInternalStorage(context, planId, inputStream)
+                        val path = FileUtils.savePlanImageToInternalStorage(context, planId, inputStream)
+                        Log.d("StructureRepository", "Plan downloaded under $path")
+                        path
                     }
                 } else {
-                    Log.e("StructureRepository", "Failed to fetch plan image: ${response.code()} - ${response.message()}")
+                    Log.e("StructureRepository", "Failed to fetch plan $planId image: ${response.code()} - ${response.message()}")
                     null
                 }
             } catch (e: Exception) {
