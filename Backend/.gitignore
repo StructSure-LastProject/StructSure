@@ -3,6 +3,9 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+./Files/**
+./structsure.db
+./structsure-test.db
 
 ### STS ###
 .apt_generated
