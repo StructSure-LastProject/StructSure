@@ -18,6 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
 
+/**
+ * Controller for structure endpoints
+ */
 @RestController
 @RequestMapping("/api/structures")
 public class StructureController {

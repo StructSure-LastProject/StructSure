@@ -13,6 +13,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository for structures but using api criteria query
+ */
 @Repository
 public class StructureRepositoryCriteriaQuery {
 
