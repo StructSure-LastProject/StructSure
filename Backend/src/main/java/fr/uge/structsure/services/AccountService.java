@@ -5,6 +5,7 @@ import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.LoginResponseDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterResponseDTO;
+import fr.uge.structsure.dto.userAccount.PasswordRequest;
 import fr.uge.structsure.dto.userAccount.RoleRequest;
 import fr.uge.structsure.dto.userAccount.UserAccountResponseDTO;
 import fr.uge.structsure.entities.Account;
@@ -113,9 +114,15 @@ public class AccountService {
 
     /**
      * Service that will get all users
+     * @param request The HTTP request
      * @return List Send the list of users
      */
-    public List<UserAccountResponseDTO> getUserAccounts(){
+    public List<UserAccountResponseDTO> getUserAccounts(HttpServletRequest request) throws TraitementException {
+        Objects.requireNonNull(request);
+        var userSessionAccount = checkTokenValidity(request);
+        if (userSessionAccount.getRole() != Role.ADMIN){
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
+        }
         return accountRepository
             .findAll()
             .stream()
@@ -169,7 +176,7 @@ public class AccountService {
     public RegisterResponseDTO updateRole(String login, RoleRequest roleRequest, HttpServletRequest request) throws TraitementException {
         Objects.requireNonNull(roleRequest);
         var userSessionAccount = checkTokenValidity(request);
-        var userAccount = userAccountOperationChecker(login, userSessionAccount);
+        var userAccount = userAccountOperationChecker(login, userSessionAccount, false);
         Role role;
         try {
             role = Role.fromValue(roleRequest.role());
@@ -193,21 +200,30 @@ public class AccountService {
      * Check if is possible to change role of the given user
      * @param login The login
      * @param userSessionAccount User that requested the operation
+     * @param isPasswordChecking The checking is for password or not
      * @return Optional<Account> Return the account if exist
      * @throws TraitementException thrown custom exceptions
      */
-    private Account userAccountOperationChecker(String login, Account userSessionAccount) throws TraitementException {
+    private Account userAccountOperationChecker(String login, Account userSessionAccount, boolean isPasswordChecking) throws TraitementException {
         Objects.requireNonNull(login);
         Objects.requireNonNull(userSessionAccount);
         var userAccount = accountRepository.findByLogin(login);
         if (userAccount.isEmpty()){
             throw new TraitementException(Error.USER_ACCOUNT_NOT_FOUND);
         }
+        if (userAccount.get().getRole() != Role.ADMIN){
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
+        }
         if (userAccount.get().getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.get().getRole() == Role.ADMIN){
+            if (isPasswordChecking){
+                throw new TraitementException(Error.SUPER_ADMIN_ACCOUNT_PASSWORD_CANT_BE_MODIFIED);
+            }
             throw new TraitementException(Error.SUPER_ADMIN_ACCOUNT_CANT_BE_MODIFIED);
         }
-
         if (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.get().getRole() == Role.ADMIN){
+            if (isPasswordChecking){
+                throw new TraitementException(Error.ADMIN_ACCOUNT_PASSWORD_CANT_BE_MODIFIED_BY_AN_ADMIN_ACCOUNT);
+            }
             throw new TraitementException(Error.ADMIN_ACCOUNT_CANT_BE_MODIFIED_BY_AN_ADMIN_ACCOUNT);
         }
         return userAccount.get();
@@ -235,4 +251,31 @@ public class AccountService {
         }
         return account.get();
     }
+
+    /**
+     * Service that will update the user password
+     * @param login Login of the user
+     * @param passwordRequest The new password of the user
+     * @return RegisterResponseDTO The login of the user
+     * @throws TraitementException thrown if login or role not exist and also thrown if super-admin role was requested to change
+     */
+    public RegisterResponseDTO updatePassword(String login, PasswordRequest passwordRequest, HttpServletRequest request) throws TraitementException {
+        Objects.requireNonNull(passwordRequest);
+        var userSessionAccount = checkTokenValidity(request);
+        var userAccount = userAccountOperationChecker(login, userSessionAccount, true);
+
+        if (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) &&
+                userSessionAccount.getRole() == Role.ADMIN &&
+                userAccount.getRole() == Role.ADMIN
+        ){
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
+        }
+        if (passwordRequest.password().length() < 12 || passwordRequest.password().length() > 64){
+            throw new TraitementException(Error.PASSWORD_NOT_VALID);
+        }
+        userAccount.setPasswordEncrypted(new BCryptPasswordEncoder().encode(passwordRequest.password()));
+        accountRepository.save(userAccount);
+        return new RegisterResponseDTO(userAccount.getLogin());
+    }
+    
 }
