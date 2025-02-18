@@ -31,6 +31,8 @@ public class ErrorMessages {
         messages.put(ErrorIdentifier.PLAN_ALREADY_EXISTS, new Error(422, "Plan déjà existant"));
         messages.put(ErrorIdentifier.PLAN_SECTION_INVALID, new Error(422, "Le champ section (metadata) est invalide"));
         messages.put(ErrorIdentifier.SERVER_ERROR, new Error(500, "Une erreur est survenue"));
+
+        messages.put(ErrorIdentifier.PLAN_STRUCTURE_MISMATCH, new Error(400, "Ce plan n'appartient pas à cette structure"));
         messages.put(ErrorIdentifier.PLAN_FILE_NOT_FOUND, new Error(404, "L'image du plan est introuvable"));
 
         messages.put(ErrorIdentifier.PLAN_ID_IS_EMPTY, new Error(422, "Le champ planId est requis"));
