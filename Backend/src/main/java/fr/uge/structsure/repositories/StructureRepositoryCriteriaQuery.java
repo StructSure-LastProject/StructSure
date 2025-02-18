@@ -40,11 +40,11 @@ public class StructureRepositoryCriteriaQuery {
         var countNok = cb.sum(cb.<Long>selectCase()
                 .when(cb.equal(result.get("state"), State.NOK), 1L)
                 .otherwise(0L));
-        var state = cb.<String>selectCase()
-                .when(cb.equal(cb.countDistinct(sensor.get("sensorId")), 0L), "UNKNOWN")
-                .when(cb.greaterThan(countDefective, 0L), "DEFECTIVE")
-                .when(cb.greaterThan(countNok, 0L), "NOK")
-                .otherwise("OK");
+        var state = cb.<Integer>selectCase()
+                .when(cb.equal(cb.countDistinct(sensor.get("sensorId")), 0L), State.UNKNOWN.ordinal())
+                .when(cb.greaterThan(countDefective, 0L), State.DEFECTIVE.ordinal())
+                .when(cb.greaterThan(countNok, 0L), State.NOK.ordinal())
+                .otherwise(State.OK.ordinal());
 
         cq.select(cb.construct(AllStructureResponseDTO.class,
                 structure.get("id"),
@@ -64,10 +64,10 @@ public class StructureRepositoryCriteriaQuery {
             case NUMBER_OF_SENSORS -> orderExpression = countMeasureChip;
             case NAME -> orderExpression = structure.get("name");
             case STATE -> orderExpression = cb.selectCase()
-                    .when(cb.equal(structure.get("archived"), true), 4)
-                    .when(cb.equal(state, "NOK"), 1)
-                    .when(cb.equal(state, "DEFECTIVE"), 2)
-                    .when(cb.equal(state, "OK"), 3);
+                    .when(cb.equal(structure.get("archived"), true), State.UNKNOWN.ordinal())
+                    .when(cb.equal(state, State.NOK.ordinal()), 1)
+                    .when(cb.equal(state, State.DEFECTIVE.ordinal()), 2)
+                    .when(cb.equal(state, State.OK.ordinal()), 3);
             default -> orderExpression = structure.get("id");
         }
         switch (allStructureRequestDTO.orderType()) {
