@@ -1,8 +1,10 @@
 package fr.uge.structsure.services;
 
-import fr.uge.structsure.dto.plan.*;
+import fr.uge.structsure.dto.plan.AddPlanResponseDTO;
+import fr.uge.structsure.dto.plan.EditPlanResponseDTO;
+import fr.uge.structsure.dto.plan.PlanImageResponseDTO;
+import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.entities.Plan;
-import fr.uge.structsure.exceptions.ErrorIdentifier;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
@@ -29,11 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Logger;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -486,17 +483,4 @@ public class PlanService {
             throw new TraitementException(Error.SERVER_ERROR);
         }
     }
-
-    /**
-     * Retrieves a plan by its ID.
-     *
-     * @param id
-     * @return
-     * @throws TraitementException
-     */
-    public Plan getPlanById(Long id) throws TraitementException {
-        return planRepository.findById(id)
-                .orElseThrow(() -> new TraitementException(ErrorIdentifier.PLAN_NOT_FOUND));
-    }
-
 }
