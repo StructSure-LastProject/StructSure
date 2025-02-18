@@ -4,15 +4,19 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.utils.StateEnum;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
+
 @JsonSerialize
 public record SensorDTO(
         String controlChip,
         String measureChip,
         String name,
         String note,
-        StateEnum state,
+        String state,
         boolean archived,
-        String installationDate,
+        LocalDateTime installationDate,
         double x,
         double y
 ) {
@@ -22,7 +26,7 @@ public record SensorDTO(
      * @param state the state of the sensor
      * @return the dto for the sensor
      */
-    public static SensorDTO fromEntityAndState(Sensor sensor, StateEnum state) {
+    public static SensorDTO fromEntityAndState(Sensor sensor, String state) {
         return new SensorDTO(
                 sensor.getSensorId().getControlChip(),
                 sensor.getSensorId().getMeasureChip(),

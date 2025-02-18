@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
+import java.io.File;
+
 @Entity
 public class Plan {
     @Id
@@ -13,7 +15,7 @@ public class Plan {
     @NotBlank(message = "Name is required")
     @Size(max = 32, message = "Name must be less than 32 characters")
     private String name;
-    private boolean archived = false;
+    private boolean archived;
     private String imageUrl;
     @Size(max = 128, message = "Section must be less than 128 characters")
     private String section = "";

@@ -12,17 +12,22 @@ import fr.uge.structsure.utils.StateEnum;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
+import org.springframework.stereotype.Repository;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class SensorRepositoryCriteriaQuery {
 
     @PersistenceContext
     EntityManager em;
-
 
     public List<SensorDTO> findAllSensorsByStructureId(long structureId, AllSensorsByStructureRequestDTO request) throws TraitementException {
         var cb = em.getCriteriaBuilder();
@@ -41,22 +46,34 @@ public class SensorRepositoryCriteriaQuery {
                 cb.count(cb.<Long>selectCase().when(cb.equal(result.get("state"), StateEnum.DEFECTIVE), 1L)),
                 0L
         );
-        var caseExpression = cb.selectCase()
-                .when(cb.equal(resultCount, 0), StateEnum.UNKNOWN)
-                .when(isNokPresent, StateEnum.NOK)
-                .when(isDefectivePresent, StateEnum.DEFECTIVE)
-                .otherwise(StateEnum.OK);
+        var caseExpression = cb.<String>selectCase()
+                .when(cb.equal(resultCount, 0), "UNKNOWN")
+                .when(isNokPresent, "NOK")
+                .when(isDefectivePresent, "DEFECTIVE")
+                .otherwise("OK");
 
-        cq.select(cb.construct(SensorDTO.class, sensor, caseExpression));
+        cq.select(cb.construct(SensorDTO.class,
+                sensor.get("sensorId").get("controlChip"),
+                sensor.get("sensorId").get("measureChip"),
+                sensor.get("name"),
+                sensor.get("note"),
+                caseExpression,
+                sensor.get("archived"),
+                sensor.get("installationDate"),
+                sensor.get("x"),
+                sensor.get("y")
+        ));
 
-        predicates.add(cb.equal(result.get("state"), request.stateFilter()));
+        if (request.stateFilter() != null) {
+            predicates.add(cb.equal(result.get("state"), request.stateFilter()));
+        }
 
-        var dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         if (request.minInstallationDate() != null && !request.minInstallationDate().isEmpty()) {
             try {
-                predicates.add(cb.greaterThanOrEqualTo(sensor.get("installationDate"), dateFormat.parse(request.minInstallationDate())));
+                DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+                predicates.add(cb.greaterThanOrEqualTo(sensor.get("installationDate"), LocalDateTime.parse(request.minInstallationDate(), formatter)));
                 if (request.maxInstallationDate() != null && !request.maxInstallationDate().isEmpty()) {
-                    predicates.add(cb.lessThanOrEqualTo(sensor.get("installationDate"), dateFormat.parse(request.maxInstallationDate())));
+                    predicates.add(cb.lessThanOrEqualTo(sensor.get("installationDate"), LocalDateTime.parse(request.maxInstallationDate(), formatter)));
                 }
             } catch (ParseException e) {
                 throw new TraitementException(Error.DATE_FORMAT_ERROR);
@@ -65,20 +82,27 @@ public class SensorRepositoryCriteriaQuery {
 
         cq.where(predicates.toArray(new Predicate[0]));
         cq.groupBy(sensor.get("sensorId"));
-
+        System.err.println(request.orderByColumn().name() + " " + request.orderType().name());
         Order order = switch (request.orderByColumn()) {
-            case "NAME" -> request.orderType().equals(OrderEnum.ASC) ?
-                        cb.asc(sensor.get("name")) : cb.desc(sensor.get("name"));
-            case "STATE" -> request.orderType().equals(OrderEnum.ASC) ?
-                        cb.asc(result.get("state")) : cb.desc(result.get("state"));
-            case "LAST_QUERY_DATE" -> request.orderType().equals(OrderEnum.ASC) ?
-                        cb.asc(result.get("scan").get("date")) : cb.desc(result.get("scan").get("date"));
-            case "INSTALLATION_DATE" -> request.orderType().equals(OrderEnum.ASC) ?
+            case NAME -> request.orderType().equals(OrderEnum.ASC) ?
+                        cb.asc(sensor.get(request.orderByColumn().getValue())) : cb.desc(sensor.get(request.orderByColumn().getValue()));
+            case STATE -> request.orderType().equals(OrderEnum.ASC) ?
+                    cb.asc(cb.<Integer>selectCase()
+                            .when(cb.equal(caseExpression,  "NOK"), 1)
+                            .when(cb.equal(caseExpression, "DEFECTIVE"), 2)
+                            .when(cb.equal(caseExpression, "OK"), 3)
+                            .when(cb.equal(caseExpression, "UNKNOWN"), 4))
+                    : cb.desc(cb.<Integer>selectCase().when(cb.equal(caseExpression,  "NOK"), 1)
+                    .when(cb.equal(caseExpression, "DEFECTIVE"), 2)
+                    .when(cb.equal(caseExpression, "OK"), 3)
+                    .when(cb.equal(caseExpression, "UNKNOWN"), 4));
+            case INSTALLATION_DATE -> request.orderType().equals(OrderEnum.ASC) ?
                         cb.asc(sensor.get("installationDate")) : cb.desc(sensor.get("installationDate"));
-            default -> request.orderType().equals(OrderEnum.ASC) ?
-                    cb.asc(sensor.get("sensorId")) : cb.desc(sensor.get("sensorId"));
         };
         cq.orderBy(order);
-        return em.createQuery(cq).getResultList();
+        var query = em.createQuery(cq);
+        query.setFirstResult(request.offset());
+        query.setMaxResults(request.limit());
+        return query.getResultList();
     }
 }

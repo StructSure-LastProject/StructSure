@@ -3,6 +3,7 @@ package fr.uge.structsure.entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -15,8 +16,7 @@ public class Scan {
     @ManyToOne
     private Structure structure;
 
-    @Column(columnDefinition = "TEXT")
-    private String date;
+    private LocalDateTime date;
 
     private String note;
 
@@ -25,7 +25,7 @@ public class Scan {
 
     public Scan() {}
 
-    public Scan(Structure structure, String date, String note, Account author) {
+    public Scan(Structure structure, LocalDateTime date, String note, Account author) {
         this.structure = Objects.requireNonNull(structure);
         this.date = Objects.requireNonNull(date);
         this.note = Objects.requireNonNull(note);
@@ -48,11 +48,11 @@ public class Scan {
         this.structure = structure;
     }
 
-    public String getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
     }
 
