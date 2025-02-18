@@ -3,18 +3,14 @@ package fr.uge.structsure.scanPage.data.repository
 import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.scanPage.data.ResultSensors
-import fr.uge.structsure.scanPage.data.dao.ResultDao
-import fr.uge.structsure.scanPage.data.dao.ScanDao
-import fr.uge.structsure.scanPage.data.network.api.ScanApi
 import fr.uge.structsure.scanPage.data.network.dto.ScanRequestDTO
 import fr.uge.structsure.scanPage.data.network.dto.ScanResultDTO
-import fr.uge.structsure.structuresPage.data.SensorDao
 
 class ScanRepository {
     private val scanDao = db.scanDao()
     private val resultDao = db.resultDao()
     private val sensorDao = db.sensorDao()
-    private val scanApi = RetrofitInstance.scanApi
+    private fun getApiInterface() = RetrofitInstance.scanApi
 
     /**
      * Met à jour le timestamp de fin d'un scan
@@ -35,7 +31,8 @@ class ScanRepository {
      */
     suspend fun submitScanResults(request: ScanRequestDTO): Result<Unit> {
         return try {
-            val response = scanApi.submitScanResults(request)
+            val apiInterface = getApiInterface()
+            val response = apiInterface.submitScanResults(request)
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {

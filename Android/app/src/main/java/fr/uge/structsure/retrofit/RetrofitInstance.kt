@@ -2,6 +2,7 @@ package fr.uge.structsure.retrofit
 
 import android.content.Context
 import fr.uge.structsure.MainActivity
+import fr.uge.structsure.scanPage.data.network.api.ScanApi
 import fr.uge.structsure.settingsPage.presentation.PreferencesManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -123,4 +124,7 @@ object RetrofitInstance {
      */
     val loginApi: LoginApi
         get() = getRetrofit().create(LoginApi::class.java)
+
+    val scanApi: ScanApi
+        get() = getRetrofit().create(ScanApi::class.java)
 }

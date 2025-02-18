@@ -6,6 +6,6 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface ScanApi {
-    @POST("/api/scans")
+    @POST("/api/android/submit-scan")
     suspend fun submitScanResults(@Body scanRequest: ScanRequestDTO): Response<Unit>
 }
