@@ -68,7 +68,7 @@ public class UserAccountController {
      * @return RegisterResponseDTO The login of the user account
      */
     @PutMapping("/accounts/reset")
-    public ResponseEntity<?> updateRole(@RequestBody UserUpdateRequestDTO userUpdateRequestDTO, HttpServletRequest request) {
+    public ResponseEntity<?> updateUserAccount(@RequestBody UserUpdateRequestDTO userUpdateRequestDTO, HttpServletRequest request) {
         Objects.requireNonNull(userUpdateRequestDTO);
         try {
             return ResponseEntity.status(200).body(accountService.updateUserAccount(userUpdateRequestDTO, request));
