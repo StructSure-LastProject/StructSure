@@ -72,7 +72,7 @@ public class SensorService {
         if (structure.isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
-        var plan = planRepository.findByStructureAndPlanId(planId, structure.get());
+        var plan = planRepository.findByStructureAndId(structure.get(), planId);
         if (plan.isEmpty()) {
             throw new TraitementException(Error.PLAN_NOT_FOUND);
         }

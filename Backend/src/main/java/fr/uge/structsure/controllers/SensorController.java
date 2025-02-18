@@ -57,8 +57,7 @@ public class SensorController {
             List<SensorDTO> sensorDTOs = sensorService.getSensorsByStructureId(structureId);
             return ResponseEntity.ok(sensorDTOs);
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code()).body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 
