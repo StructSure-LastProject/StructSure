@@ -34,7 +34,12 @@ public class SensorRepositoryCriteriaQuery {
         var cq = cb.createQuery(SensorDTO.class);
         var sensor = cq.from(Sensor.class);
         var result = sensor.join("results", JoinType.LEFT);
+        var plan = sensor.join("plan", JoinType.LEFT);
+
         var predicates = new ArrayList<Predicate>();
+        if (request.planFilter() != null && !request.planFilter().isEmpty()) {
+            predicates.add(cb.equal(plan.get("name"), request.planFilter()));
+        }
         predicates.add(cb.equal(sensor.get("structure").get("id"), structureId));
 
         Expression<Long> resultCount = cb.count(result);

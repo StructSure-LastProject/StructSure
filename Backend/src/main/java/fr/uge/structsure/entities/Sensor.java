@@ -44,10 +44,27 @@ public class Sensor {
     @Lazy
     private Set<Result> results;
 
+    @ManyToOne
+    @JoinColumn(name="plan_id")
+    private Plan plan;
+
 
     //constructeurs nécéssaire
     public Sensor(){
 
+    }
+
+    public Sensor(SensorId sensorId, String name, String note, Structure structure, LocalDateTime installationDate, Double x, Double y, Boolean archived, Set<Result> results, Plan plan) {
+        this.sensorId = sensorId;
+        this.name = name;
+        this.note = note;
+        this.structure = structure;
+        this.installationDate = installationDate;
+        this.x = x;
+        this.y = y;
+        this.archived = archived;
+        this.results = results;
+        this.plan = plan;
     }
 
     public Sensor(String controlChip, String measureChip, String name, String note, LocalDateTime installationDate, Double x, Double y, Boolean archived, Structure structure) {
@@ -66,13 +83,7 @@ public class Sensor {
         this.archived = archived;
         this.structure = structure;
     }
-    @Override
-    public String toString() {
-        return sensorId.toString();
-    }
 
-
-    // Getter and Setter
     public SensorId getSensorId() {
         return sensorId;
     }
@@ -95,6 +106,14 @@ public class Sensor {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public Structure getStructure() {
+        return structure;
+    }
+
+    public void setStructure(Structure structure) {
+        this.structure = structure;
     }
 
     public LocalDateTime getInstallationDate() {
@@ -129,19 +148,19 @@ public class Sensor {
         this.archived = archived;
     }
 
-    public Structure getStructure() {
-        return structure;
-    }
-
-    public void setStructure(Structure structure) {
-        this.structure = structure;
-    }
-
     public Set<Result> getResults() {
         return results;
     }
 
     public void setResults(Set<Result> results) {
-        this.results = new HashSet<>(results);
+        this.results = results;
+    }
+
+    public Plan getPlan() {
+        return plan;
+    }
+
+    public void setPlan(Plan plan) {
+        this.plan = plan;
     }
 }
