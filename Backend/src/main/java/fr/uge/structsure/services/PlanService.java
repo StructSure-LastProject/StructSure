@@ -1,19 +1,27 @@
 package fr.uge.structsure.services;
 
-import fr.uge.structsure.dto.plan.*;
+import fr.uge.structsure.dto.plan.AddPlanResponseDTO;
+import fr.uge.structsure.dto.plan.EditPlanResponseDTO;
+import fr.uge.structsure.dto.plan.PlanImageResponseDTO;
+import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.entities.Plan;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.repositories.PlanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
@@ -30,9 +38,9 @@ public class PlanService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList(
-            MediaType.IMAGE_JPEG_VALUE,
-            MediaType.IMAGE_PNG_VALUE
+    private static final List<MediaType> ALLOWED_MIME_TYPES = Arrays.asList(
+            MediaType.IMAGE_JPEG,
+            MediaType.IMAGE_PNG
     );
 
     @Autowired
@@ -258,7 +266,7 @@ public class PlanService {
      */
     private void planConsistencyPrecondition(MultipartFile file) throws TraitementException {
         var mimeType = file.getContentType();
-        if (mimeType == null || !ALLOWED_MIME_TYPES.contains(mimeType)) {
+        if (mimeType == null || !ALLOWED_MIME_TYPES.contains(MediaType.valueOf(mimeType))) {
             throw new TraitementException(Error.PLAN_FILE_INVALID_FORMAT);
         }
     }
@@ -345,6 +353,60 @@ public class PlanService {
             Files.createDirectories(path);
         } catch (IOException e) {
             log.warning("IOException when looking and/or directories of the path : '" + path + "' : " + e.getMessage());
+            throw new TraitementException(Error.SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Downloads the image of a plan.
+     * The image is retrieved from the server and returned as a DTO containing the image resource and metadata.
+     *
+     * @param structureId The ID of the structure containing the plan
+     * @param planId The ID of the plan to download
+     * @return PlanImageResponseDTO containing the image resource and metadata
+     * @throws TraitementException if the plan is not found, structure is not found, or if there are issues retrieving the image
+     */
+    public PlanImageResponseDTO downloadPlanImage(Long structureId, Long planId) throws TraitementException {
+        if (structureId == null) {
+            throw new TraitementException(Error.PLAN_STRUCTURE_ID_IS_EMPTY);
+        }
+        if (planId == null) {
+            throw new TraitementException(Error.PLAN_ID_IS_EMPTY);
+        }
+
+        var structure = structureService.existStructure(structureId)
+                .orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
+        var plan = planRepository.findById(planId)
+                .orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
+
+        if (!plan.getStructure().equals(structure)) {
+            throw new TraitementException(Error.PLAN_STRUCTURE_MISMATCH);
+        }
+
+        var imageUrl = plan.getImageUrl();
+        var imagePath = Paths.get(imageUrl).normalize();
+
+        try {
+            if (!Files.exists(imagePath)) {
+                log.warning("Plan image not found at path: " + imagePath);
+                throw new TraitementException(Error.PLAN_FILE_NOT_FOUND);
+            }
+
+            var mediaType = MediaTypeFactory.getMediaType(imagePath.getFileName().toString()).orElseThrow(() -> new TraitementException(Error.PLAN_FILE_INVALID_FORMAT));
+            if (!ALLOWED_MIME_TYPES.contains(mediaType)){
+                log.warning("Image file with wrong media type: " + imagePath);
+                throw new TraitementException(Error.PLAN_FILE_INVALID_FORMAT);
+            }
+
+            var resource = new InputStreamResource(Files.newInputStream(imagePath));
+
+            return new PlanImageResponseDTO(
+                    resource,
+                    imagePath.getFileName().toString(),
+                    mediaType
+            );
+        } catch (IOException e) {
+            log.severe("IOException when retrieving plan image: " + e.getMessage());
             throw new TraitementException(Error.SERVER_ERROR);
         }
     }

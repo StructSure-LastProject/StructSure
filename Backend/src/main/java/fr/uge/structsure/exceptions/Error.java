@@ -33,6 +33,8 @@ public enum Error {
     PLAN_ALREADY_EXISTS(422, "Plan déjà existant"),
     PLAN_SECTION_INVALID(422, "Le champ section (metadata) est invalide"),
     SERVER_ERROR(500, "Une erreur est survenue"),
+    PLAN_STRUCTURE_MISMATCH(400, "Ce plan n'appartient pas à cette structure"),
+    PLAN_FILE_NOT_FOUND(404, "L'image du plan est introuvable"),
 
     PLAN_ID_IS_EMPTY(422, "Le champ planId est requis"),
     PLAN_NOT_FOUND(404, "Plan introuvable"),

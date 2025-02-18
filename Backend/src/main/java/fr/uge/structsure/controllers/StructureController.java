@@ -5,14 +5,13 @@ import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
+import fr.uge.structsure.services.StructureService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import fr.uge.structsure.services.StructureService;
-
-import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
@@ -37,12 +36,11 @@ public class StructureController {
      * In case of a business exception, it returns an appropriate error response.
      *
      * @param request the {@link AddStructureRequestDTO} containing the details of the structure to be added.
-     *
      * @return a {@link ResponseEntity} containing:
-     *         <ul>
-     *           <li>The details of the created structure with an HTTP status of {@code 201 Created}, if successful.</li>
-     *           <li>An error response with the appropriate HTTP status and error details in case of a {@link TraitementException}.</li>
-     *         </ul>
+     * <ul>
+     *   <li>The details of the created structure with an HTTP status of {@code 201 Created}, if successful.</li>
+     *   <li>An error response with the appropriate HTTP status and error details in case of a {@link TraitementException}.</li>
+     * </ul>
      */
     @PostMapping
     public ResponseEntity<?> addStructure(@RequestBody AddStructureRequestDTO request) {
@@ -57,10 +55,10 @@ public class StructureController {
     /**
      * Updates a plan within a structure.
      *
-     * @param id The ID of the structure containing the plan
-     * @param planId The ID of the plan to edit
+     * @param id          The ID of the structure containing the plan
+     * @param planId      The ID of the plan to edit
      * @param metadataDTO The DTO containing updated plan metadata
-     * @param file The new file for the plan
+     * @param file        The new file for the plan
      * @return ResponseEntity containing either the updated plan details or an error message
      */
     @PutMapping("/{id}/plans/{planId}")
@@ -84,12 +82,11 @@ public class StructureController {
      * @param request the {@link AddStructureRequestDTO} containing the updated details
      *                for the structure. The name must not be null, empty, or exceed 64 characters.
      *                The note must not exceed 1000 characters.
-     *
      * @return a {@link ResponseEntity} containing:
-     *         <ul>
-     *           <li>The details of the updated structure with an HTTP status of {@code 201 Created}, if successful.</li>
-     *           <li>An error response with the appropriate HTTP status and error details in case of a {@link TraitementException}.</li>
-     *         </ul>
+     * <ul>
+     *   <li>The details of the updated structure with an HTTP status of {@code 201 Created}, if successful.</li>
+     *   <li>An error response with the appropriate HTTP status and error details in case of a {@link TraitementException}.</li>
+     * </ul>
      */
     @PutMapping("/{id}")
     public ResponseEntity<?> editStructure(@PathVariable("id") Long id, @RequestBody AddStructureRequestDTO request) {
@@ -106,9 +103,9 @@ public class StructureController {
      * Handles the addition of a new plan to an existing structure.
      * Processes a multipart request containing both the plan metadata and the plan file.
      *
-     * @param id The ID of the structure to which the plan will be added
+     * @param id          The ID of the structure to which the plan will be added
      * @param metadataDTO The DTO containing plan metadata (name and section)
-     * @param file The multipart file containing the plan image
+     * @param file        The multipart file containing the plan image
      * @return ResponseEntity containing either the created plan details or an error message
      */
     @PostMapping("/{id}/plans")
@@ -121,12 +118,36 @@ public class StructureController {
         }
     }
 
+
+    /**
+     * Retrieves the image of a plan within a structure.
+     *
+     * @param id The ID of the structure containing the plan
+     * @param planId The ID of the plan whose image is to be retrieved
+     * @return ResponseEntity containing the plan image if successful, or an error message if the operation fails
+     */
+    @GetMapping("/{id}/plans/{planId}/image")
+    public ResponseEntity<?> downloadPlanImage(@PathVariable("id") Long id, @PathVariable("planId") Long planId) {
+        try {
+            var imageResponse = planService.downloadPlanImage(id, planId);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename=\"" + imageResponse.filename() + "\"")
+                    .contentType(imageResponse.mediaType())
+                    .body(imageResponse.resource());
+        } catch (TraitementException e) {
+            return e.toResponseEntity();
+        }
+    }
+
+
     /**
      * This method handle the structure endpoint to get all structures
+     *
      * @return List of structures
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllStructure(){
+    public ResponseEntity<?> getAllStructure() {
         try {
             return ResponseEntity.status(200).body(structureService.getAllStructure());
         } catch (TraitementException e) {
@@ -135,16 +156,17 @@ public class StructureController {
     }
 
     @GetMapping(value = "/android/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public StructureResponseDTO getStructureById(@PathVariable("id") Long id){
+    public StructureResponseDTO getStructureById(@PathVariable("id") Long id) {
         return structureService.getStructureById(id);
     }
 
 
     /**
      * Returns the structure details with the specified id
+     *
      * @param id the id of the structure
      * @return StructureDetailsResponseDTO the detail of the structure,
-     *  or Error if structure not found
+     * or Error if structure not found
      */
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> structureDetail(@PathVariable("id") long id) {
