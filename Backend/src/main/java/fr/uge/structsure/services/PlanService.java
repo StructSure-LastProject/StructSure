@@ -5,6 +5,7 @@ import fr.uge.structsure.dto.plan.EditPlanResponseDTO;
 import fr.uge.structsure.dto.plan.PlanImageResponseDTO;
 import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.entities.Plan;
+import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.repositories.PlanRepository;
@@ -64,6 +65,7 @@ public class PlanService {
         addPlanAsserts(structureId, metadata, file);
         var noSection = metadata.section() == null || metadata.section().isEmpty();
         var structure = structureService.existStructure(structureId).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
+        checkState(structure);
         var directory = computeDirectory(noSection, structureId, metadata.section());
         var filePath = directory + File.separator + file.getOriginalFilename();
         if (planRepository.planFileAlreadyExists(filePath)) {
@@ -101,24 +103,71 @@ public class PlanService {
     public EditPlanResponseDTO editPlan(Long structureId, Long planId, PlanMetadataDTO metadata, Optional<MultipartFile> multipartFile) throws TraitementException {
         Objects.requireNonNull(metadata);
         editPlanAsserts(structureId, planId, metadata, multipartFile);
+
         var noSection = metadata.section() == null || metadata.section().isEmpty();
         var plan = planRepository.findById(planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
+        var structure = plan.getStructure();
+        checkState(plan, structure, structureId);
         var planFile = Path.of(plan.getImageUrl());
 
         var name = plan.getName().equals(metadata.name()) ? plan.getName() : metadata.name();
         var section = plan.getSection().equals(metadata.section()) ? plan.getSection() : metadata.section();
-        var directory = computeDirectory(noSection, structureId, metadata.section());
+        var directory = computeDirectory(noSection, structure.getId(), metadata.section());
         var fileName = multipartFile.map(MultipartFile::getOriginalFilename).orElse(planFile.getFileName().toString());
         var filePath = Path.of(directory.toString(), fileName);
 
         plan.setName(name);
         plan.setSection(section);
         plan.setImageUrl(filePath.toString());
+
         if (!noSection) {
             managedFilesDirectory(directory);
         }
-        var savedPlan = handleEditPlan(planFile, filePath, multipartFile, plan);
+        Optional<MultipartFile> file = planFile.equals(filePath) ? Optional.empty() : multipartFile;
+
+        var savedPlan = handleEditPlan(planFile, filePath, file, plan);
         return new EditPlanResponseDTO(savedPlan.getId());
+    }
+
+    /**
+     * Checks if a structure or plan is in an archived state.
+     *
+     * @param structure The structure to check
+     * @throws TraitementException if the structure is archived
+     */
+    private void checkState(Structure structure) throws TraitementException {
+        if (structure.getArchived()) {
+            throw new TraitementException(Error.PLAN_IS_ARCHIVED);
+        }
+    }
+
+    /**
+     * Checks if a structure and plan are in an archived state.
+     *
+     * @param plan The plan to check
+     * @param structure The structure to check
+     * @throws TraitementException if either the plan or structure is archived
+     */
+    private void checkState(Plan plan, Structure structure) throws TraitementException {
+        checkState(structure);
+        if (plan.getArchived()) {
+            throw new TraitementException(Error.PLAN_IS_ARCHIVED);
+        }
+    }
+
+    /**
+     * Checks the state of a plan, its structure, and verifies structure ID matching.
+     *
+     * @param plan The plan to check
+     * @param structure The structure to check
+     * @param structureId The expected structure ID
+     * @throws TraitementException if any check fails (archived state or ID mismatch)
+     */
+    private void checkState(Plan plan, Structure structure, long structureId) throws TraitementException {
+        checkState(plan, structure);
+        if (structure.getId() != structureId) {
+            throw new TraitementException(Error.PLAN_STRUCTURE_MISMATCH);
+        }
     }
 
     /**
@@ -147,7 +196,7 @@ public class PlanService {
      * @return the normalized Path object representing the directory
      */
     private Path computeDirectory(boolean noSection, Long structureId, String section) {
-        var directory = Path.of(uploadDir, "Ouvrages", String.valueOf(structureId));
+        var directory = Path.of(uploadDir, "ouvrages", String.valueOf(structureId));
         if (!noSection) {
             directory = Path.of(directory.toString(), section);
         }
@@ -222,7 +271,7 @@ public class PlanService {
      * @throws IOException if an error occurs while accessing or deleting the directory
      */
     private void deleteEmptyParentDirectory(Path path) throws IOException {
-        if (!path.getFileName().toString().equals(uploadDir)) return; // security to avoid removing root directory
+        if (path.getFileName().toString().equals(uploadDir)) return; // security to avoid removing root directory
         try (var files = Files.list(path)) {
             if (files.findAny().isEmpty()) {
                 Files.delete(path);
@@ -244,6 +293,9 @@ public class PlanService {
      */
     private Plan handleEditPlan(Path sourceFilePath, Path targetFilePath, Optional<MultipartFile> file, Plan plan) throws TraitementException {
         if (file.isPresent()) {
+            if (planRepository.planFileAlreadyExists(targetFilePath.toString())) {
+                throw new TraitementException(Error.PLAN_ALREADY_EXISTS);
+            }
             uploadFile(file.get(), sourceFilePath);
         }
         moveFile(sourceFilePath, targetFilePath);
@@ -360,7 +412,7 @@ public class PlanService {
         if(metadata.section() != null && metadata.section().length() > 128) {
             throw new TraitementException(Error.PLAN_SECTION_EXCEED_LIMIT);
         }
-        if(metadata.section() !=null && !metadata.section().matches("^(?:[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*)?$")) {
+        if(metadata.section() != null && !metadata.section().matches("^(?:[a-zA-Z0-9_-]+(?:/[a-zA-Z0-9_-]+)*)?$")) {
             throw new TraitementException(Error.PLAN_SECTION_INVALID);
         }
     }
