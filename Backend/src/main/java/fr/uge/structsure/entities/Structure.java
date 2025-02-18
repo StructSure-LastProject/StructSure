@@ -1,7 +1,10 @@
 package fr.uge.structsure.entities;
 
 import jakarta.persistence.*;
+
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 public class Structure {
@@ -13,6 +16,12 @@ public class Structure {
     private String name;
     private String note;
     private Boolean archived=false;
+
+    @OneToMany(mappedBy="structure")
+    private Set<Sensor> sensors;
+
+    @OneToMany(mappedBy="structure")
+    private Set<Plan> plans;
 
     public Structure() {}
     public Structure(String name, String note, Boolean archived) {
@@ -52,5 +61,25 @@ public class Structure {
 
     public Boolean getArchived() {
         return archived;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public Set<Sensor> getSensors() {
+        return sensors;
+    }
+
+    public void setSensors(Set<Sensor> sensors) {
+        this.sensors = new HashSet<>(sensors);
+    }
+
+    public Set<Plan> getPlans() {
+        return plans;
+    }
+
+    public void setPlans(Set<Plan> plans) {
+        this.plans =  new HashSet<>(plans);
     }
 }

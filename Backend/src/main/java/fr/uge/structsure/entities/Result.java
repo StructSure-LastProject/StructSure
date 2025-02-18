@@ -17,7 +17,6 @@ public class Result {
     })
     private Sensor sensor;
 
-    @Enumerated(EnumType.STRING)
     private State state;
 
     @ManyToOne
