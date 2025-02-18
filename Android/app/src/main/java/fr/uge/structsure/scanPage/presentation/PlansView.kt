@@ -1,5 +1,6 @@
 package fr.uge.structsure.scanPage.presentation
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +32,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -49,18 +51,19 @@ import fr.uge.structsure.ui.theme.fonts
 
 /**
  * This composable is used to display the plans of the structure.
- * @param planId the id of the plan to display
+ * @param structureId the id of the structure
  * @param viewModel the view model used to fetch the plan image
  */
 @Composable
 fun PlansView(structureId: Long, viewModel: PlanViewModel) {
     val selected = remember { mutableStateOf("Section OA/Plan 01") }
-    val planBitmap by viewModel.planImage.observeAsState()
-    // val plans by viewModel.plans.observeAsState(initial = emptyList()) // for selectors
+    val imagePath by viewModel.planImagePath.observeAsState()
     val points = remember { mutableStateListOf<Point>() }
 
+    val context = LocalContext.current
+
     LaunchedEffect(structureId) {
-        viewModel.loadPlans(structureId)
+        viewModel.loadPlans(context, structureId)
     }
 
     Column(
@@ -89,9 +92,9 @@ fun PlansView(structureId: Long, viewModel: PlanViewModel) {
                     .background(LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                planBitmap?.let {
+                imagePath?.let { path ->
                     Plan(
-                        image = it,
+                        image = BitmapFactory.decodeFile(path),
                         points = points
                     )
                 } ?: Text(

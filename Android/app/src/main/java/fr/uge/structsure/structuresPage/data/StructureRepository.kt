@@ -1,11 +1,11 @@
 package fr.uge.structsure.structuresPage.data
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import fr.uge.structsure.MainActivity
 import fr.uge.structsure.retrofit.RetrofitInstance
+import fr.uge.structsure.utils.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -138,18 +138,19 @@ class StructureRepository : ViewModel() {
         }
     }
 
+
     /**
-     * Fetches the plan image from the server.
-     * @param planId the id of the plan to fetch
-     * @return the plan image as a Bitmap
+     * Downloads and saves the plan image to local storage.
+     * @param planId the id of the plan
+     * @return the path to the saved image file
      */
-    suspend fun downloadPlanImage(planId: Long): Bitmap? {
+    suspend fun downloadPlanImage(context: Context, planId: Long): String? {
         return withContext(Dispatchers.IO) {
             try {
                 val response = RetrofitInstance.structureApi.downloadPlanImage(planId)
                 if (response.isSuccessful) {
-                    response.body()?.byteStream()?.use { inputStream ->
-                        BitmapFactory.decodeStream(inputStream)
+                    response.body()?.byteStream()?.let { inputStream ->
+                        FileUtils.savePlanImageToInternalStorage(context, planId, inputStream)
                     }
                 } else {
                     Log.e("StructureRepository", "Failed to fetch plan image: ${response.code()} - ${response.message()}")

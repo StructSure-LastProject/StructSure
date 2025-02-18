@@ -1,36 +1,47 @@
 package fr.uge.structsure.scanPage.domain
 
-import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.MainActivity.Companion.db
-import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.structuresPage.data.StructureRepository
 import kotlinx.coroutines.launch
+import android.content.Context
+import fr.uge.structsure.utils.FileUtils
 
 /**
- * ViewModel responsible for managing the plan image fetching process.
- * It interacts with the repository to fetch the plan image.
- * The plan image is then displayed in the UI.
- *
+ * ViewModel responsible for managing the plans and their images.
+ * It handles both local storage and network fetching of plan images,
+ * providing a seamless experience whether online or offline.
  */
 class PlanViewModel : ViewModel() {
     private val repository = StructureRepository()
-    val planImage = MutableLiveData<Bitmap?>()
 
     /**
-     * Fetches the plans for a given structure and the image of the first plan.
-     *
-     * @param structureId the id of the structure
+     * LiveData containing the path to the plan image file.
+     * When updated, the UI will automatically reflect the changes.
      */
-    fun loadPlans(structureId: Long) {
+    val planImagePath = MutableLiveData<String?>()
+
+    /**
+     * Loads the plan for a given structure. First checks if the image exists
+     * locally, and if not, attempts to download it from the server.
+     *
+     * @param context The application context needed for file operations
+     * @param structureId The ID of the structure whose plan should be loaded
+     */
+    fun loadPlans(context: Context, structureId: Long) {
         viewModelScope.launch {
             try {
                 val planId = db.planDao().getPlanByStructureId(structureId)
                 if (planId != null) {
-                    fetchPlanImage(planId)
+                    val localPath = FileUtils.getLocalPlanImage(context, planId)
+                    if (localPath != null) {
+                        planImagePath.value = localPath
+                    } else {
+                        fetchPlanImage(context, planId)
+                    }
                 } else {
                     Log.e("PlanViewModel", "No plan found for structure $structureId")
                 }
@@ -41,17 +52,22 @@ class PlanViewModel : ViewModel() {
     }
 
     /**
-     * Fetches the image of a plan.
+     * Attempts to download a plan image from the server and save it locally.
+     * If the download fails but the image exists locally, uses the local version.
      *
-     * @param structureId the id of the structure
-     * @param planId the id of the plan
+     * @param context The application context needed for file operations
+     * @param planId The ID of the plan whose image should be fetched
      */
-    private fun fetchPlanImage(planId: Long) {
+    private fun fetchPlanImage(context: Context, planId: Long) {
         viewModelScope.launch {
             try {
-                planImage.value = repository.downloadPlanImage(planId)
+                planImagePath.value = repository.downloadPlanImage(context, planId)
             } catch (e: Exception) {
                 Log.e("PlanViewModel", "Error fetching plan image", e)
+                val localPath = FileUtils.getLocalPlanImage(context, planId)
+                if (localPath != null) {
+                    planImagePath.value = localPath
+                }
             }
         }
     }
