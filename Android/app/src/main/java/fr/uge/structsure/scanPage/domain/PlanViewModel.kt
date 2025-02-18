@@ -1,6 +1,7 @@
 package fr.uge.structsure.scanPage.domain
 
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,7 +19,6 @@ import kotlinx.coroutines.launch
 class PlanViewModel : ViewModel() {
     private val repository = StructureRepository()
     val planImage = MutableLiveData<Bitmap?>()
-    private val plans = MutableLiveData<List<PlanDB>>()
 
     /**
      * Fetches the plans for a given structure and the image of the first plan.
@@ -27,9 +27,15 @@ class PlanViewModel : ViewModel() {
      */
     fun loadPlans(structureId: Long) {
         viewModelScope.launch {
-            plans.value = db.planDao().getPlansByStructureId(structureId)
-            plans.value?.firstOrNull()?.let { plan ->
-                fetchPlanImage(structureId, plan.id)
+            try {
+                val planId = db.planDao().getPlanByStructureId(structureId)
+                if (planId != null) {
+                    fetchPlanImage(planId)
+                } else {
+                    Log.e("PlanViewModel", "No plan found for structure $structureId")
+                }
+            } catch (e: Exception) {
+                Log.e("PlanViewModel", "Error loading plan", e)
             }
         }
     }
@@ -40,9 +46,13 @@ class PlanViewModel : ViewModel() {
      * @param structureId the id of the structure
      * @param planId the id of the plan
      */
-    private fun fetchPlanImage(structureId: Long, planId: Long) {
+    private fun fetchPlanImage(planId: Long) {
         viewModelScope.launch {
-            planImage.value = repository.downloadPlanImage(structureId, planId)
+            try {
+                planImage.value = repository.downloadPlanImage(planId)
+            } catch (e: Exception) {
+                Log.e("PlanViewModel", "Error fetching plan image", e)
+            }
         }
     }
 }

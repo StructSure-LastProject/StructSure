@@ -14,6 +14,6 @@ interface PlanDao {
     @Query("DELETE FROM `plan` WHERE structureId = :structureId")
     fun deletePlansByStructureId(structureId: Long)
 
-    @Query("SELECT * FROM `plan`  WHERE structureId = :structureId")
-    suspend fun getPlansByStructureId(structureId: Long): List<PlanDB>
+    @Query("SELECT id FROM `plan` WHERE structureId = :structureId ORDER BY id DESC LIMIT 1") // for the moment get last id plan added
+    suspend fun getPlanByStructureId(structureId: Long): Long?
 }

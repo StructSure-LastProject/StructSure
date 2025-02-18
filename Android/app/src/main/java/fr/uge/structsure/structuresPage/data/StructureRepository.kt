@@ -140,28 +140,23 @@ class StructureRepository : ViewModel() {
 
     /**
      * Fetches the plan image from the server.
-     * @param structureId the id of the structure containing the plan
      * @param planId the id of the plan to fetch
      * @return the plan image as a Bitmap
      */
-    suspend fun downloadPlanImage(structureId: Long, planId: Long): Bitmap? {
+    suspend fun downloadPlanImage(planId: Long): Bitmap? {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d("StructureRepository", "Downloading image for structure $structureId, plan $planId")
-
-                val response = RetrofitInstance.structureApi.downloadPlanImage(structureId, planId)
+                val response = RetrofitInstance.structureApi.downloadPlanImage(planId)
                 if (response.isSuccessful) {
                     response.body()?.byteStream()?.use { inputStream ->
                         BitmapFactory.decodeStream(inputStream)
                     }
                 } else {
                     Log.e("StructureRepository", "Failed to fetch plan image: ${response.code()} - ${response.message()}")
-                    Log.e("StructureRepository", "Error body: ${response.errorBody()?.string()}")
                     null
                 }
             } catch (e: Exception) {
                 Log.e("StructureRepository", "Error downloading plan image", e)
-                Log.e("StructureRepository", "Stack trace: ${e.stackTraceToString()}")
                 null
             }
         }

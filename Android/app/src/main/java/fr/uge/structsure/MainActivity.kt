@@ -120,9 +120,8 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("SettingsPage") { SettingsPage(navController) }
                 composable("ScanPage?structureId={structureId}") { backStackEntry ->
-                    val structureId =
-                        backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                    ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
+                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                    ScanPage(context, scanViewModel, planViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
                 composable(connexionPage) {
@@ -137,6 +136,7 @@ class MainActivity : ComponentActivity() {
                     Alerte(navController, state, name, lastState)
                     SetDynamicStatusBar()
                 }
+
             }
         }
     }
@@ -148,7 +148,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         csLibrary4A.disconnect(true)
-        unregisterReceiver(bluetoothAdapter)
         super.onDestroy()
     }
 
@@ -164,7 +163,7 @@ class MainActivity : ComponentActivity() {
                 permissions[Manifest.permission.BLUETOOTH_CONNECT] == true
             } else true
 
-            if (canEnableBluetooth) {
+            if (canEnableBluetooth && !isBluetoothEnabled) {
                 enableBluetoothLauncher.launch(
                     Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 )
@@ -201,7 +200,7 @@ private fun ComponentActivity.SetDynamicStatusBar() {
             SystemBarStyle.auto(
                 lightScrim = defaultSystemBarColor,
                 darkScrim = defaultSystemBarColor,
-                detectDarkMode = { r ->
+                detectDarkMode = {r ->
                     MainActivity.darkStatusBar.get() ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
                 }
             )
