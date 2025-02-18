@@ -23,12 +23,21 @@ public class Structure {
     @OneToMany(mappedBy="structure")
     private Set<Plan> plans;
 
+    /**
+     * Initialise the structure entity
+     */
     public Structure() {}
+
+    /**
+     * Initialise the structure entity
+     * @param name the name
+     * @param note the note
+     * @param archived if its archived or not
+     */
     public Structure(String name, String note, Boolean archived) {
         this.name = Objects.requireNonNull(name);
         this.note = Objects.requireNonNull(note);
         this.archived = archived;
-
     }
     public Structure(String name, String note) {
         this.name = Objects.requireNonNull(name);

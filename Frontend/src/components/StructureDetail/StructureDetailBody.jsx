@@ -4,7 +4,7 @@ import StructureDetailRow from './StructureDetailRow';
 
 import { createEffect, createSignal } from "solid-js";
 
-import useFetch from '../hooks/useFetch';
+import useFetch from '../../hooks/useFetch';
 
 
 /**
@@ -15,6 +15,7 @@ function StructureDetailBody(props) {
 
     const [sensors, setSensors] = createSignal([]);
     const [structureDetails, setStructureDetails] = createSignal({"scans": []}); 
+    const [planSensors, setPlanSensors] = createSignal([]);
 
     /**
      * Will fetch the list of the sensors of this structure
@@ -31,9 +32,9 @@ function StructureDetailBody(props) {
         await fetchData(`/api/structures/${structureId}/sensors`, requestData);
         if (statusCode() === 200) {
             setSensors(data());
-        } else if (statusCode() === 404) {
-        
-        }
+        }// Uncomment this when error barre is developped
+        // else if (statusCode() === 404) {
+        // }
     };
 
     /**
@@ -57,16 +58,37 @@ function StructureDetailBody(props) {
         // }
     };
 
+    /**
+     * Will fetch the sensors for the plan
+     */
+    const planSensorsFetchRequest = async (structureId, planId = 1) => {
+        const requestData = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        };
+
+        const { fetchData, statusCode, data, errorFetch } = useFetch();
+        await fetchData(`/api/structures/${structureId}/plan/${planId}/sensors`, requestData);
+        if (statusCode() === 200) {
+            setPlanSensors(data());
+        } // Uncomment this when error barre is developped
+        // else if (statusCode() === 404) {
+        // }
+    };
+
     createEffect(() => {
         structureDetailsFetchRequest(props.structureId);
         sensorsFetchRequest(props.structureId);
+        planSensorsFetchRequest(props.structureId);
     });
     
     return (
         
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
             <StructureDetailHead scans={structureDetails().scans}/>
-            <StructureDetailPlans />
+            <StructureDetailPlans planSensors={planSensors()} />
             <StructureDetailRow sensors={sensors} />
         </div>
     );

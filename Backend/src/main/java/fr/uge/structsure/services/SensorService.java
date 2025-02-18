@@ -6,6 +6,7 @@ import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
+import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.StructureRepository;
@@ -19,17 +20,29 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * This class regroups all the services available for the sensor
+ */
 @Service
 public class SensorService {
     private final SensorRepository sensorRepository;
     private final StructureRepository structureRepository;
     private final ResultRepository resultRepository;
+    private final PlanRepository planRepository;
 
+    /**
+     * Initialise the sensor service
+     * @param sensorRepository the sensor repository
+     * @param structureRepository the structure repository
+     * @param resultRepository the result repository
+     * @param planRepository the plan repository
+     */
     @Autowired
-    public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository) {
+    public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository, PlanRepository planRepository) {
         this.sensorRepository = sensorRepository;
         this.structureRepository = structureRepository;
         this.resultRepository = resultRepository;
+        this.planRepository = planRepository;
     }
 
 
@@ -39,12 +52,31 @@ public class SensorService {
      * @return List<SensorDTO> list of sensors
      * @throws TraitementException if there is no structure with the id
      */
-    public List<SensorDTO> getSensors(long structureId) throws TraitementException {
+    public List<SensorDTO> getSensorsByStructureId(long structureId) throws TraitementException {
         var structure = structureRepository.findById(structureId);
         if (structure.isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
         var sensors = sensorRepository.findByStructureId(structureId);
+        return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
+    }
+
+    /**
+     * Returns the list of sensors present in a plan
+     * @param structureId the structure id
+     * @param planId the plan id
+     * @return List<SensorDTO> the list of the sensors
+     */
+    public List<SensorDTO> getSensorsByPlanId(long structureId, long planId) throws TraitementException {
+        var structure = structureRepository.findById(structureId);
+        if (structure.isEmpty()) {
+            throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
+        }
+        var plan = planRepository.findByStructureAndId(structure.get(), planId);
+        if (plan.isEmpty()) {
+            throw new TraitementException(Error.PLAN_NOT_FOUND);
+        }
+        var sensors = sensorRepository.findByPlan(plan.get());
         return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
     }
 
@@ -163,4 +195,6 @@ public class SensorService {
             throw new TraitementException(Error.SENSOR_INSTALLATION_DATE_INVALID_FORMAT);
         }
     }
+
+
 }
