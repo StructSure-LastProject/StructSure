@@ -268,14 +268,13 @@ class ScanViewModel: ViewModel() {
                 activeScanId?.let { scanId ->
                     scanRepository.updateScanEndTime(scanId, now)
 
-                    val results = resultDao.getAllResults()
+                    val results = scanRepository.getAllScanResults()
                     val scanRequest = scanRepository.convertToScanRequest(
                         scanId = scanId,
                         launchDate = now,
                         note = "",
                         results = results
                     )
-
                     scanRepository.submitScanResults(scanRequest)
                         .onSuccess {
                             scanUploadState.postValue(ScanUploadState.Success)
