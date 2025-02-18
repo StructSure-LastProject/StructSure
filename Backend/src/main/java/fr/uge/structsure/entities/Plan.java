@@ -69,4 +69,8 @@ public class Plan {
     public void setArchived(Boolean archived) {
         this.archived = archived;
     }
+
+    public Structure getStructure() {
+        return structure;
+    }
 }
