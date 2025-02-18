@@ -25,7 +25,6 @@ public enum Error {
     STRUCTURE_NAME_EXCEED_LIMIT(422, "Le nom d'un ouvrage ne peut pas dépasser 64 caractères"),
     STRUCTURE_NOTE_EXCEED_LIMIT(422, "La note d'un ouvrage ne peut pas dépasser 1000 caractères"),
 
-    PLAN_NOT_FOUND(404, "Le plan est introuvable"),
     PLAN_STRUCTURE_ID_IS_EMPTY(422, "Le champ structureId est requis"),
     PLAN_STRUCTURE_NOT_FOUND(404, "Ouvrage introuvable"),
     PLAN_FILE_INVALID_FORMAT(422, "Format du fichier non valide"),

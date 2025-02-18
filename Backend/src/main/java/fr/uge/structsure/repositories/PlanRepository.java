@@ -22,17 +22,11 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
 
     /**
      * Will find the plan by its id, and also that is present in the structure
-     * @param planId the plan id
      * @param structure the structure
+     * @param planId the plan id
      * @return Optional<Plan> an optional with the plan or an optional empty if there is no plan
      */
-    @Query("""
-        SELECT plan
-        FROM Plan plan
-        WHERE plan.structure = :structure
-        AND plan.id = :planId
-    """)
-    Optional<Plan> findByStructureAndPlanId(long planId, Structure structure);
+    Optional<Plan> findByStructureAndId(Structure structure, long planId);
 
     /**
      * Find the list of the plans in the structure

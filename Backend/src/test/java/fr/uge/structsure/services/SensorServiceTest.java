@@ -48,7 +48,7 @@ class SensorServiceTest {
         long structureId = 1L;
         when(structureRepository.findById(structureId)).thenReturn(Optional.empty());
 
-        TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.getSensors(structureId));
+        TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.getSensorsByStructureId(structureId));
         assertEquals(Error.STRUCTURE_ID_NOT_FOUND, exception.error);
     }
 
