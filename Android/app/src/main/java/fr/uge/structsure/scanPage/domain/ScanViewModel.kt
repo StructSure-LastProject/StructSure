@@ -260,17 +260,14 @@ class ScanViewModel: ViewModel() {
     fun stopScan() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Arrêt du matériel
                 cs108Scanner.stop()
                 currentScanState.postValue(ScanState.STOPPED)
 
                 val now = Timestamp(System.currentTimeMillis()).toString()
 
                 activeScanId?.let { scanId ->
-                    // Mise à jour de la base de données locale
                     scanRepository.updateScanEndTime(scanId, now)
 
-                    // Récupération et conversion des résultats
                     val results = scanRepository.getAllScanResults()
                     val scanRequest = scanRepository.convertToScanRequest(
                         scanId = scanId,
@@ -279,7 +276,6 @@ class ScanViewModel: ViewModel() {
                         results = results
                     )
 
-                    // Envoi au serveur
                     scanRepository.submitScanResults(scanRequest)
                         .onSuccess {
                             scanUploadState.postValue(ScanUploadState.Success)
