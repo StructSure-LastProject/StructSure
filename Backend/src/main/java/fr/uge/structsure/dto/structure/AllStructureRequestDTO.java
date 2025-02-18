@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param orderType the order type (ASC or DESC)
  */
 @JsonSerialize
-public record AllStructureRequestDTO(String searchByName, OrderByColumn orderByColumnName, OrderEnum orderType) {
+public record AllStructureRequestDTO(String searchByName, String orderByColumnName, String orderType) {
     /**
      * The orderByColumn enum
      */
@@ -38,9 +38,15 @@ public record AllStructureRequestDTO(String searchByName, OrderByColumn orderByC
         }
     }
 
-    public void checkPrsenceOfRequiredFields() throws TraitementException {
+    public void checkFields() throws TraitementException {
         if (Objects.isNull(searchByName) || Objects.isNull(orderType) || Objects.isNull(orderByColumnName)) {
             throw new TraitementException(Error.MISSING_USER_ACCOUNT_FIELDS);
+        }
+        if (!orderType.equalsIgnoreCase("asc") && !orderType.equalsIgnoreCase("desc")) {
+            throw new TraitementException(Error.ORDER_NOT_EXISTS);
+        }
+        if (!orderByColumnName.equals("STATE") && !orderByColumnName.equals("NUMBER_OF_SENSORS") && !orderByColumnName.equals("NAME")) {
+            throw new TraitementException(Error.ORDER_BY_COLUMN_NAME_NOT_EXISTS);
         }
     }
 }

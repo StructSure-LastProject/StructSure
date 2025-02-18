@@ -167,7 +167,7 @@ public class StructureService {
      * @throws TraitementException if there is no structure in the database we throw this exception
      */
     public List<AllStructureResponseDTO> getAllStructure(AllStructureRequestDTO allStructureRequestDTO) throws TraitementException {
-        allStructureRequestDTO.checkPrsenceOfRequiredFields();
+        allStructureRequestDTO.checkFields();
         List<AllStructureResponseDTO> structures = structureRepositoryCriteriaQuery.findAllStructuresWithState(allStructureRequestDTO);
         if (structures.isEmpty()) {
             throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);

@@ -63,7 +63,7 @@ public class StructureRepositoryCriteriaQuery {
         cq.groupBy(structure.get("id"));
 
         Expression<?> orderExpression;
-        switch (allStructureRequestDTO.orderByColumnName()) {
+        switch (AllStructureRequestDTO.OrderByColumn.valueOf(allStructureRequestDTO.orderByColumnName())) {
             case NUMBER_OF_SENSORS -> orderExpression = countMeasureChip;
             case NAME -> orderExpression = structure.get("name");
             case STATE -> orderExpression = cb.selectCase()
@@ -73,7 +73,7 @@ public class StructureRepositoryCriteriaQuery {
                     .when(cb.equal(state, State.OK.ordinal()), 3);
             default -> orderExpression = structure.get("id");
         }
-        switch (allStructureRequestDTO.orderType()) {
+        switch (OrderEnum.valueOf(allStructureRequestDTO.orderType())) {
             case ASC -> cq.orderBy(cb.desc(orderExpression));
             case DESC -> cq.orderBy(cb.asc(orderExpression));
         };
