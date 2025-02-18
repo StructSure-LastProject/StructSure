@@ -6,6 +6,7 @@ import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.Structure;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -35,8 +36,6 @@ public interface ResultRepository extends JpaRepository<Result, Long> {
     )
     boolean existsResultWithDefectiveState(Sensor sensor);
 
-    /**
-     *
-     */
-    List<Result> findByScan(Scan scan);
+    @Query("SELECT r FROM Result r JOIN FETCH r.sensor s JOIN FETCH s.sensorId WHERE r.scan = :scan")
+    List<Result> findByScan(@Param("scan") Scan scan);
 }

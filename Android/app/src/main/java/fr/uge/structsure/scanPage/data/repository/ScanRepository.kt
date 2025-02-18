@@ -10,18 +10,12 @@ class ScanRepository {
     private val scanDao = db.scanDao()
     private val resultDao = db.resultDao()
     private val sensorDao = db.sensorDao()
-    private fun getApiInterface() = RetrofitInstance.scanApi
+    private val scanApi = RetrofitInstance.scanApi
 
-    /**
-     * Met à jour le timestamp de fin d'un scan
-     */
     suspend fun updateScanEndTime(scanId: Long, endTime: String) {
         scanDao.updateEndTimestamp(scanId, endTime)
     }
 
-    /**
-     * Récupère tous les résultats de scan
-     */
     suspend fun getAllScanResults(): List<ResultSensors> {
         return resultDao.getAllResults()
     }
@@ -29,14 +23,17 @@ class ScanRepository {
     /**
      * Envoie les résultats du scan au serveur
      */
-    suspend fun submitScanResults(request: ScanRequestDTO): Result<Unit> {
+    suspend fun submitScanResults(scanRequest: ScanRequestDTO): Result<Unit> {
         return try {
-            val apiInterface = getApiInterface()
-            val response = apiInterface.submitScanResults(request)
+            val response = scanApi.submitScanResults(scanRequest)
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception("Server error: ${response.code()}"))
+                if (response.code() == 404) {
+                    Result.failure(Exception("Scan introuvable"))
+                } else {
+                    Result.failure(Exception("Erreur serveur: ${response.code()}"))
+                }
             }
         } catch (e: Exception) {
             Result.failure(e)

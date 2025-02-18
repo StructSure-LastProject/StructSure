@@ -13,6 +13,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/scans")
 public class AndroidScanController {
+
     private final ScanService scanService;
 
     @Autowired
@@ -20,13 +21,10 @@ public class AndroidScanController {
         this.scanService = Objects.requireNonNull(scanService);
     }
 
-    /**
-     *
-     */
     @GetMapping(value = "/{scanId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getScanDetails(@PathVariable("scanId") long scanId) {
         try {
-            AndroidScanResultDTO scanDetails = scanService.getScanDetails(scanId);
+            var scanDetails = scanService.getScanDetails(scanId);
             return ResponseEntity.ok(scanDetails);
         } catch (TraitementException e) {
             return e.toResponseEntity();
