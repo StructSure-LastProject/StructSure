@@ -117,7 +117,7 @@ const Modal = ({ isOpen, onClose, onSave, structureId, plan }) => {
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
         <div class="bg-white p-6 rounded-[20px] shadow-lg w-96">
           <ModalHeader
-            title="Modifier le Plan"
+            title="Edition du Plan"
             onClose={handleClose}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting()}

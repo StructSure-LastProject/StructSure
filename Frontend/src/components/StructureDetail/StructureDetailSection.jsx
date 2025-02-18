@@ -3,6 +3,8 @@ import {createSignal, Show} from "solid-js";
 import ModalAddPlan from "./Plan/ModalAddPlan.jsx";
 import ModalEditPlan from "./Plan/ModalEditPlan.jsx";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 /**
  * Show the section part component
  * @returns the component for the section part 
@@ -11,16 +13,40 @@ function StructureDetailSection() {
     const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
     const [selectedPlan, setSelectedPlan] = createSignal(null);
 
+    /**
+     * Build the image url
+     * @param planId id of the actual plan
+     * @returns {`${any}/api/structures/plans/${string}/image`|`http://localhost:8080/api/structures/plans/${string}/image`}
+     */
+    const getImageUrl = (planId) => {
+        return `${API_BASE_URL}/api/structures/plans/${planId}/image`;
+    };
+
+    /**
+     * Build the actual plan object with the image url
+     * @param plan actual plan object
+     */
     const openEditModal = (plan) => {
-        setSelectedPlan(plan);
+        setSelectedPlan({
+            ...plan,
+            imageUrl: getImageUrl(plan.id)
+        });
         setIsEditModalOpen(true);
     };
 
+    /**
+     * Close the edit modal and reset the selected plan
+     */
     const closeEditModal = () => {
         setIsEditModalOpen(false);
         setSelectedPlan(null);
     };
 
+    /**
+     * Close and log the result of editing the actual plan
+     * todo made it dynamic and not static and remove console.log
+     * @param updatedPlan result of the edition
+     */
     const handleSavePlan = (updatedPlan) => {
         console.log('Plan updated:', updatedPlan);
         closeEditModal();
@@ -62,10 +88,9 @@ function StructureDetailSection() {
                         <button
                           title="Editer un plan"
                           onclick={() => openEditModal({
-                              id: 3,
+                              id: 8,
                               name: "Plan 03",
-                              section: "OA",
-                              imageUrl: "/files/Ouvrages/1/test/504f5152c8950.jpg"
+                              section: "OA"
                           })}
                         >
                             <Pencil size={20}/>

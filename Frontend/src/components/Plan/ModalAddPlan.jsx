@@ -118,7 +118,7 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
     <Show when={isOpen}>
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
         <div class="bg-white p-6 rounded-[20px] shadow-lg w-96">
-          <ModalHeader onClose={handleClose} onSubmit={handleSubmit} isSubmitting={isSubmitting()} />
+          <ModalHeader title={"Ajouter un Plan"} onClose={handleClose} onSubmit={handleSubmit} isSubmitting={isSubmitting()} />
           <Show when={errorMsg()}>
             <ErrorMessage message={errorMsg()} />
           </Show>
