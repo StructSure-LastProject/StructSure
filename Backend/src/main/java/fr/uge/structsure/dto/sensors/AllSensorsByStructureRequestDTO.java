@@ -13,7 +13,6 @@ public record AllSensorsByStructureRequestDTO(OrderByColumn orderByColumn, Order
     public AllSensorsByStructureRequestDTO {
         Objects.requireNonNull(orderByColumn);
         Objects.requireNonNull(orderType);
-        Objects.requireNonNull(planFilter);
     }
 
     public enum OrderByColumn {

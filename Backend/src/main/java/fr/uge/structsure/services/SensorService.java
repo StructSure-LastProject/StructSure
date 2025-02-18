@@ -145,11 +145,12 @@ public class SensorService {
         if (alreadyUsedSensorId) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
         }
+        var formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         Sensor sensor = new Sensor(request.controlChip(),
                 request.measureChip(),
                 request.name(),
                 request.note() == null ? "": request.note(),
-                LocalDateTime.parse(request.installationDate()),
+                LocalDateTime.parse(request.installationDate(), formatter),
                 request.x(),
                 request.y(),
                 false,
@@ -202,9 +203,9 @@ public class SensorService {
         if (request.note() != null && request.note().length() > 1000) {
             throw new TraitementException(Error.SENSOR_NOTE_EXCEED_LIMIT);
         }
-        var formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd");
         try {
-            LocalDate.parse(request.installationDate(), formatter);
+            var formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            LocalDateTime.parse(request.installationDate(), formatter);
         } catch (DateTimeParseException e) {
             throw new TraitementException(Error.SENSOR_INSTALLATION_DATE_INVALID_FORMAT);
         }
