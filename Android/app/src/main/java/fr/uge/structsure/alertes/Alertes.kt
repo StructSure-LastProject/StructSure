@@ -5,11 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +26,7 @@ import androidx.navigation.NavController
 import fr.uge.structsure.R
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.components.Page
+import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
 
@@ -98,7 +97,7 @@ private fun AlertDetails(state: Boolean, sensorName: String, lastStateSensor: St
             style = MaterialTheme.typography.titleLarge
         )
 
-        SensorDetails(sensorName, lastStateSensor)
+        SensorDetails(White, "Nom du capteur :", sensorName, "Dernier état :", lastStateSensor)
 
         Plan()
 
@@ -109,46 +108,6 @@ private fun AlertDetails(state: Boolean, sensorName: String, lastStateSensor: St
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = White,
-        )
-    }
-}
-
-/**
- * Row displaying the name of the sensor and the last known state.
- * @param name the custom name of the sensor
- * @param state the last saved state of the sensor (NOK, OK, ...)
- */
-@Composable
-private fun SensorDetails(name: String, state: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterHorizontally)
-    ) {
-        SensorDetail("Nom du capteur :", name)
-        SensorDetail("Dernier état :", state)
-    }
-}
-
-/**
- * Displays the details of one attribute of a sensor (name of state).
- * @param title the name of the attribute to display
- * @param value the value
- */
-@Composable
-private fun SensorDetail(title: String, value: String) {
-    Column (
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            modifier = Modifier.alpha(0.5f),
-            text = title,
-            color = White,
-            style = MaterialTheme.typography.bodySmall
-        )
-        Text(
-            text = value,
-            color = White,
-            style = MaterialTheme.typography.headlineMedium
         )
     }
 }

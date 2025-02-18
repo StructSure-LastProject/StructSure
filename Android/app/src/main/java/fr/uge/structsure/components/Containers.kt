@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -20,9 +21,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import fr.uge.structsure.R
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.White
@@ -44,9 +49,10 @@ fun ContainersPreview() {
 @Composable
 fun Title (
     text: String,
+    indent: Boolean = true,
     content: @Composable () -> Unit = {}
 ) {
-    Row(Modifier.padding(start = 20.dp)) {
+    Row(Modifier.padding(start = if (indent) 20.dp else 0.dp)) {
         Text(text,
             style = MaterialTheme.typography.titleLarge,
             modifier= Modifier
@@ -74,28 +80,81 @@ fun PopUp(
     content: @Composable () -> Unit = {},
 ) {
     val interactionSource by remember { mutableStateOf(MutableInteractionSource()) }
-    Box(
-        modifier = Modifier
-            .imePadding()
-            .fillMaxHeight()
-            .fillMaxWidth()
-            .clickable(interactionSource, null, onClick = onClose)
-            .background(Black.copy(.25f))
-            .padding(25.dp),
-        contentAlignment = Alignment.Center
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = true
+        )
     ) {
-        Column(
+        Box(
             modifier = Modifier
+                .imePadding()
+                .fillMaxHeight()
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
-                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, true) {
-                    // Disable the ripple when clicking
-                }
-                .background(White)
+                .clickable(interactionSource, null, onClick = onClose)
+                .background(Black.copy(.25f))
                 .padding(25.dp),
-            verticalArrangement = Arrangement.spacedBy(15.dp)
+            contentAlignment = Alignment.Center
         ) {
-            content.invoke()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, true) {
+                        // Disable the ripple when clicking
+                    }
+                    .background(White)
+                    .padding(25.dp),
+                verticalArrangement = Arrangement.spacedBy(15.dp)
+            ) {
+                content.invoke()
+            }
         }
+    }
+}
+
+/**
+ * Two columns long array that can display details of a sensor.
+ * @param color the color of the text to display
+ * @param labelLeft the label of the first column
+ * @param valueLeft the value of the first column
+ * @param labelRight the label of the second column
+ * @param valueRight the label of the second column
+ */
+@Composable
+fun SensorDetails(color: Color, labelLeft: String, valueLeft: String, labelRight: String, valueRight: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterHorizontally)
+    ) {
+        SensorDetail(color, labelLeft, valueLeft)
+        SensorDetail(color, labelRight, valueRight)
+    }
+}
+
+/**
+ * Displays the details of one attribute of a sensor (name of state).
+ * @param color the color of the text
+ * @param title the name of the attribute to display
+ * @param value the value
+ */
+@Composable
+private fun RowScope.SensorDetail(color: Color, title: String, value: String) {
+    Column (
+        Modifier.weight(.5f),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            title,
+            Modifier.alpha(0.5f),
+            color,
+            style = MaterialTheme.typography.bodySmall
+        )
+        Text(
+            value,
+            color = color,
+            style = MaterialTheme.typography.headlineMedium
+        )
     }
 }
