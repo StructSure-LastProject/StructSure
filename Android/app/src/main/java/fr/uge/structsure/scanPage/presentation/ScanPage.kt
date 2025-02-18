@@ -36,6 +36,7 @@ import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
+import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 
@@ -58,7 +59,7 @@ fun ScanPage(context: Context,
 
     val currentState = scanViewModel.currentScanState.observeAsState(initial = ScanState.NOT_STARTED)
     scanViewModel.setStructure(structureId)
-    var showPopup by remember { mutableStateOf(true) }
+    var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
 
     Page(
         Modifier.padding(bottom = 100.dp),
@@ -83,10 +84,10 @@ fun ScanPage(context: Context,
             )
         }
     ) { scrollState ->
-        if (showPopup) SensorPopUp { showPopup = false }
+        if (sensorPopup != null) SensorPopUp({ sensorPopup = null }, { sensorPopup = null })
         ScanWeather(viewModel = scanViewModel, scrollState)
         PlansView()
-        SensorsList(viewModel = scanViewModel)
+        SensorsList(scanViewModel) { s -> sensorPopup = s }
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -101,10 +102,10 @@ fun ScanPage(context: Context,
 }
 
 @Composable
-private fun SensorPopUp(onSubmit: () -> Unit) {
+private fun SensorPopUp(onSubmit: () -> Unit, onCancel: () -> Unit) {
     var note by remember { mutableStateOf("") }
 
-    PopUp(onSubmit) {
+    PopUp(onCancel) {
         Title("Capteur 04", false) {
             Button(R.drawable.check, "valider", MaterialTheme.colorScheme.onSurface, MaterialTheme.colorScheme.surface, onSubmit)
         }
@@ -134,6 +135,6 @@ private fun SensorPopUp(onSubmit: () -> Unit) {
             label = "Note",
             value = note,
             placeholder = "Aucune note pour le moment"
-        ) { s -> note = s }
+        ) { s -> if (s.length <= 1000) note = s }
     }
 }
