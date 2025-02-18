@@ -37,6 +37,7 @@ import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Button
+import fr.uge.structsure.components.Title
 import fr.uge.structsure.ui.theme.White
 
 @Composable
@@ -85,12 +86,7 @@ fun BluetoothPage(bleConnexion: Cs108Connector, onClose: () -> Unit) {
  */
 @Composable
 private fun PaneHeader(onClick: () -> Unit) {
-    Row( // Title
-        Modifier.padding(start = 20.dp)
-    ) {
-        Text("Appairage",
-            style = MaterialTheme.typography.titleLarge,
-            modifier= Modifier.fillMaxWidth().weight(2f))
+    Title("Appairage") {
         Button(R.drawable.x, "close", MaterialTheme.colorScheme.onSurface, MaterialTheme.colorScheme.surface, onClick)
     }
 }

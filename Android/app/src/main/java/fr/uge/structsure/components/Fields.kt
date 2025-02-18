@@ -16,7 +16,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults.DecorationBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,7 +25,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import fr.uge.structsure.R
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.White
@@ -100,7 +98,6 @@ fun InputTextArea (
 /**
  * Field containing a single line text input and a label.
  * @param modifier to customise the text input
- * @param label the name of the field
  * @param value the variable in which the value will be stored
  * @param placeholder indicative text placed in the input when no
  *     value is typed

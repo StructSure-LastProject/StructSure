@@ -2,10 +2,8 @@ package fr.uge.structsure.scanPage.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -23,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.scanPage.domain.ScanViewModel
+import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 
@@ -30,9 +29,10 @@ import fr.uge.structsure.ui.theme.White
  * A composable function that displays a list of sensors during a scan.
  *
  * @param viewModel The ViewModel that provides the sensor data.
+ * @param onClick action to run once a sensor of the list is clicked
  */
 @Composable
-fun SensorsList(viewModel: ScanViewModel) {
+fun SensorsList(viewModel: ScanViewModel, onClick: (sensor: SensorDB) -> Unit) {
     val sensors by viewModel.sensorsNotScanned.observeAsState(emptyList())
 
     Column(
@@ -66,8 +66,7 @@ fun SensorsList(viewModel: ScanViewModel) {
         ) {
             items(sensors) { sensor ->
                 val state = SensorState.from(sensor.state)
-                SensorBean(Modifier.fillMaxWidth(), sensor.name, state) {
-                }
+                SensorBean(Modifier.fillMaxWidth(), sensor.name, state) { onClick(sensor) }
             }
         }
     }
