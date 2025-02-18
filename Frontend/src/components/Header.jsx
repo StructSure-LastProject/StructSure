@@ -15,9 +15,11 @@ function Header() {
                 <img src={logo} class="w-236px" alt="Application logo" />
             </A>
             <div class="flex gap-x-25px items-center">
-                <A href="/admin-panel">
-                    <img src={leftAccount} class="w-10 h-10" alt="Vite logo" />
-                </A>
+                {localStorage.getItem("role") === "ADMIN" &&
+                    <A href="/admin-panel">
+                        <img src={leftAccount} class="w-10 h-10" alt="Vite logo" />
+                    </A>
+                }
                 <A href="/account">
                     <img src={accountButton} class="w-10 h-10" alt="Vite logo"/>
                 </A>
