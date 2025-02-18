@@ -43,7 +43,7 @@ const ImagePreview = ({ imageData, currentImageUrl }) => (
         class="w-full h-full rounded-[10px] object-cover"
       />
     ) : (
-      <p class="text-center text-gray-500">Pas d'image sélectionnée</p>
+      <p class="text-center text-gray-500">Pas d&apos;image sélectionnée</p>
     )}
   </div>
 );

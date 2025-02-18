@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Plan service class
+ */
 @Service
 public class PlanService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlanService.class);
