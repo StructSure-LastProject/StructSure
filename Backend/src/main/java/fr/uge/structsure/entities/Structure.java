@@ -76,10 +76,10 @@ public class Structure {
     }
 
     public Set<Plan> getPlans() {
-        return new HashSet<>(plans);
+        return plans;
     }
 
     public void setPlans(Set<Plan> plans) {
-        this.plans = plans;
+        this.plans =  new HashSet<>(plans);
     }
 }
