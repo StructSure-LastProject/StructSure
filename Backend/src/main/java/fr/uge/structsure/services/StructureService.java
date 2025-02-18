@@ -159,6 +159,7 @@ public class StructureService {
         }
     }
 
+
     /**
      * Returns the structures with state for each structure, if it's archived or not, number of sensors in the structure
      * and also with the number of plans
@@ -166,6 +167,7 @@ public class StructureService {
      * @throws TraitementException if there is no structure in the database we throw this exception
      */
     public List<AllStructureResponseDTO> getAllStructure(AllStructureRequestDTO allStructureRequestDTO) throws TraitementException {
+        allStructureRequestDTO.checkPrsenceOfRequiredFields();
         List<AllStructureResponseDTO> structures = structureRepositoryCriteriaQuery.findAllStructuresWithState(allStructureRequestDTO);
         if (structures.isEmpty()) {
             throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);
