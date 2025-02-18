@@ -15,6 +15,9 @@ public class UserAccountRequestValidation {
      */
     public static boolean containsNonLetters(String str){
         Objects.requireNonNull(str);
+        if (str.isEmpty()){
+            return false;
+        }
         var regex = "^[A-Za-zÀ-ÿ -]*$";
         var pattern = Pattern.compile(regex);
         return pattern.matcher(str).matches();
@@ -27,6 +30,9 @@ public class UserAccountRequestValidation {
      */
     public static boolean loginValidator(String str){
         Objects.requireNonNull(str);
+        if (str.isEmpty()){
+            return false;
+        }
         var regex = "^[A-Za-z0-9_@.-]*$";
         var pattern = Pattern.compile(regex);
         return pattern.matcher(str).matches();

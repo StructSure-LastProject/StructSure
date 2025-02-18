@@ -71,7 +71,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
             if (firstName() !== userDetails.firstName) updatedFields.push("firstname");
             if (lastName() !== userDetails.lastName) updatedFields.push("lastname");
-            if (login() !== userDetails.login) updatedFields.push("login");
             if (role() !== userDetails.role) updatedFields.push("role");
             if (accountState() !== userDetails.accountState) updatedFields.push("accountState");
             if (password() !== "") updatedFields.push("password");
@@ -83,42 +82,55 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                 return;
             }
 
-            
+
+            const requestBody = {
+                firstname: userDetails.firstName,
+                lastname: userDetails.lastName,
+                login: userDetails.login,
+                role: userDetails.role,
+                password: "",
+                accountState: userDetails.accountState,
+            }
+
+
             /**
              * Create the body of the request
              * @param {object} requestBody 
              * @param {string} token 
              * @returns json object
              */
-            const createRequestData = (requestBody) => {
+            const createRequestData = (requestData) => {
                 return {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`
                     },
-                    body: JSON.stringify(requestBody),
+                    body: JSON.stringify(requestData),
                 };
             }
-       
-        
             
+            if(updatedFields.includes("firstname")){
+                requestBody.firstname = firstName();
+            }
+
+            if(updatedFields.includes("lastname")){
+                requestBody.lastname = lastName();
+            }
+
             if (updatedFields.includes("role")) {
-                await fetchData(`/api/accounts/${login()}/role`, createRequestData(
-                    {
-                        role: role()
-                    }
-                ));
+                requestBody.role = role();
             }
 
             if(updatedFields.includes("password")){
-                await fetchData(`/api/accounts/${login()}/reset-password`, createRequestData(
-                    {
-                        password: password()
-                    }
-                ));
+                requestBody.password = password();
+            }
+
+            if(updatedFields.includes("accountState")){
+                requestBody.accountState = accountState();
             }
             
+            await fetchData(`/api/accounts/reset`, createRequestData(requestBody));
 
             
             let editError = "";
@@ -140,7 +152,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         }
         
     };
-
 
 
 
@@ -205,12 +216,12 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                                 <input
                                     id="id"
                                     required
-                                    value={login()}
-                                    onChange={(e) => setLogin(e.target.value)}
+                                    value={userDetails.login}
                                     type="text"
-                                    className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
+                                    className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px] opacity-[70%]"
                                     minLength="1"
                                     maxLength="128"
+                                    disabled
                                 />
                             </div>
                         </div>
