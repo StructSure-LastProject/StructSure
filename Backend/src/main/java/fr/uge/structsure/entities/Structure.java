@@ -1,6 +1,8 @@
 package fr.uge.structsure.entities;
 
 import jakarta.persistence.*;
+
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -70,11 +72,11 @@ public class Structure {
     }
 
     public void setSensors(Set<Sensor> sensors) {
-        this.sensors = sensors;
+        this.sensors = new HashSet<>(sensors);
     }
 
     public Set<Plan> getPlans() {
-        return plans;
+        return new HashSet<>(plans);
     }
 
     public void setPlans(Set<Plan> plans) {

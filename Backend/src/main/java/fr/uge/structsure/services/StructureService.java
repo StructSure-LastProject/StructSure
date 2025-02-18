@@ -173,28 +173,6 @@ public class StructureService {
         return structures;
     }
 
-    /**
-     * Returns the state of the structure
-     * @param structure the structure that we will use
-     * @return String the state
-     */
-    private StateEnum getState(Structure structure) {
-        var numberOfSensors = sensorRepository.countByStructure(structure);
-        if (numberOfSensors == 0) {
-            return StateEnum.UNKNOWN;
-        }
-
-        var isNokPresent = sensorRepository.existsSensorWithNokState(structure);
-        if (isNokPresent) {
-            return StateEnum.NOK;
-        }
-        var isDefecitvePresent = sensorRepository.existsSensorWithDefectiveState(structure);
-        if (isDefecitvePresent) {
-            return StateEnum.DEFECTIVE;
-        }
-        return StateEnum.OK;
-    }
-
     public StructureResponseDTO getStructureById(Long id) {
         Objects.requireNonNull(id);
         var structureOptional = structureRepository.findById(id);
