@@ -16,6 +16,8 @@ public enum Error {
     SUPER_ADMIN_ACCOUNT_CANT_BE_MODIFIED(422, "Le rôle d’un compte super-administrateur ne peut pas être modifié"),
     ADMIN_ACCOUNT_CANT_BE_MODIFIED_BY_AN_ADMIN_ACCOUNT(422, "Le rôle d’un compte administrateur ne peut pas être modifié"),
     ROLE_NOT_EXISTS(422, "Rôle inconnu"),
+    ORDER_NOT_EXISTS(422, "L'ordre n'existe pas"),
+    ORDER_BY_COLUMN_NAME_NOT_EXISTS(422, "L'ordre par le nom de la colonne n'existe pas"),
     LOGIN_PASSWORD_NOT_CORRECT(404, "Login ou mot de passe incorrect"),
     STRUCTURE_NAME_ALREADY_EXISTS(422, "Nom d'ouvrage déjà existant"),
     STRUCTURE_NAME_IS_EMPTY(422, "Le nom d'un ouvrage ne peut pas être vide"),

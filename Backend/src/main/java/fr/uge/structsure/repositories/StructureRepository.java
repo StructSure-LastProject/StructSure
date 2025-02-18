@@ -1,7 +1,9 @@
 package fr.uge.structsure.repositories;
 
+import fr.uge.structsure.dto.structure.AllStructureRequestDTO;
 import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
 import fr.uge.structsure.entities.Structure;
+import fr.uge.structsure.utils.OrderEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -28,5 +30,4 @@ public interface StructureRepository extends JpaRepository<Structure, Long> {
      * @return optional with the strucutre if there is a strucutre and optional empty if not
      */
     Optional<Structure> findById(long id);
-
 }

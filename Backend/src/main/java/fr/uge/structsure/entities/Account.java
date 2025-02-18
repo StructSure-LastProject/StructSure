@@ -19,7 +19,6 @@ public class Account {
     @Column(nullable = false, length = 64)
     private String lastname;
 
-    @Enumerated(EnumType.STRING)
     private Role role;
 
     private Boolean enabled;
