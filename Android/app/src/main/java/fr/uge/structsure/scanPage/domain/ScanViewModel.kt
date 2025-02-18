@@ -268,7 +268,7 @@ class ScanViewModel: ViewModel() {
                 activeScanId?.let { scanId ->
                     scanRepository.updateScanEndTime(scanId, now)
 
-                    val results = scanRepository.getAllScanResults()
+                    val results = resultDao.getAllResults()
                     val scanRequest = scanRepository.convertToScanRequest(
                         scanId = scanId,
                         launchDate = now,
@@ -279,6 +279,8 @@ class ScanViewModel: ViewModel() {
                     scanRepository.submitScanResults(scanRequest)
                         .onSuccess {
                             scanUploadState.postValue(ScanUploadState.Success)
+                            rfidBuffer.stop()
+                            sensorCache.clearCache()
                         }
                         .onFailure { error ->
                             scanUploadState.postValue(ScanUploadState.Error(error.message ?: "Unknown error"))
@@ -286,10 +288,6 @@ class ScanViewModel: ViewModel() {
                 }
             } catch (e: Exception) {
                 scanUploadState.postValue(ScanUploadState.Error(e.message ?: "Unknown error"))
-            } finally {
-                // Nettoyage
-                rfidBuffer.stop()
-                sensorCache.clearCache()
             }
         }
     }

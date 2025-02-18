@@ -1,19 +1,17 @@
 package fr.uge.structsure.controllers;
 
-
-import fr.uge.structsure.dto.ErrorDTO;
 import fr.uge.structsure.dto.scan.AndroidScanResultDTO;
-import fr.uge.structsure.exceptions.ErrorMessages;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.ScanService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api/android/scans")
+@RequestMapping("/api/scans")
 public class AndroidScanController {
     private final ScanService scanService;
 
@@ -22,15 +20,16 @@ public class AndroidScanController {
         this.scanService = Objects.requireNonNull(scanService);
     }
 
-    @GetMapping("/receive")
-    public ResponseEntity<?> receiveScanData(@RequestBody AndroidScanResultDTO scanData) {
+    /**
+     *
+     */
+    @GetMapping(value = "/{scanId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getScanDetails(@PathVariable("scanId") long scanId) {
         try {
-            var response = scanService.processScanFromAndroid(scanData);
-            return ResponseEntity.ok(response);
+            AndroidScanResultDTO scanDetails = scanService.getScanDetails(scanId);
+            return ResponseEntity.ok(scanDetails);
         } catch (TraitementException e) {
-            var error = ErrorMessages.getErrorMessage(e.getErrorIdentifier());
-            return ResponseEntity.status(error.code())
-                    .body(new ErrorDTO(error.message()));
+            return e.toResponseEntity();
         }
     }
 }
