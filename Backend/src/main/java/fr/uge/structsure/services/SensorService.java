@@ -7,6 +7,7 @@ import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
+import fr.uge.structsure.repositories.SensorRepositoryCriteriaQuery;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.StateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -29,6 +31,7 @@ public class SensorService {
     private final StructureRepository structureRepository;
     private final ResultRepository resultRepository;
     private final PlanRepository planRepository;
+    private final SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery;
 
     /**
      * Initialise the sensor service
@@ -36,13 +39,16 @@ public class SensorService {
      * @param structureRepository the structure repository
      * @param resultRepository the result repository
      * @param planRepository the plan repository
+     * @param sensorRepositoryCriteriaQuery the sensor repository using criteria query api
      */
     @Autowired
-    public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository, PlanRepository planRepository) {
+    public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository, PlanRepository planRepository,
+        SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery) {
         this.sensorRepository = sensorRepository;
         this.structureRepository = structureRepository;
         this.resultRepository = resultRepository;
         this.planRepository = planRepository;
+        this.sensorRepositoryCriteriaQuery = sensorRepositoryCriteriaQuery;
     }
 
 
@@ -53,13 +59,20 @@ public class SensorService {
      * @throws TraitementException if there is no structure with the id
      */
     public List<SensorDTO> getSensors(long structureId, AllSensorsByStructureRequestDTO request) throws TraitementException {
+        /*
         var structure = structureRepository.findById(structureId);
         if (structure.isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
         var sensors = sensorRepository.findByStructureId(structureId);
         return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
-
+        */
+        var structure = structureRepository.findById(structureId);
+        if (structure.isEmpty()) {
+            throw new TraitementException(ErrorIdentifier.STRUCTURE_ID_NOT_FOUND);
+        }
+        var sensors = sensorRepositoryCriteriaQuery.findAllSensorsByStructureId(structureId, request);
+        return sensors;
     }
 
     /**
@@ -132,20 +145,15 @@ public class SensorService {
         if (alreadyUsedSensorId) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
         }
-        Sensor sensor = null;
-        try {
-            sensor = new Sensor(request.controlChip(),
-                    request.measureChip(),
-                    request.name(),
-                    request.note() == null ? "": request.note(),
-                    new SimpleDateFormat("dd-MM-yyyy").parse(request.installationDate()),
-                    request.x(),
-                    request.y(),
-                    false,
-                    structure.get());
-        } catch (ParseException e) {
-            throw new TraitementException(ErrorIdentifier.DATE_FORMAT_ERROR);
-        }
+        Sensor sensor = new Sensor(request.controlChip(),
+                request.measureChip(),
+                request.name(),
+                request.note() == null ? "": request.note(),
+                LocalDateTime.parse(request.installationDate()),
+                request.x(),
+                request.y(),
+                false,
+                structure.get());
         var saved = sensorRepository.save(sensor);
         return new AddSensorAnswerDTO(saved.getSensorId().getControlChip(), saved.getSensorId().getMeasureChip());
     }

@@ -3,6 +3,7 @@ package fr.uge.structsure.entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
@@ -24,16 +25,9 @@ public class Sensor {
     @JoinColumn(name = "structure_id", nullable = true)
     private Structure structure;
 
-    @Temporal(TemporalType.DATE)
-    Date installationDate;
 
+    private LocalDateTime installationDate;
 
-
-     /*
-    @Column(columnDefinition = "TEXT")
-    private String installationDate;
-
-      */
 
     @Column(columnDefinition = "REAL")
     private Double x;
@@ -41,7 +35,6 @@ public class Sensor {
     @Column(columnDefinition = "REAL")
     private Double y;
 
-    @Column(columnDefinition = "INTEGER")
     private Boolean archived;
 
     @OneToMany(mappedBy="sensor")
@@ -53,7 +46,7 @@ public class Sensor {
 
     }
 
-    public Sensor(String controlChip, String measureChip, String name, String note, Date installationDate, Double x, Double y, Boolean archived, Structure structure) {
+    public Sensor(String controlChip, String measureChip, String name, String note, LocalDateTime installationDate, Double x, Double y, Boolean archived, Structure structure) {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
         Objects.requireNonNull(name);
@@ -100,11 +93,11 @@ public class Sensor {
         this.note = note;
     }
 
-    public Date getInstallationDate() {
+    public LocalDateTime getInstallationDate() {
         return installationDate;
     }
 
-    public void setInstallationDate(Date installationDate) {
+    public void setInstallationDate(LocalDateTime installationDate) {
         this.installationDate = installationDate;
     }
 
@@ -148,4 +141,3 @@ public class Sensor {
         this.results = new HashSet<>(results);
     }
 }
-    
