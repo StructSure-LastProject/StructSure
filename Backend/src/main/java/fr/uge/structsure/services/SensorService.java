@@ -59,20 +59,12 @@ public class SensorService {
      * @throws TraitementException if there is no structure with the id
      */
     public List<SensorDTO> getSensors(long structureId, AllSensorsByStructureRequestDTO request) throws TraitementException {
-        /*
+        request.checkFields();
         var structure = structureRepository.findById(structureId);
         if (structure.isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
-        var sensors = sensorRepository.findByStructureId(structureId);
-        return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
-        */
-        var structure = structureRepository.findById(structureId);
-        if (structure.isEmpty()) {
-            throw new TraitementException(ErrorIdentifier.STRUCTURE_ID_NOT_FOUND);
-        }
-        var sensors = sensorRepositoryCriteriaQuery.findAllSensorsByStructureId(structureId, request);
-        return sensors;
+        return sensorRepositoryCriteriaQuery.findAllSensorsByStructureId(structureId, request);
     }
 
     /**
