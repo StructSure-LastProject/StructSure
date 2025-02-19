@@ -50,6 +50,19 @@ public class Sensor {
 
     }
 
+    /**
+     * The constructor for the Sensor entity
+     * @param sensorId the sensor id
+     * @param name the name of the sensor
+     * @param note the note of the sensor
+     * @param structure the structure
+     * @param installationDate the installation date
+     * @param x the position x
+     * @param y the position y
+     * @param archived if its archived
+     * @param results the results
+     * @param plan the plan
+     */
     public Sensor(SensorId sensorId, String name, String note, Structure structure, LocalDateTime installationDate, Double x, Double y, Boolean archived, Set<Result> results, Plan plan) {
         this.sensorId = sensorId;
         this.name = name;
@@ -59,10 +72,22 @@ public class Sensor {
         this.x = x;
         this.y = y;
         this.archived = archived;
-        this.results = results;
+        this.results =  new HashSet<>(results);
         this.plan = plan;
     }
 
+    /**
+     * The constructor for the Sensor entity
+     * @param controlChip the control chip id
+     * @param measureChip the measure chip id
+     * @param name the name of the sensor
+     * @param note the note of the sensor
+     * @param structure the structure
+     * @param installationDate the installation date
+     * @param x the position x
+     * @param y the position y
+     * @param archived if its archived
+     */
     public Sensor(String controlChip, String measureChip, String name, String note, LocalDateTime installationDate, Double x, Double y, Boolean archived, Structure structure) {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
@@ -149,7 +174,7 @@ public class Sensor {
     }
 
     public void setResults(Set<Result> results) {
-        this.results = results;
+        this.results = new HashSet<>(results);
     }
 
     public Plan getPlan() {

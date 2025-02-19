@@ -2,6 +2,7 @@ package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.sensors.*;
 import fr.uge.structsure.entities.Sensor;
+import fr.uge.structsure.entities.State;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.PlanRepository;
@@ -91,20 +92,20 @@ public class SensorService {
      * @param sensor the sensor
      * @return StateEnum the state
      */
-    private StateEnum getSensorState(Sensor sensor) {
+    private State getSensorState(Sensor sensor) {
         var numberOfResults = resultRepository.countBySensor(sensor);
         if (numberOfResults == 0) {
-            return StateEnum.UNKNOWN;
+            return State.UNKNOWN;
         }
         var isNokPresent = resultRepository.existsResultWithNokState(sensor);
         if (isNokPresent) {
-            return StateEnum.NOK;
+            return State.NOK;
         }
         var isDefecitvePresent = resultRepository.existsResultWithDefectiveState(sensor);
         if (isDefecitvePresent) {
-            return StateEnum.DEFECTIVE;
+            return State.DEFECTIVE;
         }
-        return StateEnum.OK;
+        return State.OK;
     }
 
     /**

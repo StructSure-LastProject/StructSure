@@ -28,10 +28,10 @@ public record SensorDTO(
         String name,
         String note,
         State state,
-        boolean archived,
+        Boolean archived,
         LocalDateTime installationDate,
-        double x,
-        double y
+        Double x,
+        Double y
 ) {
 
     /**
