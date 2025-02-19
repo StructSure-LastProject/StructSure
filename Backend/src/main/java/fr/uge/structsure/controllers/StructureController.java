@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Controller for structure endpoints
@@ -68,7 +69,7 @@ public class StructureController {
      * @return ResponseEntity containing either the updated plan details or an error message
      */
     @PutMapping("/{id}/plans/{planId}")
-    public ResponseEntity<?> editPlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, @RequestPart("metadata") PlanMetadataDTO metadataDTO, @RequestPart("file") MultipartFile file) {
+    public ResponseEntity<?> editPlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, @RequestPart("metadata") PlanMetadataDTO metadataDTO, @RequestPart("file") Optional<MultipartFile> file) {
         try {
             var structure = planService.editPlan(id, planId, metadataDTO, file);
             return ResponseEntity.status(HttpStatus.OK).body(structure);

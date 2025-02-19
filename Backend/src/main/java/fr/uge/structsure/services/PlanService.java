@@ -5,8 +5,9 @@ import fr.uge.structsure.dto.plan.EditPlanResponseDTO;
 import fr.uge.structsure.dto.plan.PlanImageResponseDTO;
 import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.entities.Plan;
-import fr.uge.structsure.exceptions.TraitementException;
+import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
+import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.PlanRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Plan service class
+ */
 @Service
 public class PlanService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlanService.class);
@@ -61,11 +65,10 @@ public class PlanService {
      */
     public AddPlanResponseDTO createPlan(Long structureId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
         Objects.requireNonNull(metadata);
-        planEmptyPrecondition(structureId, metadata, file);
-        planMalformedPrecondition(metadata);
-        planConsistencyPrecondition(file);
+        addPlanAsserts(structureId, metadata, file);
         var noSection = metadata.section() == null || metadata.section().isEmpty();
         var structure = structureService.existStructure(structureId).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
+        checkState(structure);
         var directory = computeDirectory(noSection, structureId, metadata.section());
         var filePath = directory + File.separator + file.getOriginalFilename();
         if (planRepository.planFileAlreadyExists(filePath)) {
@@ -74,6 +77,20 @@ public class PlanService {
         managedFilesDirectory(directory);
         var savedPlan = handleAddPlan(directory, file, new Plan(filePath, metadata.name(), metadata.section(), structure));
         return new AddPlanResponseDTO(savedPlan.getId(), new Timestamp(System.currentTimeMillis()).toString());
+    }
+
+    /**
+     * Performs all the checks on the arguments of the function (add plan)
+     *
+     * @param structureId The ID of the structure to which the plan will be attached
+     * @param metadata The DTO containing plan details (name and section)
+     * @param file The multipart file containing the plan image
+     * @throws TraitementException if validation fails
+     */
+    private void addPlanAsserts(Long structureId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
+        planEmptyPrecondition(structureId, metadata, file);
+        planMalformedPrecondition(metadata);
+        planConsistencyPrecondition(file);
     }
 
     /**
@@ -86,29 +103,91 @@ public class PlanService {
      * @return EditPlanResponseDTO containing the edited plan's ID
      * @throws TraitementException if validation fails or if there are issues during plan editing
      */
-    public EditPlanResponseDTO editPlan(Long structureId, Long planId, PlanMetadataDTO metadata, MultipartFile multipartFile) throws TraitementException {
+    public EditPlanResponseDTO editPlan(Long structureId, Long planId, PlanMetadataDTO metadata, Optional<MultipartFile> multipartFile) throws TraitementException {
         Objects.requireNonNull(metadata);
-        planEmptyPrecondition(structureId, planId, metadata, multipartFile);
-        planMalformedPrecondition(metadata);
-        planConsistencyPrecondition(multipartFile);
+        editPlanAsserts(structureId, planId, metadata, multipartFile);
+
         var noSection = metadata.section() == null || metadata.section().isEmpty();
         var plan = planRepository.findById(planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
+        var structure = plan.getStructure();
+        checkState(plan, structure, structureId);
         var planFile = Path.of(plan.getImageUrl());
 
-        var directory = computeDirectory(noSection, structureId, metadata.section());
-        var filePath = Path.of(directory.toString(), Objects.requireNonNull(multipartFile.getOriginalFilename()));
         var name = plan.getName().equals(metadata.name()) ? plan.getName() : metadata.name();
         var section = plan.getSection().equals(metadata.section()) ? plan.getSection() : metadata.section();
+        var directory = computeDirectory(noSection, structure.getId(), metadata.section());
+        var fileName = multipartFile.map(MultipartFile::getOriginalFilename).orElse(planFile.getFileName().toString());
+        var filePath = Path.of(directory.toString(), fileName);
 
         plan.setName(name);
         plan.setSection(section);
         plan.setImageUrl(filePath.toString());
-        Optional<MultipartFile> file = multipartFile.getOriginalFilename().equals(planFile.getFileName().toString()) ? Optional.empty() : Optional.of(multipartFile);
+
         if (!noSection) {
             managedFilesDirectory(directory);
         }
+        Optional<MultipartFile> file = planFile.equals(filePath) ? Optional.empty() : multipartFile;
+
         var savedPlan = handleEditPlan(planFile, filePath, file, plan);
         return new EditPlanResponseDTO(savedPlan.getId());
+    }
+
+    /**
+     * Checks if a structure or plan is in an archived state.
+     *
+     * @param structure The structure to check
+     * @throws TraitementException if the structure is archived
+     */
+    private void checkState(Structure structure) throws TraitementException {
+        if (structure.getArchived()) {
+            throw new TraitementException(Error.PLAN_IS_ARCHIVED);
+        }
+    }
+
+    /**
+     * Checks if a structure and plan are in an archived state.
+     *
+     * @param plan The plan to check
+     * @param structure The structure to check
+     * @throws TraitementException if either the plan or structure is archived
+     */
+    private void checkState(Plan plan, Structure structure) throws TraitementException {
+        checkState(structure);
+        if (plan.getArchived()) {
+            throw new TraitementException(Error.PLAN_IS_ARCHIVED);
+        }
+    }
+
+    /**
+     * Checks the state of a plan, its structure, and verifies structure ID matching.
+     *
+     * @param plan The plan to check
+     * @param structure The structure to check
+     * @param structureId The expected structure ID
+     * @throws TraitementException if any check fails (archived state or ID mismatch)
+     */
+    private void checkState(Plan plan, Structure structure, long structureId) throws TraitementException {
+        checkState(plan, structure);
+        if (structure.getId() != structureId) {
+            throw new TraitementException(Error.PLAN_STRUCTURE_MISMATCH);
+        }
+    }
+
+    /**
+     * Performs all the checks on the arguments of the function (edit plan)
+     *
+     * @param structureId The ID of the structure containing the plan
+     * @param planId The ID of the plan to edit
+     * @param metadata The new metadata for the plan
+     * @param multipartFile The new file for the plan (optional)
+     * @throws TraitementException if validation fails
+     */
+    private void editPlanAsserts(Long structureId, Long planId, PlanMetadataDTO metadata, Optional<MultipartFile> multipartFile) throws TraitementException {
+        planEmptyPrecondition(structureId, planId, metadata);
+        planMalformedPrecondition(metadata);
+        if (multipartFile.isPresent()) {
+            planConsistencyPrecondition(multipartFile.get());
+        }
     }
 
     /**
@@ -120,7 +199,7 @@ public class PlanService {
      * @return the normalized Path object representing the directory
      */
     private Path computeDirectory(boolean noSection, Long structureId, String section) {
-        var directory = Path.of(uploadDir, "Ouvrages", String.valueOf(structureId));
+        var directory = Path.of(uploadDir, "ouvrages", String.valueOf(structureId));
         if (!noSection) {
             directory = Path.of(directory.toString(), section);
         }
@@ -195,7 +274,7 @@ public class PlanService {
      * @throws IOException if an error occurs while accessing or deleting the directory
      */
     private void deleteEmptyParentDirectory(Path path) throws IOException {
-        if (!path.getFileName().toString().equals(uploadDir)) return; // security to avoid removing root directory
+        if (path.getFileName().toString().equals(uploadDir)) return; // security to avoid removing root directory
         try (var files = Files.list(path)) {
             if (files.findAny().isEmpty()) {
                 Files.delete(path);
@@ -217,6 +296,9 @@ public class PlanService {
      */
     private Plan handleEditPlan(Path sourceFilePath, Path targetFilePath, Optional<MultipartFile> file, Plan plan) throws TraitementException {
         if (file.isPresent()) {
+            if (planRepository.planFileAlreadyExists(targetFilePath.toString())) {
+                throw new TraitementException(Error.PLAN_ALREADY_EXISTS);
+            }
             uploadFile(file.get(), sourceFilePath);
         }
         moveFile(sourceFilePath, targetFilePath);
@@ -299,10 +381,9 @@ public class PlanService {
      * @param structureId The ID of the structure to be validated
      * @param planId The ID of the plan to be validated
      * @param metadata The DTO containing plan details to be validated
-     * @param file The multipart file to be validated
      * @throws TraitementException if any required field is null or empty
      */
-    private void planEmptyPrecondition(Long structureId, Long planId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
+    private void planEmptyPrecondition(Long structureId, Long planId, PlanMetadataDTO metadata) throws TraitementException {
         Objects.requireNonNull(metadata);
         if (structureId == null) {
             throw new TraitementException(Error.PLAN_STRUCTURE_ID_IS_EMPTY);
@@ -315,9 +396,6 @@ public class PlanService {
         }
         if (metadata.section() == null) {
             throw new TraitementException(Error.PLAN_SECTION_IS_EMPTY);
-        }
-        if (file == null || file.isEmpty()) {
-            throw new TraitementException(Error.PLAN_FILE_IS_EMPTY);
         }
     }
 
@@ -337,7 +415,7 @@ public class PlanService {
         if(metadata.section() != null && metadata.section().length() > 128) {
             throw new TraitementException(Error.PLAN_SECTION_EXCEED_LIMIT);
         }
-        if(metadata.section() !=null && !metadata.section().matches("^(?:[a-zA-Z0-9]+(?:/[a-zA-Z0-9]+)*)?$")) {
+        if(metadata.section() != null && !metadata.section().matches("^(?:[a-zA-Z0-9_-]+(?:/[a-zA-Z0-9_-]+)*)?$")) {
             throw new TraitementException(Error.PLAN_SECTION_INVALID);
         }
     }

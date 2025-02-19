@@ -36,13 +36,14 @@ public enum Error {
     PLAN_ALREADY_EXISTS(422, "Plan déjà existant"),
     PLAN_SECTION_INVALID(422, "Le champ section (metadata) est invalide"),
     SERVER_ERROR(500, "Une erreur est survenue"),
-    PLAN_STRUCTURE_MISMATCH(400, "Ce plan n'appartient pas à cette structure"),
+    PLAN_STRUCTURE_MISMATCH(400, "Ce plan n'appartient pas à cet ouvrage"),
     PLAN_FILE_NOT_FOUND(404, "L'image du plan est introuvable"),
 
     PLAN_ID_IS_EMPTY(422, "Le champ planId est requis"),
     PLAN_NOT_FOUND(404, "Plan introuvable"),
     PLAN_SECTION_IS_EMPTY(422, "Le champ section (metadata) est requis"),
     PLAN_IS_ARCHIVED(409, "Le plan à été archivé"),
+    STRUCTURE_IS_ARCHIVED(409, "L'ouvrage à été archivé"),
 
     SENSOR_CHIP_TAGS_IS_EMPTY(422, "Les champs [controlChip | measureChip] sont obligatoires"),
     SENSOR_NAME_IS_EMPTY(422, "Le champ name est obligatoire"),
