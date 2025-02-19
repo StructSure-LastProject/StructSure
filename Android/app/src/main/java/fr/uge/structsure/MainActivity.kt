@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var structureViewModel: StructureViewModel
 
     private val viewModelFactory: StructureViewModelFactory by lazy {
-        StructureViewModelFactory(db)
+        StructureViewModelFactory(db, applicationContext)
     }
 
 
@@ -76,6 +76,7 @@ class MainActivity : ComponentActivity() {
         structureViewModel =
             ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
+        val planViewModel = PlanViewModel()
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(bluetoothAdapter, filter)
 
@@ -83,13 +84,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SetDynamicStatusBar()
-            val context = LocalContext.current
             val navController = rememberNavController()
-            val connexionCS108 = Cs108Connector(context)
+            val connexionCS108 = Cs108Connector(applicationContext)
             connexionCS108.onBleConnected { success ->
                 runOnUiThread {
                     if (!success) Toast.makeText(
-                        context,
+                        applicationContext,
                         "Echec d'appairage Bluetooth",
                         Toast.LENGTH_SHORT
                     ).show()
@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
             connexionCS108.onReady {
                 runOnUiThread {
                     Toast.makeText(
-                        context,
+                        applicationContext,
                         "Interrogateur inititialisé!",
                         Toast.LENGTH_SHORT
                     ).show()
@@ -121,7 +121,7 @@ class MainActivity : ComponentActivity() {
                 composable("SettingsPage") { SettingsPage(navController) }
                 composable("ScanPage?structureId={structureId}") { backStackEntry ->
                     val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                    ScanPage(context, scanViewModel, planViewModel, structureId, connexionCS108, navController)
+                    ScanPage(applicationContext, scanViewModel, planViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
                 composable(connexionPage) {
@@ -163,7 +163,7 @@ class MainActivity : ComponentActivity() {
                 permissions[Manifest.permission.BLUETOOTH_CONNECT] == true
             } else true
 
-            if (canEnableBluetooth && !isBluetoothEnabled) {
+            if (canEnableBluetooth) {
                 enableBluetoothLauncher.launch(
                     Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 )

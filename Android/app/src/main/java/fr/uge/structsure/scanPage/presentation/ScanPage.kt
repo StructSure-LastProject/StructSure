@@ -25,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
-import fr.uge.structsure.MainActivity
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.components.InputTextArea
@@ -89,7 +88,7 @@ fun ScanPage(context: Context,
     ) { scrollState ->
         if (sensorPopup != null) SensorPopUp({ sensorPopup = null }, { sensorPopup = null })
         ScanWeather(viewModel = scanViewModel, scrollState)
-        PlansView()
+        PlansView(structureId = structureId, viewModel = planViewModel)
         SensorsList(scanViewModel) { s -> sensorPopup = s }
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
