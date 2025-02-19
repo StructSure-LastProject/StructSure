@@ -168,7 +168,7 @@ class StructureRepository : ViewModel() {
      * @param planId the id of the plan
      * @return the path to the saved image file
      */
-    suspend fun downloadPlanImage(context: Context, planId: Long): String? {
+    private suspend fun downloadPlanImage(context: Context, planId: Long): String? {
         return withContext(Dispatchers.IO) {
             try {
                 val response = RetrofitInstance.structureApi.downloadPlanImage(planId)
