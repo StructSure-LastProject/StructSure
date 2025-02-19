@@ -69,7 +69,7 @@ object PreferencesManager {
         CoroutineScope(Dispatchers.IO).launch {
             val structures = db.structureDao().getAllStructures()
             structures.forEach { structure ->
-                structureRepository.deleteStructure(structure)
+                structureRepository.deleteStructure(structure, context)
             }
         }
     }

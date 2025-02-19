@@ -124,19 +124,31 @@ class StructureRepository : ViewModel() {
         structureDao.upsertStructure(structure)
     }
 
-    fun deleteStructure(structure: StructureData){
+    /**
+     * Deletes a structure and all its associated data (plans, sensors, images).
+     * This includes both database entries and locally stored files.
+     *
+     * @param structure The structure to be deleted
+     * @param context Context needed for file operations
+     */
+    fun deleteStructure(structure: StructureData, context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
-            sensorDao.deleteSensorsByStructureId(structure.id)
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            resultDao.deleteResults()
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            planDao.deletePlansByStructureId(structure.id)
-            planDao.deleteImagePlan(structure.id)
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            structureDao.deleteStructure(structure)
+            try {
+                val planIds = planDao.getPlanByStructureId(structure.id)
+
+                planIds.forEach { planId ->
+                    FileUtils.deletePlanImage(context, planId)
+                }
+
+                sensorDao.deleteSensorsByStructureId(structure.id)
+                resultDao.deleteResults()
+                planDao.deletePlansByStructureId(structure.id)
+                structureDao.deleteStructure(structure)
+
+                Log.d("StructureRepository", "Structure ${structure.id} and all associated data deleted successfully")
+            } catch (e: Exception) {
+                Log.e("StructureRepository", "Error deleting structure ${structure.id}", e)
+            }
         }
     }
 

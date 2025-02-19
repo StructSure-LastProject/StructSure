@@ -45,4 +45,20 @@ object FileUtils {
         }
         return file.absolutePath
     }
+
+    /**
+     * Deletes plan image files associated with a plan from internal storage.
+     *
+     * @param context The application context needed for file operations
+     * @param planId The ID of the plan whose image should be deleted
+     * @return true if deletion was successful, false otherwise
+     */
+    fun deletePlanImage(context: Context, planId: Long): Boolean {
+        val file = File(context.filesDir, "plans/${planId}.jpg")
+        return if (file.exists()) {
+            file.delete()
+        } else {
+            true
+        }
+    }
 }

@@ -45,7 +45,7 @@ class StructureViewModel(private val structureRepository: StructureRepository, p
 
     fun deleteStructure(structureData: StructureData){
         viewModelScope.launch {
-            structureRepository.deleteStructure(structureData)
+            structureRepository.deleteStructure(structureData, context)
         }
     }
 
