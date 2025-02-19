@@ -7,6 +7,7 @@ import fr.uge.structsure.entities.SensorId;
 import fr.uge.structsure.entities.Structure;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -95,5 +96,8 @@ public interface SensorRepository extends JpaRepository<Sensor, Long> {
         AND result.state = fr.uge.structsure.entities.State.DEFECTIVE
     """)
     boolean existsSensorWithDefectiveState(Structure structure);
+
+    @Query("SELECT s FROM Sensor s WHERE s.sensorId.controlChip = :controlChip AND s.sensorId.measureChip = :measureChip")
+    Optional<Sensor> findByChips(@Param("controlChip") String controlChip, @Param("measureChip") String measureChip);
 
 }

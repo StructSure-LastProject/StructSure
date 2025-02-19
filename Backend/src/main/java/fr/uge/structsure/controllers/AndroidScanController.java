@@ -14,7 +14,6 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/scans")
 public class AndroidScanController {
-
     private final ScanService scanService;
 
     @Autowired

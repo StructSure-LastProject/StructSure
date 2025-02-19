@@ -1,6 +1,5 @@
 package fr.uge.structsure.services;
 
-
 import fr.uge.structsure.dto.scan.AndroidScanResultDTO;
 import fr.uge.structsure.dto.scan.AndroidSensorResultDTO;
 import fr.uge.structsure.entities.*;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,17 +22,23 @@ public class ScanService {
 
     private final ScanRepository scanRepository;
     private final ResultRepository resultRepository;
+    private final SensorRepository sensorRepository;
 
     @Autowired
-    public ScanService(ScanRepository scanRepository, ResultRepository resultRepository) {
+    public ScanService(
+            ScanRepository scanRepository,
+            ResultRepository resultRepository,
+            SensorRepository sensorRepository) {
         this.scanRepository = Objects.requireNonNull(scanRepository);
         this.resultRepository = Objects.requireNonNull(resultRepository);
+        this.sensorRepository = Objects.requireNonNull(sensorRepository);
     }
 
     @Transactional(readOnly = true)
     public AndroidScanResultDTO getScanDetails(long scanId) throws TraitementException {
-        var scan = scanRepository.findById(scanId).orElseThrow(() -> new TraitementException(Error.SCAN_NOT_FOUND));
+        logger.debug("Fetching scan details for ID: {}", scanId);
 
+        Scan scan = findScanById(scanId);
         List<AndroidSensorResultDTO> sensorResults = convertResultsToDto(scan);
 
         return new AndroidScanResultDTO(
@@ -45,6 +49,44 @@ public class ScanService {
         );
     }
 
+    @Transactional
+    public void saveScanResults(AndroidScanResultDTO scanData) throws TraitementException {
+        logger.debug("Saving scan results for scan ID: {}", scanData.scanId());
+
+        Objects.requireNonNull(scanData, "Scan data cannot be null");
+        Scan scan = findScanById(scanData.scanId());
+
+        try {
+            for (AndroidSensorResultDTO resultData : scanData.results()) {
+                saveResult(scan, resultData);
+            }
+            logger.info("Successfully saved results for scan ID: {}", scanData.scanId());
+        } catch (Exception e) {
+            logger.error("Error saving scan results: {}", e.getMessage(), e);
+            throw new TraitementException(Error.SERVER_ERROR);
+        }
+    }
+
+    private void saveResult(Scan scan, AndroidSensorResultDTO resultData) throws TraitementException {
+        Sensor sensor = findSensor(resultData.control_chip(), resultData.measure_chip());
+
+        Result result = new Result(
+                State.valueOf(resultData.state()),
+                sensor,
+                scan
+        );
+
+        resultRepository.save(result);
+    }
+
+    private Scan findScanById(long scanId) throws TraitementException {
+        return scanRepository.findById(scanId)
+                .orElseThrow(() -> {
+                    logger.error("Scan not found with ID: {}", scanId);
+                    return new TraitementException(Error.SCAN_NOT_FOUND);
+                });
+    }
+
     private List<AndroidSensorResultDTO> convertResultsToDto(Scan scan) throws TraitementException {
         try {
             return resultRepository.findByScan(scan)
@@ -52,22 +94,14 @@ public class ScanService {
                     .map(this::convertResultToDto)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error("Error converting results to DTOs for scan {}: {}", scan.getId(), e.getMessage());
+            logger.error("Error converting results to DTOs: {}", e.getMessage(), e);
             throw new TraitementException(Error.SERVER_ERROR);
         }
     }
 
     private AndroidSensorResultDTO convertResultToDto(Result result) {
-        if (result.getSensor() == null) {
-            logger.error("Sensor is null for result ID: {}", result.getId());
-            throw new IllegalStateException("Sensor cannot be null");
-        }
-
+        validateResult(result);
         Sensor sensor = result.getSensor();
-        if (sensor.getSensorId() == null) {
-            logger.error("SensorId is null for sensor: {}", sensor.getName());
-            throw new IllegalStateException("SensorId cannot be null");
-        }
 
         return new AndroidSensorResultDTO(
                 sensor.getSensorId().toString(),
@@ -80,23 +114,24 @@ public class ScanService {
         );
     }
 
-    @Transactional
-    public void saveScanResults(AndroidScanResultDTO scanData) throws TraitementException {
-        Scan scan = scanRepository.findById(scanData.scanId())
-                .orElseThrow(() -> new TraitementException(Error.SCAN_NOT_FOUND));
+    private void validateResult(Result result) {
+        if (result.getSensor() == null) {
+            logger.error("Sensor is null for result ID: {}", result.getId());
+            throw new IllegalStateException("Sensor cannot be null");
+        }
 
-        for (var resultData : scanData.results()) {
-            Result result = new Result(
-                    State.valueOf(resultData.state()),
-                    findSensor(resultData.control_chip(), resultData.measure_chip()),
-                    scan
-            );
-            resultRepository.save(result);
+        Sensor sensor = result.getSensor();
+        if (sensor.getSensorId() == null) {
+            logger.error("SensorId is null for sensor: {}", sensor.getName());
+            throw new IllegalStateException("SensorId cannot be null");
         }
     }
 
     private Sensor findSensor(String controlChip, String measureChip) throws TraitementException {
-        Optional<Sensor> sensor = resultRepository.findSensorByControlChipAndMeasureChip(controlChip, measureChip);
-        return sensor.orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
+        return sensorRepository.findByChips(controlChip, measureChip)
+            .orElseThrow(() -> {
+                logger.error("Sensor not found with chips: {} and {}", controlChip, measureChip);
+                return new TraitementException(Error.SENSOR_CHIP_TAGS_IS_EMPTY);
+            });
     }
 }
