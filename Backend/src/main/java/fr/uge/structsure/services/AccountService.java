@@ -160,7 +160,7 @@ public class AccountService {
         return (firstname != null && UserAccountRequestValidation.containsNonLetters(firstname)) &&
                 (lastname != null && UserAccountRequestValidation.containsNonLetters(lastname)) &&
                 (login != null && UserAccountRequestValidation.loginValidator(login)) &&
-                (role != null && Arrays.stream(Role.values()).anyMatch(r -> r.value.equals(role)));
+                role != null;
     }
 
 

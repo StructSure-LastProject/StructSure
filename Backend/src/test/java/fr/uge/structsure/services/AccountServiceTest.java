@@ -48,9 +48,9 @@ class AccountServiceTest {
 
     @BeforeEach
     void setUp() {
-        account = new Account("testuser", "encodedPassword", "John", "Doe", Role.OPERATEUR, true);
-        registerRequestDTO = new RegisterRequestDTO("testuser", "password", "John", "Doe", "USER");
-        loginRequestDTO = new LoginRequestDTO("testuser", "password");
+        account = new Account("testuser", "encodedPassword", "John", "Doe", Role.ADMIN, true);
+        registerRequestDTO = new RegisterRequestDTO("testuser", "passwordlongenough", "John", "Doe", "Admin");
+        loginRequestDTO = new LoginRequestDTO("testuser", "passwordlongenough");
     }
 
     @Test
@@ -65,7 +65,7 @@ class AccountServiceTest {
 
     @Test
     void testRegisterInvalidRole() {
-        RegisterRequestDTO invalidRoleRequest = new RegisterRequestDTO("testuser", "password", "John", "Doe", "INVALID_ROLE");
+        RegisterRequestDTO invalidRoleRequest = new RegisterRequestDTO("testuser", "passwordlongenough", "John", "Doe", "INVALID_ROLE");
 
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(invalidRoleRequest));
 
