@@ -1,8 +1,8 @@
 package fr.uge.structsure.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
-import java.sql.Time;
 import java.util.Objects;
 
 @Entity
@@ -11,6 +11,7 @@ public class Scan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @JsonBackReference
     @ManyToOne
     private Structure structure;
 
