@@ -61,6 +61,8 @@ fun PlansView(structureId: Long) {
     val points = remember { mutableStateListOf<Point>() }
     val defaultImage = remember(1) { BitmapFactory.decodeResource(context.resources, R.drawable.plan_not_found) }
 
+    val plans = remember(structureId, selected) { planTree(MainActivity.db.planDao().getPlansByStructureId(structureId), selected) }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
         horizontalAlignment = Alignment.Start,
@@ -86,7 +88,6 @@ fun PlansView(structureId: Long) {
                 points = points
             )
 
-            // TODO select one plan by default
             // TODO move loading to viewmodel to run in background
             Spacer(
                 Modifier
@@ -94,7 +95,6 @@ fun PlansView(structureId: Long) {
                     .height(1.dp)
                     .background(LightGray) )
 
-            val plans = remember(structureId) { planTree(MainActivity.db.planDao().getPlansByStructureId(structureId)) }
             Section(plans as TreeSection, selected, true)
         }
     }
@@ -163,15 +163,18 @@ private fun Section(treeNode: TreeSection, selected: MutableState<TreePlan?>, hi
  * Creates a tree of plans and sections from a list of raw plans from
  * the database.
  * @param plans the raw plans from the database
+ * @param selected to select the first plan by default
  * @return the tree containing all item well organized
  */
-private fun planTree(plans: List<PlanDB>): TreeNode {
+private fun planTree(plans: List<PlanDB>, selected: MutableState<TreePlan?>): TreeNode {
     val root = TreeSection("")
     plans.forEach { plan ->
         val tokens = if (plan.section.isEmpty()) listOf() else plan.section.split("/")
         var node: TreeNode = root
         tokens.forEach { token -> node = node.children.computeIfAbsent(token) { TreeSection(token) } }
-        node.children["${plan.id}"] = TreePlan(plan)
+        val child = TreePlan(plan)
+        node.children["${plan.id}"] = child
+        if (selected.value == null) selected.value = child
     }
     return root
 }
