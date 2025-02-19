@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -57,7 +58,7 @@ import fr.uge.structsure.utils.FileUtils
  */
 @Composable
 fun PlansView(structureId: Long) {
-    val selected = remember { mutableStateOf("Section OA/Plan 01") }
+    val selected = remember { mutableStateOf<TreePlan?>(null) }
     val points = remember { mutableStateListOf<Point>() }
 
     val context = LocalContext.current
@@ -84,17 +85,21 @@ fun PlansView(structureId: Long) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            Plan(
-                image = BitmapFactory.decodeFile(FileUtils.getLocalPlanImage(context, 3)),
-                points = points
-            )
-            // } ?: Text(
-            //     text = "Loading...",
-            //     modifier = Modifier.align(Alignment.Center),
-            //     style = Typography.titleMedium
-            // )
+            val plan = selected.value?.plan?.let { FileUtils.getLocalPlanImage(context, it.id) }
+            if (plan == null) {
+                Text(
+                    text = "Loading...",
+                    modifier = Modifier.fillMaxSize(),
+                    textAlign = TextAlign.Center,
+                    style = Typography.titleMedium
+                )
+            } else {
+                Plan(
+                    image = BitmapFactory.decodeFile(plan),
+                    points = points
+                )
+            }
 
-            // TODO make selected plan visible
             // TODO select one plan by default
             // TODO Handle no plan
             Spacer(
@@ -117,7 +122,7 @@ fun PlansView(structureId: Long) {
  * @param hideSelf true to display content only, without the section name
  */
 @Composable
-private fun Section(treeNode: TreeSection, selected: MutableState<String>, hideSelf: Boolean = false) {
+private fun Section(treeNode: TreeSection, selected: MutableState<TreePlan?>, hideSelf: Boolean = false) {
     var collapsed by remember { mutableStateOf(true) }
     if (!hideSelf) {
         Row(
@@ -156,9 +161,8 @@ private fun Section(treeNode: TreeSection, selected: MutableState<String>, hideS
             treeNode.children.values.forEach {
                 if (it.isPlan) {
                     val plan = (it as TreePlan).plan
-                    val planFqn = plan.section + "/" + plan.name
-                    PlanItem(plan.name, selected.value == planFqn ) {
-                        selected.value = planFqn
+                    PlanItem(plan.name, selected.value == it ) {
+                        selected.value = it
                         // TODO display image
                     }
                 } else {
