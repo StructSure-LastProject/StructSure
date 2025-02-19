@@ -1,8 +1,10 @@
 import { createSignal, onMount, onCleanup, Show, createEffect } from "solid-js";
-import plan from '/src/assets/plan.png';
-import StructureDetailSection from './StructureDetailSection';
-import ModalAddPlan from '../Plan/ModalAddPlan';
 import { Check, ChevronDown, Plus, Trash2 } from 'lucide-solid';
+import planImg from '/src/assets/plan.png';
+import ModalEditPlan from '../Plan/ModalEditPlan';
+import ModalAddPlan from '../Plan/ModalAddPlan';
+import DropdownsSection from "../Plan/DropdownsSection.jsx";
+import StructureDetailSection from './StructureDetailSection';
 
 /**
  * Shows the plans part
@@ -20,10 +22,6 @@ function StructureDetailPlans(props) {
     const [baseOffsetY, setBaseOffsetY] = createSignal(0);
     const [imgRatio, setImgRatio] = createSignal(0);
     const [canvasRatio, setCanvasRatio] = createSignal(0);
-    const [plans, setPlans] = createSignal([
-        { id: 1, createdAt: "2025-02-12 17:39:11.736" }
-    ]);
-    const [isOpen, setIsOpen] = createSignal(false);
     const [drawWidth, setDrawWidth] = createSignal(0);
     const [drawHeight, setDrawHeight] = createSignal(0);
     const [error, setError] = createSignal("");
@@ -35,45 +33,68 @@ function StructureDetailPlans(props) {
     const [posY, setPosY] = createSignal(-1);
     const [clickExistingPoint, setClickExistingPoint] = createSignal(null);
 
-
-    /**
-     * Add result of adding plan and log the list in the console
-     * @todo remove and make the plan details session dynamic
-     * @param result Result sended by ModalAddPlan
-     */
-    const handleSavePlan = (result) => {
-        const id = result.id;
-        const createdAt = result.createdAt || Date.now();
-
-        const newPlan = {
-            id: id,
-            createdAt: createdAt
-        };
-
-        setPlans(prev => [...prev, newPlan]);
-        closeModal();
-    };
-
-    /**
-     * Opens the modal by setting the isOpen state to true.
-     * This will trigger the modal to become visible.
-     * @returns {void}
-     */
-    const openModal = () => setIsOpen(true);
-    /**
-     * Closes the modal by setting the isOpen state to false.
-     * This will hide the modal from view.
-     * @returns {void}
-     */
-    const closeModal = () => setIsOpen(false);
     const [cClickX, setCClickX] = createSignal(0);
     const [cClickY, setCClickY] = createSignal(0);
+
+    // Gestion des plans
+    const [plans, setPlans] = createSignal([]);
+    const [selectedPlanId, setSelectedPlanId] = createSignal(null);
+    const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
+    const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
+    const [selectedPlan, setSelectedPlan] = createSignal(null);
 
     const img = new Image();
     let canvasRef;
     let isMouseDown = false;
     let startX = 0;
     let startY = 0;
+
+    // Gestion des modaux
+    const openAddModal = () => setIsAddModalOpen(true);
+    const closeAddModal = () => setIsAddModalOpen(false);
+    const closeEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedPlan(null);
+    };
+
+    const getImageUrl = (planId) => {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+        return `${API_BASE_URL}/api/structures/plans/${planId}/image`;
+    };
+
+    const handleEdit = (planId) => {
+        const plan = plans().find(p => p.id === planId);
+        if (plan) {
+            setSelectedPlan({
+                ...plan,
+                imageUrl: getImageUrl(plan.id)
+            });
+            setIsEditModalOpen(true);
+        }
+    };
+
+    const handleEditSave = (updatedPlan) => {
+        setPlans(prev => prev.map(plan =>
+          plan.id === updatedPlan.id
+            ? { ...plan, ...updatedPlan }
+            : plan
+        ));
+        closeEditModal();
+    };
+
+    // Gestion de l'ajout d'un nouveau plan
+    const handleAddSave = (result) => {
+        const newPlan = {
+            id: result.id,
+            name: result.name || "",
+            section: result.section || "",
+            type: "plan", // Type par défaut pour les nouveaux plans
+            createdAt: result.createdAt || Date.now()
+        };
+
+        setPlans(prev => [...prev, newPlan]);
+        closeAddModal();
+    };
 
     /**
      * Returns the start image position x
@@ -100,7 +121,7 @@ function StructureDetailPlans(props) {
     };
 
     /**
-     * Returns the zoom with ratio from zoom number 
+     * Returns the zoom with ratio from zoom number
      * @param {Number} zoom zoom number
      * @returns the zoom with ratio
      */
@@ -203,7 +224,6 @@ function StructureDetailPlans(props) {
             ctx.closePath();
         });
     };
-    
 
     /**
      * Handles the resize event
@@ -278,7 +298,7 @@ function StructureDetailPlans(props) {
      * Checks is the position is in the image original dimensions
      * @param {number} x the position x in the original dimensions of the image
      * @param {number} y the position y in the original dimensions of the image
-     * @returns 
+     * @returns
      */
     const isPositionOutOfImage = (x, y) => {
         return !(x < 0 || x > img.width || y < 0 || y > img.height);
@@ -362,10 +382,10 @@ function StructureDetailPlans(props) {
             const distance = Math.sqrt(
                 Math.pow(x - sensor.x, 2) + Math.pow(y - sensor.y, 2)
             );
-    
+
             return distance <= SENSOR_POINT_SIZE;
         }) || null;
-    };    
+    };
 
     /**
      * Loads and draws the image from it's link
@@ -378,7 +398,7 @@ function StructureDetailPlans(props) {
 
     /**
      * Handles the mouse wheel event
-     * @param {MouseEvent} event the mouse event 
+     * @param {MouseEvent} event the mouse event
      */
     const handleWheel = (event) => {
         event.preventDefault();
@@ -432,7 +452,7 @@ function StructureDetailPlans(props) {
         event.preventDefault();
         if (isMouseDown) {
             const dx = event.clientX - startX;
-            const dy = event.clientY - startY; 
+            const dy = event.clientY - startY;
             const imgStartX = getImgStartX(baseOffsetX(), dx, zoomFactor());
             const imgStartY = getImgStartY(baseOffsetY(), dy, zoomFactor());
             const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
@@ -488,83 +508,120 @@ function StructureDetailPlans(props) {
      * Loads the details (images and draw it)
      */
     const loadDetails = () => {
-        loadAndDrawImage(plan);
+        loadAndDrawImage(planImg);
     };
-    
+
+    // Ajouter cet effet juste avant le return
+    createEffect(() => {
+        console.log("Plans reçus:", props.plans);
+        console.log("Structure des plans:", JSON.stringify(props.plans, null, 2));
+        if (props?.plans) {
+            // Initialise les plans avec ceux reçus des props
+            setPlans(props.plans.map(plan => ({
+                ...plan,
+                type: plan.type || "plan" // Assure qu'il y a toujours un type
+            })));
+            console.log("plan saved:", plans())
+        }
+    });
+
     return (
-        <>
-            <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
-                <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
-                    <div class="flex items-center justify-between">
-                        <p class="prose font-poppins title">Plans</p>
-                        <button 
-                        title="Ajouter un plan" 
-                        onClick={openModal}
-                        class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
-                        >
-                            <Plus color="black"/>
-                        </button>
-                    </div>
-                    <Show when={isOpen()}>
-                        <ModalAddPlan isOpen={isOpen()} onSave={handleSavePlan} onClose={closeModal} structureId={1} />
-                    </Show>
-                    <StructureDetailSection />
+      <>
+        <div class="flex flex-col lg:flex-row rounded-[20px] max-h-[436px] bg-E9E9EB">
+            <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
+                <div class="flex items-center justify-between">
+                    <p class="prose font-poppins title">Plans</p>
+                    <button
+                      title="Ajouter un plan"
+                      onClick={openAddModal}
+                      class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+                    >
+                        <Plus color="black"/>
+                    </button>
                 </div>
-                <div class="lg:w-[75%] rounded-[20px] bg-white">
-                    <div class="w-full m-[20px] relative">
-                        <canvas
-                            ref={canvasRef}
-                            class="w-full"
-                        ></canvas>
-                        <Show when={isPopupVisible()}>
-                            <Show when={!clickExistingPoint()}>
-                                <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
-                                    style={{
-                                        top: `${popupY()-10}px`,
-                                        left: `${popupX()-10}px`,
-                                    }}>
-                                </div>
-                            </Show>
-                            <div 
-                                class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
-                                style={{
-                                    top: `${popupY()}px`,
-                                    left: `${popupX()}px`,
-                                }}
-                            >
-                                <div class="w-full flex justify-between items-center">
-                                    <h1 class="title poppins text-[25px] font-semibold">Ouvrages</h1>
-                                    <div class="flex gap-x-[10px]">
-                                        <button class="bg-E9E9EB rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                            <Check color="black"/>
-                                        </button>
-                                        <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                            <Trash2 color="red"/>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-y-[5px]">
-                                    <p class="HeadLineMedium poppins font-normal">Capteur</p>
-                                    <div class="bg-E9E9EB px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
-                                        <h1 class="font-poppins poppins text-[16px] font-semibold">Capteur P</h1>
-                                        <button class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center">
-                                            <ChevronDown color="black" />
-                                        </button>
-                                    </div>
-                                    <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
-                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur PA</p>
-                                        <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
-                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8S</p>
-                                        <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
-                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8N</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </Show>
-                    </div>
+                <div class="flex flex-col gap-y-[5px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    <DropdownsSection
+                      data={plans()}
+                      selectedPlanId={selectedPlanId()}
+                      onEdit={handleEdit}
+                      onPlanEdit={handleEditSave}
+                      structureId={props.structureId}
+                    />
                 </div>
+                <Show when={isAddModalOpen()}>
+                    <ModalAddPlan
+                      isOpen={isAddModalOpen()}
+                      onSave={handleAddSave}
+                      onClose={closeAddModal}
+                      structureId={props.structureId}
+                    />
+                </Show>
+
+                <Show when={isEditModalOpen() && selectedPlan()}>
+                    <ModalEditPlan
+                      isOpen={isEditModalOpen()}
+                      onSave={handleEditSave}
+                      onClose={closeEditModal}
+                      structureId={props.structureId}
+                      plan={selectedPlan()}
+                    />
+                </Show>
             </div>
-        </>
+          <div class="lg:w-[75%] rounded-[20px] bg-white">
+            <div class="w-full m-[20px] relative">
+              <canvas
+                ref={canvasRef}
+                class="w-full"
+              ></canvas>
+              <Show when={isPopupVisible()}>
+                <Show when={!clickExistingPoint()}>
+                  <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
+                       style={{
+                         top: `${popupY()-10}px`,
+                         left: `${popupX()-10}px`,
+                       }}>
+                  </div>
+                </Show>
+                <div
+                  class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
+                  style={{
+                    top: `${popupY()}px`,
+                    left: `${popupX()}px`,
+                  }}
+                >
+                  <div class="w-full flex justify-between items-center">
+                    <h1 class="title poppins text-[25px] font-semibold">Ouvrages</h1>
+                    <div class="flex gap-x-[10px]">
+                      <button class="bg-E9E9EB rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                        <Check color="black"/>
+                      </button>
+                      <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                        <Trash2 color="red"/>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-y-[5px]">
+                    <p class="HeadLineMedium poppins font-normal">Capteur</p>
+                    <div class="bg-E9E9EB px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
+                      <h1 class="font-poppins poppins text-[16px] font-semibold">Capteur P</h1>
+                      <button class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center">
+                        <ChevronDown color="black" />
+                      </button>
+                    </div>
+                    <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
+                      <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur PA</p>
+                      <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
+                      <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8S</p>
+                      <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
+                      <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8N</p>
+                    </div>
+                  </div>
+                </div>
+              </Show>
+            </div>
+          </div>
+        </div>
+      </>
     );
 }
 
