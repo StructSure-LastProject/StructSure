@@ -1,5 +1,6 @@
 import { ArrowDownNarrowWide, Filter, Plus, Trash2 } from 'lucide-solid';
 import { createEffect, createSignal } from 'solid-js';
+import SensorPanel from '../SensorPanel/SensorPanel';
 
 /**
  * Show the sensors part of the structure detail page
@@ -7,6 +8,7 @@ import { createEffect, createSignal } from 'solid-js';
  */
 function StructureDetailCapteurs({sensors}) {
     const [error, setError] = createSignal("");
+    const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
 
     /**
      * Returns the sensor color (div) corresponding for its state
@@ -36,6 +38,17 @@ function StructureDetailCapteurs({sensors}) {
     };
 
 
+    const openSensorPanelHandler = (sensor) => {
+        setOpenSensorPanel(true);
+        document.body.style.overflow = 'hidden';
+    }
+
+    const closeSensorPanelHandler = () => {
+        setOpenSensorPanel(false);
+        document.body.style.overflow = "auto";
+    }
+
+
     return (
         <div class="w-full flex flex-col gap-y-[15px]">
             <div class="flex justify-between">
@@ -55,16 +68,22 @@ function StructureDetailCapteurs({sensors}) {
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <For each={sensors()}>
                     {(sensor) => (
-                        <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
+                        <button onClick={() => openSensorPanelHandler(sensor)} class="cursor-pointer flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
                             {getSensorStatusColor(sensor)}
                             <p class="prose font-poppins poppins text-base font-semibold w-[138px]">{sensor.name}</p>
                             <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                                 <Trash2 size={20} />
                             </div>
-                        </div>
+                        </button>
                     )}
                 </For>
             </div>
+
+            {
+                openSensorPanel() && (
+                    <SensorPanel closeSensorPanel={closeSensorPanelHandler} />
+                )
+            }
         </div>
     );
 }
