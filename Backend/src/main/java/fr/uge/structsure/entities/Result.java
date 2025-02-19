@@ -1,5 +1,6 @@
 package fr.uge.structsure.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -19,6 +20,7 @@ public class Result {
 
     private State state;
 
+    @JsonBackReference
     @ManyToOne
     private Scan scan;
 
