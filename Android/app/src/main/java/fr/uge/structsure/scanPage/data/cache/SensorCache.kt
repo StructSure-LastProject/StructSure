@@ -1,6 +1,6 @@
 package fr.uge.structsure.scanPage.data.cache
 
-import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.homePage.data.SensorDB
 
 /**
  * Cache for storing sensor data in memory.

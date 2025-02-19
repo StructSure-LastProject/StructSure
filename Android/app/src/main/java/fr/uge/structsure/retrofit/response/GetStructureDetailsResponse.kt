@@ -1,8 +1,8 @@
 package fr.uge.structsure.retrofit.response
 
 import com.google.gson.annotations.SerializedName
-import fr.uge.structsure.structuresPage.data.Plan
-import fr.uge.structsure.structuresPage.data.Sensor
+import fr.uge.structsure.homePage.data.Plan
+import fr.uge.structsure.homePage.data.Sensor
 
 data class GetStructureDetailsResponse(
     @SerializedName("id") val id: Long,

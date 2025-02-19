@@ -1,8 +1,11 @@
 package fr.uge.structsure.scanPage.data.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import fr.uge.structsure.homePage.data.SensorDB
 import fr.uge.structsure.scanPage.data.ScanEntity
-import fr.uge.structsure.structuresPage.data.SensorDB
 
 /**
  * DAO for the ScanEntity class.

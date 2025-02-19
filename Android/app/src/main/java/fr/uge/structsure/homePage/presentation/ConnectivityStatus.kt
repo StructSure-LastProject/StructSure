@@ -1,4 +1,4 @@
-package fr.uge.structsure.structuresPage.presentation
+package fr.uge.structsure.homePage.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -10,12 +10,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import fr.uge.structsure.R
-import fr.uge.structsure.structuresPage.domain.ConnectivityViewModel
-import fr.uge.structsure.structuresPage.domain.ConnectivityViewModelFactory
+import fr.uge.structsure.homePage.domain.ConnectivityViewModel
+import fr.uge.structsure.homePage.domain.ConnectivityViewModelFactory
 import fr.uge.structsure.ui.theme.Typography
 
 @Composable

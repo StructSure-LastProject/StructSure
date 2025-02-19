@@ -1,4 +1,4 @@
-package fr.uge.structsure.structuresPage.presentation.components
+package fr.uge.structsure.homePage.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

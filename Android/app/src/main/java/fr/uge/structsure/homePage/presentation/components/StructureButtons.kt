@@ -1,4 +1,4 @@
-package fr.uge.structsure.structuresPage.presentation.components
+package fr.uge.structsure.homePage.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -14,8 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
-import fr.uge.structsure.structuresPage.data.StructureData
-import fr.uge.structsure.structuresPage.domain.StructureViewModel
+import fr.uge.structsure.homePage.data.StructureData
+import fr.uge.structsure.homePage.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red

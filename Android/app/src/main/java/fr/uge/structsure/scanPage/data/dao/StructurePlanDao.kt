@@ -1,8 +1,8 @@
 package fr.uge.structsure.scanPage.data.dao
 
 import androidx.room.*
+import fr.uge.structsure.homePage.data.PlanDB
 import fr.uge.structsure.scanPage.data.StructureEntity
-import fr.uge.structsure.structuresPage.data.PlanDB
 
 /**
  * DAO for the StructureEntity class.

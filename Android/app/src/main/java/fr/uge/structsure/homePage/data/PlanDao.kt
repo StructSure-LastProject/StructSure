@@ -1,7 +1,6 @@
-package fr.uge.structsure.structuresPage.data
+package fr.uge.structsure.homePage.data
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
 

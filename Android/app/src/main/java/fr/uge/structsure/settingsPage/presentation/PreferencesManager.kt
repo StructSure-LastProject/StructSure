@@ -3,7 +3,7 @@ package fr.uge.structsure.settingsPage.presentation
 import android.content.Context
 import android.content.SharedPreferences
 import fr.uge.structsure.database.AppDatabase
-import fr.uge.structsure.structuresPage.data.StructureRepository
+import fr.uge.structsure.homePage.data.StructureRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

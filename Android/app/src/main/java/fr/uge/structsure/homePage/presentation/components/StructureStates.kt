@@ -1,4 +1,4 @@
-package fr.uge.structsure.structuresPage.presentation.components
+package fr.uge.structsure.homePage.presentation.components
 
 enum class StructureStates(val message: String) {
     AVAILABLE("Disponible hors-connexion"),
