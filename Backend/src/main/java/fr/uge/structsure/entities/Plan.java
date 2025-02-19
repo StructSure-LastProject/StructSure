@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -29,14 +30,30 @@ public class Plan {
     @OneToMany(mappedBy="plan")
     private Set<Sensor> sensors;
 
+    /**
+     * The constructor for the plan entity
+     */
     public Plan() {}
 
+    /**
+     * The constructor for the plan entity
+     * @param name the name of the plan
+     * @param imageUrl the image url
+     * @param structure the structure
+     */
     public Plan(String imageUrl, String name, Structure structure) {
         this.imageUrl = imageUrl;
         this.name = name;
         this.structure = structure;
     }
 
+    /**
+     * The constructor for the plan entity
+     * @param name the name of the plan
+     * @param imageUrl the image url
+     * @param section the section
+     * @param structure the structure
+     */
     public Plan(String imageUrl, String name, String section, Structure structure) {
         this.imageUrl = imageUrl;
         this.name = name;
@@ -44,6 +61,16 @@ public class Plan {
         this.section = section;
     }
 
+    /**
+     * The constructor for the plan entity
+     * @param id the id of the plan
+     * @param name the name of the plan
+     * @param archived if its archived
+     * @param imageUrl the image url
+     * @param section the section
+     * @param structure the structure
+     * @param sensors the sensors list of this plan
+     */
     public Plan(long id, String name, boolean archived, String imageUrl, String section, Structure structure, Set<Sensor> sensors) {
         this.id = id;
         this.name = name;
@@ -51,7 +78,7 @@ public class Plan {
         this.imageUrl = imageUrl;
         this.section = section;
         this.structure = structure;
-        this.sensors = sensors;
+        this.sensors = new HashSet<>(sensors);
     }
 
     public long getId() {
@@ -70,6 +97,10 @@ public class Plan {
         this.name = name;
     }
 
+    /**
+     * Checks if the plan is archived
+     * @return true if paln archived and false if not
+     */
     public boolean isArchived() {
         return archived;
     }
@@ -107,10 +138,7 @@ public class Plan {
     }
 
     public void setSensors(Set<Sensor> sensors) {
-        this.sensors = sensors;
+        this.sensors = new HashSet<>(sensors);
     }
 
-    public Structure getStructure() {
-        return structure;
-    }
 }

@@ -19,12 +19,6 @@ public class Structure {
     private String note;
     private Boolean archived;
 
-    @OneToMany(mappedBy="structure")
-    private Set<Sensor> sensors;
-
-    @OneToMany(mappedBy="structure")
-    private Set<Plan> plans;
-
     @JsonManagedReference
     @OneToMany(mappedBy="structure")
     private Set<Sensor> sensors;
