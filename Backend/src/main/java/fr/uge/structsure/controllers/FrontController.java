@@ -8,13 +8,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
-import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -26,6 +25,24 @@ public class FrontController {
 
     /** Load the index.html content in memory to reduce reading time */
     private static final String HTML = load();
+
+    /** Correspondance table to find MIME type from a file extension */
+    private static final Map<String, MediaType> MIME;
+    static {
+        var map = new HashMap<String, MediaType>();
+        map.put("png", MediaType.IMAGE_PNG);
+        map.put("jpg", MediaType.IMAGE_JPEG);
+        map.put("jpeg", MediaType.IMAGE_JPEG);
+        map.put("icon", MediaType.valueOf("image/x-icon"));
+        map.put("ico", MediaType.valueOf("image/x-icon"));
+        map.put("js", MediaType.valueOf("application/javascript"));
+        map.put("css", MediaType.valueOf("text/css"));
+        map.put("svg", MediaType.valueOf("image/svg+xml"));
+        map.put("woff", MediaType.valueOf("font/woff"));
+        map.put("woff2", MediaType.valueOf("font/woff2"));
+        MIME = map;
+    }
+
 
     /**
      * Mapper for all endpoints (except /api*) that serves the frontend
@@ -54,18 +71,39 @@ public class FrontController {
         return response;
     }
 
+    /**
+     * Tries to load and returns the bytes from the static file at the
+     * given location. If not found, will return an empty response.
+     * The path must be checked before calling the method to avoid
+     * patterns such as '../', note that Spring already handle this
+     * case with malicious URL detection.
+     * @param path the path of the file to load
+     * @return the response with the file data or empty if not found
+     */
     private static Optional<ResponseEntity<InputStreamResource>> tryLoad(String path) {
         ClassPathResource resource = new ClassPathResource("static" + path);
         try {
             var inputStream = new InputStreamResource(resource.getInputStream());
             return Optional.of(
                 ResponseEntity.ok()
-                    .contentType(MediaType.valueOf(Files.probeContentType(Path.of(path))))
+                    .contentType(getMimeType(path))
                     .body(inputStream)
             );
         } catch (IOException e) {
             return Optional.empty();
         }
+    }
+
+    /**
+     * Tries to detect the MIME type corresponding to the extension of
+     * the given path.
+     * @param path the path to detect the MIME type for
+     * @return the MIME type or 'ALL' if not found
+     */
+    private static MediaType getMimeType(String path) {
+        var point = path.lastIndexOf(".");
+        var ext = point == -1 ? "" : path.substring(point + 1);
+        return MIME.getOrDefault(ext, MediaType.ALL);
     }
 
     /**
