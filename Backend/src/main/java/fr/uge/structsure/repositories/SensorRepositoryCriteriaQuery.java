@@ -23,12 +23,22 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The sensor repository using the api criteria query
+ */
 @Repository
 public class SensorRepositoryCriteriaQuery {
 
     @PersistenceContext
     EntityManager em;
 
+    /**
+     * Finds all the sensors that are present in the structure
+     * @param structureId the structure id
+     * @param request the request containing data like filter by and order by
+     * @return List<SensorDTO> the list of the sensors
+     * @throws TraitementException error with code DATE_FORMAT_ERROR if there is an error while converting date
+     */
     public List<SensorDTO> findAllSensorsByStructureId(long structureId, AllSensorsByStructureRequestDTO request) throws TraitementException {
         var cb = em.getCriteriaBuilder();
         var cq = cb.createQuery(SensorDTO.class);
@@ -51,11 +61,11 @@ public class SensorRepositoryCriteriaQuery {
                 cb.count(cb.<Long>selectCase().when(cb.equal(result.get("state"), StateEnum.DEFECTIVE), 1L)),
                 0L
         );
-        var caseExpression = cb.<String>selectCase()
-                .when(cb.equal(resultCount, 0), "UNKNOWN")
-                .when(isNokPresent, "NOK")
-                .when(isDefectivePresent, "DEFECTIVE")
-                .otherwise("OK");
+        var caseExpression = cb.<Integer>selectCase()
+                .when(cb.equal(resultCount, 0), State.UNKNOWN.ordinal())
+                .when(isNokPresent, State.NOK.ordinal())
+                .when(isDefectivePresent, State.DEFECTIVE.ordinal())
+                .otherwise(State.OK.ordinal());
 
         cq.select(cb.construct(SensorDTO.class,
                 sensor.get("sensorId").get("controlChip"),
@@ -87,21 +97,18 @@ public class SensorRepositoryCriteriaQuery {
 
         cq.where(predicates.toArray(new Predicate[0]));
         cq.groupBy(sensor.get("sensorId"));
-        System.err.println(request.orderByColumn().name() + " " + request.orderType().name());
-        Order order = switch (request.orderByColumn()) {
-            case NAME -> request.orderType().equals(OrderEnum.ASC) ?
-                        cb.asc(sensor.get(request.orderByColumn().getValue())) : cb.desc(sensor.get(request.orderByColumn().getValue()));
-            case STATE -> request.orderType().equals(OrderEnum.ASC) ?
-                    cb.asc(cb.<Integer>selectCase()
-                            .when(cb.equal(caseExpression,  "NOK"), 1)
-                            .when(cb.equal(caseExpression, "DEFECTIVE"), 2)
-                            .when(cb.equal(caseExpression, "OK"), 3)
-                            .when(cb.equal(caseExpression, "UNKNOWN"), 4))
-                    : cb.desc(cb.<Integer>selectCase().when(cb.equal(caseExpression,  "NOK"), 1)
-                    .when(cb.equal(caseExpression, "DEFECTIVE"), 2)
-                    .when(cb.equal(caseExpression, "OK"), 3)
-                    .when(cb.equal(caseExpression, "UNKNOWN"), 4));
-            case INSTALLATION_DATE -> request.orderType().equals(OrderEnum.ASC) ?
+        var orderByColumn = AllSensorsByStructureRequestDTO.OrderByColumn.valueOf(request.orderByColumn());
+        var orderType = OrderEnum.valueOf(request.orderType());
+        var stateOrder = cb.<Integer>selectCase()
+                .when(cb.equal(caseExpression,  State.NOK.ordinal()), 1)
+                .when(cb.equal(caseExpression, State.DEFECTIVE.ordinal()), 2)
+                .when(cb.equal(caseExpression, State.OK.ordinal()), 3)
+                .when(cb.equal(caseExpression, State.UNKNOWN.ordinal()), 4);
+        Order order = switch (orderByColumn) {
+            case NAME -> orderType.equals(OrderEnum.ASC) ?
+                        cb.asc(sensor.get(orderByColumn.getValue())) : cb.desc(sensor.get(orderByColumn.getValue()));
+            case STATE -> orderType.equals(OrderEnum.ASC) ? cb.asc(stateOrder) : cb.desc(stateOrder);
+            case INSTALLATION_DATE -> orderType.equals(OrderEnum.ASC) ?
                         cb.asc(sensor.get("installationDate")) : cb.desc(sensor.get("installationDate"));
         };
         cq.orderBy(order);
