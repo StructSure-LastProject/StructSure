@@ -2,7 +2,9 @@ package fr.uge.structsure.entities;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 public class Account {
@@ -23,6 +25,9 @@ public class Account {
 
     private Boolean enabled;
 
+    @OneToMany(mappedBy = "account")
+    private Set<AccountStructure> accountStructures = new HashSet<>();
+
     public Account() {}
 
     public Account(String login, String passwordEncrypted, String firstname, String lastname, Role role, boolean enabled) {
@@ -37,7 +42,6 @@ public class Account {
     public void setLogin(String login) {
         this.login = login;
     }
-
 
     public void setFirstname(String firstname) {
         this.firstname = firstname;
@@ -81,5 +85,13 @@ public class Account {
 
     public Boolean getEnabled() {
         return enabled;
+    }
+
+    public Set<AccountStructure> getAccountStructures() {
+        return accountStructures;
+    }
+
+    public void setAccountStructures(Set<AccountStructure> accountStructures) {
+        this.accountStructures = Objects.requireNonNull(Set.copyOf(accountStructures));
     }
 }
