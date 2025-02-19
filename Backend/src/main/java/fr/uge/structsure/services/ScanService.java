@@ -79,4 +79,24 @@ public class ScanService {
                 result.getScan().getDate()
         );
     }
+
+    @Transactional
+    public void saveScanResults(AndroidScanResultDTO scanData) throws TraitementException {
+        Scan scan = scanRepository.findById(scanData.scanId())
+                .orElseThrow(() -> new TraitementException(Error.SCAN_NOT_FOUND));
+
+        for (var resultData : scanData.results()) {
+            Result result = new Result(
+                    State.valueOf(resultData.state()),
+                    findSensor(resultData.control_chip(), resultData.measure_chip()),
+                    scan
+            );
+            resultRepository.save(result);
+        }
+    }
+
+    private Sensor findSensor(String controlChip, String measureChip) throws TraitementException {
+        Optional<Sensor> sensor = resultRepository.findSensorByControlChipAndMeasureChip(controlChip, measureChip);
+        return sensor.orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
+    }
 }

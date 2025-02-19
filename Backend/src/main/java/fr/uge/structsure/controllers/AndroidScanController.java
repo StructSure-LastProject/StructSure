@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 
+
 @RestController
 @RequestMapping("/api/scans")
 public class AndroidScanController {
@@ -26,6 +27,16 @@ public class AndroidScanController {
         try {
             var scanDetails = scanService.getScanDetails(scanId);
             return ResponseEntity.ok(scanDetails);
+        } catch (TraitementException e) {
+            return e.toResponseEntity();
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<?> submitScanResults(@RequestBody AndroidScanResultDTO scanData) {
+        try {
+            scanService.saveScanResults(scanData);
+            return ResponseEntity.ok().build();
         } catch (TraitementException e) {
             return e.toResponseEntity();
         }

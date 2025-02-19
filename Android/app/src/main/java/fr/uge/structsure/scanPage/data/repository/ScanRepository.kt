@@ -33,7 +33,7 @@ class ScanRepository {
      *
      * @return List<ResultSensors> List of all scan results stored in local DB
      */
-    suspend fun getAllScanResults(): List<ResultSensors> {
+    fun getAllScanResults(): List<ResultSensors> {
         return resultDao.getAllResults()
     }
 
