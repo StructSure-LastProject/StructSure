@@ -7,6 +7,8 @@ import java.util.Objects;
  */
 public enum Error {
 
+    INCORRECT_FIELD_VALUE(422, "Un ou plusieurs valeurs invalides"),
+    MISSING_FIELDS(422, "Un ou plusieurs champs manquant"),
     UNAUTHORIZED_OPERATION(422, "Permission insuffisante"),
     INVALID_TOKEN(401, "Session expirée"),
     MISSING_USER_ACCOUNT_FIELDS(422, "Des champs sont manquants"),
@@ -57,11 +59,18 @@ public enum Error {
     SENSOR_STRUCTURE_NOT_FOUND(404, "Ouvrage introuvable"),
     SENSOR_INSTALLATION_DATE_INVALID_FORMAT(422, "La date d’installation doit être au format AAAA-MM-JJ"),
     SENSOR_CHIP_TAGS_ARE_IDENTICAL(422, "Les tags sont identiques"),
-    LIST_STRUCTURES_EMPTY(404, "Aucun ouvrage enregistré dans le système");
+    LIST_STRUCTURES_EMPTY(404, "Aucun ouvrage enregistré dans le système"),
+    DATE_FORMAT_ERROR(422, "Le format de la date n'est pas correct JJ-MM-AAAA");
+
 
     public final int code;
     public final String message;
 
+    /**
+     * The constructor for the Error
+     * @param code the code of the error
+     * @param message the message of the error
+     */
     private Error(int code, String message) {
         if (code < 0) throw new IllegalArgumentException("code < 0");
         this.code = code;

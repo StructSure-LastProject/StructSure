@@ -3,6 +3,7 @@ package fr.uge.structsure.entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
@@ -24,13 +25,9 @@ public class Sensor {
     @JoinColumn(name = "structure_id", nullable = true)
     private Structure structure;
 
-    /*
-    @Convert(converter = LocalTimeConverter.class)
-    private LocalTime installationDate;
-     */
 
-    @Column(columnDefinition = "TEXT")
-    private String installationDate;
+    private LocalDateTime installationDate;
+
 
     @Column(columnDefinition = "REAL")
     private Double x;
@@ -38,11 +35,14 @@ public class Sensor {
     @Column(columnDefinition = "REAL")
     private Double y;
 
-    @Column(columnDefinition = "INTEGER")
     private Boolean archived;
 
     @OneToMany(mappedBy="sensor")
     private Set<Result> results;
+
+    @ManyToOne
+    @JoinColumn(name="plan_id")
+    private Plan plan;
 
 
     //constructeurs nécéssaire
@@ -50,7 +50,45 @@ public class Sensor {
 
     }
 
-    public Sensor(String controlChip, String measureChip, String name, String note, String installationDate, Double x, Double y, Boolean archived, Structure structure) {
+    /**
+     * The constructor for the Sensor entity
+     * @param sensorId the sensor id
+     * @param name the name of the sensor
+     * @param note the note of the sensor
+     * @param structure the structure
+     * @param installationDate the installation date
+     * @param x the position x
+     * @param y the position y
+     * @param archived if its archived
+     * @param results the results
+     * @param plan the plan
+     */
+    public Sensor(SensorId sensorId, String name, String note, Structure structure, LocalDateTime installationDate, Double x, Double y, Boolean archived, Set<Result> results, Plan plan) {
+        this.sensorId = sensorId;
+        this.name = name;
+        this.note = note;
+        this.structure = structure;
+        this.installationDate = installationDate;
+        this.x = x;
+        this.y = y;
+        this.archived = archived;
+        this.results =  new HashSet<>(results);
+        this.plan = plan;
+    }
+
+    /**
+     * The constructor for the Sensor entity
+     * @param controlChip the control chip id
+     * @param measureChip the measure chip id
+     * @param name the name of the sensor
+     * @param note the note of the sensor
+     * @param structure the structure
+     * @param installationDate the installation date
+     * @param x the position x
+     * @param y the position y
+     * @param archived if its archived
+     */
+    public Sensor(String controlChip, String measureChip, String name, String note, LocalDateTime installationDate, Double x, Double y, Boolean archived, Structure structure) {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
         Objects.requireNonNull(name);
@@ -66,13 +104,7 @@ public class Sensor {
         this.archived = archived;
         this.structure = structure;
     }
-    @Override
-    public String toString() {
-        return sensorId.toString();
-    }
 
-
-    // Getter and Setter
     public SensorId getSensorId() {
         return sensorId;
     }
@@ -97,11 +129,19 @@ public class Sensor {
         this.note = note;
     }
 
-    public String getInstallationDate() {
+    public Structure getStructure() {
+        return structure;
+    }
+
+    public void setStructure(Structure structure) {
+        this.structure = structure;
+    }
+
+    public LocalDateTime getInstallationDate() {
         return installationDate;
     }
 
-    public void setInstallationDate(String installationDate) {
+    public void setInstallationDate(LocalDateTime installationDate) {
         this.installationDate = installationDate;
     }
 
@@ -129,14 +169,6 @@ public class Sensor {
         this.archived = archived;
     }
 
-    public Structure getStructure() {
-        return structure;
-    }
-
-    public void setStructure(Structure structure) {
-        this.structure = structure;
-    }
-
     public Set<Result> getResults() {
         return results;
     }
@@ -144,5 +176,12 @@ public class Sensor {
     public void setResults(Set<Result> results) {
         this.results = new HashSet<>(results);
     }
+
+    public Plan getPlan() {
+        return plan;
+    }
+
+    public void setPlan(Plan plan) {
+        this.plan = plan;
+    }
 }
-    

@@ -1,20 +1,23 @@
 package fr.uge.structsure.services;
 
-import fr.uge.structsure.dto.sensors.AddSensorAnswerDTO;
-import fr.uge.structsure.dto.sensors.AddSensorRequestDTO;
-import fr.uge.structsure.dto.sensors.SensorDTO;
+import fr.uge.structsure.dto.sensors.*;
 import fr.uge.structsure.entities.Sensor;
+import fr.uge.structsure.entities.State;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
+import fr.uge.structsure.repositories.SensorRepositoryCriteriaQuery;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.StateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -29,6 +32,7 @@ public class SensorService {
     private final StructureRepository structureRepository;
     private final ResultRepository resultRepository;
     private final PlanRepository planRepository;
+    private final SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery;
 
     /**
      * Initialise the sensor service
@@ -36,13 +40,16 @@ public class SensorService {
      * @param structureRepository the structure repository
      * @param resultRepository the result repository
      * @param planRepository the plan repository
+     * @param sensorRepositoryCriteriaQuery the sensor repository using criteria query api
      */
     @Autowired
-    public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository, PlanRepository planRepository) {
+    public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository, PlanRepository planRepository,
+        SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery) {
         this.sensorRepository = sensorRepository;
         this.structureRepository = structureRepository;
         this.resultRepository = resultRepository;
         this.planRepository = planRepository;
+        this.sensorRepositoryCriteriaQuery = sensorRepositoryCriteriaQuery;
     }
 
 
@@ -52,13 +59,13 @@ public class SensorService {
      * @return List<SensorDTO> list of sensors
      * @throws TraitementException if there is no structure with the id
      */
-    public List<SensorDTO> getSensorsByStructureId(long structureId) throws TraitementException {
+    public List<SensorDTO> getSensors(long structureId, AllSensorsByStructureRequestDTO request) throws TraitementException {
+        request.checkFields();
         var structure = structureRepository.findById(structureId);
         if (structure.isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
-        var sensors = sensorRepository.findByStructureId(structureId);
-        return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
+        return sensorRepositoryCriteriaQuery.findAllSensorsByStructureId(structureId, request);
     }
 
     /**
@@ -85,20 +92,20 @@ public class SensorService {
      * @param sensor the sensor
      * @return StateEnum the state
      */
-    private StateEnum getSensorState(Sensor sensor) {
+    private State getSensorState(Sensor sensor) {
         var numberOfResults = resultRepository.countBySensor(sensor);
         if (numberOfResults == 0) {
-            return StateEnum.UNKNOWN;
+            return State.UNKNOWN;
         }
         var isNokPresent = resultRepository.existsResultWithNokState(sensor);
         if (isNokPresent) {
-            return StateEnum.NOK;
+            return State.NOK;
         }
         var isDefecitvePresent = resultRepository.existsResultWithDefectiveState(sensor);
         if (isDefecitvePresent) {
-            return StateEnum.DEFECTIVE;
+            return State.DEFECTIVE;
         }
-        return StateEnum.OK;
+        return State.OK;
     }
 
     /**
@@ -131,11 +138,12 @@ public class SensorService {
         if (alreadyUsedSensorId) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
         }
-        var sensor = new Sensor(request.controlChip(),
+        var formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        Sensor sensor = new Sensor(request.controlChip(),
                 request.measureChip(),
                 request.name(),
                 request.note() == null ? "": request.note(),
-                request.installationDate(),
+                LocalDateTime.parse(request.installationDate(), formatter),
                 request.x(),
                 request.y(),
                 false,
@@ -188,9 +196,9 @@ public class SensorService {
         if (request.note() != null && request.note().length() > 1000) {
             throw new TraitementException(Error.SENSOR_NOTE_EXCEED_LIMIT);
         }
-        var formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd");
         try {
-            LocalDate.parse(request.installationDate(), formatter);
+            var formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            LocalDateTime.parse(request.installationDate(), formatter);
         } catch (DateTimeParseException e) {
             throw new TraitementException(Error.SENSOR_INSTALLATION_DATE_INVALID_FORMAT);
         }
