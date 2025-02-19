@@ -27,6 +27,9 @@ public class Structure {
     @OneToMany(mappedBy="structure")
     private Set<Plan> plans;
 
+    @OneToMany(mappedBy = "structure")
+    private Set<AccountStructure> accountStructures = new HashSet<>();
+
     /**
      * Initialise the structure entity
      */
@@ -94,5 +97,13 @@ public class Structure {
 
     public void setPlans(Set<Plan> plans) {
         this.plans =  new HashSet<>(plans);
+    }
+
+    public Set<AccountStructure> getAccountStructures() {
+        return accountStructures;
+    }
+
+    public void setAccountStructures(Set<AccountStructure> accountStructures) {
+        this.accountStructures = Objects.requireNonNull(Set.copyOf(accountStructures));
     }
 }
