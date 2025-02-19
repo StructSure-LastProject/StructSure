@@ -8,12 +8,12 @@ import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
+import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
-import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

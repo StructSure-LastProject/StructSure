@@ -8,16 +8,18 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.connexionPage.data.AccountEntity
-import fr.uge.structsure.scanPage.data.ResultSensors
-import fr.uge.structsure.scanPage.data.ScanEntity
-import fr.uge.structsure.scanPage.data.dao.ResultDao
-import fr.uge.structsure.scanPage.data.dao.ScanDao
 import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.structuresPage.data.PlanDao
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.data.SensorDao
 import fr.uge.structsure.structuresPage.data.StructureDao
 import fr.uge.structsure.structuresPage.data.StructureData
+import fr.uge.structsure.scanPage.data.ResultSensors
+import fr.uge.structsure.scanPage.data.ScanEntity
+import fr.uge.structsure.scanPage.data.StructureEntity
+import fr.uge.structsure.scanPage.data.dao.ResultDao
+import fr.uge.structsure.scanPage.data.dao.ScanDao
+import fr.uge.structsure.scanPage.data.dao.StructurePlanDao
 
 /**
  * BDD Room for StructSure app.

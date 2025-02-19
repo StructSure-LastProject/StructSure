@@ -36,8 +36,8 @@ import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.White
 
 
-private val Int.toDp: Dp get() = (this / getSystem().displayMetrics.density).toInt().dp
-private val Int.toPx: Int get() = (this * getSystem().displayMetrics.density).toInt()
+val Int.toDp: Dp get() = (this / getSystem().displayMetrics.density).toInt().dp
+val Int.toPx: Int get() = (this * getSystem().displayMetrics.density).toInt()
 
 /**
  * Header of the Scan page that contains the name of the structure,

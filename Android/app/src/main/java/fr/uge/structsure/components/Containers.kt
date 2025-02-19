@@ -9,16 +9,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -30,7 +38,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import fr.uge.structsure.R
 import fr.uge.structsure.ui.theme.Black
+import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.White
+import kotlinx.coroutines.launch
 
 @Composable
 @Preview
@@ -156,5 +166,51 @@ private fun RowScope.SensorDetail(color: Color, title: String, value: String) {
             color = color,
             style = MaterialTheme.typography.headlineMedium
         )
+    }
+}
+
+/**
+ * List that can trigger refresh event to reload structures list.
+ * @param isRefreshing whether or not the data  is currently being reloaded
+ * @param onRefresh action to run on refresh request
+ * @param content the element to put in the column
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PullToRefresh(modifier: Modifier = Modifier, isRefreshing: Boolean, onRefresh: () -> Unit, content: @Composable () -> Unit) {
+    val coroutineScope = rememberCoroutineScope()
+    val state = rememberPullToRefreshState()
+
+    PullToRefreshBox(
+        modifier = Modifier.fillMaxWidth()
+            .fillMaxSize()
+            .clip(RoundedCornerShape(20.dp)),
+        contentAlignment = Alignment.TopCenter,
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            coroutineScope.launch {
+                onRefresh()
+            }
+        },
+        state = state,
+        indicator = {
+            Indicator(
+                modifier = Modifier.align(Alignment.TopCenter),
+                isRefreshing = isRefreshing,
+                containerColor = LightGray,
+                color = Black,
+                state = state
+            )
+        }
+    ) {
+        val scrollState = rememberScrollState()
+        Column(
+            modifier = Modifier.fillMaxSize()
+                .verticalScroll(scrollState)
+                .then(modifier),
+            verticalArrangement = Arrangement.spacedBy(15.dp)
+        ) {
+            content()
+        }
     }
 }
