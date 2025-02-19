@@ -24,5 +24,8 @@ interface ScanDao {
     @Query("SELECT * FROM scan WHERE id = :scanId")
     suspend fun getScanById(scanId: Long): ScanEntity
 
+    // fun get last scan Id
+    @Query("SELECT id FROM scan ORDER BY id DESC LIMIT 1")
+    suspend fun getLastScanId(): Long
 }
 

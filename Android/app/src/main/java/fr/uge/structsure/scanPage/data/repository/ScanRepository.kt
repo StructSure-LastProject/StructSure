@@ -33,8 +33,9 @@ class ScanRepository {
      *
      * @return List<ResultSensors> List of all scan results stored in local DB
      */
-    fun getAllScanResults(): List<ResultSensors> {
-        return resultDao.getAllResults()
+    suspend fun getAllScanResults(): List<ResultSensors> {
+        val currentScanId = scanDao.getLastScanId() ?: return emptyList()
+        return resultDao.getResultsByScanId(currentScanId)
     }
 
     /**
@@ -85,6 +86,14 @@ class ScanRepository {
         note: String,
         results: List<ResultSensors>
     ): ScanRequestDTO {
+        val newResults = results.filter { result ->
+            !resultDao.hasExistingResult(result.id, result.state, scanId)
+        }
+
+        if (newResults.isEmpty()) {
+            throw NoNewResultsException("Aucun nouveau résultat à envoyer")
+        }
+
         val scanResults = results.map { result ->
             val sensor = sensorDao.getSensor(result.id)
             ScanResultDTO(
@@ -106,3 +115,6 @@ class ScanRepository {
         )
     }
 }
+
+class NoNewResultsException(message: String) : Exception(message)
+

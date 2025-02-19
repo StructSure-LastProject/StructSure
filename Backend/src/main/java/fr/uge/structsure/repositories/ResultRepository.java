@@ -5,6 +5,7 @@ import fr.uge.structsure.entities.Scan;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.Structure;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -36,6 +37,24 @@ public interface ResultRepository extends JpaRepository<Result, Long> {
     )
     boolean existsResultWithDefectiveState(Sensor sensor);
 
-    @Query("SELECT r FROM Result r JOIN FETCH r.sensor s JOIN FETCH s.sensorId WHERE r.scan = :scan")
-    List<Result> findByScan(@Param("scan") Scan scan);
+    /**
+     * Batch insert results with optimized performance
+     */
+    @Modifying
+    @Query(value = """
+        INSERT INTO result (state, scan_id, control_chip, measure_chip)
+        VALUES (:#{#result.state}, :#{#result.scan.id}, 
+                :#{#result.sensor.sensorId.controlChip}, 
+                :#{#result.sensor.sensorId.measureChip})
+        """, nativeQuery = true)
+    void insertResult(@Param("result") Result result);
+
+    /**
+     * Save a list of results in batch
+     */
+    default void saveAllResults(List<Result> results) {
+        for (Result result : results) {
+            insertResult(result);
+        }
+    }
 }

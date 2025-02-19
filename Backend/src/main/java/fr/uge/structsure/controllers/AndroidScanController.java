@@ -21,16 +21,6 @@ public class AndroidScanController {
         this.scanService = Objects.requireNonNull(scanService);
     }
 
-    @GetMapping(value = "/{scanId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getScanDetails(@PathVariable("scanId") long scanId) {
-        try {
-            var scanDetails = scanService.getScanDetails(scanId);
-            return ResponseEntity.ok(scanDetails);
-        } catch (TraitementException e) {
-            return e.toResponseEntity();
-        }
-    }
-
     @PostMapping
     public ResponseEntity<?> submitScanResults(@RequestBody AndroidScanResultDTO scanData) {
         try {

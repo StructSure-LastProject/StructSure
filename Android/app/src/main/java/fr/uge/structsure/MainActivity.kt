@@ -20,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
@@ -37,7 +36,6 @@ import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.ScanPage
-import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
@@ -72,7 +70,7 @@ class MainActivity : ComponentActivity() {
         RetrofitInstance.initFromPreferences(applicationContext)
 
         val accountDao = db.accountDao()
-        val scanViewModel = ScanViewModel()
+        val scanViewModel by lazy { ScanViewModel() }
         structureViewModel =
             ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
