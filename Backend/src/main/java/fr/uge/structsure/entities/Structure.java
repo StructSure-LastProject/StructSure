@@ -2,6 +2,7 @@ package fr.uge.structsure.entities;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -26,6 +27,15 @@ public class Structure {
     @JsonManagedReference
     @OneToMany(mappedBy="structure")
     private Set<Plan> plans;
+
+    @Lazy
+    @JoinTable(
+            name = "structure_account",
+            joinColumns = @JoinColumn(name = "id"),
+            inverseJoinColumns = @JoinColumn(name = "login")
+    )
+    @ManyToMany(cascade = {CascadeType.DETACH})
+    private Set<Account> accounts = new HashSet<>();
 
     /**
      * Initialise the structure entity
@@ -94,5 +104,17 @@ public class Structure {
 
     public void setPlans(Set<Plan> plans) {
         this.plans =  new HashSet<>(plans);
+    }
+
+    public Set<Account> getAccountStructures() {
+        return accounts;
+    }
+
+    public void add(Account account){
+        this.accounts.add(Objects.requireNonNull(account));
+    }
+
+    public void remove(Account account){
+        this.accounts.remove(Objects.requireNonNull(account));
     }
 }

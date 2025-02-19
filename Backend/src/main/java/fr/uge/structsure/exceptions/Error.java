@@ -6,7 +6,7 @@ import java.util.Objects;
  * This class will centralize and define all the errors that will be used
  */
 public enum Error {
-
+    INVALID_FIELDS(422, "Les champs sont invalides"),
     UNAUTHORIZED_OPERATION(422, "Permission insuffisante"),
     INVALID_TOKEN(401, "Session expirée"),
     MISSING_USER_ACCOUNT_FIELDS(422, "Des champs sont manquants"),
