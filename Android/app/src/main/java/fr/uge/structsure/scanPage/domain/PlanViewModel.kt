@@ -1,6 +1,7 @@
 package fr.uge.structsure.scanPage.domain
 
 import android.content.Context
+import android.database.sqlite.SQLiteException
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,6 +10,7 @@ import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.structuresPage.data.StructureRepository
 import fr.uge.structsure.utils.FileUtils
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 /**
  * ViewModel responsible for managing the plans and their images.
@@ -16,6 +18,11 @@ import kotlinx.coroutines.launch
  * providing a seamless experience whether online or offline.
  */
 class PlanViewModel : ViewModel() {
+
+    companion object {
+        private const val TAG = "PlanViewModel"
+    }
+
     private val repository = StructureRepository()
 
     /**
@@ -43,7 +50,7 @@ class PlanViewModel : ViewModel() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e("PlanViewModel", "Error loading plan", e)
+                Log.e(TAG, "Error loading plan", e)
             }
         }
     }
@@ -59,12 +66,16 @@ class PlanViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 planImagePath.value = repository.downloadPlanImage(context, planId)
-            } catch (e: Exception) {
-                Log.e("PlanViewModel", "Error fetching plan image", e)
+            } catch (e: IOException) {
+                Log.e("PlanViewModel", "Network or I/O error fetching plan image", e)
                 val localPath = FileUtils.getLocalPlanImage(context, planId)
                 if (localPath != null) {
                     planImagePath.value = localPath
                 }
+            } catch (e: SecurityException) {
+                Log.e("PlanViewModel", "Security error accessing storage", e)
+            } catch (e: IllegalStateException) {
+                Log.e("PlanViewModel", "Error processing plan image data", e)
             }
         }
     }

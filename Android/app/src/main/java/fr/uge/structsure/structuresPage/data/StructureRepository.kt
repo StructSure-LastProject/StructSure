@@ -1,6 +1,7 @@
 package fr.uge.structsure.structuresPage.data
 
 import android.content.Context
+import android.database.sqlite.SQLiteException
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import fr.uge.structsure.MainActivity
@@ -10,9 +11,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.util.Optional
 
 class StructureRepository : ViewModel() {
+    
+    companion object {
+        private const val TAG = "StructureRepository"
+    }
 
     private val structureDao = MainActivity.db.structureDao()
     private val planDao = MainActivity.db.planDao()
@@ -145,9 +151,13 @@ class StructureRepository : ViewModel() {
                 planDao.deletePlansByStructureId(structure.id)
                 structureDao.deleteStructure(structure)
 
-                Log.d("StructureRepository", "Structure ${structure.id} and all associated data deleted successfully")
-            } catch (e: Exception) {
-                Log.e("StructureRepository", "Error deleting structure ${structure.id}", e)
+                Log.d(TAG, "Structure ${structure.id} and all associated data deleted successfully")
+            } catch (e: SQLiteException) {
+                Log.e(TAG, "Database error while deleting structure ${structure.id}", e)
+            } catch (e: IOException) {
+                Log.e(TAG, "I/O error while deleting structure files ${structure.id}", e)
+            } catch (e: SecurityException) {
+                Log.e(TAG, "Security error while accessing files for structure ${structure.id}", e)
             }
         }
     }
@@ -165,15 +175,21 @@ class StructureRepository : ViewModel() {
                 if (response.isSuccessful) {
                     response.body()?.byteStream()?.let { inputStream ->
                         val path = FileUtils.savePlanImageToInternalStorage(context, planId, inputStream)
-                        Log.d("StructureRepository", "Plan downloaded under $path")
+                        Log.d(TAG, "Plan downloaded under $path")
                         path
                     }
                 } else {
-                    Log.e("StructureRepository", "Failed to fetch plan $planId image: ${response.code()} - ${response.message()}")
+                    Log.e(TAG, "Failed to fetch plan $planId image: ${response.code()} - ${response.message()}")
                     null
                 }
-            } catch (e: Exception) {
-                Log.e("StructureRepository", "Error downloading plan image", e)
+            } catch (e: IOException) {
+                Log.e(TAG, "Network or I/O error while downloading plan image", e)
+                null
+            } catch (e: SecurityException) {
+                Log.e(TAG, "Security error accessing storage", e)
+                null
+            } catch (e: IllegalStateException) {
+                Log.e(TAG, "Error with response processing", e)
                 null
             }
         }
