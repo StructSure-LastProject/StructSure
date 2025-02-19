@@ -10,7 +10,7 @@ import { Plus } from 'lucide-solid';
  */
 function StructureDetailPlans(props) {
     const imageMoveLimit = 10;
-    const ZOOM_LIMIT = 4;
+    const ZOOM_LIMIT = 5;
     const [ctxCanvas, setCtxCanvas] = createSignal("");
     const [zoomFactor, setZoomFactor] = createSignal(0);
     const [offsetX, setOffsetX] = createSignal(0);
@@ -184,7 +184,6 @@ function StructureDetailPlans(props) {
 
             const sensorCanvasX = imgStartX + sensor.x * scaleX;
             const sensorCanvasY = imgStartY + sensor.y * scaleY;
-            
             ctx.beginPath();
             ctx.arc(sensorCanvasX, sensorCanvasY, 10, 0, Math.PI * 2);
             ctx.fillStyle = bgColor;
@@ -275,6 +274,18 @@ function StructureDetailPlans(props) {
         const y = event.clientY - rect.top;
         setCClickX(x);
         setCClickY(y);
+
+        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), zoomFactor());
+        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), zoomFactor());
+        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+
+        const scaleX = (drawWidth() + zoomX) / img.width;
+        const scaleY = (drawHeight() + zoomY) / img.height;
+
+        const px = (x - imgStartX) / scaleX;
+        const py = (y - imgStartY) / scaleY;
+
+        console.log("Click Position in Image:", { px, py });
     };
 
     /**
