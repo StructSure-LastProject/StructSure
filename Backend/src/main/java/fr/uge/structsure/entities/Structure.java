@@ -1,5 +1,6 @@
 package fr.uge.structsure.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -17,9 +18,12 @@ public class Structure {
     private String note;
     private Boolean archived=false;
 
+    @JsonManagedReference
     @OneToMany(mappedBy="structure")
     private Set<Sensor> sensors;
 
+
+    @JsonManagedReference
     @OneToMany(mappedBy="structure")
     private Set<Plan> plans;
 

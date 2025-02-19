@@ -1,5 +1,6 @@
 package fr.uge.structsure.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.*;
@@ -18,6 +19,7 @@ public class Sensor {
 
     private String note;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "structure_id", nullable = true)
     private Structure structure;

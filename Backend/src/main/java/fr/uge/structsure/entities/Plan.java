@@ -1,5 +1,6 @@
 package fr.uge.structsure.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -16,6 +17,8 @@ public class Plan {
     private String imageUrl;
     @Size(max = 128, message = "Section must be less than 128 characters")
     private String section = "";
+
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "structure_id", nullable = false)
     private Structure structure;
