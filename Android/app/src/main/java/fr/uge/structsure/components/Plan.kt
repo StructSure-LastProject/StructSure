@@ -46,7 +46,7 @@ data class Point(val x: Int, val y: Int, val state: SensorState)
  */
 @Composable
 fun Plan(image: Bitmap, points: MutableList<Point>) {
-    val painter = remember { BitmapPainter(image.asImageBitmap()) }
+    val painter = remember(image) { BitmapPainter(image.asImageBitmap()) }
     val factor = remember(image) { Factor(painter.intrinsicSize) }
 
     var scale by remember { mutableFloatStateOf(factor.transform) }

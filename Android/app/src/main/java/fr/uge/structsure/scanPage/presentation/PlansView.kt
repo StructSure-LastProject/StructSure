@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -58,14 +56,10 @@ import fr.uge.structsure.utils.FileUtils
  */
 @Composable
 fun PlansView(structureId: Long) {
+    val context = LocalContext.current
     val selected = remember { mutableStateOf<TreePlan?>(null) }
     val points = remember { mutableStateListOf<Point>() }
-
-    val context = LocalContext.current
-
-    LaunchedEffect(structureId) {
-        // viewModel.loadPlans(context, structureId)
-    }
+    val defaultImage = remember(1) { BitmapFactory.decodeResource(context.resources, R.drawable.plan_not_found) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -85,23 +79,15 @@ fun PlansView(structureId: Long) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            val plan = selected.value?.plan?.let { FileUtils.getLocalPlanImage(context, it.id) }
-            if (plan == null) {
-                Text(
-                    text = "Loading...",
-                    modifier = Modifier.fillMaxSize(),
-                    textAlign = TextAlign.Center,
-                    style = Typography.titleMedium
-                )
-            } else {
-                Plan(
-                    image = BitmapFactory.decodeFile(plan),
-                    points = points
-                )
-            }
+            val path = selected.value?.plan?.let { FileUtils.getLocalPlanImage(context, it.id) }
+            val image = if (path == null) defaultImage else BitmapFactory.decodeFile(path)
+            Plan(
+                image = image,
+                points = points
+            )
 
             // TODO select one plan by default
-            // TODO Handle no plan
+            // TODO move loading to viewmodel to run in background
             Spacer(
                 Modifier
                     .fillMaxWidth()
