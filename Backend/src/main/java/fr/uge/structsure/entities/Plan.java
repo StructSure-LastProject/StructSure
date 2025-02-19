@@ -101,7 +101,7 @@ public class Plan {
      * Checks if the plan is archived
      * @return true if paln archived and false if not
      */
-    public boolean isArchived() {
+    public boolean getArchived() {
         return archived;
     }
 
