@@ -95,5 +95,6 @@
 **/package-lock.json
 Backend/files
 **/structsure-test.db
+**/structsure.db
 **/coverage
 Android/.kotlin
