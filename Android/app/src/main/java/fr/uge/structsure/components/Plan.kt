@@ -1,7 +1,6 @@
 package fr.uge.structsure.components
 
 import android.graphics.Bitmap
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -27,8 +26,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import fr.uge.structsure.scanPage.presentation.components.SensorState
@@ -63,11 +60,11 @@ fun Plan(image: Bitmap, points: MutableList<Point>) {
         Alignment.Center
     ) {
         Image(
-            painter = painter,
-            contentDescription = "Plan",
-            modifier = Modifier
+            painter,
+            "Plan",
+            Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) {  /* Zoom and pane the image*/
+                .pointerInput(Unit) { /* Zoom and pane the image*/
                     detectTransformGestures { centroid, pan, zoom, _ ->
                         val adjustment = centroid * (1 - zoom)
                         offset = (offset + pan) * zoom + adjustment

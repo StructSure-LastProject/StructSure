@@ -38,7 +38,7 @@ fun StructureButtons(structure: StructureData, state: MutableState<StructureStat
                     // Launch a coroutine to call the download method
                     coroutineScope.launch {
                         structureViewModel.downloadStructure(structure)
-                        delay(2000)
+                        delay(2000) // FIXME wrong way to handle this
                         state.value = StructureStates.AVAILABLE
                     }
                 }
