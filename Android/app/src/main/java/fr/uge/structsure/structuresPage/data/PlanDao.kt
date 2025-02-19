@@ -15,4 +15,7 @@ interface PlanDao {
 
     @Query("SELECT id FROM `plan` WHERE structureId = :structureId ORDER BY id DESC")
     suspend fun getPlanByStructureId(structureId: Long): List<Long>
+
+    @Query("DELETE FROM `plan` WHERE id = :planId")
+    fun deleteImagePlan(planId: Long)
 }

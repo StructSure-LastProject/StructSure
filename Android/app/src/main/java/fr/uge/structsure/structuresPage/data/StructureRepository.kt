@@ -133,6 +133,7 @@ class StructureRepository : ViewModel() {
         }
         CoroutineScope(Dispatchers.IO).launch {
             planDao.deletePlansByStructureId(structure.id)
+            planDao.deleteImagePlan(structure.id)
         }
         CoroutineScope(Dispatchers.IO).launch {
             structureDao.deleteStructure(structure)
