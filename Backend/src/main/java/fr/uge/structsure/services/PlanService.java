@@ -5,6 +5,7 @@ import fr.uge.structsure.dto.plan.EditPlanResponseDTO;
 import fr.uge.structsure.dto.plan.PlanImageResponseDTO;
 import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.entities.Plan;
+import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
@@ -31,6 +32,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 /**
  * Plan service class
  */

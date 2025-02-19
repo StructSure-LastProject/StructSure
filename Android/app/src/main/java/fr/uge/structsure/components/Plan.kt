@@ -1,5 +1,6 @@
 package fr.uge.structsure.components
 
+import android.graphics.Bitmap
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -21,20 +22,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import kotlin.math.sqrt
 
+/**
+ * Represents a point on the plan image.
+ * @param x the x coordinate of the point
+ * @param y the y coordinate of the point
+ * @param state the state of the sensor at this point
+ */
 data class Point(val x: Int, val y: Int, val state: SensorState)
 
+/**
+ * Composable that displays a plan image and allows to add points on it.
+ * @param image the image to display
+ * @param points the list of points to display on the image
+ */
 @Composable
-fun Plan(@DrawableRes image: Int, points: MutableList<Point>) {
-    val painter = painterResource(image)
+fun Plan(image: Bitmap, points: MutableList<Point>) {
+    val painter = remember { BitmapPainter(image.asImageBitmap()) }
     val factor = remember(image) { Factor(painter.intrinsicSize) }
 
     var scale by remember { mutableFloatStateOf(factor.transform) }
@@ -48,11 +63,11 @@ fun Plan(@DrawableRes image: Int, points: MutableList<Point>) {
         Alignment.Center
     ) {
         Image(
-            painter,
-            "Plan",
-            Modifier
+            painter = painter,
+            contentDescription = "Plan",
+            modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) { /* Zoom and pane the image*/
+                .pointerInput(Unit) {  /* Zoom and pane the image*/
                     detectTransformGestures { centroid, pan, zoom, _ ->
                         val adjustment = centroid * (1 - zoom)
                         offset = (offset + pan) * zoom + adjustment
@@ -77,7 +92,6 @@ fun Plan(@DrawableRes image: Int, points: MutableList<Point>) {
                     translationX = offset.x, translationY = offset.y
                 )
         )
-
         Canvas(Modifier.fillMaxSize()) {
             val transformPoint = factor.transformPoint(size)
             points.forEach {

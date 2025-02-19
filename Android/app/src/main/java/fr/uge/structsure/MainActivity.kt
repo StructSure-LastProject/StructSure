@@ -33,6 +33,8 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Connector.Companion.bluetoothAdapt
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.retrofit.RetrofitInstance
+import fr.uge.structsure.scanPage.domain.PlanViewModel
+import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.ScanPage
 import fr.uge.structsure.settingsPage.presentation.SettingsPage
@@ -59,7 +61,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var structureViewModel: StructureViewModel
 
     private val viewModelFactory: StructureViewModelFactory by lazy {
-        StructureViewModelFactory(db)
+        StructureViewModelFactory(db, applicationContext)
     }
 
 
@@ -74,6 +76,7 @@ class MainActivity : ComponentActivity() {
         structureViewModel =
             ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
+        val planViewModel = PlanViewModel()
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(bluetoothAdapter, filter)
 
@@ -81,13 +84,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SetDynamicStatusBar()
-            val context = LocalContext.current
             val navController = rememberNavController()
-            val connexionCS108 = Cs108Connector(context)
+            val connexionCS108 = Cs108Connector(applicationContext)
             connexionCS108.onBleConnected { success ->
                 runOnUiThread {
                     if (!success) Toast.makeText(
-                        context,
+                        applicationContext,
                         "Echec d'appairage Bluetooth",
                         Toast.LENGTH_SHORT
                     ).show()
@@ -96,7 +98,7 @@ class MainActivity : ComponentActivity() {
             connexionCS108.onReady {
                 runOnUiThread {
                     Toast.makeText(
-                        context,
+                        applicationContext,
                         "Interrogateur inititialisé!",
                         Toast.LENGTH_SHORT
                     ).show()
@@ -118,9 +120,8 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("SettingsPage") { SettingsPage(navController) }
                 composable("ScanPage?structureId={structureId}") { backStackEntry ->
-                    val structureId =
-                        backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                    ScanPage(context, scanViewModel, structureId, connexionCS108, navController)
+                    val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
+                    ScanPage(applicationContext, scanViewModel, planViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
                 composable(connexionPage) {
@@ -135,6 +136,7 @@ class MainActivity : ComponentActivity() {
                     Alerte(navController, state, name, lastState)
                     SetDynamicStatusBar()
                 }
+
             }
         }
     }
@@ -146,7 +148,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         csLibrary4A.disconnect(true)
-        unregisterReceiver(bluetoothAdapter)
         super.onDestroy()
     }
 
@@ -199,9 +200,8 @@ private fun ComponentActivity.SetDynamicStatusBar() {
             SystemBarStyle.auto(
                 lightScrim = defaultSystemBarColor,
                 darkScrim = defaultSystemBarColor,
-                detectDarkMode = { r ->
-                    MainActivity.darkStatusBar.get()
-                        ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
+                detectDarkMode = {r ->
+                    MainActivity.darkStatusBar.get() ?: (r.configuration.uiMode == Configuration.UI_MODE_NIGHT_YES)
                 }
             )
         )

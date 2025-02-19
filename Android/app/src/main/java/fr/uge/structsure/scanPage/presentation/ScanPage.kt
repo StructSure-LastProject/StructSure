@@ -32,6 +32,7 @@ import fr.uge.structsure.components.Page
 import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.components.Title
+import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
@@ -53,6 +54,7 @@ import fr.uge.structsure.ui.theme.LightGray
 @Composable
 fun ScanPage(context: Context,
              scanViewModel: ScanViewModel,
+             planViewModel: PlanViewModel,
              structureId: Long,
              connexionCS108: Cs108Connector,
              navController: NavController) {
@@ -86,7 +88,7 @@ fun ScanPage(context: Context,
     ) { scrollState ->
         if (sensorPopup != null) SensorPopUp({ sensorPopup = null }, { sensorPopup = null })
         ScanWeather(viewModel = scanViewModel, scrollState)
-        PlansView()
+        PlansView(structureId = structureId, viewModel = planViewModel)
         SensorsList(scanViewModel) { s -> sensorPopup = s }
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {

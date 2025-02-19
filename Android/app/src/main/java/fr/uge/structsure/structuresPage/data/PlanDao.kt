@@ -1,7 +1,6 @@
 package fr.uge.structsure.structuresPage.data
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
 
@@ -11,6 +10,12 @@ interface PlanDao {
     @Upsert
     fun upsertPlan(plan: PlanDB)
 
-    @Query("DELETE FROM sensors WHERE structureId = :structureId")
+    @Query("DELETE FROM `plan` WHERE structureId = :structureId")
     fun deletePlansByStructureId(structureId: Long)
+
+    @Query("SELECT id FROM `plan` WHERE structureId = :structureId ORDER BY id DESC")
+    suspend fun getPlanByStructureId(structureId: Long): List<Long>
+
+    @Query("DELETE FROM `plan` WHERE id = :planId")
+    fun deleteImagePlan(planId: Long)
 }

@@ -1,16 +1,24 @@
 package fr.uge.structsure.structuresPage.data
 
+import android.content.Context
+import android.database.sqlite.SQLiteException
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import fr.uge.structsure.MainActivity
 import fr.uge.structsure.retrofit.RetrofitInstance
+import fr.uge.structsure.utils.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.util.Optional
 
 class StructureRepository : ViewModel() {
+    
+    companion object {
+        private const val TAG = "StructureRepository"
+    }
 
     private val structureDao = MainActivity.db.structureDao()
     private val planDao = MainActivity.db.planDao()
@@ -82,7 +90,7 @@ class StructureRepository : ViewModel() {
     }
 
 
-    suspend fun downloadStructure(structure: StructureData) {
+    suspend fun downloadStructure(structure: StructureData, context: Context) {
         val optionalResult = getStructureDetailsFromApi(structure.id)
         if(optionalResult.isPresent) {
             val result = optionalResult.get()
@@ -97,6 +105,7 @@ class StructureRepository : ViewModel() {
                             structure.id
                         )
                     )
+                    downloadPlanImage(context, plan.id)
                 }
 
                 result.sensors.forEach { sensor ->
@@ -106,7 +115,7 @@ class StructureRepository : ViewModel() {
                             sensor.sensorId.controlChip,
                             sensor.sensorId.measureChip,
                             sensor.name,
-                            sensor.note,
+                            sensor.note ?: "",
                             sensor.installationDate,
                             "", // TODO
                             sensor.x,
@@ -121,19 +130,68 @@ class StructureRepository : ViewModel() {
         structureDao.upsertStructure(structure)
     }
 
-    fun deleteStructure(structure: StructureData){
+    /**
+     * Deletes a structure and all its associated data (plans, sensors, images).
+     * This includes both database entries and locally stored files.
+     *
+     * @param structure The structure to be deleted
+     * @param context Context needed for file operations
+     */
+    fun deleteStructure(structure: StructureData, context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
-            sensorDao.deleteSensorsByStructureId(structure.id)
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            resultDao.deleteResults()
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            planDao.deletePlansByStructureId(structure.id)
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            structureDao.deleteStructure(structure)
+            try {
+                val planIds = planDao.getPlanByStructureId(structure.id)
+
+                planIds.forEach { planId ->
+                    FileUtils.deletePlanImage(context, planId)
+                }
+
+                sensorDao.deleteSensorsByStructureId(structure.id)
+                resultDao.deleteResults()
+                planDao.deletePlansByStructureId(structure.id)
+                structureDao.deleteStructure(structure)
+
+                Log.d(TAG, "Structure ${structure.id} and all associated data deleted successfully")
+            } catch (e: SQLiteException) {
+                Log.e(TAG, "Database error while deleting structure ${structure.id}", e)
+            } catch (e: IOException) {
+                Log.e(TAG, "I/O error while deleting structure files ${structure.id}", e)
+            } catch (e: SecurityException) {
+                Log.e(TAG, "Security error while accessing files for structure ${structure.id}", e)
+            }
         }
     }
 
+
+    /**
+     * Downloads and saves the plan image to local storage.
+     * @param planId the id of the plan
+     * @return the path to the saved image file
+     */
+    suspend fun downloadPlanImage(context: Context, planId: Long): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = RetrofitInstance.structureApi.downloadPlanImage(planId)
+                if (response.isSuccessful) {
+                    response.body()?.byteStream()?.let { inputStream ->
+                        val path = FileUtils.savePlanImageToInternalStorage(context, planId, inputStream)
+                        Log.d(TAG, "Plan downloaded under $path")
+                        path
+                    }
+                } else {
+                    Log.e(TAG, "Failed to fetch plan $planId image: ${response.code()} - ${response.message()}")
+                    null
+                }
+            } catch (e: IOException) {
+                Log.e(TAG, "Network or I/O error while downloading plan image", e)
+                null
+            } catch (e: SecurityException) {
+                Log.e(TAG, "Security error accessing storage", e)
+                null
+            } catch (e: IllegalStateException) {
+                Log.e(TAG, "Error with response processing", e)
+                null
+            }
+        }
+    }
 }

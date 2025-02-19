@@ -13,7 +13,6 @@ import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.StructureEntity
 import fr.uge.structsure.scanPage.data.dao.ResultDao
 import fr.uge.structsure.scanPage.data.dao.ScanDao
-import fr.uge.structsure.scanPage.data.dao.StructurePlanDao
 import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.structuresPage.data.PlanDao
 import fr.uge.structsure.structuresPage.data.SensorDB
@@ -73,7 +72,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun accountDao(): AccountDao
     abstract fun scanDao(): ScanDao
     abstract fun structureDao(): StructureDao
-    abstract fun structurePlanDao(): StructurePlanDao
     abstract fun planDao(): PlanDao
     abstract fun sensorDao(): SensorDao
     abstract fun resultDao(): ResultDao

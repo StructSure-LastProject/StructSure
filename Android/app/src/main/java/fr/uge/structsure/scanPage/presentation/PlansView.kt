@@ -1,9 +1,11 @@
 package fr.uge.structsure.scanPage.presentation
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -16,8 +18,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +32,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,20 +42,29 @@ import androidx.compose.ui.unit.sp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Plan
 import fr.uge.structsure.components.Point
-import fr.uge.structsure.scanPage.presentation.components.SensorState
+import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 import fr.uge.structsure.ui.theme.fonts
 
-
 /**
  * This composable is used to display the plans of the structure.
+ * @param structureId the id of the structure
+ * @param viewModel the view model used to fetch the plan image
  */
 @Composable
-fun PlansView() {
+fun PlansView(structureId: Long, viewModel: PlanViewModel) {
     val selected = remember { mutableStateOf("Section OA/Plan 01") }
+    val imagePath by viewModel.planImagePath.observeAsState()
+    val points = remember { mutableStateListOf<Point>() }
+
+    val context = LocalContext.current
+
+    LaunchedEffect(structureId) {
+        viewModel.loadPlans(context, structureId)
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -70,18 +84,83 @@ fun PlansView() {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            val points = remember { mutableStateListOf(
-                Point(0, 0, SensorState.OK),
-                Point(100, 100, SensorState.OK)
-            ) }
-            Plan(R.drawable.oa_plan, points)
-
-            Spacer( Modifier.fillMaxWidth().height(1.dp).background(LightGray) )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                imagePath?.let { path ->
+                    Plan(
+                        image = BitmapFactory.decodeFile(path),
+                        points = points
+                    )
+                } ?: Text(
+                    text = "Loading...",
+                    modifier = Modifier.align(Alignment.Center),
+                    style = Typography.titleMedium
+                )
+            }
+            Spacer(
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(LightGray) )
 
             PlanSelector(selected)
         }
     }
 }
+
+
+
+/**
+ * Item corresponding to a plan section (a group of plans) in the
+ * plan selector
+ * @param name the name of the section
+ * @param children content of this section
+ */
+@Composable
+private fun Section(name: String, children:  @Composable (ColumnScope.() -> Unit)) {
+    var collapsed by remember { mutableStateOf(true) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .clickable { collapsed = !collapsed }
+            .background(color = LightGray)
+            .padding(horizontal = 9.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            painter = painterResource(R.drawable.chevron_down),
+            contentDescription = "Chevron",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .size(16.dp)
+                .rotate(if (collapsed) -90f else 0f)
+        )
+        Text(
+            name,
+            Modifier.weight(1f),
+            style = Typography.headlineMedium
+        )
+    }
+
+    if (!collapsed)  {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 17.dp),
+            content = children
+        )
+    }
+}
+
 
 /**
  * Menu enabling to chose a plan among the existing ones.
@@ -133,47 +212,6 @@ private fun PlanSelector(selected: MutableState<String>) {
                 selected.value = "Section OB/Plan 07"
             }
         }
-    }
-}
-
-/**
- * Item corresponding to a plan section (a group of plans) in the
- * plan selector
- * @param name the name of the section
- * @param children content of this section
- */
-@Composable
-private fun Section(name: String, children:  @Composable (ColumnScope.() -> Unit)) {
-    var collapsed by remember { mutableStateOf(true) }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .clickable { collapsed = !collapsed }
-            .background(color = LightGray)
-            .padding(horizontal = 9.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.chevron_down),
-            contentDescription = "Chevron",
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.size(16.dp).rotate(if (collapsed) -90f else 0f)
-        )
-        Text(
-            name,
-            Modifier.weight(1f),
-            style = Typography.headlineMedium
-        )
-    }
-
-    if (!collapsed)  {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(start = 17.dp),
-            content = children
-        )
     }
 }
 
