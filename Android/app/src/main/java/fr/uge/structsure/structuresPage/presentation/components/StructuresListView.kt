@@ -17,12 +17,6 @@ import fr.uge.structsure.structuresPage.data.StructureData
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Typography
 
-private fun stateMapper(structure: StructureData): StructureStates {
-    if (!structure.downloaded) return StructureStates.ONLINE
-    val end = MainActivity.db.scanDao().getScanByStructure(structure.id)?.end_timestamp
-    return if (end == null) StructureStates.AVAILABLE else StructureStates.UPLOADING
-}
-
 @Composable
 fun StructuresListView(
     structureViewModel: StructureViewModel,
@@ -42,21 +36,8 @@ fun StructuresListView(
             text = "Ouvrages",
         )
         SearchBar(input = searchByName)
-
-        structures.value?.filter { it.name.contains(searchByName.value) }?.forEach { structure ->
-            val state = remember(structure.id, structureStates.value[structure.id]) {
-                mutableStateOf(
-                    structureStates.value[structure.id] ?: stateMapper(structure)
-                )
-            }
-
-            LaunchedEffect(structureStates.value[structure.id]) {
-                structureStates.value[structure.id]?.let {
-                    state.value = it
-                }
-            }
-
-            Structure(structure, state, structureViewModel, navController)
+        structures.value?.filter { it.name.contains(searchByName.value) }?.forEach {
+            Structure(it, structureViewModel, navController)
         }
     }
 }

@@ -72,20 +72,21 @@ class StructureRepository : ViewModel() {
                 val response = call.execute()  // This is a synchronous call
                 if (response.isSuccessful && response.body() != null) {
                     val result = response.body()!!
-                    Optional.of(StructureDetailsData(
-                        result.id,
-                        result.name,
-                        result.note,
-                        result.plans,
-                        result.sensors
-                    ))
-                } else {
-                    Optional.empty()
+                    return@withContext Optional.of(
+                        StructureDetailsData(
+                            result.id,
+                            result.name,
+                            result.note,
+                            result.plans,
+                            result.sensors
+                        )
+                    )
                 }
             } catch (e: Exception) {
-                Log.d("ERROR API", e.message.toString())
-                Optional.empty()
+                Log.d("ERROR API", "Failed to get details from API")
+                e.printStackTrace()
             }
+            Optional.empty()
         }
     }
 
@@ -94,9 +95,9 @@ class StructureRepository : ViewModel() {
      * @param structure the structure to download
      * @param context the context needed for file operations
      */
-    suspend fun downloadStructure(structure: StructureData, context: Context) {
+    suspend fun downloadStructure(structure: StructureData, context: Context): Boolean {
         val optionalResult = getStructureDetailsFromApi(structure.id)
-        if(optionalResult.isPresent) {
+        if (optionalResult.isPresent) {
             val result = optionalResult.get()
             CoroutineScope(Dispatchers.IO).launch {
                 result.plans.forEach { plan ->
@@ -129,9 +130,11 @@ class StructureRepository : ViewModel() {
                     )
                 }
             }
+            structure.downloaded = true
+            structureDao.upsertStructure(structure)
+            return true
         }
-        structure.downloaded = true
-        structureDao.upsertStructure(structure)
+        return false
     }
 
     /**
