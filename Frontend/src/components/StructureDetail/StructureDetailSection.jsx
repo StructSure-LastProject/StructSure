@@ -1,6 +1,6 @@
 import { ChevronDown, Dot, ChevronRight, Pencil, FolderSync } from 'lucide-solid';
 import {createSignal, Show} from "solid-js";
-import ModalEditPlan from "./Plan/ModalEditPlan.jsx";
+import ModalEditPlan from "../Plan/ModalEditPlan.jsx";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
