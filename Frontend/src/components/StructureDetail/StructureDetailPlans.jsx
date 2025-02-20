@@ -37,6 +37,11 @@ function StructureDetailPlans(props) {
 
     const [cClickX, setCClickX] = createSignal(0);
     const [cClickY, setCClickY] = createSignal(0);
+    const img = new Image();
+    let canvasRef;
+    let isMouseDown = false;
+    let startX = 0;
+    let startY = 0;
 
     // Plans and modals state management
     const [plans, setPlans] = createSignal([]);
@@ -129,14 +134,6 @@ function StructureDetailPlans(props) {
         setPlans(prev => [...prev, newPlan]);
         closeAddModal();
     };
-
-    const [cClickX, setCClickX] = createSignal(0);
-    const [cClickY, setCClickY] = createSignal(0);
-    const img = new Image();
-    let canvasRef;
-    let isMouseDown = false;
-    let startX = 0;
-    let startY = 0;
 
     /**
      * Returns the start image position x
@@ -581,8 +578,8 @@ function StructureDetailPlans(props) {
 
     return (
       <>
-        <div class="flex flex-col lg:flex-row rounded-[20px] max-h-[436px] bg-E9E9EB">
-            <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
+        <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
+            <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5 max-h-[350px] lg:max-h-[436px]">
                 <div class="flex items-center justify-between">
                     <p class="prose font-poppins title">Plans</p>
                     <Show when={isAuthorized()}>
