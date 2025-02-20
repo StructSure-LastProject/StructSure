@@ -3,6 +3,7 @@ package fr.uge.structsure.services;
 import fr.uge.structsure.dto.sensors.*;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.State;
+import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.PlanRepository;
@@ -120,36 +121,50 @@ public class SensorService {
      * @return A DTO containing the identifiers of the created sensor.
      * @throws TraitementException If preconditions are not met or uniqueness constraints fail.
      */
-    public AddSensorAnswerDTO createSensor(AddSensorRequestDTO request) throws TraitementException {
-        sensorEmptyPrecondition(request);
-        sensorMalformedPrecondition(request);
+    public AddSensorResponseDTO createSensor(BaseSensorDTO request) throws TraitementException {
+        Objects.requireNonNull(request);
+        addPlanAsserts(request);
         if (request.measureChip().equals(request.controlChip())) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_ARE_IDENTICAL);
         }
-        var structure = structureRepository.findById(request.structureId());
-        if (structure.isEmpty()) {
-            throw new TraitementException(Error.SENSOR_STRUCTURE_NOT_FOUND);
-        }
-        var alreadyUsedName = sensorRepository.findByName(request.name());
-        if (alreadyUsedName.isPresent()) {
-            throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
-        }
-        var alreadyUsedSensorId = !sensorRepository.findByChipTag(request.controlChip()).isEmpty();
-        if (alreadyUsedSensorId) {
+        var structure = structureRepository.findById(request.structureId()).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        checkState(structure);
+        if (sensorRepository.chipTagAlreadyExists(request.controlChip())) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
         }
-        var formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        Sensor sensor = new Sensor(request.controlChip(),
+        if (sensorRepository.nameAlreadyExists(request.name())) {
+            throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
+        }
+        var sensor = new Sensor(request.controlChip(),
                 request.measureChip(),
                 request.name(),
                 request.note() == null ? "": request.note(),
-                LocalDateTime.parse(request.installationDate(), formatter),
-                request.x(),
-                request.y(),
-                false,
-                structure.get());
+                structure);
         var saved = sensorRepository.save(sensor);
-        return new AddSensorAnswerDTO(saved.getSensorId().getControlChip(), saved.getSensorId().getMeasureChip());
+        return new AddSensorResponseDTO(saved.getSensorId().getControlChip(), saved.getSensorId().getMeasureChip());
+    }
+
+    /**
+     * Performs all the checks on the arguments of the function (add sensor)
+     *
+     * @param request An object containing the sensor information.
+     * @throws TraitementException if validation fails
+     */
+    private void addPlanAsserts(BaseSensorDTO request) throws TraitementException {
+        sensorEmptyPrecondition(request);
+        sensorMalformedPrecondition(request);
+    }
+
+    /**
+     * Checks if a structure is in an archived state.
+     *
+     * @param structure The structure to check
+     * @throws TraitementException if the structure is archived
+     */
+    private void checkState(Structure structure) throws TraitementException {
+        if (structure.getArchived()) {
+            throw new TraitementException(Error.PLAN_IS_ARCHIVED);
+        }
     }
 
     /**
@@ -161,16 +176,13 @@ public class SensorService {
      * @param request An object containing the sensor information.
      * @throws TraitementException If any required property is null.
      */
-    private void sensorEmptyPrecondition(AddSensorRequestDTO request) throws TraitementException {
+    private void sensorEmptyPrecondition(BaseSensorDTO request) throws TraitementException {
         Objects.requireNonNull(request);
         if (request.controlChip() == null || request.measureChip() == null) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_IS_EMPTY);
         }
         if (request.name() == null) {
             throw new TraitementException(Error.SENSOR_NAME_IS_EMPTY);
-        }
-        if (request.installationDate() == null || request.installationDate().isEmpty()) {
-            throw new TraitementException(Error.SENSOR_INSTALLATION_DATE_IS_EMPTY);
         }
     }
 
@@ -183,7 +195,7 @@ public class SensorService {
      * @param request An object containing the sensor information.
      * @throws TraitementException If any required property is malformed.
      */
-    private void sensorMalformedPrecondition(AddSensorRequestDTO request) throws TraitementException {
+    private void sensorMalformedPrecondition(BaseSensorDTO request) throws TraitementException {
         if (request.controlChip().isEmpty() || request.controlChip().length() > 32) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_EXCEED_LIMIT);
         }
@@ -196,13 +208,5 @@ public class SensorService {
         if (request.note() != null && request.note().length() > 1000) {
             throw new TraitementException(Error.SENSOR_NOTE_EXCEED_LIMIT);
         }
-        try {
-            var formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-            LocalDateTime.parse(request.installationDate(), formatter);
-        } catch (DateTimeParseException e) {
-            throw new TraitementException(Error.SENSOR_INSTALLATION_DATE_INVALID_FORMAT);
-        }
     }
-
-
 }

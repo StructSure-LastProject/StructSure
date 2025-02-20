@@ -37,7 +37,7 @@ public class Sensor {
     @Column(columnDefinition = "REAL")
     private Double y;
 
-    private Boolean archived;
+    private Boolean archived=false;
 
     @OneToMany(mappedBy="sensor")
     @JsonIgnore
@@ -108,6 +108,18 @@ public class Sensor {
         this.y = y;
         this.archived = archived;
         this.structure = structure;
+    }
+
+    public Sensor(String controlChip, String measureChip, String name, String note, Structure structure) {
+        this.sensorId = new SensorId(controlChip, measureChip);
+        this.name = name;
+        this.note = note;
+        this.structure = structure;
+    }
+
+    @Override
+    public String toString() {
+        return sensorId.toString();
     }
 
     public SensorId getSensorId() {

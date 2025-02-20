@@ -1,6 +1,6 @@
 package fr.uge.structsure.controllers;
 
-import fr.uge.structsure.dto.sensors.AddSensorRequestDTO;
+import fr.uge.structsure.dto.sensors.BaseSensorDTO;
 import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.exceptions.TraitementException;
@@ -39,7 +39,7 @@ public class SensorController {
      *         or an error message (on failure).
      */
     @PostMapping("/sensors")
-    public ResponseEntity<?> addSensor(@RequestBody AddSensorRequestDTO request) {
+    public ResponseEntity<?> addSensor(@RequestBody BaseSensorDTO request) {
         try {
             var sensor = sensorService.createSensor(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(sensor);

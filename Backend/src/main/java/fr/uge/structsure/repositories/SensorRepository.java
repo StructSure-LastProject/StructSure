@@ -43,6 +43,30 @@ SensorRepository extends JpaRepository<Sensor, Long> {
     List<Sensor> findByChipTag(String chipTag);
 
     /**
+     * Will find a sensor by its chip tag
+     * @param chipTag the chip tag of the sensor
+     * @return boolean true if exists
+     */
+    @Query("""
+    SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END
+        FROM Sensor s WHERE
+            s.sensorId.controlChip = :chipTag OR s.sensorId.measureChip = :chipTag
+    """)
+    boolean chipTagAlreadyExists(String chipTag);
+
+    /**
+     * Will find a sensor by its name
+     * @param name the name of the sensor
+     * @return boolean true if exists
+     */
+    @Query("""
+    SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END
+        FROM Sensor s WHERE s.name = :name
+    """)
+    boolean nameAlreadyExists(String name);
+
+
+    /**
      * Will find sensors of the structure
      * @param structure the structure
      * @return list of the sensors
