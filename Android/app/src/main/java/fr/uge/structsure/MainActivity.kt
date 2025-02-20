@@ -33,9 +33,9 @@ import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.scanPage.domain.PlanViewModel
-import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.ScanPage
+import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModelFactory
 import fr.uge.structsure.structuresPage.presentation.HomePage
@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var structureViewModel: StructureViewModel
 
     private val viewModelFactory: StructureViewModelFactory by lazy {
-        StructureViewModelFactory(db, applicationContext)
+        StructureViewModelFactory(applicationContext)
     }
 
 
@@ -71,13 +71,9 @@ class MainActivity : ComponentActivity() {
 
         val accountDao = db.accountDao()
         val scanViewModel by lazy {
-            ScanViewModel(
-                context = applicationContext,
-                structureViewModel = structureViewModel
-            )
+            ScanViewModel(applicationContext, structureViewModel)
         }
-        structureViewModel =
-            ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
+        structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
         val planViewModel = PlanViewModel()
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)

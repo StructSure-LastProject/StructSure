@@ -5,6 +5,7 @@ import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.exception.NoConnectivityException
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.scanPage.data.ResultSensors
+import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.network.dto.ScanRequestDTO
 import fr.uge.structsure.scanPage.data.network.dto.ScanResultDTO
 import fr.uge.structsure.structuresPage.domain.ConnectivityViewModel
@@ -32,12 +33,20 @@ class ScanRepository(private val context: Context) {
     }
 
     /**
-     * Retrieves all scan results from local database
-     *
-     * @return List<ResultSensors> List of all scan results stored in local DB
+     * Retrieves all scan results for the given scan
+     * @return List of all result for the given scan
      */
-    fun getAllScanResults(): List<ResultSensors> {
-        return resultDao.getAllResults()
+    fun getResultsByScan(scanId: Long): List<ResultSensors> {
+        return resultDao.getResultsByScan(scanId)
+    }
+
+    /**
+     * Retrieves all scan that are done but have not been sent to the
+     * server yet.
+     * @return List of all unsent scan from the DB
+     */
+    fun getUnsentScans(): List<ScanEntity> {
+        return scanDao.getUnsentScan()
     }
 
     /**
@@ -49,7 +58,8 @@ class ScanRepository(private val context: Context) {
      * - Other errors: Returns failure with server error message
      *
      * @param scanRequest DTO containing all scan data to send to server
-     * @return Result<Unit> Success or Failure with error message
+     * @return Success or Failure with error message
+     * @throws NoConnectivityException if no internet connection is available
      */
     suspend fun submitScanResults(scanRequest: ScanRequestDTO): Result<Unit> {
         return try {
@@ -61,7 +71,7 @@ class ScanRepository(private val context: Context) {
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception("Erreur serveur: ${response.code()}"))
+                Result.failure(Exception("${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -77,16 +87,12 @@ class ScanRepository(private val context: Context) {
      * 2. Fetches sensor details for each result
      * 3. Combines all data into final ScanRequestDTO
      *
-     * @param scanId Unique identifier of the scan
-     * @param launchDate When the scan started (timestamp)
-     * @param note Any additional information about the scan
+     * @param scanId the id of the scan that contains the results
      * @param results List of local scan results to be converted
      * @return ScanRequestDTO Complete DTO ready to be sent to server
      */
     suspend fun convertToScanRequest(
         scanId: Long,
-        launchDate: String,
-        note: String,
         results: List<ResultSensors>
     ): ScanRequestDTO {
 
@@ -98,63 +104,18 @@ class ScanRepository(private val context: Context) {
                 measure_chip = result.measureChip,
                 name = sensor?.name ?: "",
                 state = result.state,
-                note = note,
-                installation_date = launchDate
+                note = "", // TODO
+                installation_date = "0" // TODO
             )
         }
 
+        val scan = scanDao.getScanById(scanId)
         return ScanRequestDTO(
             scanId = scanId,
-            launchDate = launchDate,
-            note = note,
+            launchDate = scan.start_timestamp,
+            note = scan.note,
             results = scanResults
         )
-    }
-
-    suspend fun resendUnsentResults(): Result<Unit> {
-        return try {
-            val results = resultDao.getAllResults()
-            if (results.isEmpty()) {
-                return Result.success(Unit)
-            }
-
-            // Regrouper les résultats par scanId
-            val groupedResults = results.groupBy { it.scanId }
-
-            // Traiter chaque groupe de résultats séparément
-            groupedResults.forEach { (scanId, scanResults) ->
-                val scan = scanDao.getScanById(scanId)
-                    ?: return@forEach // Skip si le scan n'existe pas
-
-                val scanRequest = ScanRequestDTO(
-                    scanId = scanId,
-                    launchDate = scan.start_timestamp,
-                    note = scan.note,
-                    results = scanResults.map { result ->
-                        ScanResultDTO(
-                            sensorId = result.id,
-                            control_chip = result.controlChip,
-                            measure_chip = result.measureChip,
-                            name = result.id.toString(),
-                            state = result.state,
-                            note = "",
-                            installation_date = result.timestamp
-                        )
-                    }
-                )
-
-                val response = submitScanResults(scanRequest)
-                if (response.isSuccess) {
-                    scanResults.forEach { result ->
-                        resultDao.deleteResult(result.id)
-                    }
-                }
-            }
-
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
     }
 }
 

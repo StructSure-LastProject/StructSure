@@ -14,12 +14,10 @@ import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
-import fr.uge.structsure.structuresPage.domain.ConnectivityViewModel
-import fr.uge.structsure.structuresPage.domain.StructureViewModel
-import fr.uge.structsure.structuresPage.presentation.components.StructureStates
 
 /**
  * ViewModel responsible for managing the scanning process.
@@ -27,8 +25,6 @@ import fr.uge.structsure.structuresPage.presentation.components.StructureStates
 
  */
 class ScanViewModel(context: Context, private val structureViewModel: StructureViewModel) : ViewModel() {
-
-    private val connectivityViewModel: ConnectivityViewModel = ConnectivityViewModel(context)
 
     /** DAO to interact with the scan database */
     private val scanDao = db.scanDao()
@@ -250,6 +246,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         )
 
         activeScanId = scanDao.insertScan(newScan)
+        this.structureId = structureId
 
         refreshSensorStates()
         updateSensorStateCounts()
@@ -276,29 +273,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 activeScanId?.let { scanId ->
                     val now = Timestamp(System.currentTimeMillis()).toString()
                     scanRepository.updateScanEndTime(scanId, now)
-
-                    val results = scanRepository.getAllScanResults()
-                    structureId?.let { id ->
-                        structureViewModel.setHasUnsentResults(true)
-                    }
-
-                    val scanRequest = scanRepository.convertToScanRequest(
-                        scanId = scanId,
-                        launchDate = now,
-                        note = "",
-                        results = results
-                    )
-
-                    scanRepository.submitScanResults(scanRequest)
-                        .onSuccess {
-                            structureId?.let { id ->
-                                structureViewModel.setHasUnsentResults(false, id)
-                                structureViewModel.setStructureState(id, StructureStates.AVAILABLE)
-                            }
-                        }
-                        .onFailure { error ->
-                           Log.e("ScanViewModel", "Error submitting scan results", error)
-                        }
+                    structureViewModel.tryUploadScan(structureId!!, scanId)
                 }
             } catch (e: Exception) {
                 Log.e("ScanViewModel", "Error stopping scan", e)
