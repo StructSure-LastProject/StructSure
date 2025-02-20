@@ -11,7 +11,7 @@ import useFetch from '../hooks/useFetch';
 function Login() {
     const [login, setLogin] = createSignal("");
     const [password, setPassword] = createSignal("");
-    const [error, setError] = createSignal("");
+    const [errorFront, setErrorFront] = createSignal("");
     const navigate = useNavigate();
 
     /**
@@ -44,7 +44,7 @@ function Login() {
             body: requestBody,
         };
 
-        const { fetchData, statusCode, data, errorFetch } = useFetch();
+        const { fetchData, statusCode, data, error } = useFetch();
         await fetchData(url, requestData);
 
         if (statusCode() === 200) {
@@ -52,8 +52,7 @@ function Login() {
             fillLocalStorage(response);
             navigate("/");
         } else if (statusCode() === 404) {
-            const response = data();
-            setError(errorFetch);
+            setErrorFront(error().errorData.error);
         }
     };
 
@@ -85,7 +84,7 @@ function Login() {
                     </div>
 
                     <div>
-                        <p class="text-sm text-center text-red-500">{error()}</p>
+                        <p class="text-sm text-center text-red-500">{errorFront()}</p>
                     </div>
 
                     <div class="flex flex-col gap-y-25px">
