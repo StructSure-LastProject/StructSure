@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+*:focus-visible {
+    outline: none;
+}
+
 .title {
     font-weight: 600;
     font-size: 1.5625rem;

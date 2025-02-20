@@ -1,39 +1,35 @@
 import { ArrowDownNarrowWide, Filter, Plus, Trash2 } from 'lucide-solid';
 import { createEffect, createSignal } from 'solid-js';
+import SensorPanel from '../SensorPanel/SensorPanel';
+import getSensorStatusColor from "../SensorStatusColorGen"
 
 /**
  * Show the sensors part of the structure detail page
  * @returns the component for the sensors part
  */
 function StructureDetailCapteurs({sensors}) {
-    const [error, setError] = createSignal("");
+    const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
+    const [clickedSensor, setClickedSensor] = createSignal({});
+
 
     /**
-     * Returns the sensor color (div) corresponding for its state
-     * @param {Object} sensor the sensor
-     * @returns the div with the corresponding color
+     * Open the sensor panel
+     * @param {Object} sensor Sensor object that contains all the details about the clicked sensor
      */
-    const getSensorStatusColor = (sensor) => {
-        let colorsClasses = "";
-        switch(sensor.state) {
-            case "OK":
-                colorsClasses = "bg-[#25B61F] border-green-200";
-                break;
-            case "NOK":
-                colorsClasses = "bg-[#F13327] border-red-200";
-                break;
-            case "UNKNOWN":
-                colorsClasses = "bg-[#6A6A6A] border-grey-200";
-                break;
-            case "DEFECTIVE":
-                colorsClasses = "bg-[#F19327] border-yellow-200";
-                break;
-            default:
-                setError("L'etat du sensor inconnu");
-                break;
-        }
-        return <div class={`w-[12px] h-[12px] rounded-[50px] border-2 ${colorsClasses}`}></div>;
-    };
+    const openSensorPanelHandler = (sensor) => {
+        setClickedSensor(sensor);
+        setOpenSensorPanel(true);
+        document.body.style.overflow = 'hidden';
+    }
+
+    /**
+     * Close the sensor panel
+     */
+    const closeSensorPanelHandler = () => {
+        setClickedSensor({});
+        setOpenSensorPanel(false);
+        document.body.style.overflow = "auto";
+    }
 
 
     return (
@@ -55,16 +51,21 @@ function StructureDetailCapteurs({sensors}) {
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <For each={sensors()}>
                     {(sensor) => (
-                        <div class="flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
-                            {getSensorStatusColor(sensor)}
+                        <button onClick={() => openSensorPanelHandler(sensor)} class="cursor-pointer flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
+                            <div class={`w-[12px] h-[12px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
                             <p class="prose font-poppins poppins text-base font-semibold w-[138px]">{sensor.name}</p>
                             <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                                 <Trash2 size={20} />
                             </div>
-                        </div>
+                        </button>
                     )}
                 </For>
             </div>
+            {
+                openSensorPanel() && (
+                    <SensorPanel sensorDetails={clickedSensor()} closeSensorPanel={closeSensorPanelHandler} />
+                )
+            }
         </div>
     );
 }
