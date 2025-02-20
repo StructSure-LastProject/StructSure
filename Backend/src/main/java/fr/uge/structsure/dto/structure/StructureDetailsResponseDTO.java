@@ -36,7 +36,7 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
         }
     }
 
-    public record Plan(long id, String name, String imageUrl) {
+    public record Plan(long id, String name, String section, boolean archived) {
         public Plan {
             if (id < 0) {
                 throw new IllegalArgumentException("sensorId < 0");
@@ -45,7 +45,7 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
         }
 
         public static Plan fromPlanEntity(fr.uge.structsure.entities.Plan plan) {
-            return new Plan(plan.getId(), plan.getName(), plan.getImageUrl());
+            return new Plan(plan.getId(), plan.getName(), plan.getSection(), plan.getArchived());
         }
     }
 

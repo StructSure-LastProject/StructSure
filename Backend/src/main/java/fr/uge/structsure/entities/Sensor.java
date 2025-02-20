@@ -1,7 +1,9 @@
 package fr.uge.structsure.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
 
 import java.util.*;
 
@@ -42,6 +44,8 @@ public class Sensor {
     private Boolean archived;
 
     @OneToMany(mappedBy="sensor")
+    @JsonIgnore
+    @Lazy
     private Set<Result> results;
 
 

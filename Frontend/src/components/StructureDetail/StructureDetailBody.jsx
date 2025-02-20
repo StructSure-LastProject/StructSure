@@ -14,7 +14,7 @@ import useFetch from '../../hooks/useFetch';
 function StructureDetailBody(props) {
 
     const [sensors, setSensors] = createSignal([]);
-    const [structureDetails, setStructureDetails] = createSignal({"scans": []}); 
+    const [structureDetails, setStructureDetails] = createSignal({"scans": [], "plans": []});
     const [planSensors, setPlanSensors] = createSignal([]);
 
     /**
@@ -85,10 +85,13 @@ function StructureDetailBody(props) {
     });
     
     return (
-        
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
             <StructureDetailHead scans={structureDetails().scans}/>
-            <StructureDetailPlans planSensors={planSensors()} />
+            <StructureDetailPlans
+              plans={structureDetails().plans}
+              structureId={props.structureId}
+              planSensors={planSensors()}
+            />
             <StructureDetailRow sensors={sensors} />
         </div>
     );

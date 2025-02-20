@@ -91,7 +91,13 @@ const Modal = ({ isOpen, onClose, onSave, structureId, plan }) => {
     });
 
     if (statusCode() === 200) {
-      onSave(data());
+      onSave({
+        id: plan.id,
+        metadata: {
+          name: name(),
+          section: section()
+        }
+      })
       handleClose();
     } else {
       setError(error()?.errorData?.error || "Une erreur est survenue");

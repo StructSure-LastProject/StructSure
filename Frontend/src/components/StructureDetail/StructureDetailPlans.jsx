@@ -1,17 +1,21 @@
 import { createSignal, onMount, onCleanup, Show, createEffect } from "solid-js";
-import plan from '/src/assets/plan.png';
-import StructureDetailSection from './StructureDetailSection';
-import ModalAddPlan from '../Plan/ModalAddPlan';
 import { Check, ChevronDown, Plus, Trash2 } from 'lucide-solid';
+import planImg from '/src/assets/plan.png';
+import ModalAddPlan from '../Plan/ModalAddPlan';
+import ModalEditPlan from '../Plan/ModalEditPlan';
+import DropdownsSection from "../Plan/DropdownsSection.jsx";
 
 /**
  * Shows the plans part
  * @returns the component for the plans part
  */
 function StructureDetailPlans(props) {
+    // Constants for image manipulation limit
     const imageMoveLimit = 10;
     const SENSOR_POINT_SIZE = 10;
     const ZOOM_LIMIT = 20;
+
+    // Canvas and image state management
     const [ctxCanvas, setCtxCanvas] = createSignal("");
     const [zoomFactor, setZoomFactor] = createSignal(0);
     const [offsetX, setOffsetX] = createSignal(0);
@@ -20,10 +24,6 @@ function StructureDetailPlans(props) {
     const [baseOffsetY, setBaseOffsetY] = createSignal(0);
     const [imgRatio, setImgRatio] = createSignal(0);
     const [canvasRatio, setCanvasRatio] = createSignal(0);
-    const [plans, setPlans] = createSignal([
-        { id: 1, createdAt: "2025-02-12 17:39:11.736" }
-    ]);
-    const [isOpen, setIsOpen] = createSignal(false);
     const [drawWidth, setDrawWidth] = createSignal(0);
     const [drawHeight, setDrawHeight] = createSignal(0);
     const [error, setError] = createSignal("");
@@ -35,45 +35,105 @@ function StructureDetailPlans(props) {
     const [posY, setPosY] = createSignal(-1);
     const [clickExistingPoint, setClickExistingPoint] = createSignal(null);
 
-
-    /**
-     * Add result of adding plan and log the list in the console
-     * @todo remove and make the plan details session dynamic
-     * @param result Result sended by ModalAddPlan
-     */
-    const handleSavePlan = (result) => {
-        const id = result.id;
-        const createdAt = result.createdAt || Date.now();
-
-        const newPlan = {
-            id: id,
-            createdAt: createdAt
-        };
-
-        setPlans(prev => [...prev, newPlan]);
-        closeModal();
-    };
-
-    /**
-     * Opens the modal by setting the isOpen state to true.
-     * This will trigger the modal to become visible.
-     * @returns {void}
-     */
-    const openModal = () => setIsOpen(true);
-    /**
-     * Closes the modal by setting the isOpen state to false.
-     * This will hide the modal from view.
-     * @returns {void}
-     */
-    const closeModal = () => setIsOpen(false);
     const [cClickX, setCClickX] = createSignal(0);
     const [cClickY, setCClickY] = createSignal(0);
-
     const img = new Image();
     let canvasRef;
     let isMouseDown = false;
     let startX = 0;
     let startY = 0;
+
+    // Plans and modals state management
+    const [plans, setPlans] = createSignal([]);
+    const [selectedPlanId, setSelectedPlanId] = createSignal(null);
+    const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
+    const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
+    const [selectedPlan, setSelectedPlan] = createSignal(null);
+
+    const [isAuthorized, setIsAuthorized] = createSignal(false);
+
+
+    /**
+     * Opens the add plan modal
+     */
+    const openAddModal = () => setIsAddModalOpen(true);
+
+    /**
+     * Closes the add plan modal
+     */
+    const closeAddModal = () => setIsAddModalOpen(false);
+
+    /**
+     * Closes the edit plan modal and clears selected plan
+     */
+    const closeEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedPlan(null);
+    };
+
+    /**
+     * Generates the URL for a plan's image
+     * @param {number|string} planId Plan identifier
+     * @returns {string} Complete URL for the plan image
+     */
+    const getImageUrl = (planId) => {
+        // todo remove the part you don't need
+        const API_BASE_URL = window.location.origin || 'http://localhost:8080';
+        return `${API_BASE_URL}/api/structures/plans/${planId}/image`;
+    };
+
+    /**
+     * Handles the edit action for a plan
+     * @param {number|string} planId Identifier of the plan to edit
+     */
+    const handleEdit = (planId) => {
+        const plan = plans().find(p => p.id === planId);
+        if (plan) {
+            setSelectedPlan({
+                ...plan,
+                imageUrl: getImageUrl(plan.id)
+            });
+            setIsEditModalOpen(true);
+        }
+    };
+
+    /**
+     * Handles saving the edited plan data
+     * @param {Object} formData Form data containing the edited plan information
+     */
+    const handleEditSave = (formData) => {
+        const userRole = localStorage.getItem("role");
+        const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
+
+        setPlans(prev => prev.map(plan =>
+          plan.id === formData.id
+            ? {
+                ...plan,
+                name: formData.metadata.name,
+                section: formData.metadata.section,
+                type: plan.archived ? "archived" : (canEdit ? "edit" : "plan")
+            }
+            : plan
+        ));
+        closeEditModal();
+    };
+
+    /**
+     * Handles saving a newly added plan
+     * @param {Object} formData Form data containing the new plan information
+     */
+    const handleAddSave = (formData) => {
+        const newPlan = {
+            id: formData.id,
+            name: formData.metadata.name,
+            section: formData.metadata.section || "",
+            type: isAuthorized() ? "edit" : "plan",
+            archived: false
+        };
+
+        setPlans(prev => [...prev, newPlan]);
+        closeAddModal();
+    };
 
     /**
      * Returns the start image position x
@@ -100,7 +160,7 @@ function StructureDetailPlans(props) {
     };
 
     /**
-     * Returns the zoom with ratio from zoom number 
+     * Returns the zoom with ratio from zoom number
      * @param {Number} zoom zoom number
      * @returns the zoom with ratio
      */
@@ -133,7 +193,7 @@ function StructureDetailPlans(props) {
         setCanvasRatio(canvasRatio);
         setBaseOffsetX(baseOffsetX);
         setBaseOffsetY(baseOffsetY);
-        
+
         ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
         const imgStartX = getImgStartX(baseOffsetX, offsetX(), zoomFactor());
         const imgStartY = getImgStartY(baseOffsetY, offsetY(), zoomFactor());
@@ -203,7 +263,6 @@ function StructureDetailPlans(props) {
             ctx.closePath();
         });
     };
-    
 
     /**
      * Handles the resize event
@@ -219,12 +278,12 @@ function StructureDetailPlans(props) {
     const fixDpi = () => {
         if (!canvasRef || !canvasRef.parentElement) return;
         const dpi = window.devicePixelRatio;
-        
+
         // Récupérer la vraie taille du parent du canvas
         const parent = canvasRef.parentElement;
         const width = parent.clientWidth;
         const height = parent.clientHeight;
-    
+
         // Appliquer ces dimensions au canvas
         canvasRef.width = width * dpi;
         canvasRef.height = height * dpi;
@@ -278,7 +337,7 @@ function StructureDetailPlans(props) {
      * Checks is the position is in the image original dimensions
      * @param {number} x the position x in the original dimensions of the image
      * @param {number} y the position y in the original dimensions of the image
-     * @returns 
+     * @returns
      */
     const isPositionOutOfImage = (x, y) => {
         return !(x < 0 || x > img.width || y < 0 || y > img.height);
@@ -362,10 +421,10 @@ function StructureDetailPlans(props) {
             const distance = Math.sqrt(
                 Math.pow(x - sensor.x, 2) + Math.pow(y - sensor.y, 2)
             );
-    
+
             return distance <= SENSOR_POINT_SIZE;
         }) || null;
-    };    
+    };
 
     /**
      * Loads and draws the image from it's link
@@ -378,7 +437,7 @@ function StructureDetailPlans(props) {
 
     /**
      * Handles the mouse wheel event
-     * @param {MouseEvent} event the mouse event 
+     * @param {MouseEvent} event the mouse event
      */
     const handleWheel = (event) => {
         event.preventDefault();
@@ -432,7 +491,7 @@ function StructureDetailPlans(props) {
         event.preventDefault();
         if (isMouseDown) {
             const dx = event.clientX - startX;
-            const dy = event.clientY - startY; 
+            const dy = event.clientY - startY;
             const imgStartX = getImgStartX(baseOffsetX(), dx, zoomFactor());
             const imgStartY = getImgStartY(baseOffsetY(), dy, zoomFactor());
             const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
@@ -488,83 +547,137 @@ function StructureDetailPlans(props) {
      * Loads the details (images and draw it)
      */
     const loadDetails = () => {
-        loadAndDrawImage(plan);
+        loadAndDrawImage(planImg);
     };
-    
+
+    /**
+     * Effect that updates plans based on props and user role
+     */
+    createEffect(() => {
+        if (props.plans) {
+            const userRole = localStorage.getItem("role");
+            setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE")
+
+            const newPlans = props.plans.map(plan => {
+                if (plan.archived) {
+                    return {
+                        ...plan,
+                        type: "archived",
+                        section: plan.section || ""
+                    };
+                }
+                return {
+                    ...plan,
+                    type: isAuthorized() ? "edit" : "plan",
+                    section: plan.section || ""
+                };
+            });
+            setPlans(newPlans);
+        }
+    });
+
     return (
-        <>
-            <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
-                <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
-                    <div class="flex items-center justify-between">
-                        <p class="prose font-poppins title">Plans</p>
-                        <button 
-                        title="Ajouter un plan" 
-                        onClick={openModal}
-                        class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+      <>
+        <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
+            <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5 max-h-[350px] lg:max-h-[436px]">
+                <div class="flex items-center justify-between">
+                    <p class="prose font-poppins title">Plans</p>
+                    <Show when={isAuthorized()}>
+                        <button
+                          title="Ajouter un plan"
+                          onClick={openAddModal}
+                          class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
                         >
                             <Plus color="black"/>
                         </button>
-                    </div>
-                    <Show when={isOpen()}>
-                        <ModalAddPlan isOpen={isOpen()} onSave={handleSavePlan} onClose={closeModal} structureId={1} />
                     </Show>
-                    <StructureDetailSection />
                 </div>
-                <div class="lg:w-[75%] rounded-[20px] bg-white">
-                    <div class="w-full m-[20px] relative">
-                        <canvas
-                            ref={canvasRef}
-                            class="w-full"
-                        ></canvas>
-                        <Show when={isPopupVisible()}>
-                            <Show when={!clickExistingPoint()}>
-                                <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
-                                    style={{
-                                        top: `${popupY()-10}px`,
-                                        left: `${popupX()-10}px`,
-                                    }}>
-                                </div>
-                            </Show>
-                            <div 
-                                class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
-                                style={{
-                                    top: `${popupY()}px`,
-                                    left: `${popupX()}px`,
-                                }}
-                            >
-                                <div class="w-full flex justify-between items-center">
-                                    <h1 class="title poppins text-[25px] font-semibold">Ouvrages</h1>
-                                    <div class="flex gap-x-[10px]">
-                                        <button class="bg-E9E9EB rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                            <Check color="black"/>
-                                        </button>
-                                        <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                            <Trash2 color="red"/>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-y-[5px]">
-                                    <p class="HeadLineMedium poppins font-normal">Capteur</p>
-                                    <div class="bg-E9E9EB px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
-                                        <h1 class="font-poppins poppins text-[16px] font-semibold">Capteur P</h1>
-                                        <button class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center">
-                                            <ChevronDown color="black" />
-                                        </button>
-                                    </div>
-                                    <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
-                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur PA</p>
-                                        <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
-                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8S</p>
-                                        <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
-                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8N</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </Show>
-                    </div>
+                <div
+                  class="flex flex-col gap-y-[5px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    <DropdownsSection
+                      data={plans()}
+                      selectedPlanId={selectedPlanId()}
+                      onEdit={handleEdit}
+                      onPlanEdit={handleEditSave}
+                      structureId={props.structureId}
+                    />
                 </div>
+                <Show when={isAddModalOpen()}>
+                    <ModalAddPlan
+                      isOpen={isAddModalOpen()}
+                      onSave={handleAddSave}
+                      onClose={closeAddModal}
+                      structureId={props.structureId}
+                    />
+                </Show>
+                <Show when={isEditModalOpen() && selectedPlan()}>
+                    <ModalEditPlan
+                      isOpen={isEditModalOpen()}
+                      onSave={handleEditSave}
+                      onClose={() => {
+                          setIsEditModalOpen(false);
+                          setSelectedPlan(null);
+                      }}
+                      structureId={props.structureId}
+                      plan={selectedPlan()}
+                    />
+                </Show>
             </div>
-        </>
+          <div class="lg:w-[75%] rounded-[20px] bg-white">
+            <div class="w-full m-[20px] relative">
+              <canvas
+                ref={canvasRef}
+                class="w-full"
+              ></canvas>
+              <Show when={isPopupVisible()}>
+                <Show when={!clickExistingPoint()}>
+                  <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
+                       style={{
+                         top: `${popupY()-10}px`,
+                         left: `${popupX()-10}px`,
+                       }}>
+                  </div>
+                </Show>
+                <div
+                  class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
+                  style={{
+                    top: `${popupY()}px`,
+                    left: `${popupX()}px`,
+                  }}
+                >
+                  <div class="w-full flex justify-between items-center">
+                    <h1 class="title poppins text-[25px] font-semibold">Ouvrages</h1>
+                    <div class="flex gap-x-[10px]">
+                      <button class="bg-E9E9EB rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                        <Check color="black"/>
+                      </button>
+                      <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                        <Trash2 color="red"/>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-y-[5px]">
+                    <p class="HeadLineMedium poppins font-normal">Capteur</p>
+                    <div class="bg-E9E9EB px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
+                      <h1 class="font-poppins poppins text-[16px] font-semibold">Capteur P</h1>
+                      <button class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center">
+                        <ChevronDown color="black" />
+                      </button>
+                    </div>
+                    <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
+                      <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur PA</p>
+                      <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
+                      <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8S</p>
+                      <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
+                      <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8N</p>
+                    </div>
+                  </div>
+                </div>
+              </Show>
+            </div>
+          </div>
+        </div>
+      </>
     );
 }
 
