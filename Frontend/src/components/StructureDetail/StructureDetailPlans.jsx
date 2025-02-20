@@ -45,6 +45,9 @@ function StructureDetailPlans(props) {
     const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
     const [selectedPlan, setSelectedPlan] = createSignal(null);
 
+    const [isAuthorized, setIsAuthorized] = createSignal(false);
+
+
     /**
      * Opens the add plan modal
      */
@@ -115,14 +118,11 @@ function StructureDetailPlans(props) {
      * @param {Object} formData Form data containing the new plan information
      */
     const handleAddSave = (formData) => {
-        const userRole = localStorage.getItem("role");
-        const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
-
         const newPlan = {
             id: formData.id,
             name: formData.metadata.name,
             section: formData.metadata.section || "",
-            type: canEdit ? "edit" : "plan",
+            type: isAuthorized() ? "edit" : "plan",
             archived: false
         };
 
@@ -559,7 +559,7 @@ function StructureDetailPlans(props) {
     createEffect(() => {
         if (props.plans) {
             const userRole = localStorage.getItem("role");
-            const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
+            setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE")
 
             const newPlans = props.plans.map(plan => {
                 if (plan.archived) {
@@ -571,7 +571,7 @@ function StructureDetailPlans(props) {
                 }
                 return {
                     ...plan,
-                    type: canEdit ? "edit" : "plan",
+                    type: isAuthorized() ? "edit" : "plan",
                     section: plan.section || ""
                 };
             });
@@ -585,15 +585,18 @@ function StructureDetailPlans(props) {
             <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
                 <div class="flex items-center justify-between">
                     <p class="prose font-poppins title">Plans</p>
-                    <button
-                      title="Ajouter un plan"
-                      onClick={openAddModal}
-                      class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
-                    >
-                        <Plus color="black"/>
-                    </button>
+                    <Show when={isAuthorized()}>
+                        <button
+                          title="Ajouter un plan"
+                          onClick={openAddModal}
+                          class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+                        >
+                            <Plus color="black"/>
+                        </button>
+                    </Show>
                 </div>
-                <div class="flex flex-col gap-y-[5px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div
+                  class="flex flex-col gap-y-[5px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     <DropdownsSection
                       data={plans()}
                       selectedPlanId={selectedPlanId()}
