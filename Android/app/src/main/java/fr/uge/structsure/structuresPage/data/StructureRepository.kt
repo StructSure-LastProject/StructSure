@@ -51,7 +51,7 @@ class StructureRepository : ViewModel() {
                     emptyList()
                 }
             } catch (e: Exception) {
-                Log.d("ERROR API", e.message.toString())
+                Log.w("ERROR API", "Failed to get structures from API: ${e.message}")
                 emptyList()
             }
         }
@@ -83,8 +83,7 @@ class StructureRepository : ViewModel() {
                     )
                 }
             } catch (e: Exception) {
-                Log.d("ERROR API", "Failed to get details from API")
-                e.printStackTrace()
+                Log.w("ERROR API", "Failed to get details from API: ${e.message}")
             }
             Optional.empty()
         }
