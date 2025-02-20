@@ -8,7 +8,6 @@ import getSensorStatusColor from "../SensorStatusColorGen"
  * @returns the component for the sensors part
  */
 function StructureDetailCapteurs({sensors}) {
-    const [error, setError] = createSignal("");
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
@@ -53,7 +52,7 @@ function StructureDetailCapteurs({sensors}) {
                 <For each={sensors()}>
                     {(sensor) => (
                         <button onClick={() => openSensorPanelHandler(sensor)} class="cursor-pointer flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
-                            <div class={`w-[12px] h-[12px] rounded-[50px] border-2 ${getSensorStatusColor(sensor, setError)}`}></div>
+                            <div class={`w-[12px] h-[12px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
                             <p class="prose font-poppins poppins text-base font-semibold w-[138px]">{sensor.name}</p>
                             <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                                 <Trash2 size={20} />

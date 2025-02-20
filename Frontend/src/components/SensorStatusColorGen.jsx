@@ -1,11 +1,11 @@
 /**
  * Returns the sensor color corresponding for its state
- * @param {Object} sensor the sensor
+ * @param {Object} state the sensor state
  * @returns The corresponding color
  */
-const getSensorStatusColor = (sensor, setError) => {
+const getSensorStatusColor = (state) => {
     let colorsClasses = "";
-    switch(sensor.state) {
+    switch(state) {
         case "OK":
             colorsClasses = "bg-[#25B61F] border-green-200";
             break;
@@ -19,7 +19,6 @@ const getSensorStatusColor = (sensor, setError) => {
             colorsClasses = "bg-[#F19327] border-yellow-200";
             break;
         default:
-            setError("L'etat du sensor inconnu");
             break;
     }
     return colorsClasses;
