@@ -109,7 +109,7 @@ public class SensorRepositoryCriteriaQuery {
                     predicates.add(cb.lessThanOrEqualTo(sensor.get("installationDate"), LocalDateTime.parse(request.maxInstallationDate(), formatter)));
                 }
             } catch (DateTimeParseException e) {
-                throw new TraitementException(Error.DATE_FORMAT_ERROR);
+                throw new TraitementException(Error.DATE_TIME_FORMAT_ERROR);
             }
         }
     }
