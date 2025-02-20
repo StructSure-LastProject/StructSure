@@ -277,7 +277,7 @@ function StructureDetailPlans(props) {
      * @returns 
      */
     const isPositionOutOfImage = (x, y) => {
-        return x < 0 || x > img.width || y < 0 || y > img.height;
+        return !(x < 0 || x > img.width || y < 0 || y > img.height);
     };
 
 
