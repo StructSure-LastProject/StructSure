@@ -1,10 +1,5 @@
 package fr.uge.structsure.dto.structure;
 
-
-import fr.uge.structsure.entities.Plan;
-import fr.uge.structsure.entities.Scan;
-import fr.uge.structsure.entities.Sensor;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -60,5 +55,4 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
             return new Sensor(sensor.getSensorId().getControlChip(), sensor.getSensorId().getMeasureChip(), sensor.getName());
         }
     }
-
 }

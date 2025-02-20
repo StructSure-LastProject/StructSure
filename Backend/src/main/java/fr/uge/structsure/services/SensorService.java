@@ -104,7 +104,7 @@ public class SensorService {
 
     /**
      * Creates a sensor by validating preconditions and checking uniqueness constraints.
-     *
+     * <br>
      * This method first verifies that all required fields are present in the request.
      * Then, it ensures that the sensor's name and ID are unique within the system.
      * If the provided structure ID does not exist, an exception is thrown.
@@ -162,7 +162,7 @@ public class SensorService {
 
     /**
      * Ensures that the sensor request object contains all necessary information.
-     *
+     * <br>
      * This method checks that none of the required properties are null.
      * If any essential field is missing, an exception is thrown.
      *
@@ -184,7 +184,7 @@ public class SensorService {
 
     /**
      * Ensures that the sensor request object contains all necessary information.
-     *
+     * <br>
      * This method checks that none of the required properties are malformed.
      * If any essential field is malformed, an exception is thrown.
      *

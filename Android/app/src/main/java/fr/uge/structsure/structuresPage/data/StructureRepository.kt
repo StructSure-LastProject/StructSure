@@ -123,7 +123,7 @@ class StructureRepository : ViewModel() {
                             sensor.note,
                             sensor.installationDate,
                             "", // TODO
-                            3, // TODO get real plan ID
+                            sensor.plan,
                             sensor.x,
                             sensor.y,
                             structure.id
