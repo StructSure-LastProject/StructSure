@@ -271,6 +271,17 @@ function StructureDetailPlans(props) {
     });
 
     /**
+     * Checks is the position is in the image original dimensions
+     * @param {number} x the position x in the original dimensions of the image
+     * @param {number} y the position y in the original dimensions of the image
+     * @returns 
+     */
+    const isPositionOutOfImage = (x, y) => {
+        return x < 0 || x > img.width || y < 0 || y > img.height;
+    };
+
+
+    /**
      * Handles the canvas click
      * @param {Event} event the event of the click in the canvas
      */
@@ -295,19 +306,6 @@ function StructureDetailPlans(props) {
         setPopupX(x);
         setPopupY(y);
         setIsPopupVisible(true);
-    };
-
-    /**
-     * Checks is the position is in the image original dimensions
-     * @param {number} x the position x in the original dimensions of the image
-     * @param {number} y the position y in the original dimensions of the image
-     * @returns 
-     */
-    const isPositionOutOfImage = (x, y) => {
-        if (x < 0 || x > img.width || y < 0 || y > img.height) {
-            return false;
-        }
-        return true;
     };
 
     /**
@@ -426,76 +424,76 @@ function StructureDetailPlans(props) {
     
     return (
         <>
-        <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
-            <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
-                <div class="flex items-center justify-between">
-                    <p class="prose font-poppins title">Plans</p>
-                    <button 
-                      title="Ajouter un plan" 
-                      onClick={openModal}
-                      class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
-                    >
-                        <Plus color="black"/>
-                    </button>
-                </div>
-                <Show when={isOpen()}>
-                    <ModalAddPlan isOpen={isOpen()} onSave={handleSavePlan} onClose={closeModal} structureId={1} />
-                </Show>
-                <StructureDetailSection />
-            </div>
-            <div class="lg:w-[75%] rounded-[20px] bg-white">
-                <div class="w-full m-[20px] relative">
-                    <canvas
-                        ref={canvasRef}
-                        class="w-full"
-                    ></canvas>
-                    <Show when={isPopupVisible()}>
-                        <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
-                            style={{
-                                top: `${popupY()-10}px`,
-                                left: `${popupX()-10}px`,
-                            }}>
-
-                        </div>
-                        <div 
-                            class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
-                            style={{
-                                top: `${popupY()}px`,
-                                left: `${popupX()}px`,
-                            }}
+            <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
+                <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
+                    <div class="flex items-center justify-between">
+                        <p class="prose font-poppins title">Plans</p>
+                        <button 
+                        title="Ajouter un plan" 
+                        onClick={openModal}
+                        class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
                         >
-                            <div class="w-full flex justify-between items-center">
-                                <h1 class="title poppins text-[25px] font-semibold">Ouvrages</h1>
-                                <div class="flex gap-x-[10px]">
-                                    <button class="bg-E9E9EB rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                        <Check color="black"/>
-                                    </button>
-                                    <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                        <Trash2 color="red"/>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex flex-col gap-y-[5px]">
-                                <p class="HeadLineMedium poppins font-normal">Capteur</p>
-                                <div class="bg-E9E9EB px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
-                                    <h1 class="font-poppins poppins text-[16px] font-semibold">Capteur P</h1>
-                                    <button class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center">
-                                        <ChevronDown color="black" />
-                                    </button>
-                                </div>
-                                <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
-                                    <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur PA</p>
-                                    <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
-                                    <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8S</p>
-                                    <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
-                                    <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8N</p>
-                                </div>
-                            </div>
-                        </div>
+                            <Plus color="black"/>
+                        </button>
+                    </div>
+                    <Show when={isOpen()}>
+                        <ModalAddPlan isOpen={isOpen()} onSave={handleSavePlan} onClose={closeModal} structureId={1} />
                     </Show>
+                    <StructureDetailSection />
+                </div>
+                <div class="lg:w-[75%] rounded-[20px] bg-white">
+                    <div class="w-full m-[20px] relative">
+                        <canvas
+                            ref={canvasRef}
+                            class="w-full"
+                        ></canvas>
+                        <Show when={isPopupVisible()}>
+                            <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
+                                style={{
+                                    top: `${popupY()-10}px`,
+                                    left: `${popupX()-10}px`,
+                                }}>
+
+                            </div>
+                            <div 
+                                class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
+                                style={{
+                                    top: `${popupY()}px`,
+                                    left: `${popupX()}px`,
+                                }}
+                            >
+                                <div class="w-full flex justify-between items-center">
+                                    <h1 class="title poppins text-[25px] font-semibold">Ouvrages</h1>
+                                    <div class="flex gap-x-[10px]">
+                                        <button class="bg-E9E9EB rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                                            <Check color="black"/>
+                                        </button>
+                                        <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                                            <Trash2 color="red"/>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-y-[5px]">
+                                    <p class="HeadLineMedium poppins font-normal">Capteur</p>
+                                    <div class="bg-E9E9EB px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
+                                        <h1 class="font-poppins poppins text-[16px] font-semibold">Capteur P</h1>
+                                        <button class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center">
+                                            <ChevronDown color="black" />
+                                        </button>
+                                    </div>
+                                    <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
+                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur PA</p>
+                                        <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
+                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8S</p>
+                                        <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
+                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8N</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </Show>
+                    </div>
                 </div>
             </div>
-        </div>
         </>
     );
 }
