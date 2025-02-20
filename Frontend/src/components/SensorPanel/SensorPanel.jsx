@@ -10,12 +10,12 @@ import getSensorStatusColor from "../SensorStatusColorGen";
  */
 const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
   return (
-    <div class="min-h-[100vh] items-center bg-[#F2F2F403] backdrop-blur-[25px] z-[100] flex justify-center align-middle w-[100vw] fixed top-0 left-0">
+    <div class="min-h-[100vh] bg-[#F2F2F403] backdrop-blur-[25px] z-[100] flex items-end justify-center align-middle w-[100vw] fixed top-0 left-0">
       <div class="w-full p-[25px] fixed top-0 left-0 z-[150]">
         <Header />
       </div>
-      <div class="max-w-[963px] min-h-[586px] lg:h-auto lg:flex justify-center absolute top-[30%] md:top-[40%] left-0 right-0 bottom-0 flex flex-col w-[100%] rounded-t-[35px] p-[25px] md:p-[25px] lg:p-[50px] gap-[25px] bg-[#FFFFFF] shadow-[0px 4px 100px 0px #9797A780] mx-auto">
-        <div class="flex justify-between rounded-[20px] gap-[10px]">
+      <div class="max-w-[963px] max-h-[calc(100vh-7rem)] justify-center flex flex-col gap-[25px] w-[100%] rounded-t-[35px] p-[25px] lg:p-[50px] bg-[#FFFFFF] shadow-[0px_4px_100px_0px_rgba(151,151,167,0.50)] mx-auto">
+        <div class="flex justify-between rounded-[20px]">
           <div class="flex flex-wrap justify-center items-center">
             <div class="p-[12px] gap-[10px] w-[39px] h-[39px]">
               <div class={`w-[15px] h-[15px] rounded-[50px] border-2 ${getSensorStatusColor(sensorDetails)}`}></div>
@@ -31,11 +31,12 @@ const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
             </button>
           </div>
         </div>
-        <div class="overflow-auto flex flex-col gap-[25px] pb-[35%] sm:pb-[0%]">
+        <div class="overflow-auto flex flex-col gap-[25px]">
           <div class="lg:flex lg:flex-row lg:gap-[25px] flex flex-col gap-[25px]">
             <div class="lg:flex lg:flex-col lg:gap-[10px]">
               <h1 class="font-poppins font-[600] text-[16px] leading-[24px] tracking-[0%] text-[#181818]">OA/Zone</h1>
               <img src="" alt="" class="w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px]" />
+             
             </div>
             <div class="flex flex-col gap-[5px] lg:gap-[10px]">
               <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">Note</p>
