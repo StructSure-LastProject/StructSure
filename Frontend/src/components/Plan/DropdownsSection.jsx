@@ -14,6 +14,7 @@ const Section = (props) => {
     <div
       class="bg-white px-[8px] py-[9px] flex items-center gap-x-[10px] rounded-[10px] cursor-pointer hover:bg-gray-50"
       onClick={props.toggleOpen}
+      role="button"
     >
       <div class="w-4 h-4 flex items-center justify-center">
         {props.isOpen() ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -167,6 +168,10 @@ const TreeNode = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
   const hasChildren = Object.keys(props.children || {}).length > 0;
 
+  /**
+   * Change the toggle status
+   * @param e Click event
+   */
   const toggleOpen = (e) => {
     e.stopPropagation();
     setIsOpen(!isOpen());
@@ -285,6 +290,10 @@ const DropdownsSection = (props) => {
     }
   });
 
+  /**
+   * Build the plans data (section and plan)
+   * @returns {{sections: {}, rootPlans: *[]}} Tree object
+   */
   const treeData = () => {
     const currentPlans = localPlans();
     return buildTree(currentPlans);
