@@ -45,7 +45,12 @@ data class Point(val x: Double, val y: Double, val state: SensorState)
  * @param points the list of points to display on the image
  */
 @Composable
-fun Plan(image: Bitmap, points: MutableList<Point>) {
+fun Plan(
+    image: Bitmap,
+    points: List<Point>,
+    addPoint: (Point) -> Unit,
+    deletePoint: (Point) -> Unit
+) {
     val painter = remember(image) { BitmapPainter(image.asImageBitmap()) }
     val factor = remember(image) { Factor(painter.intrinsicSize) }
 
@@ -80,8 +85,8 @@ fun Plan(image: Bitmap, points: MutableList<Point>) {
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(
-                        onTap = { pos -> onTap(factor, size.toSize(), scale, offset, pos, points) },
-                        onLongPress = { pos -> onTap(factor, size.toSize(), scale, offset, pos, points, true) }
+                        onTap = { pos -> onTap(factor, size.toSize(), scale, offset, pos, points, addPoint, deletePoint) },
+                        onLongPress = { pos -> onTap(factor, size.toSize(), scale, offset, pos, points, addPoint, deletePoint, true) }
                     )
                 }
                 .graphicsLayer(
@@ -111,27 +116,27 @@ fun Plan(image: Bitmap, points: MutableList<Point>) {
  * @param points all the points contained in the plan
  * @param long true if the press was a long press, false otherwise
  */
-private fun onTap(factor: Factor, size: Size, scale: Float, offset: Offset, pos: Offset, points: MutableList<Point>, long: Boolean = false) {
+private fun onTap(
+    factor: Factor,
+    size: Size,
+    scale: Float,
+    offset: Offset,
+    pos: Offset,
+    points: List<Point>,
+    addPoint: (Point) -> Unit,
+    deletePoint: (Point) -> Unit,
+    long: Boolean = false
+) {
     val range = (30 / factor.transform / scale).toInt()
     val imgPos = canvasToImg(offset, scale, size, factor.transformPoint(size), factor.offset, pos.x, pos.y)
     val imgPoint = Point(imgPos.x.toDouble(), imgPos.y.toDouble(), SensorState.NOK)
-    for (i in 0 ..< points.size) {
+    for (i in points.indices) {
         if (imgPoint.inRange(points[i], range)) {
-            if (long) onPointLongPress(points, i) else onPointTap(points, i)
+            if (long) deletePoint(points[i]) else onPointTap(points, i)
             return
         }
     }
-    if (!long) onVoidTap(points, imgPos.x.toDouble(), imgPos.y.toDouble())
-}
-
-/**
- * Action to run when one point is pressed.
- * @param points the list of points that contains the pressed point
- * @param x coordinate of the click in the image
- * @param y coordinate of the click in the image
- */
-private fun onVoidTap(points: MutableList<Point>, x: Double, y: Double) {
-    points.add(Point(x, y, SensorState.DEFECTIVE))
+    if (!long) addPoint(Point(imgPos.x.toDouble(), imgPos.y.toDouble(), SensorState.DEFECTIVE))
 }
 
 /**
@@ -139,17 +144,8 @@ private fun onVoidTap(points: MutableList<Point>, x: Double, y: Double) {
  * @param points the list of points that contains the pressed point
  * @param i the index of the point in the list
  */
-private fun onPointTap(points: MutableList<Point>, i: Int) {
-    points[i] = Point(points[i].x, points[i].y, if (points[i].state == SensorState.NOK) SensorState.OK else SensorState.NOK)
-}
-
-/**
- * Action to run when one point is pressed for a long time
- * @param points the list of points that contains the pressed point
- * @param i the index of the point in the list
- */
-private fun onPointLongPress(points: MutableList<Point>, i: Int) {
-    points.removeAt(i)
+private fun onPointTap(points: List<Point>, i: Int) {
+    println("TODO Point pressed: ${points[i]}")
 }
 
 /**

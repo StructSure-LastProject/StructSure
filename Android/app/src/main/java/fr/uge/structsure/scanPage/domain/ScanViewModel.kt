@@ -44,34 +44,35 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Repository to interact with the scan database */
     private val scanRepository: ScanRepository = ScanRepository(context)
 
-    // Scanner hardware for reading RFID chips
+    /** Scanner hardware for reading RFID chips */
     private val cs108Scanner =
         Cs108Scanner { chip ->
             onTagScanned(chip.id)
         }
 
-    // Current state of the scan process: NOT_STARTED, STARTED, PAUSED, STOPPED
+    /** Current state of the scan process: NOT_STARTED, STARTED, PAUSED, STOPPED */
     val currentScanState = MutableLiveData(ScanState.NOT_STARTED)
 
-    // ID of the currently active scan
+    /** ID of the currently active scan */
     private var activeScanId: Long? = null
 
-    // Sensor cache for managing sensor states in memory
+    /** Sensor cache for managing sensor states in memory */
     private val sensorCache = SensorCache()
 
-    // LiveData for displaying sensor messages which have a "OK" state
+    /** LiveData for displaying sensor messages which have a "OK" state */
     val sensorMessages = MutableLiveData<String>()
 
-    // LiveData for displaying sensor messages which have a "NOK" / "DEFECTIVE" state
+    /** LiveData for displaying sensor messages which have a "NOK" / "DEFECTIVE" state */
     val alertMessages = MutableLiveData<AlertInfo?>()
 
-    // Buffer to manage RFID chip scanning with timeout handling
+    /** Buffer to manage RFID chip scanning with timeout handling */
     private val rfidBuffer = TimedBuffer { _, chipId ->
         processChip(chipId)
     }
 
     val sensorsNotScanned = MutableLiveData<List<SensorDB>>()
 
+    /** Counts how many results are in a given state for the scan weather */
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
 
     /**

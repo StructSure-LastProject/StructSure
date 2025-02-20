@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,6 +39,7 @@ import fr.uge.structsure.MainActivity
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Plan
 import fr.uge.structsure.components.Point
+import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.structuresPage.data.TreeNode
@@ -55,14 +57,20 @@ import fr.uge.structsure.utils.FileUtils
  * @param structureId the id of the structure
  */
 @Composable
-fun PlansView(structureId: Long) {
+fun PlansView(structureId: Long, scanViewModel: ScanViewModel) {
     val context = LocalContext.current
     val selected = remember { mutableStateOf<TreePlan?>(null) }
+    // TODO selected change when navigating to another page (alert)
+    // TODO sometimes the interrogator disappeared from the BLE list (when connecting)
     val defaultImage = remember(1) { BitmapFactory.decodeResource(context.resources, R.drawable.plan_not_found) }
 
     val plans = remember(structureId, selected) { planTree(MainActivity.db.planDao().getPlansByStructureId(structureId), selected) }
-    val points = remember(selected) { MainActivity.db.sensorDao().getAllSensorsByPlan(selected.value?.plan?.id?:0).map { Point(it.x, it.y, SensorState.UNKNOWN) }.toMutableList() }
-    // TODO get real point states
+    val sensors = scanViewModel.sensorsNotScanned.observeAsState(listOf())
+    println(sensors.value.map{ "${it.name}-${it.state}"} )
+    val points = sensors.value
+        .filter { it.plan == selected.value?.plan?.id }
+        .map { Point(it.x, it.y, SensorState.valueOf(it.state)) }
+    println(points)
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -86,7 +94,9 @@ fun PlansView(structureId: Long) {
             val image = if (path == null) defaultImage else BitmapFactory.decodeFile(path)
             Plan(
                 image = image,
-                points = points
+                points = points,
+                addPoint = { /* TODO enable to place points */ },
+                deletePoint = { /* TODO enable to remove points */ }
             )
 
             Spacer(
@@ -144,7 +154,7 @@ private fun Section(treeNode: TreeSection, selected: MutableState<TreePlan?>, hi
                 .fillMaxWidth()
                 .padding(start = if (hideSelf) 0.dp else 17.dp)
         ) {
-            treeNode.children.values.forEach {
+            treeNode.children.values.sortedBy { !it.isPlan }.forEach {
                 if (it.isPlan) {
                     val plan = (it as TreePlan).plan
                     PlanItem(plan.name, selected.value == it ) { selected.value = it }
