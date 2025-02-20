@@ -7,7 +7,7 @@ import java.util.Objects;
  */
 public enum Error {
     INVALID_FIELDS(422, "Les champs sont invalides"),
-    INCORRECT_FIELD_VALUE(422, "Un ou plusieurs valeurs invalides"),
+    INCORRECT_FIELD_VALUE(422, "Une ou plusieurs valeur(s) invalide(s)"),
     MISSING_FIELDS(422, "Un ou plusieurs champs manquant"),
     UNAUTHORIZED_OPERATION(422, "Permission insuffisante"),
     INVALID_TOKEN(401, "Session expirée"),

@@ -70,9 +70,6 @@ public class SensorRepositoryCriteriaQuery {
                 sensor.get("y")
         ));
 
-        if (request.stateFilter() != null) {
-            predicates.add(cb.equal(result.get("state"), request.stateFilter()));
-        }
 
         if (request.archivedFilter() != null) {
             predicates.add(cb.equal(sensor.get("archived"), request.archivedFilter()));
@@ -82,6 +79,11 @@ public class SensorRepositoryCriteriaQuery {
 
         cq.where(predicates.toArray(new Predicate[0]));
         cq.groupBy(sensor.get("sensorId"));
+
+        if (request.stateFilter() != null) {
+            var stateFilterEnum = State.valueOf(request.stateFilter());
+            cq.having(cb.equal(state, stateFilterEnum.ordinal()));
+        }
         var orderByColumn = AllSensorsByStructureRequestDTO.OrderByColumn.valueOf(request.orderByColumn());
         var orderType = OrderEnum.valueOf(request.orderType());
         Order order = switch (orderByColumn) {

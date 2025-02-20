@@ -44,6 +44,7 @@ public class Sensor {
     @Lazy
     private Set<Result> results;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name="plan_id")
     private Plan plan;

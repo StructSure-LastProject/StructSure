@@ -1,6 +1,7 @@
 package fr.uge.structsure.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -27,6 +28,7 @@ public class Plan {
     @JoinColumn(name = "structure_id", nullable = false)
     private Structure structure;
 
+    @JsonManagedReference
     @OneToMany(mappedBy="plan")
     private Set<Sensor> sensors;
 

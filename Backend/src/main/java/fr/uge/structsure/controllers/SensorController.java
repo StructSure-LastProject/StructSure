@@ -52,7 +52,7 @@ public class SensorController {
      * Endpoint to get the list of sensors present in a structure
      * @return List of sensors
      */
-    @GetMapping("/structures/{id}/sensors")
+    @PostMapping("/structures/{id}/sensors")
     public ResponseEntity<?> getSensorsByStructure(@PathVariable("id") long id, @RequestBody AllSensorsByStructureRequestDTO request) {
         try {
             List<SensorDTO> sensorDTOs = sensorService.getSensors(id, request);

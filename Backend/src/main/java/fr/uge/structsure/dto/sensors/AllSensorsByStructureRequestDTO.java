@@ -1,6 +1,7 @@
 package fr.uge.structsure.dto.sensors;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.uge.structsure.entities.State;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.utils.EnumValidatorFromString;
@@ -46,7 +47,7 @@ public record AllSensorsByStructureRequestDTO(String orderByColumn, String order
         }
         if (!EnumValidatorFromString.validateEnumValue(OrderByColumn.class, orderByColumn) ||
                 !EnumValidatorFromString.validateEnumValue(OrderEnum.class, orderType) ||
-                (!Objects.isNull(stateFilter) && !EnumValidatorFromString.validateEnumValue(StateEnum.class, stateFilter))) {
+                (!Objects.isNull(stateFilter) && !EnumValidatorFromString.validateEnumValue(State.class, stateFilter))) {
             throw new TraitementException(Error.INCORRECT_FIELD_VALUE);
         }
     }
