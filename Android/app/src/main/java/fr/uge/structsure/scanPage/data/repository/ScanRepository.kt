@@ -1,21 +1,29 @@
 package fr.uge.structsure.scanPage.data.repository
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import androidx.compose.ui.platform.LocalContext
 import fr.uge.structsure.MainActivity.Companion.db
+import fr.uge.structsure.exception.NoConnectivityException
 import fr.uge.structsure.retrofit.RetrofitInstance
+import fr.uge.structsure.retrofit.RetrofitInstance.scanApi
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.network.dto.ScanRequestDTO
 import fr.uge.structsure.scanPage.data.network.dto.ScanResultDTO
+import fr.uge.structsure.structuresPage.domain.ConnectivityViewModel
 
 /**
  * Repository class handling all scan-related data operations
  * Manages both local database operations and server communication
  */
-class ScanRepository {
+class ScanRepository(private val context: Context) {
     private val scanDao = db.scanDao()
     private val resultDao = db.resultDao()
     private val sensorDao = db.sensorDao()
     private val scanApi = RetrofitInstance.scanApi
-
+    private val connectivityViewModel = ConnectivityViewModel(context)
+    private var pendingResults: ScanRequestDTO? = null
     /**
      * Updates the end timestamp of a scan in local database
      * Called when a scan is completed to record its end time
@@ -51,20 +59,21 @@ class ScanRepository {
      */
     suspend fun submitScanResults(scanRequest: ScanRequestDTO): Result<Unit> {
         return try {
+            if (connectivityViewModel.isConnected.value != true) {
+                throw NoConnectivityException()
+            }
+
             val response = scanApi.submitScanResults(scanRequest)
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
-                if (response.code() == 404) {
-                    Result.failure(Exception("Scan introuvable"))
-                } else {
-                    Result.failure(Exception("Erreur serveur: ${response.code()}"))
-                }
+                Result.failure(Exception("Erreur serveur: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
 
     /**
      * Converts local scan results into a DTO format for API submission
@@ -86,13 +95,6 @@ class ScanRepository {
         note: String,
         results: List<ResultSensors>
     ): ScanRequestDTO {
-        val newResults = results.filter { result ->
-            !resultDao.hasExistingResult(result.id, result.state, scanId)
-        }
-
-        if (newResults.isEmpty()) {
-            throw NoNewResultsException("Aucun nouveau résultat à envoyer")
-        }
 
         val scanResults = results.map { result ->
             val sensor = sensorDao.getSensor(result.id)
@@ -114,7 +116,28 @@ class ScanRepository {
             results = scanResults
         )
     }
+
+    fun savePendingResults(request: ScanRequestDTO) {
+        pendingResults = request
+    }
+
+    suspend fun checkAndSendPendingResults(): Result<Unit> {
+        val currentRequest = pendingResults ?: return Result.success(Unit)
+
+        return try {
+            if (connectivityViewModel.isConnected.value == true) {
+                val result = submitScanResults(currentRequest)
+                if (result.isSuccess) {
+                    pendingResults = null
+                }
+                result
+            } else {
+                Result.failure(NoConnectivityException())
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 
-class NoNewResultsException(message: String) : Exception(message)
 

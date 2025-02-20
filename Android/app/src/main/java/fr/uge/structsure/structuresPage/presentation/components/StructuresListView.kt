@@ -15,16 +15,19 @@ import androidx.navigation.NavController
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Typography
 
-private fun StateMapper(state: Boolean): StructureStates {
-    if (state){
-        return StructureStates.AVAILABLE
+private fun StateMapper(downloaded: Boolean, hasUnsentResults: Boolean): StructureStates {
+    return when {
+        hasUnsentResults -> StructureStates.DOWNLOADING
+        downloaded -> StructureStates.AVAILABLE
+        else -> StructureStates.ONLINE
     }
-    return StructureStates.ONLINE
 }
+
 
 @Composable
 fun StructuresListView(structureViewModel: StructureViewModel, navController: NavController) {
     val structures = structureViewModel.getAllStructures.observeAsState()
+    val hasUnsentResults = structureViewModel.hasUnsentResults.observeAsState()
 
     LaunchedEffect(structureViewModel) {
         structureViewModel.getAllStructures()
@@ -42,9 +45,14 @@ fun StructuresListView(structureViewModel: StructureViewModel, navController: Na
             text = "Ouvrages",
         )
         SearchBar(input = searchByName)
-        structures.value?.filter { it.name.contains(searchByName.value) }?.forEach {
-            val state = mutableStateOf(StateMapper(it.downloaded))
-            Structure(it, state, structureViewModel, navController)
+        structures.value?.filter { it.name.contains(searchByName.value) }?.forEach { structure ->
+            val state = remember(structure.id, structure.downloaded, hasUnsentResults.value) {
+                mutableStateOf(StateMapper(
+                    downloaded = structure.downloaded,
+                    hasUnsentResults = hasUnsentResults.value == true
+                ))
+            }
+            Structure(structure, state, structureViewModel, navController)
         }
     }
 }

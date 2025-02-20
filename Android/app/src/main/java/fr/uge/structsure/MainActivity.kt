@@ -70,7 +70,12 @@ class MainActivity : ComponentActivity() {
         RetrofitInstance.initFromPreferences(applicationContext)
 
         val accountDao = db.accountDao()
-        val scanViewModel by lazy { ScanViewModel() }
+        val scanViewModel by lazy {
+            ScanViewModel(
+                context = applicationContext,
+                structureViewModel = structureViewModel
+            )
+        }
         structureViewModel =
             ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))

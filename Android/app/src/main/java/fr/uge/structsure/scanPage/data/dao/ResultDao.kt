@@ -19,14 +19,4 @@ interface ResultDao {
 
     @Query("DELETE FROM resultSensor WHERE 1")
     fun deleteResults()
-
-    @Query("""
-        SELECT EXISTS(
-            SELECT 1 FROM resultSensor 
-            WHERE id = :sensorId 
-            AND state = :state 
-            AND scanId != :currentScanId
-        )
-    """)
-    fun hasExistingResult(sensorId: String, state: String, currentScanId: Long): Boolean
 }
