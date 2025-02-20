@@ -47,7 +47,6 @@ function StructureDetailSection() {
      * @param updatedPlan result of the edition
      */
     const handleSavePlan = (updatedPlan) => {
-        console.log('Plan updated:', updatedPlan);
         closeEditModal();
     };
 

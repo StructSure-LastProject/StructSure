@@ -14,7 +14,7 @@ public class Account {
     private String login;
 
     @Column(nullable = false, length = 64)
-    private String passwordEncrypted; // pensez à utiliser Spring Security !
+    private String passwordEncrypted;
 
     @Column(nullable = false, length = 64)
     private String firstname;

@@ -2,7 +2,7 @@ import { createSignal, onMount, onCleanup, Show, createEffect } from "solid-js";
 import plan from '/src/assets/plan.png';
 import StructureDetailSection from './StructureDetailSection';
 import ModalAddPlan from '../Plan/ModalAddPlan';
-import { Plus } from 'lucide-solid';
+import { Check, ChevronDown, Plus, Trash2 } from 'lucide-solid';
 
 /**
  * Shows the plans part
@@ -10,7 +10,8 @@ import { Plus } from 'lucide-solid';
  */
 function StructureDetailPlans(props) {
     const imageMoveLimit = 10;
-    const ZOOM_LIMIT = 4;
+    const SENSOR_POINT_SIZE = 10;
+    const ZOOM_LIMIT = 20;
     const [ctxCanvas, setCtxCanvas] = createSignal("");
     const [zoomFactor, setZoomFactor] = createSignal(0);
     const [offsetX, setOffsetX] = createSignal(0);
@@ -26,6 +27,13 @@ function StructureDetailPlans(props) {
     const [drawWidth, setDrawWidth] = createSignal(0);
     const [drawHeight, setDrawHeight] = createSignal(0);
     const [error, setError] = createSignal("");
+
+    const [isPopupVisible, setIsPopupVisible] = createSignal(false);
+    const [popupX, setPopupX] = createSignal(0);
+    const [popupY, setPopupY] = createSignal(0);
+    const [posX, setPosX] = createSignal(-1);
+    const [posY, setPosY] = createSignal(-1);
+    const [clickExistingPoint, setClickExistingPoint] = createSignal(null);
 
 
     /**
@@ -47,13 +55,13 @@ function StructureDetailPlans(props) {
     };
 
     /**
-     * Opens the modal by setting the `isOpen` state to `true`.
+     * Opens the modal by setting the isOpen state to true.
      * This will trigger the modal to become visible.
      * @returns {void}
      */
     const openModal = () => setIsOpen(true);
     /**
-     * Closes the modal by setting the `isOpen` state to `false`.
+     * Closes the modal by setting the isOpen state to false.
      * This will hide the modal from view.
      * @returns {void}
      */
@@ -184,13 +192,12 @@ function StructureDetailPlans(props) {
 
             const sensorCanvasX = imgStartX + sensor.x * scaleX;
             const sensorCanvasY = imgStartY + sensor.y * scaleY;
-            
             ctx.beginPath();
-            ctx.arc(sensorCanvasX, sensorCanvasY, 10, 0, Math.PI * 2);
+            ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE - 2, 0, Math.PI * 2);
             ctx.fillStyle = bgColor;
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(sensorCanvasX, sensorCanvasY, 12, 0, Math.PI * 2);
+            ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE, 0, Math.PI * 2);
             ctx.fillStyle = borderColor;
             ctx.fill();
             ctx.closePath();
@@ -250,6 +257,7 @@ function StructureDetailPlans(props) {
         canvasRef.addEventListener("mouseout", handleMouseUp);
         canvasRef.addEventListener("click", handleCanvasClick);
         window.addEventListener("resize", handleResize);
+        document.addEventListener("click", handleOutsideClick);
     }
 
     /**
@@ -263,7 +271,54 @@ function StructureDetailPlans(props) {
         canvasRef.removeEventListener("mouseout", handleMouseUp);
         window.removeEventListener("resize", handleResize);
         canvasRef.removeEventListener("click", handleCanvasClick);
+        document.removeEventListener("click", handleOutsideClick);
     });
+
+    /**
+     * Checks is the position is in the image original dimensions
+     * @param {number} x the position x in the original dimensions of the image
+     * @param {number} y the position y in the original dimensions of the image
+     * @returns 
+     */
+    const isPositionOutOfImage = (x, y) => {
+        return !(x < 0 || x > img.width || y < 0 || y > img.height);
+    };
+
+
+    /**
+     * Returns the position in the original image from the canvas click position
+     * @param {number} clickX the position x of the click
+     * @param {number} clickY the position y of the click
+     * @returns {[number, number]} - Position (X, Y) in the original image
+     */
+    const orignalPositionFromCanvasClick = (clickX, clickY) => {
+        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), zoomFactor());
+        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), zoomFactor());
+        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+        const scaleX = (drawWidth() + zoomX) / img.width;
+        const scaleY = (drawHeight() + zoomY) / img.height;
+        const px = (clickX - imgStartX) / scaleX;
+        const py = (clickY - imgStartY) / scaleY;
+        return [px, py];
+    };
+
+    /**
+     * Returns the position in the canvas from the position in the original image
+     * @param {number} imgX the position x in the original image
+     * @param {number} imgY the position y in the original image
+     * @returns {[number, number]} - Position (X, Y) in the canvas
+     */
+    const canvasPositionFromOriginal = (imgX, imgY) => {
+        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), zoomFactor());
+        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), zoomFactor());
+        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+        const scaleX = (drawWidth() + zoomX) / img.width;
+        const scaleY = (drawHeight() + zoomY) / img.height;
+        const canvasX = imgStartX + imgX * scaleX;
+        const canvasY = imgStartY + imgY * scaleY;
+        return [canvasX, canvasY];
+    };
+
 
     /**
      * Handles the canvas click
@@ -275,7 +330,42 @@ function StructureDetailPlans(props) {
         const y = event.clientY - rect.top;
         setCClickX(x);
         setCClickY(y);
+        const [px, py] = orignalPositionFromCanvasClick(x, y);
+        if (!isPositionOutOfImage(px, py)) {
+            setIsPopupVisible(false);
+            return;
+        }
+        const clickedSensor = findClickedSensor(px, py);
+        if (clickedSensor) {
+            setClickExistingPoint(clickedSensor);
+            let [sensorX, sensorY] = canvasPositionFromOriginal(clickedSensor.x, clickedSensor.y);
+            setPopupX(sensorX);
+            setPopupY(sensorY);
+        } else {
+            setClickExistingPoint(null);
+            setPopupX(x);
+            setPopupY(y);
+        }
+        setPosX(Math.round(px));
+        setPosY(Math.round(py));
+        setIsPopupVisible(true);
     };
+
+    /**
+     * Returns the clicked existing point if it exists, otherwise returns null
+     * @param {number} x - The x position of the click in the original image
+     * @param {number} y - The y position of the click in the original image
+     * @returns {object|null} - The clicked sensor object or null if no match
+     */
+    const findClickedSensor = (x, y) => {
+        return props.planSensors.find(sensor => {
+            const distance = Math.sqrt(
+                Math.pow(x - sensor.x, 2) + Math.pow(y - sensor.y, 2)
+            );
+    
+            return distance <= SENSOR_POINT_SIZE;
+        }) || null;
+    };    
 
     /**
      * Loads and draws the image from it's link
@@ -385,6 +475,16 @@ function StructureDetailPlans(props) {
     };
 
     /**
+     * Handles the click outside the canvas
+     * @param {Event} event the click in the page
+     */
+    const handleOutsideClick = (event) => {
+        if (canvasRef && !canvasRef.contains(event.target)) {
+            setIsPopupVisible(false);
+        }
+    };
+
+    /**
      * Loads the details (images and draw it)
      */
     const loadDetails = () => {
@@ -392,30 +492,79 @@ function StructureDetailPlans(props) {
     };
     
     return (
-        <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
-            <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
-                <div class="flex items-center justify-between">
-                    <p class="prose font-poppins title">Plans</p>
-                    <button 
-                      title="Ajouter un plan" 
-                      onClick={openModal}
-                      class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
-                    >
-                        <Plus color="black"/>
-                    </button>
+        <>
+            <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
+                <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5">
+                    <div class="flex items-center justify-between">
+                        <p class="prose font-poppins title">Plans</p>
+                        <button 
+                        title="Ajouter un plan" 
+                        onClick={openModal}
+                        class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+                        >
+                            <Plus color="black"/>
+                        </button>
+                    </div>
+                    <Show when={isOpen()}>
+                        <ModalAddPlan isOpen={isOpen()} onSave={handleSavePlan} onClose={closeModal} structureId={1} />
+                    </Show>
+                    <StructureDetailSection />
                 </div>
-                <Show when={isOpen()}>
-                    <ModalAddPlan isOpen={isOpen()} onSave={handleSavePlan} onClose={closeModal} structureId={1} />
-                </Show>
-                <StructureDetailSection />
+                <div class="lg:w-[75%] rounded-[20px] bg-white">
+                    <div class="w-full m-[20px] relative">
+                        <canvas
+                            ref={canvasRef}
+                            class="w-full"
+                        ></canvas>
+                        <Show when={isPopupVisible()}>
+                            <Show when={!clickExistingPoint()}>
+                                <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
+                                    style={{
+                                        top: `${popupY()-10}px`,
+                                        left: `${popupX()-10}px`,
+                                    }}>
+                                </div>
+                            </Show>
+                            <div 
+                                class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
+                                style={{
+                                    top: `${popupY()}px`,
+                                    left: `${popupX()}px`,
+                                }}
+                            >
+                                <div class="w-full flex justify-between items-center">
+                                    <h1 class="title poppins text-[25px] font-semibold">Ouvrages</h1>
+                                    <div class="flex gap-x-[10px]">
+                                        <button class="bg-E9E9EB rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                                            <Check color="black"/>
+                                        </button>
+                                        <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                                            <Trash2 color="red"/>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-y-[5px]">
+                                    <p class="HeadLineMedium poppins font-normal">Capteur</p>
+                                    <div class="bg-E9E9EB px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
+                                        <h1 class="font-poppins poppins text-[16px] font-semibold">Capteur P</h1>
+                                        <button class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center">
+                                            <ChevronDown color="black" />
+                                        </button>
+                                    </div>
+                                    <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
+                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur PA</p>
+                                        <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
+                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8S</p>
+                                        <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
+                                        <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8N</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </Show>
+                    </div>
+                </div>
             </div>
-            <div class="lg:w-[75%] rounded-[20px] bg-white">
-                <canvas
-                    ref={canvasRef}
-                    class="p-[20px] w-full"
-                ></canvas>
-            </div>
-        </div>
+        </>
     );
 }
 

@@ -28,6 +28,13 @@
 }
 
 
+.HeadLineMedium {
+    font-size: 14px;
+    line-height: 21px;
+    letter-spacing: 0%;
+}
+
+
 .bg-E9E9EB {
     background: #E9E9EB;
 }
