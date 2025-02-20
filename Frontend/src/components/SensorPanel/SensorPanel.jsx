@@ -1,6 +1,7 @@
 import { Pencil, X } from 'lucide-solid';
 import Header from '../Header';
 import getSensorStatusColor from "../SensorStatusColorGen";
+import SensorFieldComponent from './SensorFieldComponent';
 
 /**
  * Shows the sensor panel with extra details of the clicked sensor
@@ -31,7 +32,7 @@ const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
             </button>
           </div>
         </div>
-        <div class="overflow-auto flex flex-col gap-[25px]">
+        <div class="overflow-auto flex flex-col gap-[25px] rounded-[18px]">
           <div class="lg:flex lg:flex-row lg:gap-[25px] flex flex-col gap-[25px]">
             <div class="lg:flex lg:flex-col lg:gap-[10px]">
               <h1 class="font-poppins font-[600] text-[16px] leading-[24px] tracking-[0%] text-[#181818]">OA/Zone</h1>
@@ -40,37 +41,16 @@ const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
             </div>
             <div class="flex flex-col gap-[5px] lg:gap-[10px]">
               <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">Note</p>
-                <textarea class="rounded-[18px] px-[16px] py-[8px] flex gap-[10px] bg-[#F2F2F4] font-poppins font-[400] text-[14px] leading-[21px] text-[#181818]"
+                <textarea class="rounded-[18px] w-full px-[16px] py-[8px] flex gap-[10px] bg-[#F2F2F4] font-poppins font-[400] text-[14px] leading-[21px] text-[#181818]"
                   value={sensorDetails.note}  
                 >
                 </textarea>
             </div>
           </div>
           <div class="lg:flex lg:flex-row lg:gap-[25px] lg:min-w-[863px] lg:min-h-[63px] flex flex-col gap-[25px]">
-            <div class="flex flex-col gap-[5px]">
-              <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">Puce témoin</p>
-              <input class="rounded-[50px] px-[16px] py-[8px] flex gap-[10px] lg:max-w-[271px] font-poppins font-[600] text-[14px] leading-[21px] bg-[#F2F2F4] text-[#181818]" 
-                type="text"
-                value={sensorDetails.controlChip}
-                disabled
-              />
-            </div>
-            <div class="flex flex-col gap-[5px] ">
-              <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">Puce mesure</p>
-              <input class="rounded-[50px] px-[16px] py-[8px] flex gap-[10px] lg:max-w-[271px] font-poppins font-[600] text-[14px] leading-[21px] bg-[#F2F2F4] text-[#181818]"
-                type="text"
-                value={sensorDetails.measureChip}
-                disabled
-              />
-            </div>
-            <div class="flex flex-col gap-[5px] ">
-              <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">Date d’installation</p>
-              <input class="rounded-[50px] px-[16px] py-[8px] flex gap-[10px] lg:max-w-[271px] font-poppins font-[600] text-[14px] leading-[21px] bg-[#F2F2F4] text-[#181818]"
-                type="text"
-                value={sensorDetails.installationDate}
-                disabled
-              />
-            </div>
+            <SensorFieldComponent title={"Puce témoin"} value={sensorDetails.controlChip}/>
+            <SensorFieldComponent title={"Puce mesure"} value={sensorDetails.measureChip}/>
+            <SensorFieldComponent title={"Date d’installation"} value={sensorDetails.installationDate}/>
           </div>
         </div>
       </div>
