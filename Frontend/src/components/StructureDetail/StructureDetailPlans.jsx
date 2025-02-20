@@ -10,6 +10,7 @@ import { Check, ChevronDown, Plus, Trash2 } from 'lucide-solid';
  */
 function StructureDetailPlans(props) {
     const imageMoveLimit = 10;
+    const SENSOR_POINT_SIZE = 10;
     const ZOOM_LIMIT = 20;
     const [ctxCanvas, setCtxCanvas] = createSignal("");
     const [zoomFactor, setZoomFactor] = createSignal(0);
@@ -32,6 +33,7 @@ function StructureDetailPlans(props) {
     const [popupY, setPopupY] = createSignal(0);
     const [posX, setPosX] = createSignal(-1);
     const [posY, setPosY] = createSignal(-1);
+    const [clickExistingPoint, setClickExistingPoint] = createSignal(null);
 
 
     /**
@@ -191,11 +193,11 @@ function StructureDetailPlans(props) {
             const sensorCanvasX = imgStartX + sensor.x * scaleX;
             const sensorCanvasY = imgStartY + sensor.y * scaleY;
             ctx.beginPath();
-            ctx.arc(sensorCanvasX, sensorCanvasY, 10, 0, Math.PI * 2);
+            ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE - 2, 0, Math.PI * 2);
             ctx.fillStyle = bgColor;
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(sensorCanvasX, sensorCanvasY, 12, 0, Math.PI * 2);
+            ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE, 0, Math.PI * 2);
             ctx.fillStyle = borderColor;
             ctx.fill();
             ctx.closePath();
@@ -255,6 +257,7 @@ function StructureDetailPlans(props) {
         canvasRef.addEventListener("mouseout", handleMouseUp);
         canvasRef.addEventListener("click", handleCanvasClick);
         window.addEventListener("resize", handleResize);
+        document.addEventListener("click", handleOutsideClick);
     }
 
     /**
@@ -268,6 +271,7 @@ function StructureDetailPlans(props) {
         canvasRef.removeEventListener("mouseout", handleMouseUp);
         window.removeEventListener("resize", handleResize);
         canvasRef.removeEventListener("click", handleCanvasClick);
+        document.removeEventListener("click", handleOutsideClick);
     });
 
     /**
@@ -282,6 +286,41 @@ function StructureDetailPlans(props) {
 
 
     /**
+     * Returns the position in the original image from the canvas click position
+     * @param {number} clickX the position x of the click
+     * @param {number} clickY the position y of the click
+     * @returns {[number, number]} - Position (X, Y) in the original image
+     */
+    const orignalPositionFromCanvasClick = (clickX, clickY) => {
+        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), zoomFactor());
+        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), zoomFactor());
+        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+        const scaleX = (drawWidth() + zoomX) / img.width;
+        const scaleY = (drawHeight() + zoomY) / img.height;
+        const px = (clickX - imgStartX) / scaleX;
+        const py = (clickY - imgStartY) / scaleY;
+        return [px, py];
+    };
+
+    /**
+     * Returns the position in the canvas from the position in the original image
+     * @param {number} imgX the position x in the original image
+     * @param {number} imgY the position y in the original image
+     * @returns {[number, number]} - Position (X, Y) in the canvas
+     */
+    const canvasPositionFromOriginal = (imgX, imgY) => {
+        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), zoomFactor());
+        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), zoomFactor());
+        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+        const scaleX = (drawWidth() + zoomX) / img.width;
+        const scaleY = (drawHeight() + zoomY) / img.height;
+        const canvasX = imgStartX + imgX * scaleX;
+        const canvasY = imgStartY + imgY * scaleY;
+        return [canvasX, canvasY];
+    };
+
+
+    /**
      * Handles the canvas click
      * @param {Event} event the event of the click in the canvas
      */
@@ -291,22 +330,42 @@ function StructureDetailPlans(props) {
         const y = event.clientY - rect.top;
         setCClickX(x);
         setCClickY(y);
-        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), zoomFactor());
-        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), zoomFactor());
-        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
-        const scaleX = (drawWidth() + zoomX) / img.width;
-        const scaleY = (drawHeight() + zoomY) / img.height;
-        const px = (x - imgStartX) / scaleX;
-        const py = (y - imgStartY) / scaleY;
+        const [px, py] = orignalPositionFromCanvasClick(x, y);
         if (!isPositionOutOfImage(px, py)) {
+            setIsPopupVisible(false);
             return;
+        }
+        const clickedSensor = findClickedSensor(px, py);
+        if (clickedSensor) {
+            setClickExistingPoint(clickedSensor);
+            var [sensorX, sensorY] = canvasPositionFromOriginal(clickedSensor.x, clickedSensor.y);
+            setPopupX(sensorX);
+            setPopupY(sensorY);
+        } else {
+            setClickExistingPoint(null);
+            setPopupX(x);
+            setPopupY(y);
         }
         setPosX(Math.round(px));
         setPosY(Math.round(py));
-        setPopupX(x);
-        setPopupY(y);
         setIsPopupVisible(true);
     };
+
+    /**
+     * Returns the clicked existing point if it exists, otherwise returns null
+     * @param {number} x - The x position of the click in the original image
+     * @param {number} y - The y position of the click in the original image
+     * @returns {object|null} - The clicked sensor object or null if no match
+     */
+    const findClickedSensor = (x, y) => {
+        return props.planSensors.find(sensor => {
+            const distance = Math.sqrt(
+                Math.pow(x - sensor.x, 2) + Math.pow(y - sensor.y, 2)
+            );
+    
+            return distance <= SENSOR_POINT_SIZE;
+        }) || null;
+    };    
 
     /**
      * Loads and draws the image from it's link
@@ -416,6 +475,16 @@ function StructureDetailPlans(props) {
     };
 
     /**
+     * Handles the click outside the canvas
+     * @param {Event} event the click in the page
+     */
+    const handleOutsideClick = (event) => {
+        if (canvasRef && !canvasRef.contains(event.target)) {
+            setIsPopupVisible(false);
+        }
+    };
+
+    /**
      * Loads the details (images and draw it)
      */
     const loadDetails = () => {
@@ -448,13 +517,14 @@ function StructureDetailPlans(props) {
                             class="w-full"
                         ></canvas>
                         <Show when={isPopupVisible()}>
-                            <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
-                                style={{
-                                    top: `${popupY()-10}px`,
-                                    left: `${popupX()-10}px`,
-                                }}>
-
-                            </div>
+                            <Show when={!clickExistingPoint()}>
+                                <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
+                                    style={{
+                                        top: `${popupY()-10}px`,
+                                        left: `${popupX()-10}px`,
+                                    }}>
+                                </div>
+                            </Show>
                             <div 
                                 class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
                                 style={{
