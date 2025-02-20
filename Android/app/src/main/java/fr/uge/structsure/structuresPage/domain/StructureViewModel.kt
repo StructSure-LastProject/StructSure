@@ -97,6 +97,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
     fun delete(structureData: StructureWithState){
         viewModelScope.launch {
             structureRepository.deleteStructure(structureData.id, context)
+            findAll() // forces refresh to adapt to connectivity state
         }
     }
 

@@ -145,26 +145,24 @@ class StructureRepository : ViewModel() {
      * @param context Context needed for file operations
      */
     fun deleteStructure(structureId: Long, context: Context) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val scan = scanDao.getScanByStructure(structureId)
-                scan?.let { resultDao.deleteResultsByScan(it.id) }
-                sensorDao.deleteSensorsByStructureId(structureId)
-                planDao.getPlanByStructureId(structureId).forEach { planId ->
-                    FileUtils.deletePlanImage(context, planId)
-                }
-                planDao.deletePlansByStructureId(structureId)
-                scanDao.deleteScanByStructure(structureId)
-                structureDao.deleteStructure(structureId)
-
-                Log.d(TAG, "Structure $structureId and all associated data deleted successfully")
-            } catch (e: SQLiteException) {
-                Log.e(TAG, "Database error while deleting structure $structureId", e)
-            } catch (e: IOException) {
-                Log.e(TAG, "I/O error while deleting structure files $structureId", e)
-            } catch (e: SecurityException) {
-                Log.e(TAG, "Security error while accessing files for structure $structureId", e)
+        try {
+            val scan = scanDao.getScanByStructure(structureId)
+            scan?.let { resultDao.deleteResultsByScan(it.id) }
+            sensorDao.deleteSensorsByStructureId(structureId)
+            planDao.getPlanByStructureId(structureId).forEach { planId ->
+                FileUtils.deletePlanImage(context, planId)
             }
+            planDao.deletePlansByStructureId(structureId)
+            scanDao.deleteScanByStructure(structureId)
+            structureDao.deleteStructure(structureId)
+
+            Log.d(TAG, "Structure $structureId and all associated data deleted successfully")
+        } catch (e: SQLiteException) {
+            Log.e(TAG, "Database error while deleting structure $structureId", e)
+        } catch (e: IOException) {
+            Log.e(TAG, "I/O error while deleting structure files $structureId", e)
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Security error while accessing files for structure $structureId", e)
         }
     }
 

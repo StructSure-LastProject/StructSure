@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import fr.uge.structsure.R
@@ -34,7 +34,7 @@ fun ConnectivityStatus() {
                 modifier = Modifier.size(100.dp)
             )
             Text("Pas de connexion", style = Typography.titleLarge)
-            Text("Connectez vous à internet pour télécharger des ouvrages", style = Typography.bodyMedium)
+            Text("Connectez vous à internet pour télécharger des ouvrages", textAlign = TextAlign.Center, style = Typography.bodyMedium)
         }
     }
 }
