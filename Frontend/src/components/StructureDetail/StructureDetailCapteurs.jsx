@@ -3,6 +3,7 @@ import {createEffect, createSignal, For, Show} from 'solid-js';
 import SensorPanel from '../SensorPanel/SensorPanel';
 import getSensorStatusColor from "../SensorStatusColorGen"
 import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
+import SensorFilter from '../SensorFilter';
 
 /**
  * Show the sensors part of the structure detail page
@@ -90,6 +91,7 @@ function StructureDetailCapteurs({sensors, sensorsFetchRequest, structureId}) {
                     </Show>
                 </div>
             </div>
+            <SensorFilter/>
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <For each={sensors()}>
                     {(sensor) => (
