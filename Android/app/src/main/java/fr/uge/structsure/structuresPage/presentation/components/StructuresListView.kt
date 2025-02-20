@@ -23,7 +23,11 @@ fun StructuresListView(
     navController: NavController
 ) {
     val structures = structureViewModel.getAllStructures.observeAsState()
-    val structureStates = structureViewModel.structureStates.observeAsState(initial = mutableMapOf())
+
+    LaunchedEffect(structureViewModel) {
+        structureViewModel.findAll()
+    }
+
     val searchByName = remember { mutableStateOf("") }
 
     Column(

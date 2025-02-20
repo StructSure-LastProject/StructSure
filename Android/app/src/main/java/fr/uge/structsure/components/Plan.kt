@@ -37,7 +37,7 @@ import kotlin.math.sqrt
  * @param y the y coordinate of the point
  * @param state the state of the sensor at this point
  */
-data class Point(val x: Int, val y: Int, val state: SensorState)
+data class Point(val x: Double, val y: Double, val state: SensorState)
 
 /**
  * Composable that displays a plan image and allows to add points on it.
@@ -114,14 +114,14 @@ fun Plan(image: Bitmap, points: MutableList<Point>) {
 private fun onTap(factor: Factor, size: Size, scale: Float, offset: Offset, pos: Offset, points: MutableList<Point>, long: Boolean = false) {
     val range = (30 / factor.transform / scale).toInt()
     val imgPos = canvasToImg(offset, scale, size, factor.transformPoint(size), factor.offset, pos.x, pos.y)
-    val imgPoint = Point(imgPos.x.toInt(), imgPos.y.toInt(), SensorState.NOK)
+    val imgPoint = Point(imgPos.x.toDouble(), imgPos.y.toDouble(), SensorState.NOK)
     for (i in 0 ..< points.size) {
         if (imgPoint.inRange(points[i], range)) {
             if (long) onPointLongPress(points, i) else onPointTap(points, i)
             return
         }
     }
-    if (!long) onVoidTap(points, imgPos.x.toInt(), imgPos.y.toInt())
+    if (!long) onVoidTap(points, imgPos.x.toDouble(), imgPos.y.toDouble())
 }
 
 /**
@@ -130,7 +130,7 @@ private fun onTap(factor: Factor, size: Size, scale: Float, offset: Offset, pos:
  * @param x coordinate of the click in the image
  * @param y coordinate of the click in the image
  */
-private fun onVoidTap(points: MutableList<Point>, x: Int, y: Int) {
+private fun onVoidTap(points: MutableList<Point>, x: Double, y: Double) {
     points.add(Point(x, y, SensorState.DEFECTIVE))
 }
 
@@ -185,14 +185,14 @@ private fun DrawScope.point(size: Size, x: Float, y: Float, state: SensorState) 
  * @param x the initial x coordinate in the image
  * @param y the initial y coordinate in the image
  */
-private fun imgToCanvas(pan: Offset, zoom: Float, size: Size, transformPoint: Float, offsetFactor: Offset, x: Int, y: Int): Offset {
+private fun imgToCanvas(pan: Offset, zoom: Float, size: Size, transformPoint: Float, offsetFactor: Offset, x: Double, y: Double): Offset {
     val centerX = size.width / 2f
     val centerY = size.height / 2f
     val posX = x * transformPoint + size.width * offsetFactor.x
     val posY = y * transformPoint + size.height * offsetFactor.y
     return Offset(
-        (posX - centerX) * zoom + centerX + pan.x,
-        (posY - centerY) * zoom + centerY + pan.y
+        ((posX - centerX) * zoom + centerX + pan.x).toFloat(),
+        ((posY - centerY) * zoom + centerY + pan.y).toFloat()
     )
 }
 
@@ -232,7 +232,7 @@ private fun Point.inRange(point: Point, range: Int): Boolean {
     if (dx * dx + dy * dy > range * range) return false
 
     // Pythagore for exact values
-    return sqrt((dx * dx + dy * dy).toDouble()) <= range
+    return sqrt(dx * dx + dy * dy) <= range
 }
 
 /**

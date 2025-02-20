@@ -120,9 +120,10 @@ class StructureRepository : ViewModel() {
                             sensor.sensorId.controlChip,
                             sensor.sensorId.measureChip,
                             sensor.name,
-                            sensor.note ?: "",
+                            sensor.note,
                             sensor.installationDate,
                             "", // TODO
+                            3, // TODO get real plan ID
                             sensor.x,
                             sensor.y,
                             structure.id

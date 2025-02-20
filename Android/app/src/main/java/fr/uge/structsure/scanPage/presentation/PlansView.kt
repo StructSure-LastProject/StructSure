@@ -18,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,6 +38,7 @@ import fr.uge.structsure.MainActivity
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Plan
 import fr.uge.structsure.components.Point
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.structuresPage.data.TreeNode
 import fr.uge.structsure.structuresPage.data.TreePlan
@@ -58,10 +58,11 @@ import fr.uge.structsure.utils.FileUtils
 fun PlansView(structureId: Long) {
     val context = LocalContext.current
     val selected = remember { mutableStateOf<TreePlan?>(null) }
-    val points = remember { mutableStateListOf<Point>() }
     val defaultImage = remember(1) { BitmapFactory.decodeResource(context.resources, R.drawable.plan_not_found) }
 
     val plans = remember(structureId, selected) { planTree(MainActivity.db.planDao().getPlansByStructureId(structureId), selected) }
+    val points = remember(selected) { MainActivity.db.sensorDao().getAllSensorsByPlan(selected.value?.plan?.id?:0).map { Point(it.x, it.y, SensorState.UNKNOWN) }.toMutableList() }
+    // TODO get real point states
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -88,7 +89,6 @@ fun PlansView(structureId: Long) {
                 points = points
             )
 
-            // TODO move loading to viewmodel to run in background
             Spacer(
                 Modifier
                     .fillMaxWidth()
@@ -147,10 +147,7 @@ private fun Section(treeNode: TreeSection, selected: MutableState<TreePlan?>, hi
             treeNode.children.values.forEach {
                 if (it.isPlan) {
                     val plan = (it as TreePlan).plan
-                    PlanItem(plan.name, selected.value == it ) {
-                        selected.value = it
-                        // TODO display image
-                    }
+                    PlanItem(plan.name, selected.value == it ) { selected.value = it }
                 } else {
                     Section(it as TreeSection, selected)
                 }

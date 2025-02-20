@@ -53,7 +53,6 @@ class StructureViewModel(private val structureRepository: StructureRepository,
     init {
         connectivityViewModel.isConnected.distinctUntilChanged().observeForever { isConnected ->
             if (isConnected) getAllStructures()
-
             if (!isConnected || uploadInProgress.value == true) return@observeForever
 
             tryUploadScans(isConnected, uploadInProgress.value ?: false, null)
@@ -71,11 +70,19 @@ class StructureViewModel(private val structureRepository: StructureRepository,
     }
 
 
+    fun findAll() {
+        viewModelScope.launch {
+            val structures = structureRepository.getAllStructures()
+                .map { StructureWithState(it) }
+            _getAllStructures.postValue(structures)
+        }
+    }
+
     /**
      * Downloads the structure with the given data.
      * @param structureData the data of the structure to download
      */
-    fun downloadStructure(structureData: StructureData) {
+    fun download(structureData: StructureWithState){
         viewModelScope.launch {
             structureData.state.value = StructureStates.DOWNLOADING
             val success = structureRepository.downloadStructure(structureData.raw, context)
@@ -87,7 +94,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      * Deletes the given structure
      * @param structureId the id of the structure to delete
      */
-    fun deleteStructure(structureData: StructureWithState){
+    fun delete(structureData: StructureWithState){
         viewModelScope.launch {
             structureRepository.deleteStructure(structureData.id, context)
         }

@@ -25,14 +25,11 @@ import fr.uge.structsure.ui.theme.Red
 fun StructureButtons(structure: StructureWithState, structureViewModel: StructureViewModel, navController: NavController) {
     val state by structure.state.observeAsState(initial = StructureStates.ONLINE)
 
-    println("recompose $state")
     when (state) {
         StructureStates.ONLINE, null -> {
             DownloadButton(
                 structureName = structure.name,
-                onDownloadClick = {
-                    structureViewModel.downloadStructure(structure)
-                }
+                onDownloadClick = { structureViewModel.download(structure) }
             )
         }
 
@@ -96,7 +93,7 @@ fun PlaySupButton(
             color = Red,
             background = Red.copy(alpha = 0.05f),
             onClick = {
-                structureViewModel.deleteStructure(structure)
+                structureViewModel.delete(structure)
                 structure.state.value = StructureStates.ONLINE
             }
         )
