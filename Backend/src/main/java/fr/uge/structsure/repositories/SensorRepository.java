@@ -16,7 +16,8 @@ import java.util.Optional;
  * The repository for Sensor entity
  */
 @Repository
-public interface SensorRepository extends JpaRepository<Sensor, Long> {
+public interface
+SensorRepository extends JpaRepository<Sensor, Long> {
     /**
      * Will find a sensor by its id
      * @param structureId the id of the sensor
