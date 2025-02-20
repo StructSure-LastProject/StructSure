@@ -338,7 +338,7 @@ function StructureDetailPlans(props) {
         const clickedSensor = findClickedSensor(px, py);
         if (clickedSensor) {
             setClickExistingPoint(clickedSensor);
-            var [sensorX, sensorY] = canvasPositionFromOriginal(clickedSensor.x, clickedSensor.y);
+            let [sensorX, sensorY] = canvasPositionFromOriginal(clickedSensor.x, clickedSensor.y);
             setPopupX(sensorX);
             setPopupY(sensorY);
         } else {
