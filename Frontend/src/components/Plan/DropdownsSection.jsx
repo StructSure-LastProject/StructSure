@@ -1,44 +1,14 @@
 import {createEffect, createSignal} from "solid-js";
-import { ChevronDown, ChevronRight, Pencil, FolderSync, Dot } from "lucide-solid";
-import ModalEditPlan from "../Plan/ModalEditPlan";
+import {ChevronDown, ChevronRight, Dot, FolderSync, Pencil} from "lucide-solid";
 
-const buildTree = (data) => {
-  //delete
-  console.log("Building tree with data:", data); // Debug log
-
-  const tree = {
-    sections: {},
-    rootPlans: []
-  };
-
-  //delete
-  if (!data || !Array.isArray(data)) {
-    console.log("Data is not an array:", data);
-    return tree;
-  }
-
-  data.forEach(({ id, name, section, type }) => {
-    if (!section || section === "") {
-      tree.rootPlans.push({ name, id, type });
-      return;
-    }
-
-    const path = section.split("/");
-    let current = tree.sections;
-    path.forEach((part, index) => {
-      if (!current[part]) {
-        current[part] = { name: part, children: {}, type: "section", id: `section-${part}` };
-      }
-      if (index === path.length - 1) {
-        current[part].children[id] = { name, id, type, children: {} };
-      }
-      current = current[part].children;
-    });
-  });
-
-  return tree;
-};
-
+/**
+ * Component that displays a section with a toggle button
+ * @param {Object} props Component properties
+ * @param {string} props.name Section name to display
+ * @param {Function} props.isOpen Signal indicating if the section is open
+ * @param {Function} props.toggleOpen Function to toggle open/closed state
+ * @returns {JSX.Element} Section component
+ */
 const Section = (props) => {
   return (
     <div
@@ -53,6 +23,13 @@ const Section = (props) => {
   );
 };
 
+/**
+ * Component that displays a plan without edit options
+ * @param {Object} props Component properties
+ * @param {string} props.name Plan name
+ * @param {boolean} props.isSelected Indicates if the plan is selected
+ * @returns {JSX.Element} Plan component
+ */
 const Plan = ({ name, isSelected }) => (
   <div class={`px-[8px] py-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between hover:bg-[#F2F2F4] ${isSelected ? 'bg-[#F2F2F4]' : ''}`}>
     <div class="flex items-center gap-x-[10px]">
@@ -64,15 +41,24 @@ const Plan = ({ name, isSelected }) => (
   </div>
 );
 
+
+/**
+ * Component that displays a plan with edit option
+ * @param {Object} props Component properties
+ * @param {string} props.name Plan name
+ * @param {Function} props.onEdit Function called when clicking the edit button
+ * @param {number|string} props.planId Plan identifier
+ * @returns {JSX.Element} PlanEdit component
+ */
 const PlanEdit = ({name, onEdit, planId}) => (
-  <div class="px-[8px] py-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between hover:bg-gray-100">
+  <div class="px-[8px] py-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between hover:bg-gray-100 group">
     <div class="flex items-center gap-x-[10px]">
       <div class="w-4 h-4 flex items-center justify-center">
         <Dot size={16}/>
       </div>
       <p class="prose font-poppins poppins text-base font-semibold leading-none">{name}</p>
     </div>
-    <div class="w-5 h-5 flex items-center justify-center">
+    <div class="w-5 h-5 flex items-center justify-center invisible group-hover:visible">
       <button
         title="Éditer un plan"
         onClick={(e) => {
@@ -86,6 +72,12 @@ const PlanEdit = ({name, onEdit, planId}) => (
   </div>
 );
 
+/**
+ * Component that displays an archived plan
+ * @param {Object} props Component properties
+ * @param {string} props.name Plan name
+ * @returns {JSX.Element} PlanArchived component
+ */
 const PlanArchived = ({ name }) => (
   <div class="px-[8px] py-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between">
     <div class="flex items-center gap-x-[10px]">
@@ -100,17 +92,80 @@ const PlanArchived = ({ name }) => (
   </div>
 );
 
+/**
+ * Builds a tree structure from plan data
+ * @param {Array} data Array of plans with their information
+ * @returns {Object} Object containing the tree structure of plans and sections
+ * @property {Object} sections Sections with their child plans
+ * @property {Array} rootPlans Plans without sections (at root level)
+ */
+const buildTree = (data) => {
+  const tree = {
+    sections: {},
+    rootPlans: []
+  };
+
+  if (!Array.isArray(data)) {
+    console.warn("Data is not an array:", data);
+    return tree;
+  }
+
+  const sortedData = [...data].sort((a, b) => {
+    const sectionA = a.section || "";
+    const sectionB = b.section || "";
+    return sectionA.localeCompare(sectionB);
+  });
+
+  sortedData.forEach((item) => {
+    const { id, name, section, type } = item;
+
+    if (!section || section.trim() === "") {
+      tree.rootPlans.push({ name, id, type });
+      return;
+    }
+
+    const sectionParts = section.split("/");
+    let current = tree.sections;
+    let currentPath = "";
+
+    sectionParts.forEach((part, index) => {
+      currentPath = currentPath ? `${currentPath}/${part}` : part;
+
+      if (!current[part]) {
+        current[part] = {
+          name: part,
+          children: {},
+          type: "section",
+          id: `section-${currentPath}`
+        };
+      }
+
+      if (index === sectionParts.length - 1) {
+        current[part].children[id] = { name, id, type };
+      }
+
+      current = current[part].children;
+    });
+  });
+
+  return tree;
+};
+
+/**
+ * Recursive component that displays a tree node (section or plan)
+ * @param {Object} props Component properties
+ * @param {string} props.name Node name
+ * @param {string} props.type Node type ("section", "edit", "archived", "plan")
+ * @param {Object} props.children Child nodes
+ * @param {boolean} props.isSelected Indicates if the plan is selected
+ * @param {Function} props.onEdit Function to edit a plan
+ * @param {number|string} props.planId Plan identifier
+ * @param {number|string} props.selectedPlanId Selected plan identifier
+ * @returns {JSX.Element} TreeNode component
+ */
 const TreeNode = (props) => {
   const [isOpen, setIsOpen] = createSignal(false);
   const hasChildren = Object.keys(props.children || {}).length > 0;
-
-  //delete
-  console.log("TreeNode rendering with:", { // Debug log
-    name: props.name,
-    type: props.type,
-    hasChildren,
-    children: props.children
-  });
 
   const toggleOpen = (e) => {
     e.stopPropagation();
@@ -129,7 +184,6 @@ const TreeNode = (props) => {
           <div class="pl-4 mt-2">
             {Object.entries(props.children).map(([key, child]) => (
               <TreeNode
-                key={key}
                 name={child.name}
                 type={child.type}
                 children={child.children}
@@ -168,9 +222,20 @@ const TreeNode = (props) => {
   );
 };
 
-const RenderPlan = (plan, selectedPlanId, onEdit) => {
+/**
+ * Component that renders a plan based on its type
+ * @param {Object} props Component properties
+ * @param {Object} props.plan Plan data
+ * @param {string} props.plan.type Plan type ("edit", "archived", "plan")
+ * @param {string} props.plan.name Plan name
+ * @param {number|string} props.plan.id Plan identifier
+ * @param {number|string} props.selectedPlanId Selected plan identifier
+ * @param {Function} props.onEdit Function to edit a plan
+ * @returns {JSX.Element} Appropriate component based on plan type
+ */
+const RenderPlan = (props) => {
   let Component;
-  switch (plan.type) {
+  switch (props.plan.type) {
     case "edit":
       Component = PlanEdit;
       break;
@@ -182,99 +247,68 @@ const RenderPlan = (plan, selectedPlanId, onEdit) => {
   }
   return (
     <Component
-      key={plan.id}
-      name={plan.name}
-      isSelected={selectedPlanId === plan.id}
-      onEdit={onEdit}
-      planId={plan.id}
+      name={props.plan.name}
+      isSelected={props.selectedPlanId === props.plan.id}
+      onEdit={props.onEdit}
+      planId={props.plan.id}
     />
   );
 };
 
+/**
+ * Main component that manages the display of the plan tree structure
+ * @param {Object} props Component properties
+ * @param {Array} props.data Plan data
+ * @param {number|string} props.selectedPlanId Selected plan identifier
+ * @param {Function} props.onEdit Function to edit a plan
+ * @param {Function} props.onPlanEdit Function called after plan edit
+ * @param {number|string} props.structureId Structure identifier
+ * @returns {JSX.Element} DropdownsSection component
+ */
 const DropdownsSection = (props) => {
-  const [localPlans, setLocalPlans] = createSignal(props.plans || []);
-  const [selectedPlanId, setSelectedPlanId] = createSignal(props.selectedPlanId || null);
-  const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
-  const [selectedPlan, setSelectedPlan] = createSignal(null);
+  const [localPlans, setLocalPlans] = createSignal([]);
+  const [selectedPlanId, setSelectedPlanId] = createSignal(null);
+  // todo for interaction
+  /*const [selectedPlan, setSelectedPlan] = createSignal(null);*/
+
+  const safeData = () => {
+    return Array.isArray(props.data) ? props.data : [];
+  };
 
   createEffect(() => {
-    if (props.data) {
-      setLocalPlans(props.data);
-    }
+    setLocalPlans(safeData());
   });
 
   createEffect(() => {
-    setSelectedPlanId(props.selectedPlanId);
+    if (props.selectedPlanId !== undefined) {
+      setSelectedPlanId(props.selectedPlanId);
+    }
   });
 
-  const getImageUrl = (planId) => {
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/';
-    return `${API_BASE_URL}/api/structures/plans/${planId}/image`;
+  const treeData = () => {
+    const currentPlans = localPlans();
+    return buildTree(currentPlans);
   };
-
-  const handleEdit = (planId) => {
-    const plan = localPlans().find(p => p.id === planId);
-    if (plan) {
-      setSelectedPlan({
-        ...plan,
-        imageUrl: getImageUrl(plan.id)
-      });
-      setIsEditModalOpen(true);
-    }
-  };
-
-  const handleSavePlan = (updatedPlan) => {
-    if (props.onPlanEdit) {
-      props.onPlanEdit(updatedPlan);
-    }
-    closeEditModal();
-  };
-
-  const closeEditModal = () => {
-    setIsEditModalOpen(false);
-    setSelectedPlan(null);
-  };
-
-  // delete
-  console.log("DropdownsSection receiving data:", props.data); // Debug log
-
-  const { sections, rootPlans } = buildTree(localPlans());
-
-  // delete
-  console.log("Processing tree:", { sections, rootPlans }); // Debug log
 
   return (
     <div class="space-y-2">
-      {rootPlans.map((plan) => (
-        <div class="mb-2">
-          <RenderPlan
-            plan={plan}
-            selectedPlanId={selectedPlanId()}
-            onEdit={handleEdit}
-          />
-        </div>
+      {treeData().rootPlans.map(plan => (
+        <RenderPlan
+          plan={plan}
+          selectedPlanId={selectedPlanId()}
+          onEdit={props.onEdit}
+        />
       ))}
 
-      {Object.entries(sections).map(([key, section]) => (
+      {Object.entries(treeData().sections).map(([path, section]) => (
         <TreeNode
-          key={key}
           name={section.name}
           type={section.type}
           children={section.children}
           selectedPlanId={selectedPlanId()}
-          onEdit={handleEdit}
+          onEdit={props.onEdit}
         />
       ))}
-
-      {isEditModalOpen() && selectedPlan() && (
-        <ModalEditPlan
-          isOpen={isEditModalOpen()}
-          onSave={handleSavePlan}
-          onClose={closeEditModal}
-          structureId={props.structureId}
-          plan={selectedPlan()}
-        />
-      )}
     </div>
   );
 };

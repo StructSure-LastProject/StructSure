@@ -1,19 +1,21 @@
 import { createSignal, onMount, onCleanup, Show, createEffect } from "solid-js";
 import { Check, ChevronDown, Plus, Trash2 } from 'lucide-solid';
 import planImg from '/src/assets/plan.png';
-import ModalEditPlan from '../Plan/ModalEditPlan';
 import ModalAddPlan from '../Plan/ModalAddPlan';
+import ModalEditPlan from '../Plan/ModalEditPlan';
 import DropdownsSection from "../Plan/DropdownsSection.jsx";
-import StructureDetailSection from './StructureDetailSection';
 
 /**
  * Shows the plans part
  * @returns the component for the plans part
  */
 function StructureDetailPlans(props) {
+    // Constants for image manipulation limit
     const imageMoveLimit = 10;
     const SENSOR_POINT_SIZE = 10;
     const ZOOM_LIMIT = 20;
+
+    // Canvas and image state management
     const [ctxCanvas, setCtxCanvas] = createSignal("");
     const [zoomFactor, setZoomFactor] = createSignal(0);
     const [offsetX, setOffsetX] = createSignal(0);
@@ -36,32 +38,46 @@ function StructureDetailPlans(props) {
     const [cClickX, setCClickX] = createSignal(0);
     const [cClickY, setCClickY] = createSignal(0);
 
-    // Gestion des plans
+    // Plans and modals state management
     const [plans, setPlans] = createSignal([]);
     const [selectedPlanId, setSelectedPlanId] = createSignal(null);
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
     const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
     const [selectedPlan, setSelectedPlan] = createSignal(null);
 
-    const img = new Image();
-    let canvasRef;
-    let isMouseDown = false;
-    let startX = 0;
-    let startY = 0;
-
-    // Gestion des modaux
+    /**
+     * Opens the add plan modal
+     */
     const openAddModal = () => setIsAddModalOpen(true);
+
+    /**
+     * Closes the add plan modal
+     */
     const closeAddModal = () => setIsAddModalOpen(false);
+
+    /**
+     * Closes the edit plan modal and clears selected plan
+     */
     const closeEditModal = () => {
         setIsEditModalOpen(false);
         setSelectedPlan(null);
     };
 
+    /**
+     * Generates the URL for a plan's image
+     * @param {number|string} planId Plan identifier
+     * @returns {string} Complete URL for the plan image
+     */
     const getImageUrl = (planId) => {
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+        // todo remove the part you don't need
+        const API_BASE_URL = window.location.origin || 'http://localhost:8080';
         return `${API_BASE_URL}/api/structures/plans/${planId}/image`;
     };
 
+    /**
+     * Handles the edit action for a plan
+     * @param {number|string} planId Identifier of the plan to edit
+     */
     const handleEdit = (planId) => {
         const plan = plans().find(p => p.id === planId);
         if (plan) {
@@ -73,28 +89,54 @@ function StructureDetailPlans(props) {
         }
     };
 
-    const handleEditSave = (updatedPlan) => {
+    /**
+     * Handles saving the edited plan data
+     * @param {Object} formData Form data containing the edited plan information
+     */
+    const handleEditSave = (formData) => {
+        const userRole = localStorage.getItem("role");
+        const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
+
         setPlans(prev => prev.map(plan =>
-          plan.id === updatedPlan.id
-            ? { ...plan, ...updatedPlan }
+          plan.id === formData.id
+            ? {
+                ...plan,
+                name: formData.metadata.name,
+                section: formData.metadata.section,
+                type: plan.archived ? "archived" : (canEdit ? "edit" : "plan")
+            }
             : plan
         ));
         closeEditModal();
     };
 
-    // Gestion de l'ajout d'un nouveau plan
-    const handleAddSave = (result) => {
+    /**
+     * Handles saving a newly added plan
+     * @param {Object} formData Form data containing the new plan information
+     */
+    const handleAddSave = (formData) => {
+        const userRole = localStorage.getItem("role");
+        const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
+
         const newPlan = {
-            id: result.id,
-            name: result.name || "",
-            section: result.section || "",
-            type: "plan", // Type par défaut pour les nouveaux plans
-            createdAt: result.createdAt || Date.now()
+            id: formData.id,
+            name: formData.metadata.name,
+            section: formData.metadata.section || "",
+            type: canEdit ? "edit" : "plan",
+            archived: false
         };
 
         setPlans(prev => [...prev, newPlan]);
         closeAddModal();
     };
+
+    const [cClickX, setCClickX] = createSignal(0);
+    const [cClickY, setCClickY] = createSignal(0);
+    const img = new Image();
+    let canvasRef;
+    let isMouseDown = false;
+    let startX = 0;
+    let startY = 0;
 
     /**
      * Returns the start image position x
@@ -154,7 +196,7 @@ function StructureDetailPlans(props) {
         setCanvasRatio(canvasRatio);
         setBaseOffsetX(baseOffsetX);
         setBaseOffsetY(baseOffsetY);
-        
+
         ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
         const imgStartX = getImgStartX(baseOffsetX, offsetX(), zoomFactor());
         const imgStartY = getImgStartY(baseOffsetY, offsetY(), zoomFactor());
@@ -239,12 +281,12 @@ function StructureDetailPlans(props) {
     const fixDpi = () => {
         if (!canvasRef || !canvasRef.parentElement) return;
         const dpi = window.devicePixelRatio;
-        
+
         // Récupérer la vraie taille du parent du canvas
         const parent = canvasRef.parentElement;
         const width = parent.clientWidth;
         const height = parent.clientHeight;
-    
+
         // Appliquer ces dimensions au canvas
         canvasRef.width = width * dpi;
         canvasRef.height = height * dpi;
@@ -511,17 +553,29 @@ function StructureDetailPlans(props) {
         loadAndDrawImage(planImg);
     };
 
-    // Ajouter cet effet juste avant le return
+    /**
+     * Effect that updates plans based on props and user role
+     */
     createEffect(() => {
-        console.log("Plans reçus:", props.plans);
-        console.log("Structure des plans:", JSON.stringify(props.plans, null, 2));
-        if (props?.plans) {
-            // Initialise les plans avec ceux reçus des props
-            setPlans(props.plans.map(plan => ({
-                ...plan,
-                type: plan.type || "plan" // Assure qu'il y a toujours un type
-            })));
-            console.log("plan saved:", plans())
+        if (props.plans) {
+            const userRole = localStorage.getItem("role");
+            const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
+
+            const newPlans = props.plans.map(plan => {
+                if (plan.archived) {
+                    return {
+                        ...plan,
+                        type: "archived",
+                        section: plan.section || ""
+                    };
+                }
+                return {
+                    ...plan,
+                    type: canEdit ? "edit" : "plan",
+                    section: plan.section || ""
+                };
+            });
+            setPlans(newPlans);
         }
     });
 
@@ -556,12 +610,14 @@ function StructureDetailPlans(props) {
                       structureId={props.structureId}
                     />
                 </Show>
-
                 <Show when={isEditModalOpen() && selectedPlan()}>
                     <ModalEditPlan
                       isOpen={isEditModalOpen()}
                       onSave={handleEditSave}
-                      onClose={closeEditModal}
+                      onClose={() => {
+                          setIsEditModalOpen(false);
+                          setSelectedPlan(null);
+                      }}
                       structureId={props.structureId}
                       plan={selectedPlan()}
                     />
