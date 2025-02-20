@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -35,14 +34,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import fr.uge.structsure.MainActivity
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Plan
 import fr.uge.structsure.components.Point
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.SensorState
-import fr.uge.structsure.structuresPage.data.PlanDB
-import fr.uge.structsure.structuresPage.data.TreeNode
 import fr.uge.structsure.structuresPage.data.TreePlan
 import fr.uge.structsure.structuresPage.data.TreeSection
 import fr.uge.structsure.ui.theme.Black
@@ -54,22 +50,18 @@ import fr.uge.structsure.utils.FileUtils
 
 /**
  * This composable is used to display the plans of the structure.
- * @param structureId the id of the structure
+ * @param scanViewModel to get plans list and active plan
  */
 @Composable
-fun PlansView(structureId: Long, scanViewModel: ScanViewModel) {
+fun PlansView(scanViewModel: ScanViewModel) {
     val context = LocalContext.current
-    val selected = remember { mutableStateOf<TreePlan?>(null) }
-    // TODO selected change when navigating to another page (alert)
-    // TODO sometimes the interrogator disappeared from the BLE list (when connecting)
     val defaultImage = remember(1) { BitmapFactory.decodeResource(context.resources, R.drawable.plan_not_found) }
-
-    val plans = remember(structureId, selected) { planTree(MainActivity.db.planDao().getPlansByStructureId(structureId), selected) }
+    val plans = scanViewModel.plans.observeAsState()
     val sensors = scanViewModel.sensorsNotScanned.observeAsState(listOf())
     println(sensors.value.map{ "${it.name}-${it.state}"} )
     val points = sensors.value
-        .filter { it.plan == selected.value?.plan?.id }
-        .map { Point(it.x, it.y, SensorState.valueOf(it.state)) }
+        .filter { it.plan == scanViewModel.selected.value?.plan?.id }
+        .map { Point(it.x, it.y, SensorState.from(it.state)) }
     println(points)
 
     Column(
@@ -90,7 +82,7 @@ fun PlansView(structureId: Long, scanViewModel: ScanViewModel) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            val path = selected.value?.plan?.let { FileUtils.getLocalPlanImage(context, it.id) }
+            val path = scanViewModel.selected.value?.plan?.let { FileUtils.getLocalPlanImage(context, it.id) }
             val image = if (path == null) defaultImage else BitmapFactory.decodeFile(path)
             Plan(
                 image = image,
@@ -105,7 +97,7 @@ fun PlansView(structureId: Long, scanViewModel: ScanViewModel) {
                     .height(1.dp)
                     .background(LightGray) )
 
-            Section(plans as TreeSection, selected, true)
+            Section(scanViewModel, plans.value as TreeSection, true)
         }
     }
 }
@@ -113,12 +105,12 @@ fun PlansView(structureId: Long, scanViewModel: ScanViewModel) {
 /**
  * Item corresponding to a plan section (a group of plans) in the
  * plan selector
+ * @param scanViewModel to access the selected plan
  * @param treeNode the tree (or subtree) to display
- * @param selected boolean used to mark visually selected element
  * @param hideSelf true to display content only, without the section name
  */
 @Composable
-private fun Section(treeNode: TreeSection, selected: MutableState<TreePlan?>, hideSelf: Boolean = false) {
+private fun Section(scanViewModel: ScanViewModel, treeNode: TreeSection, hideSelf: Boolean = false) {
     var collapsed by remember { mutableStateOf(true) }
     if (!hideSelf) {
         Row(
@@ -157,33 +149,13 @@ private fun Section(treeNode: TreeSection, selected: MutableState<TreePlan?>, hi
             treeNode.children.values.sortedBy { !it.isPlan }.forEach {
                 if (it.isPlan) {
                     val plan = (it as TreePlan).plan
-                    PlanItem(plan.name, selected.value == it ) { selected.value = it }
+                    PlanItem(plan.name, scanViewModel.selected.value == it ) { scanViewModel.selected.value = it }
                 } else {
-                    Section(it as TreeSection, selected)
+                    Section(scanViewModel, it as TreeSection)
                 }
             }
         }
     }
-}
-
-/**
- * Creates a tree of plans and sections from a list of raw plans from
- * the database.
- * @param plans the raw plans from the database
- * @param selected to select the first plan by default
- * @return the tree containing all item well organized
- */
-private fun planTree(plans: List<PlanDB>, selected: MutableState<TreePlan?>): TreeNode {
-    val root = TreeSection("")
-    plans.forEach { plan ->
-        val tokens = if (plan.section.isEmpty()) listOf() else plan.section.split("/")
-        var node: TreeNode = root
-        tokens.forEach { token -> node = node.children.computeIfAbsent(token) { TreeSection(token) } }
-        val child = TreePlan(plan)
-        node.children["${plan.id}"] = child
-        if (selected.value == null) selected.value = child
-    }
-    return root
 }
 
 /**

@@ -56,17 +56,17 @@ private suspend fun getFromApi(login: String, password: String): Optional<UserAu
         try {
             val response = call.execute()  // Synchronous call
 
-            if (response.isSuccessful && response.body() != null) {
-                return@withContext Optional.of(response.body()!!)
+            if (!response.isSuccessful) {
+                Log.d("ERROR API", "API call for login failed with code ${response.code()} - ${response.message()}")
+            } else if (response.body() == null) {
+                Log.d("ERROR API", "Invalid API response for login: body is null")
             } else {
-                Log.d("ERROR API", "Response not successful or body is null")
-                return@withContext Optional.empty()   // Return null if the response is not successful
+                return@withContext Optional.of(response.body()!!)
             }
-
         } catch (e: Exception) {
             Log.d("ERROR API", "Exception: ${e.message}")
-            return@withContext Optional.empty()  // Return null in case of an exception
         }
+        return@withContext Optional.empty()
     }
 }
 
