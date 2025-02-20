@@ -1,4 +1,6 @@
-package fr.uge.structsure.structuresPage.data
+package fr.uge.structsure.scanPage.data
+
+import fr.uge.structsure.structuresPage.data.PlanDB
 
 /**
  * Representation for a tree of section containing either other
@@ -11,14 +13,22 @@ interface TreeNode {
     val isPlan: Boolean
 }
 
-class TreePlan (
+/**
+ * Representation of a plan in the tree (leave)
+ * @property plan the plan object represent by this node
+ */
+data class TreePlan (
     val plan: PlanDB,
 ) : TreeNode {
     override val isPlan = true
     override val children = mutableMapOf<String, TreeNode>()
 }
 
-class TreeSection(val name: String) : TreeNode {
+/**
+ * Representation of a section in the tree (node)
+ * @property String the name of this section
+ */
+data class TreeSection(val name: String) : TreeNode {
     override val isPlan = false
     override val children = mutableMapOf<String, TreeNode>()
 }

@@ -11,6 +11,9 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
+import fr.uge.structsure.scanPage.data.TreeNode
+import fr.uge.structsure.scanPage.data.TreePlan
+import fr.uge.structsure.scanPage.data.TreeSection
 import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState

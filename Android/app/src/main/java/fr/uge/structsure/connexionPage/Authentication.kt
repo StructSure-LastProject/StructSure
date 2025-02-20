@@ -11,12 +11,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Optional
 
+private const val TAG = "AuthenticationAPI"
 
-suspend fun auth(login:String,
-                 password:String,
-                 dao: AccountDao,
-                 navController: NavController,
-                 structureViewModel: StructureViewModel? = null ): String {
+suspend fun auth(login:String, password:String, dao: AccountDao,
+    navController: NavController, structureViewModel: StructureViewModel? = null
+): String {
     if (login.isEmpty()){
         return "Veuillez renseigner votre identifiant"
     } else if (password.isEmpty()){
@@ -57,14 +56,14 @@ private suspend fun getFromApi(login: String, password: String): Optional<UserAu
             val response = call.execute()  // Synchronous call
 
             if (!response.isSuccessful) {
-                Log.d("ERROR API", "API call for login failed with code ${response.code()} - ${response.message()}")
+                Log.w(TAG, "API call for login failed with code ${response.code()} - ${response.message()}")
             } else if (response.body() == null) {
-                Log.d("ERROR API", "Invalid API response for login: body is null")
+                Log.w(TAG, "Invalid API response for login: body is null")
             } else {
                 return@withContext Optional.of(response.body()!!)
             }
         } catch (e: Exception) {
-            Log.d("ERROR API", "Exception: ${e.message}")
+            Log.w(TAG, "Exception: ${e.message}")
         }
         return@withContext Optional.empty()
     }
