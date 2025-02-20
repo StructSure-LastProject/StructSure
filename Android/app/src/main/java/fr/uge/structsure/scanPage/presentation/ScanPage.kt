@@ -35,7 +35,6 @@ import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.components.Title
 import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanState
-import fr.uge.structsure.scanPage.domain.ScanUploadState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
@@ -62,13 +61,7 @@ fun ScanPage(context: Context,
              navController: NavController) {
 
     val currentState = scanViewModel.currentScanState.observeAsState(initial = ScanState.NOT_STARTED)
-    val scanUploadState = scanViewModel.scanUploadState.observeAsState()
 
-    LaunchedEffect(scanUploadState.value) {
-        if (scanUploadState.value is ScanUploadState.UploadSuccess) {
-            navController.navigate("HomePage")
-        }
-    }
     scanViewModel.setStructure(structureId)
 
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
@@ -89,6 +82,7 @@ fun ScanPage(context: Context,
                 },
                 onStopClick = {
                     scanViewModel.stopScan()
+                    navController.popBackStack()
                 },
                 onContentClick = {
 

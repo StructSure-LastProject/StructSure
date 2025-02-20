@@ -15,24 +15,17 @@ import androidx.navigation.NavController
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Typography
 
-private fun StateMapper(downloaded: Boolean, hasUnsentResults: Boolean): StructureStates {
-    return when {
-        hasUnsentResults -> StructureStates.DOWNLOADING
-        downloaded -> StructureStates.AVAILABLE
-        else -> StructureStates.ONLINE
-    }
+private fun stateMapper(downloaded: Boolean): StructureStates {
+    return if (downloaded) StructureStates.AVAILABLE else StructureStates.ONLINE
 }
 
-
 @Composable
-fun StructuresListView(structureViewModel: StructureViewModel, navController: NavController) {
+fun StructuresListView(
+    structureViewModel: StructureViewModel,
+    navController: NavController
+) {
     val structures = structureViewModel.getAllStructures.observeAsState()
-    val hasUnsentResults = structureViewModel.hasUnsentResults.observeAsState()
-
-    LaunchedEffect(structureViewModel) {
-        structureViewModel.getAllStructures()
-    }
-
+    val structureStates = structureViewModel.structureStates.observeAsState(initial = mutableMapOf())
     val searchByName = remember { mutableStateOf("") }
 
     Column(
@@ -45,13 +38,20 @@ fun StructuresListView(structureViewModel: StructureViewModel, navController: Na
             text = "Ouvrages",
         )
         SearchBar(input = searchByName)
+
         structures.value?.filter { it.name.contains(searchByName.value) }?.forEach { structure ->
-            val state = remember(structure.id, structure.downloaded, hasUnsentResults.value) {
-                mutableStateOf(StateMapper(
-                    downloaded = structure.downloaded,
-                    hasUnsentResults = hasUnsentResults.value == true
-                ))
+            val state = remember(structure.id, structureStates.value[structure.id]) {
+                mutableStateOf(
+                    structureStates.value[structure.id] ?: stateMapper(structure.downloaded)
+                )
             }
+
+            LaunchedEffect(structureStates.value[structure.id]) {
+                structureStates.value[structure.id]?.let {
+                    state.value = it
+                }
+            }
+
             Structure(structure, state, structureViewModel, navController)
         }
     }

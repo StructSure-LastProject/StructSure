@@ -1,6 +1,7 @@
 package fr.uge.structsure.scanPage.domain
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 import java.sql.Timestamp
 import fr.uge.structsure.structuresPage.domain.ConnectivityViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
+import fr.uge.structsure.structuresPage.presentation.components.StructureStates
 
 /**
  * ViewModel responsible for managing the scanning process.
@@ -75,8 +77,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     val sensorsNotScanned = MutableLiveData<List<SensorDB>>()
 
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
-
-    val scanUploadState = MutableLiveData<ScanUploadState>()
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -278,18 +278,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                     scanRepository.updateScanEndTime(scanId, now)
 
                     val results = scanRepository.getAllScanResults()
-                    if (results.isEmpty()) {
-                        scanUploadState.postValue(ScanUploadState.Success)
-                        return@let
-                    }
-
                     structureId?.let { id ->
                         structureViewModel.setHasUnsentResults(true)
-                    }
-
-                    if (connectivityViewModel.isConnected.value != true) {
-                        scanUploadState.postValue(ScanUploadState.Success)
-                        return@let
                     }
 
                     val scanRequest = scanRepository.convertToScanRequest(
@@ -302,18 +292,16 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                     scanRepository.submitScanResults(scanRequest)
                         .onSuccess {
                             structureId?.let { id ->
-                                structureViewModel.setHasUnsentResults(false)
+                                structureViewModel.setHasUnsentResults(false, id)
+                                structureViewModel.setStructureState(id, StructureStates.AVAILABLE)
                             }
-                            scanUploadState.postValue(ScanUploadState.Success)
                         }
                         .onFailure { error ->
-                            scanUploadState.postValue(
-                                ScanUploadState.Error(error.message ?: "Unknown error")
-                            )
+                           Log.e("ScanViewModel", "Error submitting scan results", error)
                         }
                 }
             } catch (e: Exception) {
-                scanUploadState.postValue(ScanUploadState.Error(e.message ?: "Unknown error"))
+                Log.e("ScanViewModel", "Error stopping scan", e)
             } finally {
                 rfidBuffer.stop()
                 sensorCache.clearCache()

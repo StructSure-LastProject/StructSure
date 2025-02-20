@@ -1,13 +1,9 @@
 package fr.uge.structsure.scanPage.data.repository
 
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import androidx.compose.ui.platform.LocalContext
 import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.exception.NoConnectivityException
 import fr.uge.structsure.retrofit.RetrofitInstance
-import fr.uge.structsure.retrofit.RetrofitInstance.scanApi
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.network.dto.ScanRequestDTO
 import fr.uge.structsure.scanPage.data.network.dto.ScanResultDTO
@@ -23,7 +19,7 @@ class ScanRepository(private val context: Context) {
     private val sensorDao = db.sensorDao()
     private val scanApi = RetrofitInstance.scanApi
     private val connectivityViewModel = ConnectivityViewModel(context)
-    private var pendingResults: ScanRequestDTO? = null
+
     /**
      * Updates the end timestamp of a scan in local database
      * Called when a scan is completed to record its end time
@@ -37,13 +33,11 @@ class ScanRepository(private val context: Context) {
 
     /**
      * Retrieves all scan results from local database
-     * Used to get the complete list of results for a finished scan
      *
      * @return List<ResultSensors> List of all scan results stored in local DB
      */
-    suspend fun getAllScanResults(): List<ResultSensors> {
-        val currentScanId = scanDao.getLastScanId() ?: return emptyList()
-        return resultDao.getResultsByScanId(currentScanId)
+    fun getAllScanResults(): List<ResultSensors> {
+        return resultDao.getAllResults()
     }
 
     /**
@@ -117,23 +111,47 @@ class ScanRepository(private val context: Context) {
         )
     }
 
-    fun savePendingResults(request: ScanRequestDTO) {
-        pendingResults = request
-    }
-
-    suspend fun checkAndSendPendingResults(): Result<Unit> {
-        val currentRequest = pendingResults ?: return Result.success(Unit)
-
+    suspend fun resendUnsentResults(): Result<Unit> {
         return try {
-            if (connectivityViewModel.isConnected.value == true) {
-                val result = submitScanResults(currentRequest)
-                if (result.isSuccess) {
-                    pendingResults = null
-                }
-                result
-            } else {
-                Result.failure(NoConnectivityException())
+            val results = resultDao.getAllResults()
+            if (results.isEmpty()) {
+                return Result.success(Unit)
             }
+
+            // Regrouper les résultats par scanId
+            val groupedResults = results.groupBy { it.scanId }
+
+            // Traiter chaque groupe de résultats séparément
+            groupedResults.forEach { (scanId, scanResults) ->
+                val scan = scanDao.getScanById(scanId)
+                    ?: return@forEach // Skip si le scan n'existe pas
+
+                val scanRequest = ScanRequestDTO(
+                    scanId = scanId,
+                    launchDate = scan.start_timestamp,
+                    note = scan.note,
+                    results = scanResults.map { result ->
+                        ScanResultDTO(
+                            sensorId = result.id,
+                            control_chip = result.controlChip,
+                            measure_chip = result.measureChip,
+                            name = result.id.toString(),
+                            state = result.state,
+                            note = "",
+                            installation_date = result.timestamp
+                        )
+                    }
+                )
+
+                val response = submitScanResults(scanRequest)
+                if (response.isSuccess) {
+                    scanResults.forEach { result ->
+                        resultDao.deleteResult(result.id)
+                    }
+                }
+            }
+
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
