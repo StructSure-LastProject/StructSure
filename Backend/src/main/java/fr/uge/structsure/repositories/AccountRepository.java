@@ -11,9 +11,10 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, String> {
 
     /**
-     * Find the acccount by its login
+     * Find the acccount by login
      * @param login the login
      * @return optional with the login if there is and optional empty if there is no login
      */
     Optional<Account> findByLogin(String login);
+
 }

@@ -1,8 +1,11 @@
 package fr.uge.structsure.entities;
 
 import jakarta.persistence.*;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 public class Account {
@@ -23,6 +26,10 @@ public class Account {
 
     private Boolean enabled;
 
+    @Lazy
+    @ManyToMany(mappedBy = "accounts")
+    private Set<Structure> structures = new HashSet<>();
+
     public Account() {}
 
     public Account(String login, String passwordEncrypted, String firstname, String lastname, Role role, boolean enabled) {
@@ -37,7 +44,6 @@ public class Account {
     public void setLogin(String login) {
         this.login = login;
     }
-
 
     public void setFirstname(String firstname) {
         this.firstname = firstname;
@@ -82,4 +88,18 @@ public class Account {
     public Boolean getEnabled() {
         return enabled;
     }
+
+    public Set<Structure> getAllowedStructures() {
+        return structures;
+    }
+
+    public void add(Structure structure){
+        structures.add(Objects.requireNonNull(structure));
+    }
+
+    public void remove(Structure structure){
+        structures.remove(Objects.requireNonNull(structure));
+    }
+
+
 }
