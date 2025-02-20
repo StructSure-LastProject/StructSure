@@ -40,9 +40,10 @@ const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
             </div>
             <div class="flex flex-col gap-[5px] lg:gap-[10px]">
               <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">Note</p>
-              <div class="rounded-[18px] px-[16px] py-[8px] flex gap-[10px] bg-[#F2F2F4]">
-                <p class="font-poppins font-[400] text-[14px] leading-[21px] text-[#181818]">{sensorDetails.note}</p>
-              </div>
+                <textarea class="rounded-[18px] px-[16px] py-[8px] flex gap-[10px] bg-[#F2F2F4] font-poppins font-[400] text-[14px] leading-[21px] text-[#181818]"
+                  value={sensorDetails.note}  
+                >
+                </textarea>
             </div>
           </div>
           <div class="lg:flex lg:flex-row lg:gap-[25px] lg:min-w-[863px] lg:min-h-[63px] flex flex-col gap-[25px]">
