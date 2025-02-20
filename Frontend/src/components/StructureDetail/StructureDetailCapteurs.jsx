@@ -1,7 +1,8 @@
 import { ArrowDownNarrowWide, Filter, Plus, Trash2 } from 'lucide-solid';
-import { createEffect, createSignal } from 'solid-js';
+import {createEffect, createSignal, For, Show} from 'solid-js';
 import SensorPanel from '../SensorPanel/SensorPanel';
 import getSensorStatusColor from "../SensorStatusColorGen"
+import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
 
 /**
  * Show the sensors part of the structure detail page
@@ -10,7 +11,6 @@ import getSensorStatusColor from "../SensorStatusColorGen"
 function StructureDetailCapteurs({sensors}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
-
 
     /**
      * Open the sensor panel
@@ -46,6 +46,9 @@ function StructureDetailCapteurs({sensors}) {
                     <div class="w-10 h-10 rounded-[50px] bg-black flex justify-center items-center">
                         <Plus size={20} color='white'/>
                     </div>
+                    <Show when={true}>
+                        <ModalAddSensor isOpen={true} onClose={() => {}} structureId={1} onSave={() => {}} />
+                    </Show>
                 </div>
             </div>
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">

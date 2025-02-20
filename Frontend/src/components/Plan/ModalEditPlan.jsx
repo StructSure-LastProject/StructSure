@@ -1,9 +1,9 @@
 import { createSignal, Show } from "solid-js";
 import useFetch from "../../hooks/useFetch.js";
-import ModalHeader from "./ModalHeader.jsx";
-import ErrorMessage from "./ErrorMessage.jsx";
-import ModalField from "./ModalField.jsx";
-import ModalImage from "./ModalImage.jsx";
+import ModalHeader from "../Modal/ModalHeader.jsx";
+import ErrorMessage from "../Modal/ErrorMessage.jsx";
+import ModalField from "../Modal/ModalField.jsx";
+import ModalImage from "../Modal/ModalImage.jsx";
 
 /**
  * Modal for editing a plan.
@@ -16,7 +16,7 @@ import ModalImage from "./ModalImage.jsx";
  * @param {Object} props.plan Current plan data
  * @returns {JSX.Element} The modal component for editing a plan
  */
-const Modal = ({ isOpen, onClose, onSave, structureId, plan }) => {
+const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan }) => {
   const [name, setName] = createSignal(plan.name || "");
   const [section, setSection] = createSignal(plan.section || "");
   const [imageData, setImageData] = createSignal(null);
@@ -158,4 +158,4 @@ const Modal = ({ isOpen, onClose, onSave, structureId, plan }) => {
   );
 };
 
-export default Modal;
+export default ModalEditPlan;
