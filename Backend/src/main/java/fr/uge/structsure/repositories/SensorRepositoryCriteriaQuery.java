@@ -100,6 +100,14 @@ public class SensorRepositoryCriteriaQuery {
         return query.getResultList();
     }
 
+    /**
+     * Will add the min/max Installation date filter to the list of predicates
+     * @param request the request dto
+     * @param predicates the list of predicates
+     * @param cb the Criteria Builder
+     * @param sensor the sensor entity
+     * @throws TraitementException throws DATE_TIME_FORMAT_ERROR if there is an error while parsing the date time
+     */
     private static void addMinAndMaxInstallationDatePredicate(AllSensorsByStructureRequestDTO request, ArrayList<Predicate> predicates, CriteriaBuilder cb, Root<Sensor> sensor) throws TraitementException {
         if (request.minInstallationDate() != null && !request.minInstallationDate().isEmpty()) {
             try {
@@ -114,6 +122,12 @@ public class SensorRepositoryCriteriaQuery {
         }
     }
 
+    /**
+     * Returns the number results with defective state
+     * @param cb the Criteria Builder
+     * @param result the result of the join
+     * @return Predicate the number of defective states
+     */
     private static Predicate checkIsDefectivePresent(CriteriaBuilder cb, Join<Object, Object> result) {
         return cb.greaterThan(
                 cb.count(cb.<Long>selectCase().when(cb.equal(result.get("state"), StateEnum.DEFECTIVE), 1L)),
@@ -121,6 +135,12 @@ public class SensorRepositoryCriteriaQuery {
         );
     }
 
+    /**
+     * Returns the number results with nok state
+     * @param cb the Criteria Builder
+     * @param result the result of the join
+     * @return Predicate the number of nok states
+     */
     private static Predicate checkIsNokPresent(CriteriaBuilder cb, Join<Object, Object> result) {
         return cb.greaterThan(
                 cb.count(cb.<Long>selectCase().when(cb.equal(result.get("state"), StateEnum.NOK), 1L)),
@@ -128,6 +148,14 @@ public class SensorRepositoryCriteriaQuery {
         );
     }
 
+    /**
+     * Returns the state of the sensor
+     * @param cb the Criteria Builder
+     * @param resultCount the number of results
+     * @param isNokPresent the number of nok states
+     * @param isDefectivePresent the number of defective states
+     * @return
+     */
     private static Expression<Integer> getState(CriteriaBuilder cb, Expression<Long> resultCount, Expression<Boolean> isNokPresent, Expression<Boolean> isDefectivePresent) {
         return cb.<Integer>selectCase()
                 .when(cb.equal(resultCount, 0), State.UNKNOWN.ordinal())
@@ -136,6 +164,12 @@ public class SensorRepositoryCriteriaQuery {
                 .otherwise(State.OK.ordinal());
     }
 
+    /**
+     * Return the case for order
+     * @param cb the criteria builder
+     * @param caseExpression the case expression containing the value
+     * @return
+     */
     private static CriteriaBuilder.Case<Integer> getWhen(CriteriaBuilder cb, Expression<Integer> caseExpression) {
         return cb.<Integer>selectCase()
                 .when(cb.equal(caseExpression, State.NOK.ordinal()), 1)
