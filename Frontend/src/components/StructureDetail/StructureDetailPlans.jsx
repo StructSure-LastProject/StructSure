@@ -190,19 +190,12 @@ function StructureDetailPlans(props) {
 
             const sensorCanvasX = imgStartX + sensor.x * scaleX;
             const sensorCanvasY = imgStartY + sensor.y * scaleY;
-            /*
             ctx.beginPath();
             ctx.arc(sensorCanvasX, sensorCanvasY, 10, 0, Math.PI * 2);
             ctx.fillStyle = bgColor;
             ctx.fill();
             ctx.beginPath();
             ctx.arc(sensorCanvasX, sensorCanvasY, 12, 0, Math.PI * 2);
-            ctx.fillStyle = borderColor;
-            ctx.fill();
-            ctx.closePath();
-            */
-            ctx.beginPath();
-            ctx.arc(sensorCanvasX, sensorCanvasY, 1, 0, Math.PI * 2);
             ctx.fillStyle = borderColor;
             ctx.fill();
             ctx.closePath();
@@ -457,8 +450,15 @@ function StructureDetailPlans(props) {
                         class="w-full"
                     ></canvas>
                     <Show when={isPopupVisible()}>
+                        <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
+                            style={{
+                                top: `${popupY()-10}px`,
+                                left: `${popupX()-10}px`,
+                            }}>
+
+                        </div>
                         <div 
-                            class="absolute w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
+                            class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
                             style={{
                                 top: `${popupY()}px`,
                                 left: `${popupX()}px`,
