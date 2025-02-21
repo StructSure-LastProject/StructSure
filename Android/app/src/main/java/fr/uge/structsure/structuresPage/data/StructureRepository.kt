@@ -63,7 +63,6 @@ class StructureRepository : ViewModel() {
         return (structuresFromDB + structuresFromApi).distinctBy { it.id }
     }
 
-
     private suspend fun getStructureDetailsFromApi(id: Long): Optional<StructureDetailsData> {
         return withContext(Dispatchers.IO) {
             val apiInterface = getApiInterface()
@@ -90,7 +89,11 @@ class StructureRepository : ViewModel() {
         }
     }
 
-
+    /**
+     * Downloads the structure details from the server and saves them to the local database.
+     * @param structure the structure to download
+     * @param context the context needed for file operations
+     */
     suspend fun downloadStructure(structure: StructureData, context: Context) {
         val optionalResult = getStructureDetailsFromApi(structure.id)
         if(optionalResult.isPresent) {

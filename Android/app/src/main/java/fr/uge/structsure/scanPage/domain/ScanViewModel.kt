@@ -263,6 +263,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
     /**
      * Stops the scan process, stopping the scanner and the RFID buffer.
+     * Updates the end time of the scan in the database and tries to upload the scan to the server.
+     * If the upload fails, the scan will be uploaded later.
      */
     fun stopScan() {
         viewModelScope.launch(Dispatchers.IO) {

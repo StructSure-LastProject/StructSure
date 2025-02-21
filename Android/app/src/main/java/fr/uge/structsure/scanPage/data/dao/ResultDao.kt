@@ -6,6 +6,11 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import fr.uge.structsure.scanPage.data.ResultSensors
 
+/**
+ * DAO for the sensors scanned results.
+ * This class provides methods for accessing the ResultSensors table in the database.
+ * @see ResultSensors
+ */
 @Dao
 interface ResultDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -4,6 +4,9 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
 
+/**
+ * Data access object for the structure table.
+ */
 @Dao
 interface StructureDao {
 

@@ -65,8 +65,6 @@ fun ScanPage(context: Context,
 
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
 
-
-
     Page(
         Modifier.padding(bottom = 100.dp),
         navController = navController,
