@@ -111,10 +111,9 @@ function StructureDetailPlans(props) {
      * Effect that updates plans based on props and user role
      */
     createEffect(() => {
+        const userRole = localStorage.getItem("role");
+        setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE")
         if (props.plans) {
-            const userRole = localStorage.getItem("role");
-            setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE")
-
             const newPlans = props.plans.map(plan => {
                 if (plan.archived) {
                     return {

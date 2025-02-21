@@ -69,7 +69,12 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
     if (statusCode() === 201) {
       const result = data();
       onSave({
-        id: result.id
+        id: structureId,
+        name: name().trim(),
+        note: note().trim(),
+        measureChip: result.measureChip,
+        controlChip: result.controlChip,
+        state: "UNKNOWN"
       });
       handleClose();
     } else {

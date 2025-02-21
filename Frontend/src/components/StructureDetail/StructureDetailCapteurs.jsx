@@ -8,7 +8,7 @@ import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
  * Show the sensors part of the structure detail page
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({sensors}) {
+function StructureDetailCapteurs({sensors, onSensorAdded, structureId}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
@@ -39,7 +39,18 @@ function StructureDetailCapteurs({sensors}) {
     /**
      * Handles saving a newly added plan
      */
-    const handleAddSave = () => {
+    const handleAddSave = (formData) => {
+        const newSensor = {
+            id: formData.id,
+            name: formData.name,
+            note: formData.note,
+            measureChip: formData.measureChip,
+            controlChip: formData.controlChip,
+            state: "UNKNOWN"
+        };
+        if (onSensorAdded) {
+            onSensorAdded(newSensor);
+        }
         closeAddModal();
     };
 
@@ -80,7 +91,12 @@ function StructureDetailCapteurs({sensors}) {
                         </button>
                     </Show>
                     <Show when={isAddModalOpen()}>
-                        <ModalAddSensor isOpen={isAddModalOpen()} onClose={closeAddModal} structureId={1} onSave={handleAddSave} />
+                        <ModalAddSensor
+                          isOpen={isAddModalOpen()}
+                          onClose={closeAddModal}
+                          structureId={structureId}
+                          onSave={handleAddSave}
+                        />
                     </Show>
                 </div>
             </div>

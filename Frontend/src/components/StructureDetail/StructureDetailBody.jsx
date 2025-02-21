@@ -90,6 +90,14 @@ function StructureDetailBody(props) {
         // }
     };
 
+    /**
+     * Handle new sensor created by the client
+     * @param newSensor the new sensor
+     */
+    const handleSensorAdded = (newSensor) => {
+        setSensors(prev => [...prev, newSensor]);
+    }
+
     createEffect(() => {
         structureDetailsFetchRequest(props.structureId);
         sensorsFetchRequest(props.structureId);
@@ -104,7 +112,11 @@ function StructureDetailBody(props) {
               structureId={props.structureId}
               planSensors={planSensors()}
             />
-            <StructureDetailRow sensors={sensors} />
+            <StructureDetailRow
+              sensors={sensors}
+              onSensorAdded={handleSensorAdded}
+              structureId={props.structureId}
+            />
         </div>
     );
 }
