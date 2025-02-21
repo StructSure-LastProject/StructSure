@@ -20,16 +20,29 @@ function StructureDetailBody(props) {
     /**
      * Will fetch the list of the sensors of this structure
      */
-    const sensorsFetchRequest = async (structureId) => {
+    const sensorsFetchRequest = async (structureId, filters = {}) => {
+        const { fetchData, statusCode, data, errorFetch } = useFetch();
+    
+        // Construire le body avec les filtres
+        const requestBody = {
+            orderByColumn: filters.orderByColumn || "STATE",
+            orderType: filters.orderType || "ASC",
+            offset: filters.offset ?? 0,
+            limit: filters.limit ?? 5,
+        };
+    
+        const requestUrl = `/api/structures/${structureId}/sensors`;
+    
         const requestData = {
-            method: "GET",
+            method: "POST",  // Changer GET en POST
             headers: {
                 "Content-Type": "application/json"
-            }
+            },
+            body: JSON.stringify(requestBody) // Ajouter les paramètres dans le body
         };
-
-        const { fetchData, statusCode, data, errorFetch } = useFetch();
-        await fetchData(`/api/structures/${structureId}/sensors`, requestData);
+    
+        await fetchData(requestUrl, requestData);
+    
         if (statusCode() === 200) {
             setSensors(data());
         }// Uncomment this when error barre is developped
@@ -47,7 +60,6 @@ function StructureDetailBody(props) {
                 "Content-Type": "application/json"
             }
         };
-
         const { fetchData, statusCode, data, errorFetch } = useFetch();
         await fetchData(`/api/structures/${structureId}`, requestData);
         if (statusCode() === 200) {

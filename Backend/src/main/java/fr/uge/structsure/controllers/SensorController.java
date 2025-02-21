@@ -1,6 +1,7 @@
 package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.sensors.AddSensorRequestDTO;
+import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.SensorService;
@@ -51,10 +52,10 @@ public class SensorController {
      * Endpoint to get the list of sensors present in a structure
      * @return List of sensors
      */
-    @GetMapping("/structures/{structureId}/sensors")
-    public ResponseEntity<?> getSensorsByStructure(@PathVariable("structureId") long structureId) {
+    @PostMapping("/structures/{id}/sensors")
+    public ResponseEntity<?> getSensorsByStructure(@PathVariable("id") long id, @RequestBody AllSensorsByStructureRequestDTO request) {
         try {
-            List<SensorDTO> sensorDTOs = sensorService.getSensorsByStructureId(structureId);
+            List<SensorDTO> sensorDTOs = sensorService.getSensors(id, request);
             return ResponseEntity.ok(sensorDTOs);
         } catch (TraitementException e) {
             return e.toResponseEntity();
