@@ -48,7 +48,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
     val getAllStructures = MutableLiveData<List<StructureWithState>?>()
     val isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
     private val uploadInProgress = MutableLiveData<Boolean>(false)
-    
+
     /**
      * Initializes the view model.
      */
