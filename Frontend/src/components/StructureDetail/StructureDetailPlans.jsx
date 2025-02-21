@@ -21,7 +21,6 @@ function StructureDetailPlans(props) {
     const [selectedPlan, setSelectedPlan] = createSignal(null);
 
     const [isAuthorized, setIsAuthorized] = createSignal(false);
-    const [isOpen, setIsOpen] = createSignal(false);
 
 
     /**
@@ -53,7 +52,6 @@ function StructureDetailPlans(props) {
         return `${API_BASE_URL}/api/structures/plans/${planId}/image`;
     };
 
-    const openModal = () => setIsOpen(true);
 
     
     /**

@@ -162,7 +162,7 @@ function StructureDetailCanvas(props) {
         const scaleX = (drawWidth + zoomX) / img.width;
         const scaleY = (drawHeight + zoomY) / img.height;
         props.planSensors.forEach(sensor => {
-            let [bgColor, borderColor] = getColorFromSensor(sensor);
+            const [bgColor, borderColor] = getColorFromSensor(sensor);
             const sensorCanvasX = imgStartX + sensor.x * scaleX;
             const sensorCanvasY = imgStartY + sensor.y * scaleY;
             ctx.beginPath();
@@ -328,7 +328,7 @@ function StructureDetailCanvas(props) {
      */
     const findClickedSensor = (x, y) => {
         return props.planSensors.find(sensor => {
-            let [scx, scy] = canvasPositionFromOriginal(sensor.x, sensor.y);
+            const [scx, scy] = canvasPositionFromOriginal(sensor.x, sensor.y);
             const distance = Math.sqrt(
                 Math.pow(x - scx, 2) + Math.pow(y - scy, 2)
             );
@@ -487,7 +487,7 @@ function StructureDetailCanvas(props) {
      * @returns true if yes and false if not
      */
     const popupOutOfCanvas = () => {
-        let [x, y] = canvasPositionFromOriginal(popupX(), popupY());
+        const [x, y] = canvasPositionFromOriginal(popupX(), popupY());
         return x < 0 || x > canvasRef.width || y < 0 || y > canvasRef.height;
     };
 
@@ -515,7 +515,7 @@ function StructureDetailCanvas(props) {
                 ref={canvasRef}
                 class="w-full bg-white"
             ></canvas>
-            <Show when={isPopupVisible() && !popupOutOfCanvas() && props.interactiveMode == true}>
+            <Show when={isPopupVisible() && !popupOutOfCanvas() && props.interactiveMode === true}>
                 <div ref={popupRef}>
                     <Show when={!clickExistingPoint()}>
                         <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
