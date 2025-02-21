@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
                     SetDynamicStatusBar()
                 }
                 composable(connexionPage) {
-                    ConnexionCard(navController, accountDao)
+                    ConnexionCard(navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
                 composable("ScanPage") { /*ScanPage(navController)*/ }

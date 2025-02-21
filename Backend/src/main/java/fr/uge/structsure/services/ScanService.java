@@ -5,6 +5,7 @@ import fr.uge.structsure.entities.*;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.ResultRepository;
+import fr.uge.structsure.repositories.ScanRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,21 +19,28 @@ import java.util.Objects;
 @Service
 public class ScanService {
     private static final Logger logger = LoggerFactory.getLogger(ScanService.class);
+
     private final ResultRepository resultRepository;
+    private final ScanRepository scanRepository;
 
     @Autowired
-    public ScanService(ResultRepository resultRepository) {
+    public ScanService(ScanRepository scanRepository, ResultRepository resultRepository) {
         this.resultRepository = Objects.requireNonNull(resultRepository);
+        this.scanRepository = Objects.requireNonNull(scanRepository);
     }
 
 
     @Transactional
     public void saveScanResults(AndroidScanResultDTO scanData) throws TraitementException {
         try {
-            List<Result> results = new ArrayList<>();
-
+            if (scanData.results().isEmpty()) {
+                logger.warn("Received empty scan results, ignoring");
+                return;
+            }
             Scan scan = new Scan();
-            scan.setId(scanData.scanId());
+            scan = scanRepository.save(scan);
+
+            List<Result> results = new ArrayList<>();
 
             for (var sensorResult : scanData.results()) {
                 Sensor sensor = new Sensor();
@@ -50,7 +58,6 @@ public class ScanService {
             }
 
             resultRepository.saveAll(results);
-
             logger.info("Saved {} results for scan {}", results.size(), scanData.scanId());
         } catch (Exception e) {
             logger.error("Error saving results: {}", e.getMessage());

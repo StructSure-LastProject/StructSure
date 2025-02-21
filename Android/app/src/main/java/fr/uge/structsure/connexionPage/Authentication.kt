@@ -6,12 +6,17 @@ import fr.uge.structsure.retrofit.LoginApi
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.retrofit.response.Datamodel
 import fr.uge.structsure.retrofit.response.UserAuthResponse
+import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Optional
 
 
-suspend fun auth(login:String, password:String, dao: AccountDao, navController: NavController): String {
+suspend fun auth(login:String,
+                 password:String,
+                 dao: AccountDao,
+                 navController: NavController,
+                 structureViewModel: StructureViewModel? = null ): String {
     if (login.isEmpty()){
         return "Veuillez renseigner votre identifiant"
     } else if (password.isEmpty()){
@@ -22,6 +27,7 @@ suspend fun auth(login:String, password:String, dao: AccountDao, navController: 
     if (response.isPresent){ //si la paire (login,password) est dans la bdd
         val account = response.get()
         val entity = AccountEntity(account.login, account.token, account.type, account.firstName, account.lastName, account.role)
+        structureViewModel?.tryUploadScans(true, false, login)
         val out = dao.upsertAccount(entity)
         // TODO clear all data from the DB if dap.upsertAccount return false
         navController.navigate("HomePage");

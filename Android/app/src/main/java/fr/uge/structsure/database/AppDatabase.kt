@@ -10,7 +10,6 @@ import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.connexionPage.data.AccountEntity
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
-import fr.uge.structsure.scanPage.data.StructureEntity
 import fr.uge.structsure.scanPage.data.dao.ResultDao
 import fr.uge.structsure.scanPage.data.dao.ScanDao
 import fr.uge.structsure.structuresPage.data.PlanDB
@@ -29,9 +28,9 @@ import fr.uge.structsure.structuresPage.data.StructureData
  * - PlanEntity: Plan data.
  */
 @Database(
-    entities = [ScanEntity::class, StructureEntity::class, AccountEntity::class,
+    entities = [ScanEntity::class, AccountEntity::class,
         StructureData::class, SensorDB::class, PlanDB::class, ResultSensors::class],
-    version = 9,
+    version = 12,
     exportSchema = false
 )
 /**

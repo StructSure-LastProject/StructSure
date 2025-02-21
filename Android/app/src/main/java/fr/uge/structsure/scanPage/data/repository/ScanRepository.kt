@@ -67,6 +67,10 @@ class ScanRepository(private val context: Context) {
                 throw NoConnectivityException()
             }
 
+            if (scanRequest.results.isEmpty()) {
+                return Result.success(Unit)
+            }
+
             val response = scanApi.submitScanResults(scanRequest)
             if (response.isSuccessful) {
                 Result.success(Unit)
@@ -96,13 +100,13 @@ class ScanRepository(private val context: Context) {
         results: List<ResultSensors>
     ): ScanRequestDTO {
 
-        val scanResults = results.map { result ->
-            val sensor = sensorDao.getSensor(result.id)
+        val scanResults = results.mapNotNull{ result ->
+            val sensor = sensorDao.getSensor(result.id) ?: return@mapNotNull null
             ScanResultDTO(
                 sensorId = result.id,
                 control_chip = result.controlChip,
                 measure_chip = result.measureChip,
-                name = sensor?.name ?: "",
+                name = sensor.name,
                 state = result.state,
                 note = "", // TODO
                 installation_date = "0" // TODO

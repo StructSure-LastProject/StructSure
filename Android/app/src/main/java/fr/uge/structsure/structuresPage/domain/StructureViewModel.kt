@@ -49,18 +49,11 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      */
     init {
         connectivityViewModel.isConnected.distinctUntilChanged().observeForever { isConnected ->
+            if (isConnected) getAllStructures()
+
             if (!isConnected || uploadInProgress.value == true) return@observeForever
 
-            viewModelScope.launch(Dispatchers.IO) {
-                uploadInProgress.postValue(true)
-                val unsentScans = scanRepository.getUnsentScans()
-                unsentScans.forEach { scan ->
-                    Log.i("StructureVM", "Found unsent scan #${scan.id} - ${scan.structureId}")
-                    tryUploadScan(scan.structureId, scan.id)
-                }
-                getAllStructures()
-                uploadInProgress.postValue(false)
-            }
+            tryUploadScans(isConnected, uploadInProgress.value ?: false, null)
         }
     }
 
@@ -114,31 +107,61 @@ class StructureViewModel(private val structureRepository: StructureRepository,
     }
 
     /**
-     * Tries to upload the data of the given scan to the server and
-     * remove it from the local storage.
-     * @param structureId the id of the structure of the scan
-     * @param scanId the id of the scan to upload
+     * Tries to upload the scan with the given id.
+     * @param structureId the id of the structure
+     * @param scanId the id of the scan
      */
     suspend fun tryUploadScan(structureId: Long, scanId: Long) {
         setStructureState(structureId, StructureStates.UPLOADING)
         val results = scanRepository.getResultsByScan(scanId)
 
-        try{
-            val scanRequest = scanRepository.convertToScanRequest(scanId, results)
-            scanRepository.submitScanResults(scanRequest)
-                .onSuccess {
-                    Log.i("StructureVM", "Scan #${scanId} successfully uploaded, removing data...")
-                    deleteStructure(structureId)
-                    setStructureState(structureId, StructureStates.ONLINE)
-                    getAllStructures()
-                }.onFailure { e ->
-                    Log.w("StructureVM", "Failed to upload results of scan #${scanId} (structure ${structureId}): ${e.message}")
-                    setStructureState(structureId, StructureStates.UPLOADING)
+        val scanRequest = scanRepository.convertToScanRequest(scanId, results)
+        scanRepository.submitScanResults(scanRequest)
+            .onSuccess {
+                Log.i("StructureVM", "Scan #${scanId} successfully uploaded, removing data...")
+                deleteStructure(structureId)
+                setStructureState(structureId, StructureStates.ONLINE)
+                getAllStructures()
+            }.onFailure { e ->
+                Log.w("StructureVM", "Failed to upload results of scan #${scanId} (structure ${structureId}): ${e.message}")
+            }
+    }
+
+    /**
+     * Tries to upload all scans.
+     * @param isConnected true if the device is connected to the internet, false otherwise
+     * @param uploadInProgress true if an upload is already in progress, false otherwise
+     * @param login the login of the user
+     */
+    fun tryUploadScans(isConnected: Boolean, uploadInProgress: Boolean, login: String?) {
+        if (!isConnected || uploadInProgress) return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                this@StructureViewModel.uploadInProgress.postValue(true)
+
+                val unsentScans = scanRepository.getUnsentScans()
+                if (unsentScans.isEmpty()) return@launch
+
+                if (login != null) {
+                    val lastScanTechnician = unsentScans.lastOrNull()?.technician
+                    if (lastScanTechnician != null && lastScanTechnician != login) {
+                        unsentScans.forEach { scan ->
+                            structureRepository.deleteStructure(scan.structureId, context)
+                        }
+                        return@launch
+                    }
                 }
 
-        }catch (e: Exception) {
-            Log.e("StructureVM", "Error during upload", e)
-            setStructureState(structureId, StructureStates.UPLOADING)
+                unsentScans.forEach { scan ->
+                    Log.i("StructureVM", "Found unsent scan #${scan.id} - ${scan.structureId}")
+                    tryUploadScan(scan.structureId, scan.id)
+                }
+            } catch (e: Exception) {
+                Log.e("StructureVM", "Error during batch upload", e)
+            } finally {
+                this@StructureViewModel.uploadInProgress.postValue(false)
+            }
         }
     }
 }

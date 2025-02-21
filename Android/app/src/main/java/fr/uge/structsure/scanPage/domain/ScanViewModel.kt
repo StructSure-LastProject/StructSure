@@ -273,9 +273,12 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 currentScanState.postValue(ScanState.STOPPED)
 
                 activeScanId?.let { scanId ->
-                    val now = Timestamp(System.currentTimeMillis()).toString()
-                    scanRepository.updateScanEndTime(scanId, now)
-                    structureViewModel.tryUploadScan(structureId!!, scanId)
+                    val results = resultDao.getAllResults()
+                    if (results.isNotEmpty()) {
+                        val now = Timestamp(System.currentTimeMillis()).toString()
+                        scanRepository.updateScanEndTime(scanId, now)
+                        structureViewModel.tryUploadScan(structureId!!, scanId)
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("ScanViewModel", "Error stopping scan", e)
