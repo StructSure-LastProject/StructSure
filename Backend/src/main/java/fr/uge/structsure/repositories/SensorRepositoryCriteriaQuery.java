@@ -47,8 +47,8 @@ public class SensorRepositoryCriteriaQuery {
         var plan = sensor.join("plan", JoinType.LEFT);
 
         var predicates = new ArrayList<Predicate>();
-        if (request.planFilter() != null && !request.planFilter().isEmpty()) {
-            predicates.add(cb.equal(plan.get("name"), request.planFilter()));
+        if (request.planFilter() != null) {
+            predicates.add(cb.equal(plan.get("id"), request.planFilter()));
         }
         predicates.add(cb.equal(sensor.get("structure").get("id"), structureId));
 
@@ -109,13 +109,18 @@ public class SensorRepositoryCriteriaQuery {
      * @throws TraitementException throws DATE_TIME_FORMAT_ERROR if there is an error while parsing the date time
      */
     private static void addMinAndMaxInstallationDatePredicate(AllSensorsByStructureRequestDTO request, ArrayList<Predicate> predicates, CriteriaBuilder cb, Root<Sensor> sensor) throws TraitementException {
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         if (request.minInstallationDate() != null && !request.minInstallationDate().isEmpty()) {
             try {
-                DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
                 predicates.add(cb.greaterThanOrEqualTo(sensor.get("installationDate"), LocalDateTime.parse(request.minInstallationDate(), formatter)));
-                if (request.maxInstallationDate() != null && !request.maxInstallationDate().isEmpty()) {
-                    predicates.add(cb.lessThanOrEqualTo(sensor.get("installationDate"), LocalDateTime.parse(request.maxInstallationDate(), formatter)));
-                }
+            } catch (DateTimeParseException e) {
+                throw new TraitementException(Error.DATE_TIME_FORMAT_ERROR);
+            }
+        }
+
+        if (request.maxInstallationDate() != null && !request.maxInstallationDate().isEmpty()) {
+            try {
+                predicates.add(cb.lessThanOrEqualTo(sensor.get("installationDate"), LocalDateTime.parse(request.maxInstallationDate(), formatter)));
             } catch (DateTimeParseException e) {
                 throw new TraitementException(Error.DATE_TIME_FORMAT_ERROR);
             }

@@ -24,7 +24,7 @@ import java.util.Objects;
  * @param archivedFilter the archived filter true or false
  */
 @JsonSerialize
-public record AllSensorsByStructureRequestDTO(String orderByColumn, String orderType, String stateFilter, String planFilter,
+public record AllSensorsByStructureRequestDTO(String orderByColumn, String orderType, String stateFilter, Integer planFilter,
                                               String minInstallationDate, String maxInstallationDate, Integer limit, Integer offset,
                                               Boolean archivedFilter) {
 
@@ -62,7 +62,8 @@ public record AllSensorsByStructureRequestDTO(String orderByColumn, String order
         }
         if (!EnumValidatorFromString.validateEnumValue(OrderByColumn.class, orderByColumn) ||
                 !EnumValidatorFromString.validateEnumValue(OrderEnum.class, orderType) ||
-                (!Objects.isNull(stateFilter) && !EnumValidatorFromString.validateEnumValue(State.class, stateFilter))) {
+                (!Objects.isNull(stateFilter) && !EnumValidatorFromString.validateEnumValue(State.class, stateFilter))
+                || (planFilter != null && planFilter < 0)) {
             throw new TraitementException(Error.INCORRECT_FIELD_VALUE);
         }
     }
