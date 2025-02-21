@@ -1,4 +1,20 @@
 /**
+ * Test is the variable contains only letters
+ * @param {string} str 
+ * @returns 
+ */
+export const containsNonLetters = (str) => /^[A-Za-zÀ-ÿ -]*$/.test(str);
+
+
+/**
+ * Validate the login value A-z, A-Z, 0-9, _, @
+ * @param {string} login 
+ * @returns 
+ */
+export const loginValidator = (loginValue) => /^[A-Za-z0-9_@.-]*$/.test(loginValue);
+
+
+/**
  * Validate User Account Form
  * @param {string} firstName 
  * @param {string} lastName 
@@ -21,13 +37,6 @@ export const validateUserAccountForm = (firstName, lastName, login, role, passwo
         fields.push(password);
     }
 
-    /**
-     * Test is the variable contains only letters
-     * @param {string} str 
-     * @returns 
-     */
-    const containsNonLetters = (str) => /^[A-Za-zÀ-ÿ -]*$/.test(str);
-    
     
     const missingFields = Object.values(fields).map(item => item === "" ? 1 : 0).filter(field => field !== 0);
     const errorMessage = "Assurez-vous que tous les champs marqués d'un astérisque (*) sont complétés.";
@@ -64,12 +73,6 @@ export const validateUserAccountForm = (firstName, lastName, login, role, passwo
         removeError(lastnameError);
     }
 
-    /**
-     * Validate the login value A-z, A-Z, 0-9, _, @
-     * @param {string} login 
-     * @returns 
-     */
-    const loginValidator = (loginValue) => /^[A-Za-z0-9_@.-]*$/.test(loginValue);
 
     if(!loginValidator(login)){
         addError(loginError);
