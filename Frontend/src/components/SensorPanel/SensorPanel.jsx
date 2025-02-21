@@ -171,11 +171,11 @@ const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
           </div>
           <div class="lg:flex lg:flex-row lg:gap-[25px] lg:min-w-[863px] lg:min-h-[63px] flex flex-col gap-[25px]">
             <SensorFieldComponent 
-              title={"Puce témoin"} 
+              title={"Tag témoin"} 
               value={sensorDetails.controlChip} 
             />
             <SensorFieldComponent 
-              title={"Puce mesure"} 
+              title={"Tag mesure"} 
               value={sensorDetails.measureChip}
             />
             <SensorFieldComponent 
