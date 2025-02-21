@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
@@ -41,11 +45,12 @@ import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
+import kotlinx.coroutines.launch
+import fr.uge.structsure.structuresPage.data.PlanDB
+import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
-import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.Typography
-import kotlinx.coroutines.launch
 
 /**
  * Home screen of the application when the user starts a scan.
@@ -68,6 +73,12 @@ fun ScanPage(context: Context,
     scanViewModel.setStructure(context, structureId)
 
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
+
+    LaunchedEffect(sensorPopup) {
+        if (sensorPopup != null) {
+            planViewModel.loadPlans(context, structureId)
+        }
+    }
 
     Page(
         Modifier.padding(bottom = 100.dp),
@@ -122,34 +133,24 @@ fun ScanPage(context: Context,
 private fun SensorPopUp(
     sensor: SensorDB,
     scanViewModel: ScanViewModel,
+    planViewModel: PlanViewModel,
     onSubmit: () -> Unit,
     onCancel: () -> Unit
 ) {
-    val state by scanViewModel.currentScanState.observeAsState(ScanState.NOT_STARTED)
+    var note by remember { mutableStateOf(sensor.note ?: "") }
+    val planImagePath by planViewModel.planImagePath.observeAsState()
+
     val currentResults by scanViewModel.currentResults.observeAsState(initial = emptyList())
-    val planImagePath by scanViewModel.planViewModel.image.observeAsState()
-    val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
-
     val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: "UNKNOWN"
-    val coroutineScope = rememberCoroutineScope()
 
-    var sensorNote by remember { mutableStateOf(sensor.note.orEmpty()) }
-
-        PopUp(onCancel) {
+    PopUp(onCancel) {
         Title(sensor.name, false) {
             Button(
                 R.drawable.check,
                 "valider",
                 MaterialTheme.colorScheme.onSurface,
                 MaterialTheme.colorScheme.surface,
-                onClick =
-                {
-                    coroutineScope.launch {
-                        if (scanViewModel.updateSensorNote(sensorId = sensor.sensorId, sensorNote)) {
-                            onSubmit()
-                        }
-                    }
-                }
+                onSubmit
             )
         }
 
@@ -162,14 +163,14 @@ private fun SensorPopUp(
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            planImagePath?.let { bitmap ->
+            planImagePath?.let { path ->
                 Image(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(156.dp)
                         .clip(shape = RoundedCornerShape(size = 15.dp))
                         .border(width = 3.dp, color = LightGray, shape = RoundedCornerShape(size = 15.dp)),
-                    bitmap = bitmap.asImageBitmap(),
+                    bitmap = BitmapFactory.decodeFile(path).asImageBitmap(),
                     contentDescription = "Plan",
                 )
             } ?: Box(
@@ -192,23 +193,10 @@ private fun SensorPopUp(
             currentState
         )
 
-        errorMessage?.let {
-            Text(
-                text = it,
-                color = Red,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
-
-        val placeholder = if (state == ScanState.NOT_STARTED)
-            "Aucune note pour le moment.  Commencez un scan pour ajouter une note"
-            else "Aucune note pour le moment."
         InputTextArea(
             label = "Note",
-            value = sensorNote,
-            placeholder = placeholder,
-            enabled = state == ScanState.STARTED || state == ScanState.PAUSED
-        ) { s -> if (s.length <= 1000) sensorNote = s }
+            value = note,
+            placeholder = "Aucune note pour le moment"
+        ) { s -> if (s.length <= 1000) note = s }
     }
 }

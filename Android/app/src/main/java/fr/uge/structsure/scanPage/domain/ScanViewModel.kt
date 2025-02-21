@@ -91,6 +91,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Displaying error messages when updating notes */
     val noteErrorMessage = MutableLiveData<String>()
 
+    val currentResults = MutableLiveData<List<ResultSensors>>()
+
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
      */
@@ -239,32 +241,22 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     private fun updateSensorState(sensor: SensorDB, newState: String) {
         val stateChanged = sensorCache.updateSensorState(sensor, newState) ?: return
 
-        if (activeScanId == null) {
-            val now = Timestamp(System.currentTimeMillis()).toString()
-            val newScan = ScanEntity(
-                structureId = structureId ?: return,
-                start_timestamp = now,
-                end_timestamp = "",
-                technician = accountDao.getLogin(),
-                note = ""
+        activeScanId?.let { scanId ->
+            val result = ResultSensors(
+                id = sensor.sensorId,
+                timestamp = Timestamp(System.currentTimeMillis()).toString(),
+                scanId = scanId,
+                controlChip = sensor.controlChip,
+                measureChip = sensor.measureChip,
+                state = stateChanged
             )
-            activeScanId = scanDao.insertScan(newScan)
+            resultDao.insertResult(result)
+
+            val currentList = currentResults.value?.toMutableList() ?: mutableListOf()
+            currentList.removeAll { it.id == sensor.sensorId }
+            currentList.add(result)
+            currentResults.postValue(currentList)
         }
-
-        val result = ResultSensors(
-            id = sensor.sensorId,
-            timestamp = Timestamp(System.currentTimeMillis()).toString(),
-            scanId = activeScanId!!,
-            controlChip = sensor.controlChip,
-            measureChip = sensor.measureChip,
-            state = stateChanged
-        )
-        resultDao.insertResult(result)
-
-        val currentList = currentResults.value?.toMutableList() ?: mutableListOf()
-        currentList.removeAll { it.id == sensor.sensorId }
-        currentList.add(result)
-        currentResults.postValue(currentList)
 
         when (stateChanged) {
             "OK" -> {
