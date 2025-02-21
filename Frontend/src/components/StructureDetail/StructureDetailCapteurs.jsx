@@ -12,6 +12,10 @@ function StructureDetailCapteurs({sensors}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
+    const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
+    
+    const [isAuthorized, setIsAuthorized] = createSignal(false);
+
     /**
      * Open the sensor panel
      * @param {Object} sensor Sensor object that contains all the details about the clicked sensor
@@ -23,6 +27,23 @@ function StructureDetailCapteurs({sensors}) {
     }
 
     /**
+     * Opens the add sensor modal
+     */
+    const openAddModal = () => setIsAddModalOpen(true);
+
+    /**
+     * Closes the add sensor modal
+     */
+    const closeAddModal = () => setIsAddModalOpen(false);
+
+    /**
+     * Handles saving a newly added plan
+     */
+    const handleAddSave = () => {
+        closeAddModal();
+    };
+
+    /**
      * Close the sensor panel
      */
     const closeSensorPanelHandler = () => {
@@ -30,7 +51,13 @@ function StructureDetailCapteurs({sensors}) {
         setOpenSensorPanel(false);
         document.body.style.overflow = "auto";
     }
-
+    /**
+     * Effect that updates plans based on props and user role
+     */
+    createEffect(() => {
+        const userRole = localStorage.getItem("role");
+        setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE" || userRole === "OPERATEUR");
+    });
 
     return (
         <div class="w-full flex flex-col gap-y-[15px]">
@@ -43,11 +70,17 @@ function StructureDetailCapteurs({sensors}) {
                     <div class="w-10 h-10 rounded-[50px] bg-white flex justify-center items-center">
                         <Filter size={20}/>
                     </div>
-                    <div class="w-10 h-10 rounded-[50px] bg-black flex justify-center items-center">
-                        <Plus size={20} color='white'/>
-                    </div>
-                    <Show when={true}>
-                        <ModalAddSensor isOpen={true} onClose={() => {}} structureId={1} onSave={() => {}} />
+                    <Show when={isAuthorized()}>
+                        <button
+                            title="Ajouter un capteur"
+                            onClick={openAddModal}
+                            class="w-10 h-10 rounded-[50px] bg-black flex justify-center items-center"
+                        >
+                            <Plus size={20} color='white'/>
+                        </button>
+                    </Show>
+                    <Show when={isAddModalOpen()}>
+                        <ModalAddSensor isOpen={isAddModalOpen()} onClose={closeAddModal} structureId={1} onSave={handleAddSave} />
                     </Show>
                 </div>
             </div>

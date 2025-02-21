@@ -6,7 +6,7 @@ import ModalField from "../Modal/ModalField.jsx";
 import ModalComment from "../Modal/ModalComment.jsx";
 
 /**
- * Modal for adding a plan.
+ * Modal for adding a sensor.
  * Displaus a form to enter a name, a section and an image.
  * @param {isOpen, onClose, onSave, structureId} param Props passed to the component
  * @returns The modal component for adding a plan
@@ -20,9 +20,8 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
   const [errorMsg, setError] = createSignal("");
 
   /**
-   * Handles the form submission for adding a new plan.
-   * Validates the form data, creates a FormData object with the plan metadata and file,
-   * and sends it to the server.
+   * Handles the form submission for adding a new sensor.
+   * Validates the form data, creates a json object and sends it to the server.
    *
    * @returns {Promise<void>} A promise that resolves when the submission is complete
    * @throws Will display an error message if the submission fails
@@ -49,14 +48,18 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
       name: name().trim(),
       note: note().trim(),
       measureChip: measureChip().trim(),
-      controlChip: controlChip().trim(),
+      controlChip: controlChip().trim()
     };
 
     const { fetchData, data, statusCode, error } = useFetch();
 
     await fetchData(`/api/sensors`, {
       method: "POST",
-      body: body
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify(body)
     });
 
     if (statusCode() === 201) {
@@ -74,8 +77,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
 
   /**
    * Resets the modal state and closes it.
-   * Clears all form fields including name, section, image data,
-   * and any error messages before calling the onClose callback.
+   * Clears all form fields and any error messages before calling the onClose callback.
    */
   const handleClose = () => {
     setName("");
@@ -98,7 +100,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
             <ModalField label="Nom*" value={name()} maxLength={32} onInput={(e) => setName(e.target.value)} placeholder="Capteur 42" />
             <ModalField label="Puce Témoin*" value={controlChip()} maxLength={32}  onInput={(e) => setControlChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACE" />
             <ModalField label="Puce Mesure*" value={measureChip()} maxLength={32}  onInput={(e) => setMeasureChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACD" />
-            <ModalComment note={note()} onInput={(e) => setMeasureChip(e.target.value)}/>
+            <ModalComment note={note()} onInput={(e) => setNote(e.target.value)}/>
           </div>
         </div>
       </div>

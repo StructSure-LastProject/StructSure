@@ -2,7 +2,6 @@ import { Pencil, X } from 'lucide-solid';
 import Header from '../Header';
 import getSensorStatusColor from "../SensorStatusColorGen";
 import SensorFieldComponent from './SensorFieldComponent';
-import ModalComment from "../Modal/ModalComment.jsx";
 
 /**
  * The panel header
@@ -46,6 +45,23 @@ const SensorPlan = () => {
 }
 
 /**
+ * The sensor comment section
+ * @param {String} note The comment
+ * @returns The component contains the comment of the sensor
+ */
+const SensorCommentSection = ({note}) => {
+  return (
+    <div class="flex flex-col gap-[5px] lg:gap-[10px]">
+      <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">Note</p>
+      <textarea class="rounded-[18px] w-full px-[16px] py-[8px] flex gap-[10px] bg-[#F2F2F4] font-poppins font-[400] text-[14px] leading-[21px] text-[#181818]"
+                value={note}
+      >
+      </textarea>
+    </div>
+  );
+}
+
+/**
  * Shows the sensor panel with extra details of the clicked sensor
  * @param {Object} sensorDetails contains all the information about the clickded sensor 
  * @param {Function} closeSensorPanel Function that close the sensor panel
@@ -63,7 +79,7 @@ const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
         <div class="overflow-auto flex flex-col gap-[25px] rounded-[18px]">
           <div class="lg:flex lg:flex-row lg:gap-[25px] flex flex-col gap-[25px]">
             <SensorPlan/>
-            <ModalComment note={sensorDetails.note}/>
+            <SensorCommentSection note={sensorDetails.note}/>
           </div>
           <div class="lg:flex lg:flex-row lg:gap-[25px] lg:min-w-[863px] lg:min-h-[63px] flex flex-col gap-[25px]">
             <SensorFieldComponent title={"Puce témoin"} value={sensorDetails.controlChip}/>
