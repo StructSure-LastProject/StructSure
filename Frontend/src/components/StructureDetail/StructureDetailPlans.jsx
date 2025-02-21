@@ -48,7 +48,7 @@ function StructureDetailPlans(props) {
      */
     const getImageUrl = (planId) => {
         // todo remove the part you don't need
-        const API_BASE_URL = 'http://localhost:8080';
+        const API_BASE_URL = window.location.origin || 'http://localhost:8080';
         return `${API_BASE_URL}/api/structures/plans/${planId}/image`;
     };
 
