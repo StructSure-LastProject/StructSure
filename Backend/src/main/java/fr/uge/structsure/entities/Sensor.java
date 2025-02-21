@@ -162,10 +162,7 @@ public class Sensor {
 
     // todo default value to remove
     public LocalDateTime getInstallationDate() {
-        if(this.installationDate == null){
-            return LocalDateTime.parse("01/01/2025", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        }
-        return installationDate;
+        return Objects.requireNonNullElseGet(this.installationDate, LocalDateTime::now);
     }
 
     public void setInstallationDate(LocalDateTime installationDate) {
