@@ -60,7 +60,9 @@ fun ScanPage(context: Context,
              navController: NavController) {
 
     val currentState = scanViewModel.currentScanState.observeAsState(initial = ScanState.NOT_STARTED)
+
     scanViewModel.setStructure(structureId)
+
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
 
     Page(
@@ -77,6 +79,7 @@ fun ScanPage(context: Context,
                 },
                 onStopClick = {
                     scanViewModel.stopScan()
+                    navController.popBackStack()
                 },
                 onContentClick = {
 

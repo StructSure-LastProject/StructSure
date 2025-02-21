@@ -14,4 +14,7 @@ interface SensorDao {
 
     @Query("SELECT * from sensors as s WHERE s.structureId = :id")
     suspend fun getAllSensors(id: Long): List<SensorDB>
+
+    @Query("SELECT * FROM sensors WHERE sensorId = :id")
+    suspend fun getSensor(id: String): SensorDB?
 }

@@ -1,52 +1,171 @@
 package fr.uge.structsure.structuresPage.domain
 
 import android.content.Context
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.LiveData
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
-import fr.uge.structsure.database.AppDatabase
+import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.structuresPage.data.StructureData
 import fr.uge.structsure.structuresPage.data.StructureRepository
+import fr.uge.structsure.structuresPage.presentation.components.StructureStates
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class StructureViewModelFactory(
-    private val db: AppDatabase,
-    private val context: Context
-) : ViewModelProvider.Factory {
+/**
+ * The factory for the structure view model.
+ * @param context the context of the application
+ */
+class StructureViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(StructureViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return StructureViewModel(StructureRepository(), context) as T
+            return StructureViewModel(StructureRepository(), ScanRepository(context), context) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 
-class StructureViewModel(private val structureRepository: StructureRepository, private val context: Context): ViewModel() {
+/**
+ * The view model for the structures page.
+ * @param structureRepository the repository for the structures
+ * @param scanRepository the repository for the scans
+ * @param context the context of the application
+ */
+class StructureViewModel(private val structureRepository: StructureRepository,
+                         private val scanRepository: ScanRepository,
+                         private val context: Context
+): ViewModel() {
 
-    private val _getAllStructures = MutableLiveData<List<StructureData>>()
-    val getAllStructures: LiveData<List<StructureData>> = _getAllStructures
+    companion object {
+        private const val TAG = "StructureViewModel"
+    }
 
-    fun getAllStructures() {
-        viewModelScope.launch {
-            val structures = structureRepository.getAllStructures()
-            _getAllStructures.postValue(structures)
+    private val connectivityViewModel: ConnectivityViewModel = ConnectivityViewModel(context)
+    val getAllStructures = MutableLiveData<List<StructureData>?>()
+    private val uploadInProgress = MutableLiveData<Boolean>(false)
+    val structureStates = MutableLiveData<MutableMap<Long, StructureStates>>(mutableMapOf())
+
+    /**
+     * Initializes the view model.
+     */
+    init {
+        connectivityViewModel.isConnected.distinctUntilChanged().observeForever { isConnected ->
+            if (isConnected) getAllStructures()
+
+            if (!isConnected || uploadInProgress.value == true) return@observeForever
+
+            tryUploadScans(isConnected, uploadInProgress.value ?: false, null)
         }
     }
 
-    fun downloadStructure(structureData: StructureData){
+    /**
+     * Gets all structures from the repository and sets the value of [getAllStructures].
+     */
+    fun getAllStructures() {
+        viewModelScope.launch {
+            val structures = structureRepository.getAllStructures()
+            getAllStructures.postValue(structures)
+        }
+    }
+
+    /**
+     * Downloads the structure with the given data.
+     * @param structureData the data of the structure to download
+     */
+    fun downloadStructure(structureData: StructureData) {
         viewModelScope.launch {
             structureRepository.downloadStructure(structureData, context)
         }
     }
 
-    fun deleteStructure(structureData: StructureData){
+    /**
+     * Deletes the structure with the given id.
+     * @param structureId the id of the structure to delete
+     */
+    fun deleteStructure(structureId: Long) {
         viewModelScope.launch {
-            structureRepository.deleteStructure(structureData, context)
+            structureRepository.deleteStructure(structureId, context)
         }
     }
 
+    /**
+     * Sets the state of the structure with the given id.
+     * @param structureId the id of the structure
+     * @param state the state to set
+     */
+    private fun setStructureState(structureId: Long, state: StructureStates) {
+        val currentStates = structureStates.value ?: mutableMapOf()
+        currentStates[structureId] = state
+        structureStates.postValue(currentStates)
+    }
+
+    /**
+     * Called when the view model is cleared.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        connectivityViewModel.isConnected.removeObserver { }
+    }
+
+    /**
+     * Tries to upload the scan with the given id.
+     * @param structureId the id of the structure
+     * @param scanId the id of the scan
+     */
+    suspend fun tryUploadScan(structureId: Long, scanId: Long) {
+        setStructureState(structureId, StructureStates.UPLOADING)
+        val results = scanRepository.getResultsByScan(scanId)
+
+        val scanRequest = scanRepository.convertToScanRequest(scanId, results)
+        scanRepository.submitScanResults(scanRequest)
+            .onSuccess {
+                Log.i(TAG, "Scan #${scanId} successfully uploaded, removing data...")
+                deleteStructure(structureId)
+                setStructureState(structureId, StructureStates.ONLINE)
+                getAllStructures()
+            }.onFailure { e ->
+                Log.w(TAG, "Failed to upload results of scan #${scanId} (structure ${structureId}): ${e.message}")
+            }
+    }
+
+    /**
+     * Tries to upload all scans.
+     * @param isConnected true if the device is connected to the internet, false otherwise
+     * @param uploadInProgress true if an upload is already in progress, false otherwise
+     * @param login the login of the user
+     */
+    fun tryUploadScans(isConnected: Boolean, uploadInProgress: Boolean, login: String?) {
+        if (!isConnected || uploadInProgress) return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                this@StructureViewModel.uploadInProgress.postValue(true)
+
+                val unsentScans = scanRepository.getUnsentScans()
+                if (unsentScans.isEmpty()) return@launch
+
+                if (login != null) {
+                    val lastScanTechnician = unsentScans.lastOrNull()?.technician
+                    if (lastScanTechnician != null && lastScanTechnician != login) {
+                        unsentScans.forEach { scan ->
+                            structureRepository.deleteStructure(scan.structureId, context)
+                        }
+                        return@launch
+                    }
+                }
+
+                unsentScans.forEach { scan ->
+                    Log.i(TAG, "Found unsent scan #${scan.id} - ${scan.structureId}")
+                    tryUploadScan(scan.structureId, scan.id)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during batch upload", e)
+            } finally {
+                this@StructureViewModel.uploadInProgress.postValue(false)
+            }
+        }
+    }
 }

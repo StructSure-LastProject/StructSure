@@ -24,6 +24,7 @@ class StructureRepository : ViewModel() {
     private val planDao = MainActivity.db.planDao()
     private val sensorDao = MainActivity.db.sensorDao()
     private val resultDao = MainActivity.db.resultDao()
+    private val scanDao = MainActivity.db.scanDao()
 
     private fun getApiInterface() = RetrofitInstance.structureApi
 
@@ -62,7 +63,6 @@ class StructureRepository : ViewModel() {
         return (structuresFromDB + structuresFromApi).distinctBy { it.id }
     }
 
-
     private suspend fun getStructureDetailsFromApi(id: Long): Optional<StructureDetailsData> {
         return withContext(Dispatchers.IO) {
             val apiInterface = getApiInterface()
@@ -89,7 +89,11 @@ class StructureRepository : ViewModel() {
         }
     }
 
-
+    /**
+     * Downloads the structure details from the server and saves them to the local database.
+     * @param structure the structure to download
+     * @param context the context needed for file operations
+     */
     suspend fun downloadStructure(structure: StructureData, context: Context) {
         val optionalResult = getStructureDetailsFromApi(structure.id)
         if(optionalResult.isPresent) {
@@ -134,30 +138,31 @@ class StructureRepository : ViewModel() {
      * Deletes a structure and all its associated data (plans, sensors, images).
      * This includes both database entries and locally stored files.
      *
-     * @param structure The structure to be deleted
+     * @param structureId The id of the structure to be deleted
      * @param context Context needed for file operations
      */
-    fun deleteStructure(structure: StructureData, context: Context) {
+    fun deleteStructure(structureId: Long, context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val planIds = planDao.getPlanByStructureId(structure.id)
+                val planIds = planDao.getPlanByStructureId(structureId)
 
                 planIds.forEach { planId ->
                     FileUtils.deletePlanImage(context, planId)
                 }
 
-                sensorDao.deleteSensorsByStructureId(structure.id)
+                sensorDao.deleteSensorsByStructureId(structureId)
                 resultDao.deleteResults()
-                planDao.deletePlansByStructureId(structure.id)
-                structureDao.deleteStructure(structure)
+                planDao.deletePlansByStructureId(structureId)
+                structureDao.deleteStructure(structureId)
+                scanDao.deleteScanByStructure(structureId)
 
-                Log.d(TAG, "Structure ${structure.id} and all associated data deleted successfully")
+                Log.d(TAG, "Structure $structureId and all associated data deleted successfully")
             } catch (e: SQLiteException) {
-                Log.e(TAG, "Database error while deleting structure ${structure.id}", e)
+                Log.e(TAG, "Database error while deleting structure $structureId", e)
             } catch (e: IOException) {
-                Log.e(TAG, "I/O error while deleting structure files ${structure.id}", e)
+                Log.e(TAG, "I/O error while deleting structure files $structureId", e)
             } catch (e: SecurityException) {
-                Log.e(TAG, "Security error while accessing files for structure ${structure.id}", e)
+                Log.e(TAG, "Security error while accessing files for structure $structureId", e)
             }
         }
     }

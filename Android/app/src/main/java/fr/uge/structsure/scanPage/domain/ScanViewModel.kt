@@ -1,5 +1,7 @@
 package fr.uge.structsure.scanPage.domain
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,8 +11,10 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.cache.SensorCache
+import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
@@ -20,7 +24,7 @@ import java.sql.Timestamp
  * It interacts with the database, sensor cache, and scanner hardware to handle sensor states and user actions.
 
  */
-class ScanViewModel: ViewModel() {
+class ScanViewModel(context: Context, private val structureViewModel: StructureViewModel) : ViewModel() {
 
     /** DAO to interact with the scan database */
     private val scanDao = db.scanDao()
@@ -36,6 +40,9 @@ class ScanViewModel: ViewModel() {
 
     /** ID of the structure being scanned */
     private var structureId: Long? = null
+
+    /** Repository to interact with the scan database */
+    private val scanRepository: ScanRepository = ScanRepository(context)
 
     // Scanner hardware for reading RFID chips
     private val cs108Scanner =
@@ -222,10 +229,13 @@ class ScanViewModel: ViewModel() {
             sensorMessages.postValue("Interrogateur non connecté")
             return
         }
+
         cs108Scanner.start()
         currentScanState.postValue(ScanState.STARTED)
         alertMessages.postValue(null)
+
         if (activeScanId != null) return // already created
+
         val now = Timestamp(System.currentTimeMillis()).toString()
         val newScan = ScanEntity(
             structureId = structureId,
@@ -234,7 +244,10 @@ class ScanViewModel: ViewModel() {
             technician = accountDao.getLogin(),
             note = ""
         )
+
         activeScanId = scanDao.insertScan(newScan)
+        this.structureId = structureId
+
         refreshSensorStates()
         updateSensorStateCounts()
     }
@@ -250,18 +263,29 @@ class ScanViewModel: ViewModel() {
 
     /**
      * Stops the scan process, stopping the scanner and the RFID buffer.
+     * Updates the end time of the scan in the database and tries to upload the scan to the server.
+     * If the upload fails, the scan will be uploaded later.
      */
     fun stopScan() {
         viewModelScope.launch(Dispatchers.IO) {
-            cs108Scanner.stop()
-            currentScanState.postValue(ScanState.STOPPED)
-            val now = Timestamp(System.currentTimeMillis()).toString()
-            activeScanId?.let { scanId ->
-                scanDao.updateEndTimestamp(scanId, now)
+            try {
+                cs108Scanner.stop()
+                currentScanState.postValue(ScanState.STOPPED)
+
+                activeScanId?.let { scanId ->
+                    val results = resultDao.getAllResults()
+                    if (results.isNotEmpty()) {
+                        val now = Timestamp(System.currentTimeMillis()).toString()
+                        scanRepository.updateScanEndTime(scanId, now)
+                        structureId?.let { structureViewModel.tryUploadScan(it, scanId) }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ScanViewModel", "Error stopping scan", e)
+            } finally {
+                rfidBuffer.stop()
+                sensorCache.clearCache()
             }
-            rfidBuffer.stop()
-            sensorCache.clearCache()
         }
     }
-
 }

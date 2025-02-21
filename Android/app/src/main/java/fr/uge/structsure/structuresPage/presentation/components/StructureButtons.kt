@@ -55,7 +55,7 @@ fun StructureButtons(structure: StructureData, state: MutableState<StructureStat
             PlaySupButton(state, structure, structureViewModel, navController)
         }
 
-        StructureStates.DOWNLOADING -> {
+        StructureStates.DOWNLOADING, StructureStates.UPLOADING -> {
             LoadingButton()
         }
     }
@@ -113,7 +113,7 @@ fun PlaySupButton(
             color = Red,
             background = Red.copy(alpha = 0.05f),
             onClick = {
-                structureViewModel.deleteStructure(structure)
+                structureViewModel.deleteStructure(structure.id)
                 state.value = StructureStates.ONLINE
             }
         )

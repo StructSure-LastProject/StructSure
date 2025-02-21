@@ -1,7 +1,12 @@
 package fr.uge.structsure.structuresPage.presentation.components
 
+/**
+ * Enum class representing the different states a structure can be in.
+ * @property message The message associated with the state.
+ */
 enum class StructureStates(val message: String) {
-    AVAILABLE("Disponible hors-connexion"),
     ONLINE("En ligne"),
-    DOWNLOADING("Synchronisation en cours")
+    DOWNLOADING("Téléchargement en cours"),
+    AVAILABLE("Disponible hors-connexion"),
+    UPLOADING("Synchronisation en cours")
 }
