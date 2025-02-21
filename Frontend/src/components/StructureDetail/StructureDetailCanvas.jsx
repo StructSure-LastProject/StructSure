@@ -274,6 +274,23 @@ function StructureDetailCanvas(props) {
         }
     };
 
+     /**
+     * Returns the position in the canvas from the position in the original image
+     * @param {number} imgX the position x in the original image
+     * @param {number} imgY the position y in the original image
+     * @returns {[number, number]} - Position (X, Y) in the canvas
+     */
+     const canvasPositionFromOriginal = (imgX, imgY) => {
+        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), zoomFactor());
+        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), zoomFactor());
+        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+        const scaleX = (drawWidth() + zoomX) / img.width;
+        const scaleY = (drawHeight() + zoomY) / img.height;
+        const canvasX = imgStartX + imgX * scaleX;
+        const canvasY = imgStartY + imgY * scaleY;
+        return [canvasX, canvasY];
+    };
+
     /**
      * Returns the clicked existing point if it exists, otherwise returns null
      * @param {number} x - The x position of the click in the canvas
@@ -445,25 +462,6 @@ function StructureDetailCanvas(props) {
         canvasRef.removeEventListener("click", handleCanvasClick);
         document.removeEventListener("click", handleOutsideClick);
     });
-
-    /**
-     * Returns the position in the canvas from the position in the original image
-     * @param {number} imgX the position x in the original image
-     * @param {number} imgY the position y in the original image
-     * @returns {[number, number]} - Position (X, Y) in the canvas
-     */
-    const canvasPositionFromOriginal = (imgX, imgY) => {
-        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), zoomFactor());
-        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), zoomFactor());
-        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
-        const scaleX = (drawWidth() + zoomX) / img.width;
-        const scaleY = (drawHeight() + zoomY) / img.height;
-        const canvasX = imgStartX + imgX * scaleX;
-        const canvasY = imgStartY + imgY * scaleY;
-        return [canvasX, canvasY];
-    };
-    
-    
 
     /**
      * Returns the position x of the pop up in the canvas
