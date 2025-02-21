@@ -31,6 +31,11 @@ public class StructureController {
     private final PlanService planService;
 
 
+    /**
+     * The constructor of the Structure controller
+     * @param structureService the structure service
+     * @param planService the plan service
+     */
     @Autowired
     public StructureController(StructureService structureService, PlanService planService) {
         this.structureService = Objects.requireNonNull(structureService);

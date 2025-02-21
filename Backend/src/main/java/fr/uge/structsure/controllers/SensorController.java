@@ -21,6 +21,10 @@ import java.util.Objects;
 public class SensorController {
     private final SensorService sensorService;
 
+    /**
+     * The constructor for the Sensor controller
+     * @param sensorService the sensor service
+     */
     @Autowired
     public SensorController(SensorService sensorService) {
         this.sensorService = Objects.requireNonNull(sensorService);
