@@ -121,6 +121,10 @@ public class Sensor {
         this.name = name;
         this.note = note;
         this.structure = structure;
+        // todo default value to remove
+        this.installationDate = LocalDateTime.now();
+        this.x = 0.0;
+        this.y = 0.0;
     }
 
     @Override
@@ -160,20 +164,15 @@ public class Sensor {
         this.structure = structure;
     }
 
-    // todo default value to remove
     public LocalDateTime getInstallationDate() {
-        return Objects.requireNonNullElseGet(this.installationDate, LocalDateTime::now);
+        return installationDate;
     }
 
     public void setInstallationDate(LocalDateTime installationDate) {
         this.installationDate = installationDate;
     }
 
-    // todo default value to remove
     public Double getX() {
-        if (x == null) {
-            return 0.0;
-        }
         return x;
     }
 
@@ -181,11 +180,7 @@ public class Sensor {
         this.x = x;
     }
 
-    // todo default value to remove
     public Double getY() {
-        if (y == null) {
-            return 0.0;
-        }
         return y;
     }
 
