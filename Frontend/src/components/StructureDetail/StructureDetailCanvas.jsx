@@ -40,6 +40,25 @@ function StructureDetailCanvas(props) {
     let hasMoved = false;
 
     /**
+     * Calculates the zoom ratio
+     * @param {number} imgRatio the ratio of the image
+     * @param {number} canvasRatio the ration of the canvas
+     * @param {number} zoomNumber the zoom number
+     * @returns {number[]} in index 0 zoom for x, and in index 1 zoom for y
+     */
+    const zoomRatioFromZoomNumber = (imgRatio, canvasRatio, zoomNumber) => {
+        let zoomX = 0, zoomY = 0;
+        if (imgRatio > canvasRatio) {
+            zoomX = zoomNumber;
+            zoomY = zoomNumber / imgRatio;
+        } else {
+            zoomX = zoomNumber * imgRatio;
+            zoomY = zoomNumber;
+        }
+        return [zoomX, zoomY];
+    };
+
+    /**
      * Returns the start image position x
      * @param {Number} baseOffsetX the base offset x of the image
      * @param {Number} offsetX the offset x of the image
@@ -71,6 +90,35 @@ function StructureDetailCanvas(props) {
     const getZoomRationFromZoomNumber = (zoom) => {
         return zoomRatioFromZoomNumber(imgRatio(), canvasRatio(), zoom);
     }
+
+    /**
+     * Draws the sensors in the canvas
+     * @param {number} imgStartX the image start position y
+     * @param {number} imgStartY the image start position x
+     * @param {number} drawWidth the width of the image
+     * @param {number} drawHeight the height of the image
+     * @param {number} zoomX the zoom with ratio for x axis
+     * @param {number} zoomY the zoom with ratio for y axis
+     */
+    const drawSensors = (imgStartX, imgStartY, drawWidth, drawHeight, zoomX, zoomY) => {
+        const ctx = ctxCanvas();
+        const scaleX = (drawWidth + zoomX) / img.width;
+        const scaleY = (drawHeight + zoomY) / img.height;
+        props.planSensors.forEach(sensor => {
+            const [bgColor, borderColor] = getColorFromSensor(sensor);
+            const sensorCanvasX = imgStartX + sensor.x * scaleX;
+            const sensorCanvasY = imgStartY + sensor.y * scaleY;
+            ctx.beginPath();
+            ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE - 2, 0, Math.PI * 2);
+            ctx.fillStyle = bgColor;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE, 0, Math.PI * 2);
+            ctx.fillStyle = borderColor;
+            ctx.fill();
+            ctx.closePath();
+        });
+    };
 
     /**
      * Draws the image in the canvas
@@ -149,43 +197,6 @@ function StructureDetailCanvas(props) {
     };
 
     /**
-     * Draws the sensors in the canvas
-     * @param {number} imgStartX the image start position y
-     * @param {number} imgStartY the image start position x
-     * @param {number} drawWidth the width of the image
-     * @param {number} drawHeight the height of the image
-     * @param {number} zoomX the zoom with ratio for x axis
-     * @param {number} zoomY the zoom with ratio for y axis
-     */
-    const drawSensors = (imgStartX, imgStartY, drawWidth, drawHeight, zoomX, zoomY) => {
-        const ctx = ctxCanvas();
-        const scaleX = (drawWidth + zoomX) / img.width;
-        const scaleY = (drawHeight + zoomY) / img.height;
-        props.planSensors.forEach(sensor => {
-            const [bgColor, borderColor] = getColorFromSensor(sensor);
-            const sensorCanvasX = imgStartX + sensor.x * scaleX;
-            const sensorCanvasY = imgStartY + sensor.y * scaleY;
-            ctx.beginPath();
-            ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE - 2, 0, Math.PI * 2);
-            ctx.fillStyle = bgColor;
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE, 0, Math.PI * 2);
-            ctx.fillStyle = borderColor;
-            ctx.fill();
-            ctx.closePath();
-        });
-    };
-
-    /**
-     * Handles the resize event
-     */
-    const handleResize = () => {
-        fixDpi();
-        drawImage();
-    };
-
-    /**
      * Fixes the dpi for the canvas
      */
     const fixDpi = () => {
@@ -199,6 +210,35 @@ function StructureDetailCanvas(props) {
         canvasRef.height = height;
         canvasRef.style.width = `${canvasRef.width}px`;
         canvasRef.style.height = `${canvasRef.height}px`;
+    };
+
+    /**
+     * Handles the resize event
+     */
+    const handleResize = () => {
+        fixDpi();
+        drawImage();
+    };
+
+    /**
+     * Adds the mouse events to the canvas
+     */
+    const addMouseEvents = () => {
+        canvasRef.addEventListener("wheel", handleWheel);
+        canvasRef.addEventListener("mousedown", handleMouseDown);
+        canvasRef.addEventListener("mousemove", handleMouseMove);
+        canvasRef.addEventListener("mouseup", handleMouseUp);
+        canvasRef.addEventListener("mouseout", handleMouseUp);
+        canvasRef.addEventListener("click", handleCanvasClick);
+        window.addEventListener("resize", handleResize);
+        document.addEventListener("click", handleOutsideClick);
+    }
+
+    /**
+     * Loads the details (images and draw it)
+     */
+    const loadDetails = () => {
+        loadAndDrawImage(props.plan);
     };
 
     /**
@@ -216,18 +256,117 @@ function StructureDetailCanvas(props) {
     })
 
     /**
-     * Adds the mouse events to the canvas
+     * Handles the click outside the canvas
+     * @param {Event} event the click in the page
      */
-    const addMouseEvents = () => {
-        canvasRef.addEventListener("wheel", handleWheel);
-        canvasRef.addEventListener("mousedown", handleMouseDown);
-        canvasRef.addEventListener("mousemove", handleMouseMove);
-        canvasRef.addEventListener("mouseup", handleMouseUp);
-        canvasRef.addEventListener("mouseout", handleMouseUp);
-        canvasRef.addEventListener("click", handleCanvasClick);
-        window.addEventListener("resize", handleResize);
-        document.addEventListener("click", handleOutsideClick);
-    }
+    const handleOutsideClick = (event) => {
+        if ((canvasRef && !canvasRef.contains(event.target)) && (popupRef && !popupRef.contains(event.target))) {
+            setIsPopupVisible(false);
+        }
+    };
+
+    /**
+     * Handles the canvas click
+     * @param {Event} event the event of the click in the canvas
+     */
+    const handleCanvasClick = (event) => {
+        if (hasMoved) return;
+        const rect = canvasRef.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        setCClickX(x);
+        setCClickY(y);
+        const [px, py] = orignalPositionFromCanvasClick(x, y);
+        if (!isPositionOutOfImage(px, py)) {
+            setIsPopupVisible(false);
+            return;
+        }
+        const clickedSensor = findClickedSensor(x, y);
+        if (clickedSensor) {
+            setClickExistingPoint(clickedSensor);
+            setPopupX(clickedSensor.x);
+            setPopupY(clickedSensor.y);
+        } else {
+            setClickExistingPoint(null);
+            setPopupX(px);
+            setPopupY(py);
+        }
+        setPosX(Math.round(px));
+        setPosY(Math.round(py));
+        setIsPopupVisible(true);
+    };
+
+    /**
+     * Changes state of isMouseDown variable when mouse is up
+     */
+    const handleMouseUp = () => {
+        isMouseDown = false;
+    };
+
+    /**
+     * Handles the mouse move event
+     * @param {MouseEvent} event the event of the mouse
+     */
+    const handleMouseMove = (event) => {
+        event.preventDefault();
+        if (isMouseDown) {
+            hasMoved = true;
+            setIsPopupVisible(false);
+            const dx = event.clientX - startX;
+            const dy = event.clientY - startY;
+            const imgStartX = getImgStartX(baseOffsetX(), dx, zoomFactor());
+            const imgStartY = getImgStartY(baseOffsetY(), dy, zoomFactor());
+            const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+            const imgWidth = drawWidth() + zoomX;
+            const imgHeight = drawHeight() + zoomY;
+            if ((imgStartX + imgWidth) < IMAGE_MOVE_LIMIT || imgStartX > canvasRef.width - IMAGE_MOVE_LIMIT
+             || (imgStartY + imgHeight) < IMAGE_MOVE_LIMIT || imgStartY > canvasRef.height - IMAGE_MOVE_LIMIT) {
+                return;
+            }
+            setOffsetX(dx);
+            setOffsetY(dy);
+            drawImage();
+        }
+    };
+
+    /**
+     * Handles the mouse down
+     * @param {MouseEvent} event the mouse event
+     */
+    const handleMouseDown = (event) => {
+        event.preventDefault();
+        if (event.button === 0) {
+            isMouseDown = true;
+            startX = event.clientX - offsetX();
+            startY = event.clientY - offsetY();
+            hasMoved = false;
+        }
+    };
+
+    /**
+     * Handles the mouse wheel event
+     * @param {MouseEvent} event the mouse event
+     */
+    const handleWheel = (event) => {
+        event.preventDefault();
+        if (event.ctrlKey) {
+            setIsPopupVisible(false);
+            const zoomChange = event.deltaY;
+            const newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
+            const imgStartX = getImgStartX(baseOffsetX(), offsetX(), newZoom);
+            const imgStartY = getImgStartY(baseOffsetY(), offsetY(), newZoom);
+            const [zoomX, zoomY] = getZoomRationFromZoomNumber(newZoom);
+            const imgWidth = drawWidth() + zoomX;
+            const imgHeight = drawHeight() + zoomY;
+            if ((imgStartX + imgWidth) < IMAGE_MOVE_LIMIT || imgStartX > canvasRef.width - IMAGE_MOVE_LIMIT
+             || (imgStartY + imgHeight) < IMAGE_MOVE_LIMIT || imgStartY > canvasRef.height - IMAGE_MOVE_LIMIT
+             || zoomLimitReached(imgWidth, imgHeight)) {
+                return;
+            }
+            setZoomFactor(newZoom);
+            drawImage();
+        }
+    };
 
     /**
      * This function is called at the end of the lifecycle of this component
@@ -288,38 +427,6 @@ function StructureDetailCanvas(props) {
         return [canvasX, canvasY];
     };
 
-
-    /**
-     * Handles the canvas click
-     * @param {Event} event the event of the click in the canvas
-     */
-    const handleCanvasClick = (event) => {
-        if (hasMoved) return;
-        const rect = canvasRef.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        setCClickX(x);
-        setCClickY(y);
-        const [px, py] = orignalPositionFromCanvasClick(x, y);
-        if (!isPositionOutOfImage(px, py)) {
-            setIsPopupVisible(false);
-            return;
-        }
-        const clickedSensor = findClickedSensor(x, y);
-        if (clickedSensor) {
-            setClickExistingPoint(clickedSensor);
-            setPopupX(clickedSensor.x);
-            setPopupY(clickedSensor.y);
-        } else {
-            setClickExistingPoint(null);
-            setPopupX(px);
-            setPopupY(py);
-        }
-        setPosX(Math.round(px));
-        setPosY(Math.round(py));
-        setIsPopupVisible(true);
-    };
-
     /**
      * Returns the clicked existing point if it exists, otherwise returns null
      * @param {number} x - The x position of the click in the canvas
@@ -336,6 +443,8 @@ function StructureDetailCanvas(props) {
             return distance <= SENSOR_POINT_SIZE;
         }) || null;
     };
+
+
     
     /**
      * Loads and draws the image from it's link
@@ -347,46 +456,6 @@ function StructureDetailCanvas(props) {
     }
 
     /**
-     * Handles the mouse wheel event
-     * @param {MouseEvent} event the mouse event
-     */
-    const handleWheel = (event) => {
-        event.preventDefault();
-        if (event.ctrlKey) {
-            setIsPopupVisible(false);
-            const zoomChange = event.deltaY;
-            const newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
-            const imgStartX = getImgStartX(baseOffsetX(), offsetX(), newZoom);
-            const imgStartY = getImgStartY(baseOffsetY(), offsetY(), newZoom);
-            const [zoomX, zoomY] = getZoomRationFromZoomNumber(newZoom);
-            const imgWidth = drawWidth() + zoomX;
-            const imgHeight = drawHeight() + zoomY;
-            if ((imgStartX + imgWidth) < IMAGE_MOVE_LIMIT || imgStartX > canvasRef.width - IMAGE_MOVE_LIMIT
-             || (imgStartY + imgHeight) < IMAGE_MOVE_LIMIT || imgStartY > canvasRef.height - IMAGE_MOVE_LIMIT
-             || zoomLimitReached(imgWidth, imgHeight)) {
-                return;
-            }
-            setZoomFactor(newZoom);
-            drawImage();
-        }
-    };
-
-    /**
-     * Handles the mouse down
-     * @param {MouseEvent} event the mouse event
-     */
-    const handleMouseDown = (event) => {
-        event.preventDefault();
-        if (event.button === 0) {
-            isMouseDown = true;
-            startX = event.clientX - offsetX();
-            startY = event.clientY - offsetY();
-            hasMoved = false;
-        }
-    };
-
-
-    /**
      * Checks if the zoom limit is reached
      * @param {number} newImgWidth the new image width (after zoom)
      * @param {number} newImgHeight the new image height (after zoom)
@@ -396,74 +465,8 @@ function StructureDetailCanvas(props) {
         return newImgWidth > ZOOM_LIMIT * drawWidth() || newImgHeight > ZOOM_LIMIT * drawHeight();
     };
 
-    /**
-     * Handles the mouse move event
-     * @param {MouseEvent} event the event of the mouse
-     */
-    const handleMouseMove = (event) => {
-        event.preventDefault();
-        if (isMouseDown) {
-            hasMoved = true;
-            setIsPopupVisible(false);
-            const dx = event.clientX - startX;
-            const dy = event.clientY - startY;
-            const imgStartX = getImgStartX(baseOffsetX(), dx, zoomFactor());
-            const imgStartY = getImgStartY(baseOffsetY(), dy, zoomFactor());
-            const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
-            const imgWidth = drawWidth() + zoomX;
-            const imgHeight = drawHeight() + zoomY;
-            if ((imgStartX + imgWidth) < IMAGE_MOVE_LIMIT || imgStartX > canvasRef.width - IMAGE_MOVE_LIMIT
-             || (imgStartY + imgHeight) < IMAGE_MOVE_LIMIT || imgStartY > canvasRef.height - IMAGE_MOVE_LIMIT) {
-                return;
-            }
-            setOffsetX(dx);
-            setOffsetY(dy);
-            drawImage();
-        }
-    };
-
-    /**
-     * Changes state of isMouseDown variable when mouse is up
-     */
-    const handleMouseUp = () => {
-        isMouseDown = false;
-    };
-
-    /**
-     * Calculates the zoom ratio
-     * @param {number} imgRatio the ratio of the image
-     * @param {number} canvasRatio the ration of the canvas
-     * @param {number} zoomNumber the zoom number
-     * @returns {number[]} in index 0 zoom for x, and in index 1 zoom for y
-     */
-    const zoomRatioFromZoomNumber = (imgRatio, canvasRatio, zoomNumber) => {
-        let zoomX = 0, zoomY = 0;
-        if (imgRatio > canvasRatio) {
-            zoomX = zoomNumber;
-            zoomY = zoomNumber / imgRatio;
-        } else {
-            zoomX = zoomNumber * imgRatio;
-            zoomY = zoomNumber;
-        }
-        return [zoomX, zoomY];
-    };
-
-    /**
-     * Handles the click outside the canvas
-     * @param {Event} event the click in the page
-     */
-    const handleOutsideClick = (event) => {
-        if ((canvasRef && !canvasRef.contains(event.target)) && (popupRef && !popupRef.contains(event.target))) {
-            setIsPopupVisible(false);
-        }
-    };
-
-    /**
-     * Loads the details (images and draw it)
-     */
-    const loadDetails = () => {
-        loadAndDrawImage(props.plan);
-    };
+    
+    
 
     /**
      * Returns the position x of the pop up in the canvas
