@@ -277,7 +277,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                     if (results.isNotEmpty()) {
                         val now = Timestamp(System.currentTimeMillis()).toString()
                         scanRepository.updateScanEndTime(scanId, now)
-                        structureViewModel.tryUploadScan(structureId!!, scanId)
+                        structureId?.let { structureViewModel.tryUploadScan(it, scanId) }
                     }
                 }
             } catch (e: Exception) {

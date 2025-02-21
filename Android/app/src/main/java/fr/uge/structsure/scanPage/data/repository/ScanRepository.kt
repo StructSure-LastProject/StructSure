@@ -36,18 +36,15 @@ class ScanRepository(private val context: Context) {
      * Retrieves all scan results for the given scan
      * @return List of all result for the given scan
      */
-    fun getResultsByScan(scanId: Long): List<ResultSensors> {
-        return resultDao.getResultsByScan(scanId)
-    }
+    fun getResultsByScan(scanId: Long): List<ResultSensors> = resultDao.getResultsByScan(scanId)
+
 
     /**
      * Retrieves all scan that are done but have not been sent to the
      * server yet.
      * @return List of all unsent scan from the DB
      */
-    fun getUnsentScans(): List<ScanEntity> {
-        return scanDao.getUnsentScan()
-    }
+    fun getUnsentScans(): List<ScanEntity> = scanDao.getUnsentScan()
 
     /**
      * Submits scan results to the server

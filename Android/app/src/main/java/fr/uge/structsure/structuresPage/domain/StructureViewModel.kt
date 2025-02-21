@@ -39,6 +39,10 @@ class StructureViewModel(private val structureRepository: StructureRepository,
                          private val context: Context
 ): ViewModel() {
 
+    companion object {
+        private const val TAG = "StructureViewModel"
+    }
+
     private val connectivityViewModel: ConnectivityViewModel = ConnectivityViewModel(context)
     val getAllStructures = MutableLiveData<List<StructureData>?>()
     private val uploadInProgress = MutableLiveData<Boolean>(false)
@@ -118,12 +122,12 @@ class StructureViewModel(private val structureRepository: StructureRepository,
         val scanRequest = scanRepository.convertToScanRequest(scanId, results)
         scanRepository.submitScanResults(scanRequest)
             .onSuccess {
-                Log.i("StructureVM", "Scan #${scanId} successfully uploaded, removing data...")
+                Log.i(TAG, "Scan #${scanId} successfully uploaded, removing data...")
                 deleteStructure(structureId)
                 setStructureState(structureId, StructureStates.ONLINE)
                 getAllStructures()
             }.onFailure { e ->
-                Log.w("StructureVM", "Failed to upload results of scan #${scanId} (structure ${structureId}): ${e.message}")
+                Log.w(TAG, "Failed to upload results of scan #${scanId} (structure ${structureId}): ${e.message}")
             }
     }
 
@@ -154,11 +158,11 @@ class StructureViewModel(private val structureRepository: StructureRepository,
                 }
 
                 unsentScans.forEach { scan ->
-                    Log.i("StructureVM", "Found unsent scan #${scan.id} - ${scan.structureId}")
+                    Log.i(TAG, "Found unsent scan #${scan.id} - ${scan.structureId}")
                     tryUploadScan(scan.structureId, scan.id)
                 }
             } catch (e: Exception) {
-                Log.e("StructureVM", "Error during batch upload", e)
+                Log.e(TAG, "Error during batch upload", e)
             } finally {
                 this@StructureViewModel.uploadInProgress.postValue(false)
             }
