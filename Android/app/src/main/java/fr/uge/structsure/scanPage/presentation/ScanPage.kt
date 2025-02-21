@@ -48,6 +48,7 @@ import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
+import kotlinx.coroutines.launch
 
 /**
  * Home screen of the application when the user starts a scan.
