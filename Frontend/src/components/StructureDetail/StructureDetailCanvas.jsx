@@ -92,6 +92,38 @@ function StructureDetailCanvas(props) {
     }
 
     /**
+     * Returns the background and border colors
+     * @param {object} sensor the sensor
+     * @returns {Array[str, str]} [0] = the background color, [1] = the border color
+     */
+    const getColorFromSensor = (sensor) => {
+        let bgColor = "";
+        let borderColor = "";
+        switch (sensor.state) {
+            case "OK":
+                bgColor = "#25B61F";
+                borderColor = "#25b51f40";
+                break;
+            case "NOK":
+                bgColor = "#F13327";
+                borderColor = "#f1332740";
+                break;
+            case "DEFECTIVE":
+                bgColor = "#F19327";
+                borderColor = "#f1932740";
+                break;
+            case "UNKNOWN":
+                bgColor = "#6A6A6A";
+                borderColor = "#6a6a6a40";
+                break;
+            default:
+                setError("L'etat du sensor inconnu");
+                break;
+        }
+        return [bgColor, borderColor];
+    };
+
+    /**
      * Draws the sensors in the canvas
      * @param {number} imgStartX the image start position y
      * @param {number} imgStartY the image start position x
@@ -165,38 +197,6 @@ function StructureDetailCanvas(props) {
     }
 
     /**
-     * Returns the background and border colors
-     * @param {object} sensor the sensor
-     * @returns {Array[str, str]} [0] = the background color, [1] = the border color
-     */
-    const getColorFromSensor = (sensor) => {
-        let bgColor = "";
-        let borderColor = "";
-        switch (sensor.state) {
-            case "OK":
-                bgColor = "#25B61F";
-                borderColor = "#25b51f40";
-                break;
-            case "NOK":
-                bgColor = "#F13327";
-                borderColor = "#f1332740";
-                break;
-            case "DEFECTIVE":
-                bgColor = "#F19327";
-                borderColor = "#f1932740";
-                break;
-            case "UNKNOWN":
-                bgColor = "#6A6A6A";
-                borderColor = "#6a6a6a40";
-                break;
-            default:
-                setError("L'etat du sensor inconnu");
-                break;
-        }
-        return [bgColor, borderColor];
-    };
-
-    /**
      * Fixes the dpi for the canvas
      */
     const fixDpi = () => {
@@ -235,6 +235,15 @@ function StructureDetailCanvas(props) {
     }
 
     /**
+         * Loads and draws the image from it's link
+         * @param {String} imgLink the link of the image
+         */
+    const loadAndDrawImage = (imgLink) => {
+        img.src = imgLink;
+        img.onload = () => drawImage();
+    }
+
+    /**
      * Loads the details (images and draw it)
      */
     const loadDetails = () => {
@@ -263,6 +272,50 @@ function StructureDetailCanvas(props) {
         if ((canvasRef && !canvasRef.contains(event.target)) && (popupRef && !popupRef.contains(event.target))) {
             setIsPopupVisible(false);
         }
+    };
+
+    /**
+     * Returns the clicked existing point if it exists, otherwise returns null
+     * @param {number} x - The x position of the click in the canvas
+     * @param {number} y - The y position of the click in the canvas
+     * @returns {object|null} - The clicked sensor object or null if no match
+     */
+    const findClickedSensor = (x, y) => {
+        return props.planSensors.find(sensor => {
+            const [scx, scy] = canvasPositionFromOriginal(sensor.x, sensor.y);
+            const distance = Math.sqrt(
+                Math.pow(x - scx, 2) + Math.pow(y - scy, 2)
+            );
+
+            return distance <= SENSOR_POINT_SIZE;
+        }) || null;
+    };
+
+    /**
+     * Checks is the position is in the image original dimensions
+     * @param {number} x the position x in the original dimensions of the image
+     * @param {number} y the position y in the original dimensions of the image
+     * @returns
+     */
+    const isPositionOutOfImage = (x, y) => {
+        return !(x < 0 || x > img.width || y < 0 || y > img.height);
+    };
+
+    /**
+         * Returns the position in the original image from the canvas click position
+         * @param {number} clickX the position x of the click
+         * @param {number} clickY the position y of the click
+         * @returns {[number, number]} - Position (X, Y) in the original image
+         */
+    const orignalPositionFromCanvasClick = (clickX, clickY) => {
+        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), zoomFactor());
+        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), zoomFactor());
+        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
+        const scaleX = (drawWidth() + zoomX) / img.width;
+        const scaleY = (drawHeight() + zoomY) / img.height;
+        const px = (clickX - imgStartX) / scaleX;
+        const py = (clickY - imgStartY) / scaleY;
+        return [px, py];
     };
 
     /**
@@ -344,6 +397,17 @@ function StructureDetailCanvas(props) {
     };
 
     /**
+     * Checks if the zoom limit is reached
+     * @param {number} newImgWidth the new image width (after zoom)
+     * @param {number} newImgHeight the new image height (after zoom)
+     * @returns true if limit reached and false if not
+     */
+    const zoomLimitReached = (newImgWidth, newImgHeight) => {
+        return newImgWidth > ZOOM_LIMIT * drawWidth() || newImgHeight > ZOOM_LIMIT * drawHeight();
+    };
+
+
+    /**
      * Handles the mouse wheel event
      * @param {MouseEvent} event the mouse event
      */
@@ -383,34 +447,6 @@ function StructureDetailCanvas(props) {
     });
 
     /**
-     * Checks is the position is in the image original dimensions
-     * @param {number} x the position x in the original dimensions of the image
-     * @param {number} y the position y in the original dimensions of the image
-     * @returns
-     */
-    const isPositionOutOfImage = (x, y) => {
-        return !(x < 0 || x > img.width || y < 0 || y > img.height);
-    };
-
-
-    /**
-     * Returns the position in the original image from the canvas click position
-     * @param {number} clickX the position x of the click
-     * @param {number} clickY the position y of the click
-     * @returns {[number, number]} - Position (X, Y) in the original image
-     */
-    const orignalPositionFromCanvasClick = (clickX, clickY) => {
-        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), zoomFactor());
-        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), zoomFactor());
-        const [zoomX, zoomY] = getZoomRationFromZoomNumber(zoomFactor());
-        const scaleX = (drawWidth() + zoomX) / img.width;
-        const scaleY = (drawHeight() + zoomY) / img.height;
-        const px = (clickX - imgStartX) / scaleX;
-        const py = (clickY - imgStartY) / scaleY;
-        return [px, py];
-    };
-
-    /**
      * Returns the position in the canvas from the position in the original image
      * @param {number} imgX the position x in the original image
      * @param {number} imgY the position y in the original image
@@ -426,45 +462,6 @@ function StructureDetailCanvas(props) {
         const canvasY = imgStartY + imgY * scaleY;
         return [canvasX, canvasY];
     };
-
-    /**
-     * Returns the clicked existing point if it exists, otherwise returns null
-     * @param {number} x - The x position of the click in the canvas
-     * @param {number} y - The y position of the click in the canvas
-     * @returns {object|null} - The clicked sensor object or null if no match
-     */
-    const findClickedSensor = (x, y) => {
-        return props.planSensors.find(sensor => {
-            const [scx, scy] = canvasPositionFromOriginal(sensor.x, sensor.y);
-            const distance = Math.sqrt(
-                Math.pow(x - scx, 2) + Math.pow(y - scy, 2)
-            );
-
-            return distance <= SENSOR_POINT_SIZE;
-        }) || null;
-    };
-
-
-    
-    /**
-     * Loads and draws the image from it's link
-     * @param {String} imgLink the link of the image
-     */
-    const loadAndDrawImage = (imgLink) => {
-        img.src = imgLink;
-        img.onload = () => drawImage();
-    }
-
-    /**
-     * Checks if the zoom limit is reached
-     * @param {number} newImgWidth the new image width (after zoom)
-     * @param {number} newImgHeight the new image height (after zoom)
-     * @returns true if limit reached and false if not
-     */
-    const zoomLimitReached = (newImgWidth, newImgHeight) => {
-        return newImgWidth > ZOOM_LIMIT * drawWidth() || newImgHeight > ZOOM_LIMIT * drawHeight();
-    };
-
     
     
 
