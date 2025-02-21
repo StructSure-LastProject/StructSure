@@ -3,11 +3,8 @@ package fr.uge.structsure.dto.sensors;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.State;
-import fr.uge.structsure.utils.StateEnum;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * The sensor dto
@@ -54,8 +51,8 @@ public record SensorDTO(
             Integer state,
             boolean archived,
             LocalDateTime installationDate,
-            double x,
-            double y
+            Double x,
+            Double y
     ) {
         this(controlChip, measureChip, name, note, State.values()[state], archived, installationDate, x, y);
     }
