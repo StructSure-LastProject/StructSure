@@ -184,6 +184,9 @@ public class SensorService {
         if (request.name() == null) {
             throw new TraitementException(Error.SENSOR_NAME_IS_EMPTY);
         }
+        if (request.structureId() == null) {
+            throw new TraitementException(Error.SENSOR_STRUCTURE_ID_IS_EMPTY);
+        }
     }
 
     /**

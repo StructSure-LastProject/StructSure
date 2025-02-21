@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import org.hibernate.validator.internal.util.stereotypes.Lazy;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Entity
@@ -20,16 +21,14 @@ public class Sensor {
 
     private String name;
 
-    private String note;
+    private String note = "";
 
     @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "structure_id", nullable = true)
     private Structure structure;
 
-
     private LocalDateTime installationDate;
-
 
     @Column(columnDefinition = "REAL")
     private Double x;
@@ -48,7 +47,6 @@ public class Sensor {
     @ManyToOne
     @JoinColumn(name="plan_id")
     private Plan plan;
-
 
     //constructeurs nécéssaire
     public Sensor(){
@@ -162,7 +160,11 @@ public class Sensor {
         this.structure = structure;
     }
 
+    // todo default value to remove
     public LocalDateTime getInstallationDate() {
+        if(this.installationDate == null){
+            return LocalDateTime.parse("01/01/2025", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        }
         return installationDate;
     }
 
@@ -170,7 +172,11 @@ public class Sensor {
         this.installationDate = installationDate;
     }
 
+    // todo default value to remove
     public Double getX() {
+        if (x == null) {
+            return 0.0;
+        }
         return x;
     }
 
@@ -178,7 +184,11 @@ public class Sensor {
         this.x = x;
     }
 
+    // todo default value to remove
     public Double getY() {
+        if (y == null) {
+            return 0.0;
+        }
         return y;
     }
 

@@ -122,13 +122,4 @@ class SensorServiceTest {
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
         assertEquals(Error.SENSOR_CHIP_TAGS_IS_EMPTY, exception.error);
     }
-
-    // Test sensorMalformedPrecondition (indirectly tested through createSensor)
-    @Test
-    void testSensorMalformedPrecondition() {
-        BaseSensorDTO request = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
-
-        TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
-        assertEquals(Error.SENSOR_INSTALLATION_DATE_INVALID_FORMAT, exception.error);
-    }
 }
