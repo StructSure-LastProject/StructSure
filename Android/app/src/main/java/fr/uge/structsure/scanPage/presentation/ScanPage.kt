@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -21,7 +22,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.asImageBitmap
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
@@ -40,6 +44,7 @@ import fr.uge.structsure.scanPage.presentation.components.ScanWeather
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
+import fr.uge.structsure.ui.theme.Typography
 
 /**
  * Home screen of the application when the user starts a scan.
@@ -62,6 +67,12 @@ fun ScanPage(context: Context,
     scanViewModel.setStructure(context, structureId)
 
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
+
+    LaunchedEffect(sensorPopup) {
+        if (sensorPopup != null) {
+            planViewModel.loadPlans(context, structureId)
+        }
+    }
 
     Page(
         Modifier.padding(bottom = 100.dp),
@@ -87,7 +98,15 @@ fun ScanPage(context: Context,
             )
         }
     ) { scrollState ->
-        if (sensorPopup != null) SensorPopUp({ sensorPopup = null }, { sensorPopup = null })
+        sensorPopup?.let { sensor ->
+            SensorPopUp(
+                sensor = sensor,
+                planViewModel = planViewModel,
+                scanViewModel = scanViewModel,
+                onSubmit = { sensorPopup = null },
+                onCancel = { sensorPopup = null }
+            )
+        }
         ScanWeather(viewModel = scanViewModel, scrollState)
         PlansView(scanViewModel)
         SensorsList(scanViewModel) { s -> sensorPopup = s }
@@ -104,6 +123,7 @@ fun ScanPage(context: Context,
    }
 }
 
+/*
 @Composable
 private fun SensorPopUp(onSubmit: () -> Unit, onCancel: () -> Unit) {
     var note by remember { mutableStateOf("") }
@@ -133,6 +153,79 @@ private fun SensorPopUp(onSubmit: () -> Unit, onCancel: () -> Unit) {
             )
         }
         SensorDetails(Black, "Etat courant:", "Non scanné", "Dernier état:", "OK")
+
+        InputTextArea(
+            label = "Note",
+            value = note,
+            placeholder = "Aucune note pour le moment"
+        ) { s -> if (s.length <= 1000) note = s }
+    }
+}
+ */
+
+@Composable
+private fun SensorPopUp(
+    sensor: SensorDB,
+    scanViewModel: ScanViewModel,
+    planViewModel: PlanViewModel,
+    onSubmit: () -> Unit,
+    onCancel: () -> Unit
+) {
+    var note by remember { mutableStateOf(sensor.note ?: "") }
+    val planImagePath by planViewModel.planImagePath.observeAsState()
+
+    val currentResults by scanViewModel.currentResults.observeAsState(initial = emptyList())
+    val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: "UNKNOWN"
+
+    PopUp(onCancel) {
+        Title(sensor.name, false) {
+            Button(
+                R.drawable.check,
+                "valider",
+                MaterialTheme.colorScheme.onSurface,
+                MaterialTheme.colorScheme.surface,
+                onSubmit
+            )
+        }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Text(
+                text = "OA Zone 04", // TODO: get the zone name from the plan section
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            planImagePath?.let { path ->
+                Image(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(156.dp)
+                        .clip(shape = RoundedCornerShape(size = 15.dp))
+                        .border(width = 3.dp, color = LightGray, shape = RoundedCornerShape(size = 15.dp)),
+                    bitmap = BitmapFactory.decodeFile(path).asImageBitmap(),
+                    contentDescription = "Plan",
+                )
+            } ?: Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(156.dp)
+                    .clip(shape = RoundedCornerShape(size = 15.dp))
+                    .background(LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Loading...", style = Typography.titleMedium)
+            }
+        }
+
+        SensorDetails(
+            Black,
+            "Etat courant:",
+            sensor.state,
+            "Dernier état:",
+            currentState
+        )
 
         InputTextArea(
             label = "Note",

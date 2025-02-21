@@ -98,6 +98,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
     }
 
+
     /**
      * Changes the structureId of the scanViewModel. This will reload
      * the sensors if the given id is not the same as the saved one.
@@ -197,16 +198,20 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         val stateChanged = sensorCache.updateSensorState(sensor, newState) ?: return
 
         activeScanId?.let { scanId ->
-            resultDao.insertResult(
-                ResultSensors(
-                    id = sensor.sensorId,
-                    timestamp = Timestamp(System.currentTimeMillis()).toString(),
-                    scanId = scanId,
-                    controlChip = sensor.controlChip,
-                    measureChip = sensor.measureChip,
-                    state = stateChanged
-                )
+            val result = ResultSensors(
+                id = sensor.sensorId,
+                timestamp = Timestamp(System.currentTimeMillis()).toString(),
+                scanId = scanId,
+                controlChip = sensor.controlChip,
+                measureChip = sensor.measureChip,
+                state = stateChanged
             )
+            resultDao.insertResult(result)
+
+            val currentList = currentResults.value?.toMutableList() ?: mutableListOf()
+            currentList.removeAll { it.id == sensor.sensorId }
+            currentList.add(result)
+            currentResults.postValue(currentList)
         }
 
         when (stateChanged) {
@@ -250,6 +255,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         cs108Scanner.start()
         currentScanState.postValue(ScanState.STARTED)
         alertMessages.postValue(null)
+        currentResults.postValue(emptyList())
 
         if (activeScanId != null) return // already created
 
