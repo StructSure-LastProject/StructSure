@@ -93,7 +93,7 @@ fun PlaySupButton(
             color = Red,
             background = Red.copy(alpha = 0.05f),
             onClick = {
-                structureViewModel.delete(structure)
+                structureViewModel.delete(structure.id)
                 structure.state.value = StructureStates.ONLINE
             }
         )

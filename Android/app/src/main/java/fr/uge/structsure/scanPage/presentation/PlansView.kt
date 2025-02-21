@@ -1,6 +1,5 @@
 package fr.uge.structsure.scanPage.presentation
 
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -34,19 +34,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.distinctUntilChanged
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Plan
-import fr.uge.structsure.components.Point
 import fr.uge.structsure.scanPage.data.TreePlan
 import fr.uge.structsure.scanPage.data.TreeSection
+import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanViewModel
-import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 import fr.uge.structsure.ui.theme.fonts
-import fr.uge.structsure.utils.FileUtils
 
 /**
  * This composable is used to display the plans of the structure.
@@ -55,14 +54,17 @@ import fr.uge.structsure.utils.FileUtils
 @Composable
 fun PlansView(scanViewModel: ScanViewModel) {
     val context = LocalContext.current
-    val defaultImage = remember(1) { BitmapFactory.decodeResource(context.resources, R.drawable.plan_not_found) }
+    val planViewModel = remember(1) { PlanViewModel(context) }
     val plans = scanViewModel.plans.observeAsState()
-    val sensors = scanViewModel.sensorsNotScanned.observeAsState(listOf())
-    println(sensors.value.map{ "${it.name}-${it.state}"} )
-    val points = sensors.value
-        .filter { it.plan == scanViewModel.selected.value?.plan?.id }
-        .map { Point(it.x, it.y, SensorState.from(it.state)) }
-    println(points)
+    val points = planViewModel.filteredPoints.distinctUntilChanged().observeAsState(listOf())
+    LaunchedEffect(scanViewModel.selected, scanViewModel.sensorsNotScanned) {
+        planViewModel.filterPointsForPlan(scanViewModel)
+    }
+
+    LaunchedEffect(scanViewModel.selected.value?.plan) {
+        scanViewModel.selected.value?.let { planViewModel.setImage(context, it.plan) }
+    }
+
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -82,11 +84,10 @@ fun PlansView(scanViewModel: ScanViewModel) {
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start
         )  {
-            val path = scanViewModel.selected.value?.plan?.let { FileUtils.getLocalPlanImage(context, it.id) }
-            val image = if (path == null) defaultImage else BitmapFactory.decodeFile(path)
+            val image = planViewModel.image.observeAsState(planViewModel.defaultImage)
             Plan(
-                image = image,
-                points = points,
+                image = image.value,
+                points = points.value,
                 addPoint = { /* TODO enable to place points */ },
                 deletePoint = { /* TODO enable to remove points */ }
             )
@@ -97,7 +98,9 @@ fun PlansView(scanViewModel: ScanViewModel) {
                     .height(1.dp)
                     .background(LightGray) )
 
-            Section(scanViewModel, plans.value as TreeSection, true)
+            plans.value?.let {
+                Section(scanViewModel, it, true)
+            }
         }
     }
 }

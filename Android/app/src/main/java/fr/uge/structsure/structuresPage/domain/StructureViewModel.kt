@@ -2,7 +2,6 @@ package fr.uge.structsure.structuresPage.domain
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -44,7 +43,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
     }
 
     private val connectivityViewModel: ConnectivityViewModel = ConnectivityViewModel(context)
-    val getAllStructures = MutableLiveData<List<StructureData>?>()
+    val getAllStructures = MutableLiveData<List<StructureWithState>?>()
     private val uploadInProgress = MutableLiveData<Boolean>(false)
     
     /**
@@ -74,7 +73,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
         viewModelScope.launch {
             val structures = structureRepository.getAllStructures()
                 .map { StructureWithState(it) }
-            _getAllStructures.postValue(structures)
+            getAllStructures.postValue(structures)
         }
     }
 
@@ -94,13 +93,12 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      * Deletes the given structure
      * @param structureId the id of the structure to delete
      */
-    fun delete(structureData: StructureWithState){
+    fun delete(structureId: Long){
         viewModelScope.launch {
-            structureRepository.deleteStructure(structureData.id, context)
+            structureRepository.deleteStructure(structureId, context)
             findAll() // forces refresh to adapt to connectivity state
         }
     }
-
 
     /**
      * Sets the state of the structure with the given id.
@@ -108,9 +106,9 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      * @param state the state to set
      */
     private fun setStructureState(structureId: Long, state: StructureStates) {
-        val currentStates = structureStates.value ?: mutableMapOf()
-        currentStates[structureId] = state
-        structureStates.postValue(currentStates)
+        val structure = getAllStructures.value?.find { it.id == structureId }
+        if (structure == null) return
+        structure.state.postValue(state)
     }
 
     /**
@@ -134,7 +132,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
         scanRepository.submitScanResults(scanRequest)
             .onSuccess {
                 Log.i(TAG, "Scan #${scanId} successfully uploaded, removing data...")
-                deleteStructure(structureId)
+                delete(structureId)
                 setStructureState(structureId, StructureStates.ONLINE)
                 getAllStructures()
             }.onFailure { e ->

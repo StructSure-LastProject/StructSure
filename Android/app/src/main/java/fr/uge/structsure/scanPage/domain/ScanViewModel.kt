@@ -20,9 +20,6 @@ import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
-import fr.uge.structsure.structuresPage.data.TreeNode
-import fr.uge.structsure.structuresPage.data.TreePlan
-import fr.uge.structsure.structuresPage.data.TreeSection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
@@ -30,7 +27,6 @@ import java.sql.Timestamp
 /**
  * ViewModel responsible for managing the scanning process.
  * It interacts with the database, sensor cache, and scanner hardware to handle sensor states and user actions.
-
  */
 class ScanViewModel(context: Context, private val structureViewModel: StructureViewModel) : ViewModel() {
 
@@ -87,7 +83,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     val selected = mutableStateOf<TreePlan?>(null)
 
     /** Tree of plans and section for the plans selector */
-    var plans = MutableLiveData<TreeNode>(TreeSection(""))
+    val plans = MutableLiveData<TreeSection>(null)
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -109,15 +105,14 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      * @param structureId the id of the structure in use
      */
     fun setStructure(structureId: Long) {
-        if (this.structureId == structureId) return
         if (structureId == -1L) {
-            selected.value = null
-            return // reset
+            plans.postValue(null)
+            return
         }
         this.structureId = structureId
         this.activeScanId = null
-        sensorCache.clearCache()
         viewModelScope.launch(Dispatchers.IO) {
+            sensorCache.clearCache()
             val sensors = sensorDao.getAllSensors(structureId)
             sensorsNotScanned.postValue(sensors)
             val stateCounts = SensorState.entries.associateWith { state ->
@@ -125,7 +120,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             }
             sensorStateCounts.postValue(stateCounts)
             sensorCache.insertSensors(sensors)
-            plans.postValue(planTree(db.planDao().getPlansByStructureId(structureId)))
+            val tree = planTree(db.planDao().getPlansByStructureId(structureId))
+            plans.postValue(tree)
         }
     }
 
@@ -312,7 +308,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      * @param plans the raw plans from the database
      * @return the tree containing all item well organized
      */
-    private fun planTree(plans: List<PlanDB>): TreeNode {
+    private fun planTree(plans: List<PlanDB>): TreeSection {
         val root = TreeSection("")
         plans.forEach { plan ->
             val tokens = if (plan.section.isEmpty()) listOf() else plan.section.split("/")
