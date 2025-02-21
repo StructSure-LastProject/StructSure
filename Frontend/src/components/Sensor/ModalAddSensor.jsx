@@ -55,7 +55,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
       controlChip: controlChip().trim()
     };
 
-    const { fetchData, data, statusCode, error } = useFetch();
+    const { fetchData, statusCode, error } = useFetch();
 
     await fetchData(`/api/sensors`, {
       method: "POST",
@@ -67,15 +67,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
     });
 
     if (statusCode() === 201) {
-      const result = data();
-      onSave({
-        id: structureId,
-        name: name().trim(),
-        note: note().trim(),
-        measureChip: result.measureChip,
-        controlChip: result.controlChip,
-        state: "UNKNOWN"
-      });
+      await onSave();
       handleClose();
     } else {
       setError(error()?.errorData?.error || "Une erreur est survenue");

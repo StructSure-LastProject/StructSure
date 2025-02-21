@@ -8,7 +8,7 @@ import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
  * Show the sensors part of the structure detail page
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({sensors, onSensorAdded, structureId}) {
+function StructureDetailCapteurs({sensors, sensorsFetchRequest, structureId}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
@@ -39,18 +39,8 @@ function StructureDetailCapteurs({sensors, onSensorAdded, structureId}) {
     /**
      * Handles saving a newly added plan
      */
-    const handleAddSave = (formData) => {
-        const newSensor = {
-            id: formData.id,
-            name: formData.name,
-            note: formData.note,
-            measureChip: formData.measureChip,
-            controlChip: formData.controlChip,
-            state: "UNKNOWN"
-        };
-        if (onSensorAdded) {
-            onSensorAdded(newSensor);
-        }
+    const handleAddSave = async () => {
+        await sensorsFetchRequest(structureId);
         closeAddModal();
     };
 
