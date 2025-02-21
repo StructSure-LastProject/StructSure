@@ -538,7 +538,7 @@ function StructureDetailPlans(props) {
      * @param {Event} event the click in the page
      */
     const handleOutsideClick = (event) => {
-        if (canvasRef && !canvasRef.contains(event.target)) {
+        if (canvasRef && !canvasRef.contains(event.target) && showRef && !showRef.contains(event.target)) {
             setIsPopupVisible(false);
         }
     };
