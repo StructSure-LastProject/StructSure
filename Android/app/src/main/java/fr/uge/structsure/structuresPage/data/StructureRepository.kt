@@ -144,17 +144,15 @@ class StructureRepository : ViewModel() {
     fun deleteStructure(structureId: Long, context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val planIds = planDao.getPlanByStructureId(structureId)
-
-                planIds.forEach { planId ->
+                val scan = scanDao.getScanByStructure(structureId)
+                scan?.let { resultDao.deleteResultsByScan(it.id) }
+                sensorDao.deleteSensorsByStructureId(structureId)
+                planDao.getPlanByStructureId(structureId).forEach { planId ->
                     FileUtils.deletePlanImage(context, planId)
                 }
-
-                sensorDao.deleteSensorsByStructureId(structureId)
-                resultDao.deleteResults()
                 planDao.deletePlansByStructureId(structureId)
-                structureDao.deleteStructure(structureId)
                 scanDao.deleteScanByStructure(structureId)
+                structureDao.deleteStructure(structureId)
 
                 Log.d(TAG, "Structure $structureId and all associated data deleted successfully")
             } catch (e: SQLiteException) {
