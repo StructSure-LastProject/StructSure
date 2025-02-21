@@ -1,5 +1,5 @@
 import { ChevronDown, SortAsc, SortDesc, MoveRight } from 'lucide-solid';
-import { createSignal, JSX } from 'solid-js';
+import { createSignal } from 'solid-js';
 import SensorFieldComponent from "../components/SensorPanel/SensorFieldComponent";
 
 /**
@@ -166,7 +166,7 @@ const SensorFilter = () => {
                 />
             </div>
         </div>
-    )
+    );
 }
 
 export default SensorFilter
