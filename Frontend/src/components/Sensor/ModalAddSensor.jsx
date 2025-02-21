@@ -40,6 +40,10 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
       setError("La puce de mesure est requise");
       return;
     }
+    if (measureChip().trim() === controlChip().trim()) {
+      setError("Les deux puces ne peuvent pas avoir la même valeur");
+      return;
+    }
     setIsSubmitting(true);
     setError("");
 
