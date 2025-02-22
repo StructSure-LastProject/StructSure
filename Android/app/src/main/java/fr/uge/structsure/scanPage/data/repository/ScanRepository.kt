@@ -104,7 +104,7 @@ class ScanRepository(private val context: Context) {
                 measure_chip = result.measureChip,
                 name = sensor.name,
                 state = result.state,
-                note = "", // TODO
+                note = result.note,
                 installation_date = "0" // TODO
             )
         }

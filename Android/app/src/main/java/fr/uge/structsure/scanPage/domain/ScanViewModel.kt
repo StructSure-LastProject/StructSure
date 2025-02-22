@@ -84,6 +84,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     val planViewModel = PlanViewModel(context, this)
 
 
+    val noteErrorMessage = MutableLiveData<String>()
+
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
      */
@@ -96,6 +98,35 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             }
             sensorStateCounts.postValue(stateCounts)
         }
+    }
+
+    fun updateSensorNote(sensorId: String, note: String): Boolean{
+        if (activeScanId == null) {
+            noteErrorMessage.postValue("Aucun scan en cours")
+            return false
+        }
+
+        if(note.length > 1000)  return false
+
+        val currentList = currentResults.value ?: emptyList()
+        val index = currentList.indexOfFirst { it.id == sensorId }
+
+        if (index == -1) {
+            noteErrorMessage.postValue("Le capteur doit être scanné avant d'ajouter une note")
+            return false
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            activeScanId?.let { scanId ->
+                resultDao.updateNoteForSensor(sensorId, scanId, note)
+            }
+            val updatedList = currentList.toMutableList()
+            val updatedResult = updatedList[index].copy(note = note)
+            updatedList[index] = updatedResult
+            currentResults.postValue(updatedList)
+        }
+
+        return true
     }
 
 
@@ -198,12 +229,15 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         val stateChanged = sensorCache.updateSensorState(sensor, newState) ?: return
 
         activeScanId?.let { scanId ->
+            val existingResult = currentResults.value?.find { it.id == sensor.sensorId }
+
             val result = ResultSensors(
                 id = sensor.sensorId,
                 timestamp = Timestamp(System.currentTimeMillis()).toString(),
                 scanId = scanId,
                 controlChip = sensor.controlChip,
                 measureChip = sensor.measureChip,
+                note = existingResult?.note ?: "",
                 state = stateChanged
             )
             resultDao.insertResult(result)

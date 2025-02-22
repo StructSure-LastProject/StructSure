@@ -44,6 +44,7 @@ import fr.uge.structsure.scanPage.presentation.components.ScanWeather
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
+import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.Typography
 
 /**
@@ -123,45 +124,6 @@ fun ScanPage(context: Context,
    }
 }
 
-/*
-@Composable
-private fun SensorPopUp(onSubmit: () -> Unit, onCancel: () -> Unit) {
-    var note by remember { mutableStateOf("") }
-
-    PopUp(onCancel) {
-        Title("Capteur 04", false) {
-            Button(R.drawable.check, "valider", MaterialTheme.colorScheme.onSurface, MaterialTheme.colorScheme.surface, onSubmit)
-        }
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.Start,
-        ) {
-            Text(
-                text = "OA Zone 04",
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Image(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(156.dp)
-                    .clip(shape = RoundedCornerShape(size = 15.dp))
-                    .border(width = 3.dp, color = LightGray, shape = RoundedCornerShape(size = 15.dp)),
-                painter = painterResource(id = R.drawable.plan_glaciere),
-                contentDescription = "Plan",
-
-            )
-        }
-        SensorDetails(Black, "Etat courant:", "Non scanné", "Dernier état:", "OK")
-
-        InputTextArea(
-            label = "Note",
-            value = note,
-            placeholder = "Aucune note pour le moment"
-        ) { s -> if (s.length <= 1000) note = s }
-    }
-}
- */
 
 @Composable
 private fun SensorPopUp(
@@ -171,12 +133,15 @@ private fun SensorPopUp(
     onSubmit: () -> Unit,
     onCancel: () -> Unit
 ) {
-    var note by remember { mutableStateOf(sensor.note ?: "") }
-    val planImagePath by planViewModel.planImagePath.observeAsState()
-
     val currentResults by scanViewModel.currentResults.observeAsState(initial = emptyList())
+    val planImagePath by planViewModel.planImagePath.observeAsState()
+    val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
+
     val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: "UNKNOWN"
 
+    var note by remember {
+        mutableStateOf(currentResults.find { it.id == sensor.sensorId }?.note ?: "")
+    }
     PopUp(onCancel) {
         Title(sensor.name, false) {
             Button(
@@ -184,7 +149,11 @@ private fun SensorPopUp(
                 "valider",
                 MaterialTheme.colorScheme.onSurface,
                 MaterialTheme.colorScheme.surface,
-                onSubmit
+                onClick = {
+                    if(scanViewModel.updateSensorNote(sensor.sensorId, note)) {
+                        onSubmit()
+                    }
+                }
             )
         }
 
@@ -227,10 +196,20 @@ private fun SensorPopUp(
             currentState
         )
 
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = Red,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
         InputTextArea(
             label = "Note",
             value = note,
-            placeholder = "Aucune note pour le moment"
+            placeholder = "Aucune note pour le moment",
+            enabled = currentResults.any { it.id == sensor.sensorId }
         ) { s -> if (s.length <= 1000) note = s }
     }
 }
