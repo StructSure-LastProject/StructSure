@@ -83,6 +83,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Counts how many results are in a given state for the scan weather */
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
 
+    /** LiveData for displaying errors when adding a sensor. */
+    val addSensorError = MutableLiveData<String?>()
+
     /** Sub-ViewModel that handle all plan selection/display logic */
     val planViewModel = PlanViewModel(context, this)
 
@@ -143,6 +146,56 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
         return true
     }
+    /**
+     * Adds a sensor to the database and updates the list of sensors.
+     * @param sensor the sensor to add
+     */
+    fun addSensor(sensor: Sensor) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val structureId = this@ScanViewModel.structureId ?: run {
+                addSensorError.postValue("Aucune structure sélectionnée")
+                return@launch
+            }
+
+            val existingSensors = sensorDao.getAllSensors(structureId)
+            val alreadyExists = existingSensors.any { existingSensor ->
+                existingSensor.controlChip == sensor.sensorId.controlChip || existingSensor.measureChip == sensor.sensorId.measureChip
+            }
+
+            if (alreadyExists) {
+                addSensorError.postValue("Un capteur avec ces puces existe déjà")
+                return@launch
+            }
+
+            val sensorDB = SensorDB(
+                sensorId = "${sensor.sensorId.controlChip}-${sensor.sensorId.measureChip}",
+                controlChip = sensor.sensorId.controlChip,
+                measureChip = sensor.sensorId.measureChip,
+                name = sensor.name,
+                note = sensor.note,
+                installationDate = sensor.installationDate,
+                state = "Non scanné",
+                x = sensor.x,
+                y = sensor.y,
+                structureId = structureId
+            )
+
+            sensorDao.upsertSensor(sensorDB)
+
+            val updatedSensors = sensorDao.getAllSensors(structureId)
+            sensorsNotScanned.postValue(updatedSensors)
+
+            val stateCounts = SensorState.entries.associateWith { state ->
+                if (state == SensorState.UNKNOWN) updatedSensors.size else 0
+            }
+            sensorStateCounts.postValue(stateCounts)
+
+            sensorCache.insertSensors(updatedSensors)
+
+            addSensorError.postValue(null)
+        }
+    }
+
 
 
     /**
