@@ -52,7 +52,6 @@ import fr.uge.structsure.ui.theme.fonts
  */
 @Composable
 fun PlansView(scanViewModel: ScanViewModel) {
-    val context = LocalContext.current
     val planViewModel = scanViewModel.planViewModel
     val plans = planViewModel.plans.observeAsState()
     val points = planViewModel.filteredPoints.distinctUntilChanged().observeAsState(listOf())
@@ -79,7 +78,7 @@ fun PlansView(scanViewModel: ScanViewModel) {
             Plan(
                 image = image.value,
                 points = points.value,
-                addPoint = { /* TODO enable to place points */ },
+                addPoint = { _, _ ->/* TODO enable to place points */ },
                 deletePoint = { /* TODO enable to remove points */ }
             )
 

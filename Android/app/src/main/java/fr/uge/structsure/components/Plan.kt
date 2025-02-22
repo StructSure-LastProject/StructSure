@@ -29,6 +29,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import fr.uge.structsure.scanPage.presentation.components.SensorState
+import fr.uge.structsure.structuresPage.data.SensorDB
 import kotlin.math.sqrt
 
 /**
@@ -47,9 +48,9 @@ data class Point(val x: Double, val y: Double, val state: SensorState)
 @Composable
 fun Plan(
     image: Bitmap,
-    points: List<Point>,
-    addPoint: (Point) -> Unit,
-    deletePoint: (Point) -> Unit
+    points: List<SensorDB>,
+    addPoint: (Double, Double) -> Unit,
+    deletePoint: (SensorDB) -> Unit
 ) {
     val painter = remember(image) { BitmapPainter(image.asImageBitmap()) }
     val factor = remember(image) { Factor(painter.intrinsicSize) }
@@ -98,7 +99,7 @@ fun Plan(
             val transformPoint = factor.transformPoint(size)
             points.forEach {
                 val panned = imgToCanvas(offset, scale, size, transformPoint, factor.offset, it.x, it.y)
-                point(size, panned.x, panned.y, it.state)
+                point(size, panned.x, panned.y, SensorState.from(it.state))
             }
         }
     }
@@ -122,21 +123,20 @@ private fun onTap(
     scale: Float,
     offset: Offset,
     pos: Offset,
-    points: List<Point>,
-    addPoint: (Point) -> Unit,
-    deletePoint: (Point) -> Unit,
+    points: List<SensorDB>,
+    addPoint: (Double, Double) -> Unit,
+    deletePoint: (SensorDB) -> Unit,
     long: Boolean = false
 ) {
     val range = (30 / factor.transform / scale).toInt()
     val imgPos = canvasToImg(offset, scale, size, factor.transformPoint(size), factor.offset, pos.x, pos.y)
-    val imgPoint = Point(imgPos.x.toDouble(), imgPos.y.toDouble(), SensorState.NOK)
     for (i in points.indices) {
-        if (imgPoint.inRange(points[i], range)) {
+        if (points[i].inRange(imgPos.x.toDouble(), imgPos.y.toDouble(), range)) {
             if (long) deletePoint(points[i]) else onPointTap(points, i)
             return
         }
     }
-    if (!long) addPoint(Point(imgPos.x.toDouble(), imgPos.y.toDouble(), SensorState.DEFECTIVE))
+    if (!long) addPoint(imgPos.x.toDouble(), imgPos.y.toDouble())
 }
 
 /**
@@ -144,7 +144,7 @@ private fun onTap(
  * @param points the list of points that contains the pressed point
  * @param i the index of the point in the list
  */
-private fun onPointTap(points: List<Point>, i: Int) {
+private fun onPointTap(points: List<SensorDB>, i: Int) {
     println("TODO Point pressed: ${points[i]}")
 }
 
@@ -216,13 +216,14 @@ private fun canvasToImg(pan: Offset, zoom: Float, size: Size, transformPoint: Fl
 
 /**
  * Checks if the given point is in range of this point or too far
- * @param point the point to try to reach
+ * @param x the x coordinate of the point to try to reach
+ * @param y the y coordinate of the point to try to reach
  * @param range the maximum allowed distance between points
  * @return true if in range, false otherwise
  */
-private fun Point.inRange(point: Point, range: Int): Boolean {
-    val dx = point.x - x
-    val dy = point.y - y
+private fun SensorDB.inRange(x: Double, y: Double, range: Int): Boolean {
+    val dx = this.x - x
+    val dy = this.y - y
 
     // Square range check (much faster)
     if (dx * dx + dy * dy > range * range) return false

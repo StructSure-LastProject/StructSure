@@ -8,12 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.R
-import fr.uge.structsure.components.Point
 import fr.uge.structsure.scanPage.data.TreeNode
 import fr.uge.structsure.scanPage.data.TreePlan
 import fr.uge.structsure.scanPage.data.TreeSection
-import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.PlanDB
+import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.utils.FileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,7 +29,7 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
     val plans = MutableLiveData<TreeSection?>(null)
 
     /** Filtered list of point for the selected plan */
-    val filteredPoints = MutableLiveData<List<Point>>(listOf())
+    val filteredPoints = MutableLiveData<List<SensorDB>>(listOf())
 
     /** Image of the currently selected plan */
     val image = MutableLiveData(defaultImage)
@@ -102,8 +101,8 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
         viewModelScope.launch(Dispatchers.IO) {
             val sensors = scanViewModel.sensorsNotScanned.value ?: return@launch
             val points =  sensors
-                .filter { it.plan == selected.plan.id }
-                .map { Point(it.x, it.y, SensorState.from(it.state)) }
+                .filter { it.plan == null }
+                // .filter { it.plan == selected.plan.id }
             filteredPoints.postValue(points)
         }
     }
