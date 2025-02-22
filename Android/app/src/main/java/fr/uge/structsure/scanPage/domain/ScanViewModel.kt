@@ -25,9 +25,6 @@ import java.sql.Timestamp
  */
 class ScanViewModel(context: Context, private val structureViewModel: StructureViewModel) : ViewModel() {
 
-    /** Sub-ViewModel that handle all plan selection/display logic */
-    val planViewModel = PlanViewModel(context, this)
-
     /** DAO to interact with the scan database */
     private val scanDao = db.scanDao()
 
@@ -77,6 +74,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Counts how many results are in a given state for the scan weather */
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
 
+    /** Sub-ViewModel that handle all plan selection/display logic */
+    val planViewModel = PlanViewModel(context, this)
+
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -99,12 +99,13 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      * @param structureId the id of the structure in use
      */
     fun setStructure(context: Context, structureId: Long) {
+        if (this.structureId == structureId) return
+        this.structureId = structureId
+        this.activeScanId = null
         if (structureId == -1L) {
             planViewModel.reset()
             return
         }
-        this.structureId = structureId
-        this.activeScanId = null
         viewModelScope.launch(Dispatchers.IO) {
             sensorCache.clearCache()
             val sensors = sensorDao.getAllSensors(structureId)

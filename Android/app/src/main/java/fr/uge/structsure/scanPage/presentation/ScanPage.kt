@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -59,10 +58,7 @@ fun ScanPage(context: Context,
              navController: NavController) {
 
     val currentState = scanViewModel.currentScanState.observeAsState(initial = ScanState.NOT_STARTED)
-
-    LaunchedEffect(structureId) {
-        scanViewModel.setStructure(context, structureId)
-    }
+    scanViewModel.setStructure(context, structureId)
 
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
 

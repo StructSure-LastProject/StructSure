@@ -50,7 +50,7 @@ fun ScanWeather(viewModel: ScanViewModel, scrollState: ScrollState) {
     val offset = (20 + 35 + 50).toPx // Size of the header + margins
 
     // Observe the state counts from the view model
-    val stateCounts = viewModel.sensorStateCounts.observeAsState(emptyMap()).value ?: emptyMap()
+    val stateCounts = viewModel.sensorStateCounts.observeAsState(emptyMap()).value
 
     // Sticky Weather
     LaunchedEffect(scrollState.value) {

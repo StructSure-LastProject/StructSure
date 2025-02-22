@@ -3,6 +3,7 @@ package fr.uge.structsure.scanPage.domain
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,6 +35,21 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
     /** Image of the currently selected plan */
     val image = MutableLiveData(defaultImage)
 
+    init {
+        val mediator = MediatorLiveData<List<SensorDB>>()
+        mediator.addSource(scanViewModel.sensorsNotScanned) { sensors ->
+            // Update filtered list when sensors list changes
+            updateFilteredPoint(sensors, selected.value)
+        }
+        mediator.addSource(selected) { selectedValue ->
+            // Update filtered list when selected plan changes
+            updateFilteredPoint(scanViewModel.sensorsNotScanned.value, selectedValue)
+        }
+        mediator.observeForever { filtered ->
+            filteredPoints.postValue(filtered)
+        }
+    }
+
     /**
      * Loads the plan for the given structure.
      * @param context needed to read the file from the device
@@ -50,6 +66,7 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
      */
     fun reset() {
         plans.postValue(null)
+        filteredPoints.postValue(listOf())
     }
 
     /**
@@ -70,7 +87,6 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
             val path = plan.let { FileUtils.getLocalPlanImage(context, it.plan.id) }
             println("ImageUpdate $path")
             image.postValue(if (path == null) defaultImage else BitmapFactory.decodeFile(path))
-            filterPointsForPlan(scanViewModel)
         }
     }
 
@@ -96,14 +112,14 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
         return root
     }
 
-    private fun filterPointsForPlan(scanViewModel: ScanViewModel) {
-        val selected = selected.value ?: return
-        viewModelScope.launch(Dispatchers.IO) {
-            val sensors = scanViewModel.sensorsNotScanned.value ?: return@launch
-            val points =  sensors
-                .filter { it.plan == null }
-                // .filter { it.plan == selected.plan.id }
-            filteredPoints.postValue(points)
-        }
+    /**
+     * Calculates the filtered list of point for the selected plan
+     * @param sensors the full list of sensor of the structure
+     * @param selected the currently selected plan
+     */
+    private fun updateFilteredPoint(sensors: List<SensorDB>?, selected: TreePlan?) {
+        val filtered = (sensors?:listOf())
+            .filter { selected != null && it.plan == selected.plan.id }
+        filteredPoints.postValue(filtered)
     }
 }
