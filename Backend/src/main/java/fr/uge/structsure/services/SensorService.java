@@ -14,6 +14,9 @@ import fr.uge.structsure.repositories.StructureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
 
@@ -202,7 +205,38 @@ public class SensorService {
             throw new TraitementException(Error.SENSOR_NAME_EXCEED_LIMIT);
         }
         if (request.note() != null && request.note().length() > 1000) {
-            throw new TraitementException(Error.SENSOR_NOTE_EXCEED_LIMIT);
+            throw new TraitementException(Error.SENSOR_COMMENT_EXCEED_LIMIT);
         }
     }
+
+
+    /**
+     * Service that will handle the edit sensor request
+     * @param editSensorRequestDTO The edit sensor request DTO
+     */
+    public EditSensorResponseDTO editSensor(EditSensorRequestDTO editSensorRequestDTO) throws TraitementException {
+        Objects.requireNonNull(editSensorRequestDTO);
+        var sensorOptional = sensorRepository.findByChips(editSensorRequestDTO.getControlChip(), editSensorRequestDTO.getMeasureChip());
+        if (sensorOptional.isEmpty()){
+            throw new TraitementException(Error.SENSOR_ID_NOT_FOUND);
+        }
+        if (editSensorRequestDTO.getName().length() > 32){
+            throw new TraitementException(Error.SENSOR_NAME_EXCEED_LIMIT);
+        }
+        if (editSensorRequestDTO.getComment().length() > 1000){
+            throw new TraitementException(Error.SENSOR_COMMENT_EXCEED_LIMIT);
+        }
+        if (sensorRepository.findByName(editSensorRequestDTO.getName()).isPresent()){
+            throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
+        }
+        var sensor = sensorOptional.get();
+        sensor.setName(editSensorRequestDTO.getName());
+        var formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        sensor.setInstallationDate(LocalDateTime.parse(editSensorRequestDTO.getInstallationDate(), formatter));
+        sensor.setNote(editSensorRequestDTO.getComment());
+        sensorRepository.save(sensor);
+        return new EditSensorResponseDTO(editSensorRequestDTO.getControlChip(), editSensorRequestDTO.getMeasureChip(), LocalDateTime.now().toString());
+    }
+
+
 }

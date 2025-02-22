@@ -1,9 +1,12 @@
 import { Pencil, X, Check } from 'lucide-solid';
 import Header from '../Header';
 import getSensorStatusColor from "../SensorStatusColorGen";
-import { createSignal, Show } from 'solid-js';
+import { createResource, createSignal, Show } from 'solid-js';
 import SensorFieldComponent from './SensorFieldComponent';
 import { containsNonLetters } from '../../hooks/vaildateUserAccountForm';
+import StructureDetailCanvas from "../StructureDetail/StructureDetailCanvas"
+import useFetch from '../../hooks/useFetch';
+import {planSensorsFetchRequest} from "../StructureDetail/StructureDetailBody"
 
 /**
  * The panel header
@@ -66,11 +69,45 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
  * The sensor plan 
  * @returns The component contains a canva with sensor on a image
  */
-const SensorPlan = () => {
+const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails}) => {  
+  const planId = selectedPlanId() === null ? 1 : selectedPlanId();
+  const { fetchImage, image, statusCode } = useFetch();
+  const token = localStorage.getItem("token");
+  const endpoint = `/api/structures/plans/${planId}/image`;
+
+  const requestData = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+  };
+  
+  // Function to check if an object exists by controlChip
+  const checkSensorExistence = (controlChip) => {
+    return sensorMap.has(controlChip);
+  };
+
+  createResource(async () => {
+    await fetchImage(endpoint, requestData);
+    if (statusCode() === 200) {
+      if (checkSensorExistence(sensorDetails.controlChip)) {
+        setPlan(image());
+      }
+    }
+  })
+  
   return (
     <div class="lg:flex lg:flex-col lg:gap-[10px]">
-      <h1 class="subtitle pl-1">OA/Zone</h1>
-      <img src="" alt="" class="w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px]" />
+      <h1 class="font-poppins font-[600] text-[16px] leading-[24px] tracking-[0%] text-[#181818]">OA/Zone</h1>
+      <Show when={image()}>
+        <StructureDetailCanvas
+          styles={"w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px]"} 
+          plan={image()} 
+          interactiveMode={false} 
+          planSensors={Array.of(sensorDetails)} 
+        />
+      </Show>
     </div>
   );
 }
@@ -111,11 +148,10 @@ const SensorCommentSection = ({
  * @param {Function} closeSensorPanel Function that close the sensor panel
  * @returns The sensor panel component
  */
-const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
+const SensorPanel = ({planSensors, selectedPlanId, sensorDetails, closeSensorPanel}) => {
 
-  const [day, month, year] = sensorDetails.installationDate.split("/")
   const [sensorName, setSensorName] = createSignal(sensorDetails.name);
-  const [installationDate, setInstallationDate] = createSignal(`${year}-${month}-${day}`);
+  const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate.split('T')[0]);
   const [comment, setComment] = createSignal(sensorDetails.note);
   const [editMode, setEditMode] = createSignal(false);
 
@@ -125,7 +161,7 @@ const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
    * Handle the submit
    * @returns true or false
    */
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (sensorName() === "") {
       setError("Le nom du capteur est obligatoire");
       return false;
@@ -134,10 +170,43 @@ const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
       setError("Le nom doit contenir uniquement des lettres.");
       return false;
     }
-    setError("");
-    return true;
+
+    const { fetchData, error, statusCode } = useFetch();
+    const token = localStorage.getItem("token");
+    
+    const requestBody = {
+      controlChip: sensorDetails.controlChip,
+      measureChip: sensorDetails.measureChip,
+      name: sensorName(),
+      installationDate: installationDate(),
+      comment: comment()
+    }
+
+    const requestData = {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(requestBody)
+    };
+
+    await fetchData("/api/sensors", requestData);
+
+    if (statusCode() === 200) {
+      setError("");
+      planSensorsFetchRequest();
+      return true;
+    }    
+    setError(error().errorData)
+    return false;
   }
-  
+
+  const sensorMap = new Map();
+  planSensors().forEach(sensor => {
+      sensorMap.set(sensor.controlChip, sensor);
+  });
+    
   
   return (
     <div class="min-h-[100vh] bg-[#F2F2F403] backdrop-blur-[25px] z-[100] flex items-end justify-center align-middle w-[100vw] fixed top-0 left-0">
@@ -159,7 +228,11 @@ const SensorPanel = ({sensorDetails, closeSensorPanel}) => {
         }
         <div class="overflow-auto flex flex-col gap-[25px] rounded-[18px]">
           <div class="lg:flex lg:flex-row lg:gap-[25px] flex flex-col gap-[25px]">
-            <SensorPlan/>
+            <SensorPlan
+              selectedPlanId={selectedPlanId}
+              sensorDetails={sensorDetails}
+              sensorMap={sensorMap}
+            />
             <SensorCommentSection 
               comment={comment} 
               setComment={setComment} 

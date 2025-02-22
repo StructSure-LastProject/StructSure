@@ -511,7 +511,7 @@ function StructureDetailCanvas(props) {
         <>
             <canvas
                 ref={canvasRef}
-                class="w-full bg-white"
+                class={props.styles === undefined ? `w-full bg-white` : props.styles }
             ></canvas>
             <Show when={isPopupVisible() && !popupOutOfCanvas() && props.interactiveMode === true}>
                 <div ref={popupRef}>
