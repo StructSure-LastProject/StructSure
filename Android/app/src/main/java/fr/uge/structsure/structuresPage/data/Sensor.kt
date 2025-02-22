@@ -23,7 +23,7 @@ data class SensorDB(
     val measureChip: String,
     val name: String,
     val note: String?,
-    val installationDate: String,
+    val installationDate: String?,
     val state: String,
     val plan: Long?,
     val x: Double,
