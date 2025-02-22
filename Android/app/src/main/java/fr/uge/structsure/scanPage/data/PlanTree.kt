@@ -1,5 +1,7 @@
 package fr.uge.structsure.scanPage.data
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import fr.uge.structsure.structuresPage.data.PlanDB
 
 /**
@@ -31,4 +33,5 @@ data class TreePlan (
 data class TreeSection(val name: String) : TreeNode {
     override val isPlan = false
     override val children = mutableMapOf<String, TreeNode>()
+    val collapsed: MutableState<Boolean> = mutableStateOf(true)
 }

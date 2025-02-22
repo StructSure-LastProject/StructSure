@@ -149,8 +149,8 @@ class StructureRepository : ViewModel() {
             val scan = scanDao.getScanByStructure(structureId)
             scan?.let { resultDao.deleteResultsByScan(it.id) }
             sensorDao.deleteSensorsByStructureId(structureId)
-            planDao.getPlanByStructureId(structureId).forEach { planId ->
-                FileUtils.deletePlanImage(context, planId)
+            planDao.getPlansByStructureId(structureId).forEach { plan ->
+                FileUtils.deletePlanImage(context, plan.id)
             }
             planDao.deletePlansByStructureId(structureId)
             scanDao.deleteScanByStructure(structureId)

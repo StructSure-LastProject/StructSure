@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -105,7 +104,7 @@ fun PlansView(scanViewModel: ScanViewModel) {
 @Composable
 private fun Section(planViewModel: PlanViewModel, treeNode: TreeSection, hideSelf: Boolean = false) {
     val context = LocalContext.current
-    var collapsed by remember { mutableStateOf(true) }
+    var collapsed by remember { treeNode.collapsed }
     if (!hideSelf) {
         Row(
             modifier = Modifier
