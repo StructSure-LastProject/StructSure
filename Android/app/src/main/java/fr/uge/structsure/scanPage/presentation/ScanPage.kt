@@ -61,7 +61,7 @@ fun ScanPage(context: Context,
     val currentState = scanViewModel.currentScanState.observeAsState(initial = ScanState.NOT_STARTED)
 
     LaunchedEffect(structureId) {
-        scanViewModel.setStructure(structureId)
+        scanViewModel.setStructure(context, structureId)
     }
 
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data

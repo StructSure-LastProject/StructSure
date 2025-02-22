@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -54,17 +53,9 @@ import fr.uge.structsure.ui.theme.fonts
 @Composable
 fun PlansView(scanViewModel: ScanViewModel) {
     val context = LocalContext.current
-    val planViewModel = remember(1) { PlanViewModel(context) }
-    val plans = scanViewModel.plans.observeAsState()
+    val planViewModel = scanViewModel.planViewModel
+    val plans = planViewModel.plans.observeAsState()
     val points = planViewModel.filteredPoints.distinctUntilChanged().observeAsState(listOf())
-    LaunchedEffect(scanViewModel.selected, scanViewModel.sensorsNotScanned) {
-        planViewModel.filterPointsForPlan(scanViewModel)
-    }
-
-    LaunchedEffect(scanViewModel.selected.value?.plan) {
-        scanViewModel.selected.value?.let { planViewModel.setImage(context, it.plan) }
-    }
-
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -99,7 +90,7 @@ fun PlansView(scanViewModel: ScanViewModel) {
                     .background(LightGray) )
 
             plans.value?.let {
-                Section(scanViewModel, it, true)
+                Section(planViewModel, it, true)
             }
         }
     }
@@ -108,12 +99,13 @@ fun PlansView(scanViewModel: ScanViewModel) {
 /**
  * Item corresponding to a plan section (a group of plans) in the
  * plan selector
- * @param scanViewModel to access the selected plan
+ * @param planViewModel to access the selected plan
  * @param treeNode the tree (or subtree) to display
  * @param hideSelf true to display content only, without the section name
  */
 @Composable
-private fun Section(scanViewModel: ScanViewModel, treeNode: TreeSection, hideSelf: Boolean = false) {
+private fun Section(planViewModel: PlanViewModel, treeNode: TreeSection, hideSelf: Boolean = false) {
+    val context = LocalContext.current
     var collapsed by remember { mutableStateOf(true) }
     if (!hideSelf) {
         Row(
@@ -152,9 +144,9 @@ private fun Section(scanViewModel: ScanViewModel, treeNode: TreeSection, hideSel
             treeNode.children.values.sortedBy { !it.isPlan }.forEach {
                 if (it.isPlan) {
                     val plan = (it as TreePlan).plan
-                    PlanItem(plan.name, scanViewModel.selected.value == it ) { scanViewModel.selected.value = it }
+                    PlanItem(plan.name, planViewModel.selected.value == it ) { planViewModel.selectPlan(context, it) }
                 } else {
-                    Section(scanViewModel, it as TreeSection)
+                    Section(planViewModel, it as TreeSection)
                 }
             }
         }

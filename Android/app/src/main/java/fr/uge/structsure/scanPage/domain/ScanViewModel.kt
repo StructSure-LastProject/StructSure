@@ -2,7 +2,6 @@ package fr.uge.structsure.scanPage.domain
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,13 +10,9 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
-import fr.uge.structsure.scanPage.data.TreeNode
-import fr.uge.structsure.scanPage.data.TreePlan
-import fr.uge.structsure.scanPage.data.TreeSection
 import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
-import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +24,9 @@ import java.sql.Timestamp
  * It interacts with the database, sensor cache, and scanner hardware to handle sensor states and user actions.
  */
 class ScanViewModel(context: Context, private val structureViewModel: StructureViewModel) : ViewModel() {
+
+    /** Sub-ViewModel that handle all plan selection/display logic */
+    val planViewModel = PlanViewModel(context, this)
 
     /** DAO to interact with the scan database */
     private val scanDao = db.scanDao()
@@ -79,11 +77,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Counts how many results are in a given state for the scan weather */
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
 
-    /** Currently selected plan in the plans selector */
-    val selected = mutableStateOf<TreePlan?>(null)
-
-    /** Tree of plans and section for the plans selector */
-    val plans = MutableLiveData<TreeSection>(null)
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -102,11 +95,12 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /**
      * Changes the structureId of the scanViewModel. This will reload
      * the sensors if the given id is not the same as the saved one.
+     * @param context used to load the image of the plan if changed
      * @param structureId the id of the structure in use
      */
-    fun setStructure(structureId: Long) {
+    fun setStructure(context: Context, structureId: Long) {
         if (structureId == -1L) {
-            plans.postValue(null)
+            planViewModel.reset()
             return
         }
         this.structureId = structureId
@@ -120,8 +114,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             }
             sensorStateCounts.postValue(stateCounts)
             sensorCache.insertSensors(sensors)
-            val tree = planTree(db.planDao().getPlansByStructureId(structureId))
-            plans.postValue(tree)
+            planViewModel.loadPlans(context, structureId)
         }
     }
 
@@ -300,24 +293,5 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 sensorCache.clearCache()
             }
         }
-    }
-
-    /**
-     * Creates a tree of plans and sections from a list of raw plans from
-     * the database.
-     * @param plans the raw plans from the database
-     * @return the tree containing all item well organized
-     */
-    private fun planTree(plans: List<PlanDB>): TreeSection {
-        val root = TreeSection("")
-        plans.forEach { plan ->
-            val tokens = if (plan.section.isEmpty()) listOf() else plan.section.split("/")
-            var node: TreeNode = root
-            tokens.forEach { token -> node = node.children.computeIfAbsent(token) { TreeSection(token) } }
-            val child = TreePlan(plan)
-            node.children["${plan.id}"] = child
-            if (selected.value == null) selected.value = child
-        }
-        return root
     }
 }

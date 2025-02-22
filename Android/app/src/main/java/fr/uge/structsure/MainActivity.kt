@@ -112,7 +112,7 @@ class MainActivity : ComponentActivity() {
                 if (RetrofitInstance.isInitialized() && accountDao.get()?.token != null) "HomePage" else connexionPage
             NavHost(navController = navController, startDestination = homePage) {
                 composable("HomePage") {
-                    scanViewModel.setStructure(-1)
+                    scanViewModel.setStructure(applicationContext, -1)
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
