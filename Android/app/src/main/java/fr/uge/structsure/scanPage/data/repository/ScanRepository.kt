@@ -18,7 +18,6 @@ class ScanRepository(private val context: Context) {
     private val scanDao = db.scanDao()
     private val resultDao = db.resultDao()
     private val sensorDao = db.sensorDao()
-    private val scanApi = RetrofitInstance.scanApi
     private val connectivityViewModel = ConnectivityViewModel(context)
 
     /**
@@ -68,7 +67,7 @@ class ScanRepository(private val context: Context) {
                 return Result.success(Unit)
             }
 
-            val response = scanApi.submitScanResults(scanRequest)
+            val response = RetrofitInstance.scanApi.submitScanResults(scanRequest)
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {

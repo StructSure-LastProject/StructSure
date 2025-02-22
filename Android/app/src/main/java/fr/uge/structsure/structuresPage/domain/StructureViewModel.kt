@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
+import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.structuresPage.data.StructureData
 import fr.uge.structsure.structuresPage.data.StructureRepository
@@ -51,6 +52,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      */
     init {
         connectivityViewModel.isConnected.distinctUntilChanged().observeForever { isConnected ->
+            if (!RetrofitInstance.isInitialized()) return@observeForever // Server URL not configured yet
             if (isConnected) getAllStructures()
             if (!isConnected || uploadInProgress.value == true) return@observeForever
 
