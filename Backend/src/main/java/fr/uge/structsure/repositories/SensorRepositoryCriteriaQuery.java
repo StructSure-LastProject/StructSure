@@ -2,7 +2,6 @@ package fr.uge.structsure.repositories;
 
 import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
-import fr.uge.structsure.entities.Result;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.State;
 import fr.uge.structsure.exceptions.Error;
@@ -14,9 +13,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
 import org.springframework.stereotype.Repository;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import org.hibernate.validator.internal.util.stereotypes.Lazy;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Entity
@@ -20,16 +21,14 @@ public class Sensor {
 
     private String name;
 
-    private String note;
+    private String note = "";
 
     @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "structure_id", nullable = true)
     private Structure structure;
 
-
     private LocalDateTime installationDate;
-
 
     @Column(columnDefinition = "REAL")
     private Double x;
@@ -37,7 +36,7 @@ public class Sensor {
     @Column(columnDefinition = "REAL")
     private Double y;
 
-    private Boolean archived;
+    private Boolean archived=false;
 
     @OneToMany(mappedBy="sensor")
     @JsonIgnore
@@ -48,7 +47,6 @@ public class Sensor {
     @ManyToOne
     @JoinColumn(name="plan_id")
     private Plan plan;
-
 
     //constructeurs nécéssaire
     public Sensor(){
@@ -110,6 +108,26 @@ public class Sensor {
         this.structure = structure;
     }
 
+    /**
+     * The base constructor for the Sensor entity
+     * @param controlChip the control chip id
+     * @param measureChip the measure chip id
+     * @param name the name of the sensor
+     * @param note the note of the sensor
+     * @param structure the structure
+     */
+    public Sensor(String controlChip, String measureChip, String name, String note, Structure structure) {
+        this.sensorId = new SensorId(controlChip, measureChip);
+        this.name = name;
+        this.note = note;
+        this.structure = structure;
+    }
+
+    @Override
+    public String toString() {
+        return sensorId.toString();
+    }
+
     public SensorId getSensorId() {
         return sensorId;
     }
@@ -143,7 +161,8 @@ public class Sensor {
     }
 
     public LocalDateTime getInstallationDate() {
-        return installationDate;
+        // todo default value to remove
+        return Objects.requireNonNullElseGet(this.installationDate, LocalDateTime::now);
     }
 
     public void setInstallationDate(LocalDateTime installationDate) {
@@ -151,6 +170,10 @@ public class Sensor {
     }
 
     public Double getX() {
+        // todo default value to remove
+        if (Objects.isNull(x)) {
+            return 0.0;
+        }
         return x;
     }
 
@@ -159,6 +182,10 @@ public class Sensor {
     }
 
     public Double getY() {
+        // todo default value to remove
+        if (Objects.isNull(y)) {
+            return 0.0;
+        }
         return y;
     }
 

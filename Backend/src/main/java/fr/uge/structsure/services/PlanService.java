@@ -137,14 +137,14 @@ public class PlanService {
     }
 
     /**
-     * Checks if a structure or plan is in an archived state.
+     * Checks if a structure is in an archived state.
      *
      * @param structure The structure to check
      * @throws TraitementException if the structure is archived
      */
     private void checkState(Structure structure) throws TraitementException {
         if (structure.getArchived()) {
-            throw new TraitementException(Error.PLAN_IS_ARCHIVED);
+            throw new TraitementException(Error.STRUCTURE_IS_ARCHIVED);
         }
     }
 

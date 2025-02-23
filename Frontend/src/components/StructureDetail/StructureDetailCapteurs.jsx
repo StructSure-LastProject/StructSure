@@ -1,16 +1,20 @@
 import { ArrowDownNarrowWide, Filter, Plus, Trash2 } from 'lucide-solid';
-import { createEffect, createSignal } from 'solid-js';
+import {createEffect, createSignal, For, Show} from 'solid-js';
 import SensorPanel from '../SensorPanel/SensorPanel';
 import getSensorStatusColor from "../SensorStatusColorGen"
+import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
 
 /**
  * Show the sensors part of the structure detail page
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({sensors}) {
+function StructureDetailCapteurs({sensors, sensorsFetchRequest, structureId}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
+    const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
+    
+    const [isAuthorized, setIsAuthorized] = createSignal(false);
 
     /**
      * Open the sensor panel
@@ -23,6 +27,24 @@ function StructureDetailCapteurs({sensors}) {
     }
 
     /**
+     * Opens the add sensor modal
+     */
+    const openAddModal = () => setIsAddModalOpen(true);
+
+    /**
+     * Closes the add sensor modal
+     */
+    const closeAddModal = () => setIsAddModalOpen(false);
+
+    /**
+     * Handles saving a newly added plan
+     */
+    const handleAddSave = async () => {
+        await sensorsFetchRequest(structureId);
+        closeAddModal();
+    };
+
+    /**
      * Close the sensor panel
      */
     const closeSensorPanelHandler = () => {
@@ -30,12 +52,18 @@ function StructureDetailCapteurs({sensors}) {
         setOpenSensorPanel(false);
         document.body.style.overflow = "auto";
     }
-
+    /**
+     * Effect that updates plans based on props and user role
+     */
+    createEffect(() => {
+        const userRole = localStorage.getItem("role");
+        setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE" || userRole === "OPERATEUR");
+    });
 
     return (
         <div class="w-full flex flex-col gap-y-[15px]">
             <div class="flex justify-between">
-                <p class="prose font-poppins title">Capteurs</p>
+                <p class="title">Capteurs</p>
                 <div class="flex justify-between gap-x-[10px]">
                     <div class="w-10 h-10 rounded-[50px] bg-white flex justify-center items-center">
                         <ArrowDownNarrowWide size={20}/>
@@ -43,17 +71,31 @@ function StructureDetailCapteurs({sensors}) {
                     <div class="w-10 h-10 rounded-[50px] bg-white flex justify-center items-center">
                         <Filter size={20}/>
                     </div>
-                    <div class="w-10 h-10 rounded-[50px] bg-black flex justify-center items-center">
-                        <Plus size={20} color='white'/>
-                    </div>
+                    <Show when={isAuthorized()}>
+                        <button
+                            title="Ajouter un capteur"
+                            onClick={openAddModal}
+                            class="w-10 h-10 rounded-[50px] bg-black flex justify-center items-center"
+                        >
+                            <Plus size={20} color='white'/>
+                        </button>
+                    </Show>
+                    <Show when={isAddModalOpen()}>
+                        <ModalAddSensor
+                          isOpen={isAddModalOpen()}
+                          onClose={closeAddModal}
+                          structureId={structureId}
+                          onSave={handleAddSave}
+                        />
+                    </Show>
                 </div>
             </div>
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <For each={sensors()}>
                     {(sensor) => (
                         <button onClick={() => openSensorPanelHandler(sensor)} class="cursor-pointer flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
-                            <div class={`w-[12px] h-[12px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
-                            <p class="prose font-poppins poppins text-base font-semibold w-[138px]">{sensor.name}</p>
+                            <div class={`w-[16px] min-w-[16px] h-[16px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
+                            <p class="subtitle text-left w-full">{sensor.name}</p>
                             <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                                 <Trash2 size={20} />
                             </div>

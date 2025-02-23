@@ -1,7 +1,7 @@
 package fr.uge.structsure.services;
 
-import fr.uge.structsure.dto.sensors.AddSensorAnswerDTO;
-import fr.uge.structsure.dto.sensors.AddSensorRequestDTO;
+import fr.uge.structsure.dto.sensors.AddSensorResponseDTO;
+import fr.uge.structsure.dto.sensors.BaseSensorDTO;
 import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.entities.Sensor;
@@ -12,16 +12,12 @@ import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.SensorRepositoryCriteriaQuery;
 import fr.uge.structsure.repositories.StructureRepository;
-import fr.uge.structsure.utils.OrderEnum;
-import fr.uge.structsure.utils.StateEnum;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,7 +75,7 @@ class SensorServiceTest {
     // Test createSensor method
     @Test
     void testCreateSensor_StructureNotFound() {
-        AddSensorRequestDTO request = new AddSensorRequestDTO(1L, "chip1", "chip2", "Sensor1", "", "2023-02-01T14:30:00", 1.0, 1.0);
+        BaseSensorDTO request = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
         when(structureRepository.findById(request.structureId())).thenReturn(Optional.empty());
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
@@ -88,9 +84,9 @@ class SensorServiceTest {
 
     @Test
     void testCreateSensor_SensorNameAlreadyExists() {
-        AddSensorRequestDTO request = new AddSensorRequestDTO(1L, "chip1", "chip2", "Sensor1", "", "2023-02-01T14:30:00", 1.0, 1.0);
+        BaseSensorDTO request = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
         when(structureRepository.findById(request.structureId())).thenReturn(Optional.of(new Structure()));
-        when(sensorRepository.findByName(request.name())).thenReturn(Optional.of(new Sensor()));
+        when(sensorRepository.nameAlreadyExists(request.name())).thenReturn(true);
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
         assertEquals(Error.SENSOR_NAME_ALREADY_EXISTS, exception.error);
@@ -98,15 +94,17 @@ class SensorServiceTest {
 
     @Test
     void testCreateSensor_Success() throws TraitementException {
-        AddSensorRequestDTO request = new AddSensorRequestDTO(1L, "chip1", "chip2", "Sensor1", "", "2023-02-01T14:30:00", 1.0, 1.0);
+        BaseSensorDTO request = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
         var structure = new Structure();
         when(structureRepository.findById(request.structureId())).thenReturn(Optional.of(structure));
         when(sensorRepository.findByName(request.name())).thenReturn(Optional.empty());
         when(sensorRepository.findByChipTag(request.controlChip())).thenReturn(List.of());
-        var formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        Sensor sensor = new Sensor(request.controlChip(), request.measureChip(), request.name(), request.note(), LocalDateTime.parse(request.installationDate(), formatter), request.x(), request.y(), false, structure);
+
+        Sensor sensor = new Sensor(request.controlChip(), request.measureChip(), request.name(), request.note(), structure);
         when(sensorRepository.save(any(Sensor.class))).thenReturn(sensor);
-        AddSensorAnswerDTO response = sensorService.createSensor(request);
+
+        AddSensorResponseDTO response = sensorService.createSensor(request);
+
         assertNotNull(response);
         assertEquals(request.controlChip(), response.controlChip());
         assertEquals(request.measureChip(), response.measureChip());
@@ -115,18 +113,9 @@ class SensorServiceTest {
     // Test sensorEmptyPrecondition (indirectly tested through createSensor)
     @Test
     void testSensorEmptyPrecondition() {
-        AddSensorRequestDTO request = new AddSensorRequestDTO(1L, null, "chip2", "Sensor1", "", "2023-02-01", 1.0, 1.0);
+        BaseSensorDTO request = new BaseSensorDTO(1L, null, "chip2", "Sensor1", "");
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
         assertEquals(Error.SENSOR_CHIP_TAGS_IS_EMPTY, exception.error);
-    }
-
-    // Test sensorMalformedPrecondition (indirectly tested through createSensor)
-    @Test
-    void testSensorMalformedPrecondition() {
-        AddSensorRequestDTO request = new AddSensorRequestDTO(1L, "chip1", "chip2", "Sensor1", "", "invalid-date", 1.0, 1.0);
-
-        TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
-        assertEquals(Error.SENSOR_INSTALLATION_DATE_INVALID_FORMAT, exception.error);
     }
 }

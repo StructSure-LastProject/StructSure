@@ -62,8 +62,8 @@ const AdminPanelBody = () => {
     return (
         <>             
             <button onClick={handleAddAccountClick} class="flex justify-between items-center w-full max-w-[1250px] h-[40px] sm:h-[50px] rounded-[20px] pl-[20px] gap-[10px]">
-                <h1 class="text-2xl sm:text-3xl font-poppins title">Comptes</h1>
-                <div class="pr-[5%]">
+                <h1 class="title">Comptes</h1>
+                <div>
                     <img
                         src={add}
                         alt="Add Button logo"

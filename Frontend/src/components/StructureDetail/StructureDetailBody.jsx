@@ -104,7 +104,11 @@ function StructureDetailBody(props) {
               structureId={props.structureId}
               planSensors={planSensors()}
             />
-            <StructureDetailRow sensors={sensors} />
+            <StructureDetailRow
+              sensors={sensors}
+              sensorsFetchRequest={sensorsFetchRequest}
+              structureId={props.structureId}
+            />
         </div>
     );
 }

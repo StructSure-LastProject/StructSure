@@ -12,7 +12,7 @@ const ModalImage = (props) => {
 
   return (
     <div class="space-y-2">
-      <span class="block text-sm font-medium">Image*</span>
+      <span class="normal opacity-75">Image*</span>
       <div class="relative w-full h-48 border-2 border-[#F2F2F4] rounded-[10px]">
         <ImagePreview imageData={imageData} currentImageUrl={props.currentImageUrl}/>
         <UploadButton onImageChange={props.onImageChange} />
@@ -43,7 +43,7 @@ const ImagePreview = ({ imageData, currentImageUrl }) => (
         class="w-full h-full rounded-[10px] object-cover"
       />
     ) : (
-      <p class="text-center text-gray-500">Pas d&apos;image sélectionnée</p>
+      <p class="text-center normal text-black opacity-50">Pas d&apos;image sélectionnée</p>
     )}
   </div>
 );
@@ -56,11 +56,11 @@ const ImagePreview = ({ imageData, currentImageUrl }) => (
  */
 const UploadButton = ({ onImageChange }) => (
   <label
-    class="absolute bottom-4 right-4 bg-[#F2F2F4] hover:bg-gray-200 px-4 py-2 rounded-[50px] flex items-center space-x-2 cursor-pointer transition-colors"
+    class="absolute bottom-4 right-4 bg-lightgray px-4 py-2 rounded-[50px] flex items-center gap-[10px] cursor-pointer transition-colors accent"
     for="file-input"
   >
     <span>Remplacer</span>
-    <Pencil class="w-5 h-5" />
+    <Pencil class="w-5 h-5 stroke-[2.5px]" />
     <input
       type="file"
       id="file-input"

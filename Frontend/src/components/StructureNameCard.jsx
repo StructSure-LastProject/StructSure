@@ -8,16 +8,16 @@
 const StructureNameCard = ({structureName, isChoosed}) => {
 
     const cardColor = isChoosed ? {
-        bg: "bg-[#181818]",
-        text: "text-[#FFFFFF]" 
+        bg: "bg-black",
+        text: "text-white" 
     }: {
-        bg: "bg-[#F2F2F4]",
-        text: "text-[#181818]"
+        bg: "bg-lightgray",
+        text: "text-black"
     };
     
     return (
         <div class={`items-center w-auto sm:w-[auto] rounded-[50px] px-[12px] py-[4px] gap-[8px] ${cardColor.bg}`}>
-            <p class={`${cardColor.text} font-poppins font-[600] text-[14px] leading-[18px] sm:leading-[21px] tracking-[0%]`}>
+            <p class={`${cardColor.text} accent`}>
                 {structureName}
             </p>
         </div>

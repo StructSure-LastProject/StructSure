@@ -1,9 +1,9 @@
 import {createSignal, Show} from "solid-js";
 import useFetch from "../../hooks/useFetch.js";
-import ModalHeader from "./ModalHeader.jsx";
-import ErrorMessage from "./ErrorMessage.jsx";
-import ModalField from "./ModalField.jsx";
-import ModalImage from "./ModalImage.jsx";
+import ModalHeader from "../Modal/ModalHeader.jsx";
+import ErrorMessage from "../Modal/ErrorMessage.jsx";
+import ModalField from "../Modal/ModalField.jsx";
+import ModalImage from "../Modal/ModalImage.jsx";
 
 /**
  * Modal for adding a plan.
@@ -11,7 +11,7 @@ import ModalImage from "./ModalImage.jsx";
  * @param {isOpen, onClose, onSave, structureId} param Props passed to the component
  * @returns The modal component for adding a plan
  */
-const Modal = ({ isOpen, onClose, onSave, structureId }) => {
+const ModalAddPlan = ({ isOpen, onClose, onSave, structureId }) => {
   const [name, setName] = createSignal("");
   const [section, setSection] = createSignal("");
   const [imageData, setImageData] = createSignal(null);
@@ -140,4 +140,4 @@ const Modal = ({ isOpen, onClose, onSave, structureId }) => {
   );
 };
 
-export default Modal;
+export default ModalAddPlan;

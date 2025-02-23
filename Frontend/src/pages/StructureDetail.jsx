@@ -11,7 +11,7 @@ function StructSureDetail() {
     const params = useParams();
 
     return (
-        <div class="flex flex-col gap-y-35px p-25px bg-gray-100">
+        <div class="flex flex-col gap-y-35px p-25px min-h-screen bg-lightgray">
             <Header />
             <StructureDetailBody structureId={params.structureId} />
         </div>

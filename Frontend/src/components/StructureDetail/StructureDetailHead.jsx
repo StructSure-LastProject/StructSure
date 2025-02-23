@@ -8,9 +8,9 @@ function StructureDetailHead(props) {
     
     return (
         <div class="flex flex-col gap-y-2.5">
-            <p class="prose font-poppins title">Viaduc de Sylans</p>
+            <p class="title">Viaduc de Sylans</p>
             <div class="flex gap-x-[10px]">
-                <select class="px-4 py-2 w-full h-10 rounded-[20px] font-poppins font-1">
+                <select class="px-4 py-2 w-full h-10 rounded-[20px] subtitle bg-white">
                     <option value="-1">Aucun Scan Sélectionné</option>
                     <For each={props.scans}>
                         {(scan) => (
@@ -27,8 +27,8 @@ function StructureDetailHead(props) {
             </div>
 
             <div class="flex justify-between px-[10px]">
-                <p>Yannick Falaise</p>
-                <p>10 novembre 2025</p>
+                <p class="normal">Yannick Falaise</p>
+                <p class="normal opacity-50">10 novembre 2025</p>
             </div>
         </div>
     );

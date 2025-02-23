@@ -12,14 +12,14 @@ import {ChevronDown, ChevronRight, Dot, FolderSync, Pencil} from "lucide-solid";
 const Section = (props) => {
   return (
     <div
-      class="bg-white px-[8px] py-[9px] flex items-center gap-x-[10px] rounded-[10px] cursor-pointer hover:bg-gray-50"
+      class="bg-white py-[8px] px-[9px] flex items-center gap-x-[10px] rounded-[10px] cursor-pointer hover:bg-gray-50"
       onClick={props.toggleOpen}
       role="button"
     >
       <div class="w-4 h-4 flex items-center justify-center">
-        {props.isOpen() ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        {props.isOpen() ? <ChevronDown class="stroke-[2.5]" size={16} /> : <ChevronRight class="stroke-[2.5]" size={16} />}
       </div>
-      <p class="prose font-poppins poppins text-base font-semibold leading-none">{props.name}</p>
+      <p class="subtitle leading-[11px]">{props.name}</p>
     </div>
   );
 };
@@ -35,9 +35,9 @@ const Plan = ({ name, isSelected }) => (
   <div class={`px-[8px] py-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between hover:bg-[#F2F2F4] ${isSelected ? 'bg-[#F2F2F4]' : ''}`}>
     <div class="flex items-center gap-x-[10px]">
       <div class="w-4 h-4 flex items-center justify-center">
-        <Dot/>
+        <Dot class="stroke-[5]"/>
       </div>
-      <p class="prose font-poppins poppins text-base font-semibold leading-none">{name}</p>
+      <p class="poppins text-base font-medium leading-[11px]">{name}</p>
     </div>
   </div>
 );
@@ -52,12 +52,12 @@ const Plan = ({ name, isSelected }) => (
  * @returns {JSX.Element} PlanEdit component
  */
 const PlanEdit = ({name, onEdit, planId}) => (
-  <div class="px-[8px] py-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between hover:bg-gray-100 group">
+  <div class="py-[8px] px-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between hover:bg-gray-100 group">
     <div class="flex items-center gap-x-[10px]">
       <div class="w-4 h-4 flex items-center justify-center">
-        <Dot size={16}/>
+        <Dot class="stroke-[5]" size={16}/>
       </div>
-      <p class="prose font-poppins poppins text-base font-semibold leading-none">{name}</p>
+      <p class="poppins text-base font-medium !leading-[11px]">{name}</p>
     </div>
     <div class="w-5 h-5 flex items-center justify-center invisible group-hover:visible">
       <button
@@ -80,12 +80,12 @@ const PlanEdit = ({name, onEdit, planId}) => (
  * @returns {JSX.Element} PlanArchived component
  */
 const PlanArchived = ({ name }) => (
-  <div class="px-[8px] py-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between">
+  <div class="py-[8px] px-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between">
     <div class="flex items-center gap-x-[10px]">
       <div class="w-4 h-4 flex items-center justify-center">
-        <Dot size={16}/>
+        <Dot class="stroke-[5]" size={16}/>
       </div>
-      <p class="prose italic font-poppins poppins text-base leading-none">{name}</p>
+      <p class="poppins text-base font-medium !leading-[11px]">{name}</p>
     </div>
     <div class="w-5 h-5 flex items-center justify-center">
       <FolderSync size={20} />
