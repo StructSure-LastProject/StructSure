@@ -8,7 +8,7 @@ import StructSure from '../components/Structure';
 function Home() {
 
     return (
-        <div class="p-25px bg-gray-100 h-screen">
+        <div class="p-25px bg-lightgray min-h-screen">
             <Header />
             <StructSure />
         </div>

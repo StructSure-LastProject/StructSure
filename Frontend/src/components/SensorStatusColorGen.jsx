@@ -7,16 +7,16 @@ const getSensorStatusColor = (state) => {
     let colorsClasses = "";
     switch(state) {
         case "OK":
-            colorsClasses = "bg-[#25B61F] border-green-200";
+            colorsClasses = "bg-[#25B51F] border-[#C8ECC7]";
             break;
         case "NOK":
-            colorsClasses = "bg-[#F13327] border-red-200";
+            colorsClasses = "bg-[#F13327] border-[#FBCCC9]";
             break;
         case "UNKNOWN":
-            colorsClasses = "bg-[#6A6A6A] border-grey-200";
+            colorsClasses = "bg-[#6A6A6A] border-[#DADADA]";
             break;
         case "DEFECTIVE":
-            colorsClasses = "bg-[#F19327] border-yellow-200";
+            colorsClasses = "bg-[#F19327] border-[#FBE4C9]";
             break;
         default:
             break;

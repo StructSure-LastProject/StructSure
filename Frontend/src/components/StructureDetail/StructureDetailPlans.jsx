@@ -137,7 +137,7 @@ function StructureDetailPlans(props) {
             <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
                 <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5 max-h-[350px] lg:max-h-[436px]">
                     <div class="flex items-center justify-between">
-                        <p class="prose font-poppins title">Plans</p>
+                        <p class="title">Plans</p>
                         <Show when={isAuthorized()}>
                             <button
                             title="Ajouter un plan"

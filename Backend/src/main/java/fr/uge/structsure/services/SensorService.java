@@ -11,16 +11,9 @@ import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.SensorRepositoryCriteriaQuery;
 import fr.uge.structsure.repositories.StructureRepository;
-import fr.uge.structsure.utils.StateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
 
@@ -127,7 +120,7 @@ public class SensorService {
         if (request.measureChip().equals(request.controlChip())) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_ARE_IDENTICAL);
         }
-        var structure = structureRepository.findById(request.structureId()).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        var structure = structureRepository.findById(request.structureId()).orElseThrow(() -> new TraitementException(Error.SENSOR_STRUCTURE_NOT_FOUND));
         checkState(structure);
         if (sensorRepository.chipTagAlreadyExists(request.controlChip())) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
@@ -162,7 +155,7 @@ public class SensorService {
      * @throws TraitementException if the structure is archived
      */
     private void checkState(Structure structure) throws TraitementException {
-        if (structure.getArchived()) {
+        if (Boolean.TRUE.equals(structure.getArchived())) {
             throw new TraitementException(Error.PLAN_IS_ARCHIVED);
         }
     }

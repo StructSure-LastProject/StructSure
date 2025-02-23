@@ -67,20 +67,18 @@ function Login() {
     
 
     return (
-        <div class="bg-gray-100 h-screen">
+        <div class="bg-lightgray min-h-screen">
             <div class="p-25px mb-35px">
                 <div class="flex justify-center">
                     <img src={logo} class="w-236px" alt="Vite logo" />
                 </div>
             </div>
             <div class="px-25px flex justify-center">
-                <form class="bg-white w-500px h-394px flex flex-col gap-y-25px pr-5 pl-5 rounded-20px"
+                <form class="bg-white w-500px flex flex-col gap-y-25px px-[20px] py-[15px] rounded-20px"
                 onSubmit={handlSubmit}>
                     <div class="flex flex-col items-center">
-                        <h1 class="text-2xl font-bold text-center py-0.5">Connexion</h1>
-                        <div class="w-276px">
-                            <p class="text-sm text-center text-gray-500">Renseignez vos identifiants StructSure pour accéder à l'application.</p>
-                        </div>
+                        <h1 class="title text-center">Connexion</h1>
+                        <p class="w-276px normal text-center opacity-50">Renseignez vos identifiants StructSure pour accéder à l'application.</p>
                     </div>
 
                     <div>
@@ -88,31 +86,31 @@ function Login() {
                     </div>
 
                     <div class="flex flex-col gap-y-25px">
-                        <div class="flex flex-col justify-start">
-                            <p class="text-sm text-gray-700">Identifiant</p>
+                        <div class="flex flex-col gap-[5px] justify-start">
+                            <p class="normal opacity-75">Identifiant</p>
                             <input 
-                                id="Identifiant" 
+                                id="Login" 
                                 type="text" 
                                 placeholder="votre identifiant" 
-                                class="w-full pb-2 pt-2 pl-4 pr-4 text-sm font-bold rounded-50px bg-gray-200"
+                                class="w-full py-2 px-4 normal rounded-50px bg-lightgray"
                                 onChange={(e) => setLogin(e.target.value)}
                             />
                         </div>
                             
-                        <div class="flex flex-col justify-start">
-                            <p class="text-sm text-gray-700">Mot de passe</p>
+                        <div class="flex flex-col gap-[5px] justify-start">
+                            <p class="normal opacity-75">Mot de passe</p>
                             <input 
-                                id="Identifiant" 
+                                id="Password" 
                                 type="password" 
-                                placeholder="votre identifiant" 
-                                class="w-full pb-2 pt-2 pl-4 pr-4 text-sm font-bold rounded-50px bg-gray-200"
+                                placeholder="••••••••••••" 
+                                class="w-full py-2 px-4 normal rounded-50px  bg-lightgray"
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
                     </div>
                     <div class="flex justify-end">
-                        <button type="submit" class="w-156px bg-black flex justify-between rounded-50px pb-2 pt-2 pl-4 pr-4" >
-                            <p class="text-sm text-white">Se connecter</p>
+                        <button type="submit" class="bg-black flex justify-between gap-[10px] rounded-50px py-2 px-4" >
+                            <p class="accent text-white">Se connecter</p>
                             <img src={log_in} class="w-20px" alt="Login Icon" />
                         </button>
                     </div>

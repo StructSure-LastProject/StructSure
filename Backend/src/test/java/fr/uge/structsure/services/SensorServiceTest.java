@@ -12,16 +12,12 @@ import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.SensorRepositoryCriteriaQuery;
 import fr.uge.structsure.repositories.StructureRepository;
-import fr.uge.structsure.utils.OrderEnum;
-import fr.uge.structsure.utils.StateEnum;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,7 +86,7 @@ class SensorServiceTest {
     void testCreateSensor_SensorNameAlreadyExists() {
         BaseSensorDTO request = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
         when(structureRepository.findById(request.structureId())).thenReturn(Optional.of(new Structure()));
-        when(sensorRepository.findByName(request.name())).thenReturn(Optional.of(new Sensor()));
+        when(sensorRepository.nameAlreadyExists(request.name())).thenReturn(true);
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
         assertEquals(Error.SENSOR_NAME_ALREADY_EXISTS, exception.error);

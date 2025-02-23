@@ -6,13 +6,13 @@ import {X, Check} from 'lucide-solid';
  */
 const ModalHeader = ({ onClose, onSubmit, isSubmitting, title }) => (
   <div class="flex justify-between items-center mb-4">
-    <h2 class="text-lg font-semibold">{title}</h2>
+    <h2 class="title">{title}</h2>
     <div class="flex items-center space-x-2">
       <button
         type="button"
         onClick={onClose}
         disabled={isSubmitting}
-        class="bg-[#F2F2F4] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+        class="bg-lightgray rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
       >
         <X class="w-5 h-5" />
       </button>

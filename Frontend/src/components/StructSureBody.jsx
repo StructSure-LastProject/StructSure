@@ -83,8 +83,8 @@ function StructSureBody() {
                                 { getIconFromStateAndArchived(item.state, item.archived) }
                             </div>
                             <div class="flex flex-col">
-                                <h1 class="font-poppins poppins text-base font-semibold text-base">{item.name}</h1>
-                                <p class="font-poppins poppins text-base font-normal text-sm text-[#181818]/50">{item.numberOfSensors} capteurs</p>
+                                <h1 class="subtitle">{item.name}</h1>
+                                <p class="normal opacity-50">{item.numberOfSensors} capteurs</p>
                             </div>
                         </div>
                     </A>

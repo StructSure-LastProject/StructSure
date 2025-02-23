@@ -4,7 +4,7 @@
  * @param {string} props.message - The message to display
  */
 const ErrorMessage = ({ message }) => (
-  <div class="mb-4 text-[#F13327] text-sm font-medium">
+  <div class="mb-4 text-red normal">
     {message}
   </div>
 );
