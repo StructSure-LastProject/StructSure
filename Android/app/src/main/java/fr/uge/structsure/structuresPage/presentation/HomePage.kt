@@ -34,7 +34,7 @@ fun HomePage(
         navController = navController,
         bottomBar = {
             Box (Modifier.systemBarsPadding().padding(horizontal = 20.dp, vertical = 15.dp)) {
-                BluetoothButton(connexionCS108)
+                BluetoothButton(connexionCS108, true)
             }
         }
     ) {
