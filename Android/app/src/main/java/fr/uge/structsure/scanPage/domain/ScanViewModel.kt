@@ -97,8 +97,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      * the sensors if the given id is not the same as the saved one.
      * @param context used to load the image of the plan if changed
      * @param structureId the id of the structure in use
+     * @param scanId the id of the uncompleted scan to continue
      */
-    fun setStructure(context: Context, structureId: Long) {
+    fun setStructure(structureId: Long, scanId: Long? = null) {
         if (this.structureId == structureId) return
         this.structureId = structureId
         this.activeScanId = null
@@ -116,6 +117,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             sensorStateCounts.postValue(stateCounts)
             sensorCache.insertSensors(sensors)
             planViewModel.loadPlans(context, structureId)
+            if (scanId != null) continueExistingScan(scanId)
+            else scanDao.getScanByStructure(structureId)?.let { continueExistingScan(it.id) }
         }
     }
 
@@ -257,6 +260,32 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
         refreshSensorStates()
         updateSensorStateCounts()
+    }
+
+    /**
+     * Same function as [createNewScan] but for the special case of
+     * continuing an existing scan (for example after the app crashed)
+     * @param scanId the id of the scan to continue
+     */
+    private fun continueExistingScan(scanId: Long) {
+        currentScanState.postValue(ScanState.PAUSED)
+        alertMessages.postValue(null)
+
+        if (activeScanId != null) return // already created
+        activeScanId = scanId
+        this.structureId = scanDao.getScanById(scanId).structureId
+        refreshSensorStates()
+        updateSensorStateCounts()
+        resultDao.getResultsByScan(scanId).forEach {
+            sensorCache.setSensorState(it.controlChip, it.state)
+        }
+
+        if (!Cs108Connector.isReady) {
+            sensorMessages.postValue("Interrogateur non connecté")
+            return
+        }
+
+        cs108Scanner.start()
     }
 
     /**

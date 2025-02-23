@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun ConnexionCard(navController: NavController, accountDao: AccountDao,  structureViewModel: StructureViewModel) {
+fun ConnexionCard(navController: NavController, backRoute: String, accountDao: AccountDao, structureViewModel: StructureViewModel) {
     Page(navController = navController) {
         Column(
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
@@ -106,7 +106,7 @@ fun ConnexionCard(navController: NavController, accountDao: AccountDao,  structu
                     coroutineScope.launch {
                         try {
                             // Assuming auth is a suspend function
-                            val result = auth(login, password, accountDao, navController, structureViewModel)
+                            val result = auth(login, password, accountDao, navController, backRoute, structureViewModel)
                             if (result.isEmpty()) {
                                 // Handle successful authentication (e.g., navigate)
                             } else {

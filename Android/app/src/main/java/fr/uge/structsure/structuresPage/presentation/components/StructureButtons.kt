@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
+import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.domain.StructureWithState
 import fr.uge.structsure.ui.theme.Black
@@ -84,10 +85,7 @@ fun PlaySupButton(
             color = Black,
             background = LightGray,
             onClick = {
-                navController.navigate("ScanPage?structureId=${structure.id}") {
-                    popUpTo(0) { inclusive = true } // Prevent going back
-                    launchSingleTop = true
-                }
+                navController.navigateNoReturn("ScanPage?structureId=${structure.id}")
             }
         )
         Button(

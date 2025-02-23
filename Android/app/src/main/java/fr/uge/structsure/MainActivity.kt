@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -50,10 +51,10 @@ class MainActivity : ComponentActivity() {
         val navigateToLogin = MutableLiveData<Boolean>()
         lateinit var db: AppDatabase
             private set
-    }
 
-    /** Name of the login page to avoid string duplication */
-    private val connexionPage = "ConnexionPage"
+        /** Name of the home page to avoid string duplication */
+        const val HOME_PAGE = "HomePage"
+    }
 
     private lateinit var structureViewModel: StructureViewModel
 
@@ -76,43 +77,21 @@ class MainActivity : ComponentActivity() {
         csLibrary4A = Cs108Library4A(this, TextView(this))
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(bluetoothAdapter, filter)
-
         requestPermissions()
 
         setContent {
             SetDynamicStatusBar()
             val navController = rememberNavController()
-            val connexionCS108 = Cs108Connector(applicationContext)
-            connexionCS108.onBleConnected { success ->
-                runOnUiThread {
-                    if (!success) Toast.makeText(
-                        applicationContext,
-                        "Echec d'appairage Bluetooth",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-            connexionCS108.onReady {
-                runOnUiThread {
-                    Toast.makeText(
-                        applicationContext,
-                        "Interrogateur inititialisé!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
+            val connexionCS108 = setUpCs108Connection()
             navigateToLogin.observeAsState(false).value.let {
                 if (it) {
-                    navController.navigate(connexionPage)
+                    navController.requestLogin()
                     navigateToLogin.value = false
                 }
             }
 
-            val homePage =
-                if (RetrofitInstance.isInitialized() && accountDao.get()?.token != null) "HomePage" else connexionPage
-            NavHost(navController = navController, startDestination = homePage) {
-                composable("HomePage") {
-                    scanViewModel.setStructure(applicationContext, -1)
+            NavHost(navController = navController, startDestination = getStartPage(scanViewModel)) {
+                composable(HOME_PAGE) {
                     HomePage(connexionCS108, navController, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
@@ -122,11 +101,11 @@ class MainActivity : ComponentActivity() {
                     ScanPage(applicationContext, scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
-                composable(connexionPage) {
-                    ConnexionCard(navController, accountDao, structureViewModel)
+                composable("LoginPage?backRoute={backRoute}") { backStackEntry ->
+                    val route = backStackEntry.arguments?.getString("backRoute")?:HOME_PAGE
+                    ConnexionCard(navController, route, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
-                composable("ScanPage") { /*ScanPage(navController)*/ }
                 composable("Alerte?state={state}&name={name}&lastState={lastState}") { backStackEntry ->
                     val state = backStackEntry.arguments?.getString("state")?.toBoolean() ?: true
                     val name = backStackEntry.arguments?.getString("name").orEmpty()
@@ -182,6 +161,74 @@ class MainActivity : ComponentActivity() {
                 )
             )
         }
+    }
+
+    /**
+     * Alias to display a toast with short duration
+     * @param text text to display in the toast
+     */
+    private fun toastShort(text: String) = Toast.makeText(applicationContext, text, Toast.LENGTH_SHORT).show()
+
+    /**
+     * Creates a new connector and initializes it with connection and
+     * ready callbacks
+     * @return the initialized connector
+     */
+    private fun setUpCs108Connection(): Cs108Connector {
+        val cs108Connection = Cs108Connector(applicationContext)
+        cs108Connection.onBleConnected { success ->
+            runOnUiThread {
+                if (!success) toastShort("Echec d'appairage Bluetooth")
+            }
+        }
+        cs108Connection.onReady {
+            runOnUiThread { toastShort("Interrogateur inititialisé!") }
+        }
+        return cs108Connection
+    }
+
+    /**
+     * Calculates the first page to display to the user when it opens
+     * the app. Can be the homepage, connection page or even scan page
+     * if a scan is on-going.
+     * @return the route to the start page
+     */
+    private fun getStartPage(scanViewModel: ScanViewModel): String {
+        if (!RetrofitInstance.isInitialized()) {
+            return "LoginPage?backRoute=$HOME_PAGE" // URL not configured yet
+        }
+        val unfinished = db.scanDao().getUnfinishedScan()
+        if (unfinished != null) {
+            scanViewModel.setStructure(unfinished.structureId, unfinished.id)
+            return "ScanPage?structureId=${unfinished.structureId}"
+        } else if (db.accountDao().get()?.token == null) {
+            return "LoginPage?backRoute=$HOME_PAGE" // User not logged in
+        }
+        return HOME_PAGE
+
+    }
+}
+
+/**
+ * Navigates to the given route and clear the back stack to prevent
+ * from going back with the device back button.
+ * @param route the page to navigate to
+ */
+fun NavController.navigateNoReturn(route: String) {
+    navigate(route) {
+        popUpTo(0) { inclusive = true } // Prevent going back
+        launchSingleTop = true
+    }
+}
+
+/**
+ * Navigates to the login page, preventing from going back and setting
+ * the current page as the next page to display after login success.
+ */
+fun NavController.requestLogin() {
+    navigate("LoginPage?backRoute=${currentBackStackEntry?.destination?.route?:MainActivity.HOME_PAGE}") {
+        popUpTo(0) { inclusive = true } // Prevent going back
+        launchSingleTop = true
     }
 }
 

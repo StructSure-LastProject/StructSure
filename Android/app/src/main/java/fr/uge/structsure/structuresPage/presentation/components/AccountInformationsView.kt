@@ -20,6 +20,7 @@ import androidx.navigation.NavController
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.connexionPage.data.AccountDao
+import fr.uge.structsure.requestLogin
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.White
 
@@ -44,7 +45,7 @@ fun AccountInformationsView(dao: AccountDao, navController: NavController) {
                     description = "Log out button that disconnect users who click on it.",
                     onClick = {
                         dao.disconnect(dao.get()!!.login)
-                        navController.navigate("ConnexionPage")
+                        navController.requestLogin()
                     }
                 )
             }

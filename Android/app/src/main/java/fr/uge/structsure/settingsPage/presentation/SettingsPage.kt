@@ -2,7 +2,11 @@ package fr.uge.structsure.settingsPage.presentation
 
 import android.util.Patterns
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RangeSlider
@@ -27,6 +31,7 @@ import fr.uge.structsure.MainActivity
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.components.InputText
 import fr.uge.structsure.components.Page
+import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
@@ -136,7 +141,7 @@ fun SettingsPage(navController: NavController) {
                             PreferencesManager.clearServerUrl(context)
                             RetrofitInstance.init(serverAddress)
                             errorMessage = ""
-                            navController.navigate("ConnexionPage")
+                            navController.navigateNoReturn("LoginPage")
                         } else {
                             errorMessage = "L'adresse du serveur n'a pas changé. Vous êtes déjà connecté."
                         }
