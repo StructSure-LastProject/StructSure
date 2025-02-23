@@ -84,7 +84,10 @@ fun PlaySupButton(
             color = Black,
             background = LightGray,
             onClick = {
-                navController.navigate("ScanPage?structureId=${structure.id}")
+                navController.navigate("ScanPage?structureId=${structure.id}") {
+                    popUpTo(0) { inclusive = true } // Prevent going back
+                    launchSingleTop = true
+                }
             }
         )
         Button(

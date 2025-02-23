@@ -70,7 +70,10 @@ fun ToolBar(
     ) {
         // Button Undo
         if (currentState == ScanState.NOT_STARTED) {
-            BigButton({ navController.navigate("HomePage") }) {
+            BigButton({ navController.navigate("HomePage") {
+                popUpTo(0) { inclusive = true } // Prevent going back
+                launchSingleTop = true
+            } }) {
                 Image(
                     painter = painterResource(R.drawable.undo),
                     contentDescription = "Back",
