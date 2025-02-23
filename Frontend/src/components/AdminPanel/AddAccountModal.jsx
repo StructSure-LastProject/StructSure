@@ -112,7 +112,7 @@ const AddAccountModal = ({ closeModal }) => {
                         Créer un Compte
                     </h1>
                     <div class="flex flex-wrap gap-[10px]">
-                        <button onClick={closeModal} class="flex justify-center items-center w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-[50px] bg-[#F2F2F4]">
+                        <button onClick={closeModal} class="flex justify-center items-center w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-[50px] normal bg-lightgray">
                             <X />
                         </button>
                     </div>
@@ -120,51 +120,51 @@ const AddAccountModal = ({ closeModal }) => {
 
                 <div>
                     {errorModal().map(err => (
-                        <p class="text-[#F13327] font-poppins HeadLineMedium">{err}</p>
+                        <p class="text-[#F13327] font-poppins normal">{err}</p>
                     ))}
                     {
-                        <p class="text-[#F13327] font-poppins HeadLineMedium">{apiError()}</p>
+                        <p class="text-[#F13327] font-poppins normal">{apiError()}</p>
                     }
                 </div>
-                <form>
-                    <div className="flex flex-wrap gap-[15px] lg:gap-[50px] text-[#181818] font-poppins">
+                <form class="flex flex-col gap-5">
+                    <div className="flex flex-wrap gap-[15px] lg:gap-[50px] normal">
                         <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="lastname" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Nom*</label>
+                                <label htmlFor="lastname" className="normal opacity-50">Nom*</label>
                                 <input
                                     id="lastname"
                                     required
                                     value={lastName()}
                                     onChange={(e) => setLastName(e.target.value)} 
                                     type="text"
-                                    className="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]"
+                                    className="normal bg-lightgray w-full rounded-[10px] py-[8px] px-[16px]"
                                     minLength="1"
                                     maxLength="64"
                                 />
 
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="firstname" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Prénom*</label>
+                                <label htmlFor="firstname" className="normal opacity-50">Prénom*</label>
                                 <input
                                     id="firstname"
                                     required
                                     value={firstName()}
                                     onChange={(e) => setFirstName(e.target.value)} 
                                     type="text"
-                                    className="bg-[#F2F2F4] w-full rounded-[10px] py-[8px] px-[16px]"
+                                    className="normal bg-lightgray w-full rounded-[10px] py-[8px] px-[16px]"
                                     minLength="1"
                                     maxLength="64"
                                 />
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="id" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Identifiant*</label>
+                                <label htmlFor="id" className="normal opacity-50">Identifiant*</label>
                                 <input
                                     id="id"
                                     required
                                     value={login()}
                                     onChange={(e) => setLogin(e.target.value)} 
                                     type="text"
-                                    className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
+                                    className="normal bg-lightgray w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
                                     minLength="1"
                                     maxLength="128"
                                 />
@@ -173,7 +173,7 @@ const AddAccountModal = ({ closeModal }) => {
 
                         <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="password" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Mot de passe*</label>
+                                <label htmlFor="password" className="normal opacity-50">Mot de passe*</label>
                                 <input
                                     id="password"
                                     required
@@ -181,13 +181,13 @@ const AddAccountModal = ({ closeModal }) => {
                                     onChange={(e) => setPassword(e.target.value)}
                                     type="password"
                                     placeholder="*******"
-                                    className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
+                                    className="normal bg-lightgray w-full h-[37px] rounded-[10px] py-[8px] px-[16px]"
                                     minLength="12"
                                     maxLength="64"
                                 />
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="role" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Role*</label>
+                                <label htmlFor="role" className="normal opacity-50">Role*</label>
                                 <div className="relative">
                                     <select
                                         id="role"
@@ -195,7 +195,7 @@ const AddAccountModal = ({ closeModal }) => {
                                         value={role()}
                                         onChange={(e) => setRole(e.target.value)}
                                         name="roles"
-                                        className="bg-[#F2F2F4] w-full h-[37px] rounded-[10px] px-[16px] appearance-none"
+                                        className="normal bg-lightgray w-full h-[37px] rounded-[10px] px-[16px] appearance-none"
                                     >
                                         {
                                             roles.map((roleItem, index) => (
@@ -210,22 +210,18 @@ const AddAccountModal = ({ closeModal }) => {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                            <label htmlFor="accountState" className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">Etat*</label>
+                            <label htmlFor="accountState" className="normal opacity-50">Etat*</label>
                                 <div className="flex items-center w-full h-[37px] rounded-[10px] py-[8px] px-[16px] gap-[10px]">
-                                    <input
-                                        id="accountState"
-                                        name="accountState"
-                                        checked={accountState()}
-                                        onChange={(e) => setAccountState(e.target.checked)} 
-                                        type="checkbox"
-                                        className="w-[14px] h-auto bg-white border-2"
-                                    />
-                                    <span 
-                                        onClick={() => setAccountState(!accountState())} 
-                                        className="font-poppins HeadLineMedium cursor-pointer"
-                                    >
+                                    <label className="normal flex gap-[10px] select-none">
+                                        <input
+                                            id="accountState"
+                                            checked={accountState()}
+                                            onChange={(e) => setAccountState(e.target.checked)}
+                                            type="checkbox"
+                                            className="normal bg-lightgray border-2 accent-black"
+                                        />
                                         Compte activé
-                                    </span>
+                                    </label> 
                                 </div>
                             </div>
                         </div>
@@ -233,8 +229,8 @@ const AddAccountModal = ({ closeModal }) => {
                     </div>
                 
 
-                {<div class="flex flex-col w-[100%] h-auto gap-[5px] mt-[15px]">
-                    <p class="text-[#181818] opacity-[75%]">Ouvrages autorisés</p>
+                {<div class="flex flex-col w-[100%] h-auto gap-[5px]">
+                    <p class="normal opacity-50">Ouvrages autorisés</p>
                     <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
                         <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
                         <StructureNameCard structureName={"Pont de Tournon-sur-Rhône"} isChoosed={true}/>
@@ -248,9 +244,9 @@ const AddAccountModal = ({ closeModal }) => {
                     </div>
                 </div>
                 }
-                <div class="md:flex md:flex-row-reverse mt-[10px]">
-                    <button type="submit" onClick={handleSubmit}  class="w-[72px] h-auto rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-[#181818]">
-                        <p class="w-[40px] h-auto text-white font-poppins font-[600] text-[14px] leading-[21px] tracking-[0%]">Créer</p>
+                <div class="md:flex md:flex-row-reverse">
+                    <button type="submit" onClick={handleSubmit}  class="rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-black">
+                        <p class="accent text-white">Créer</p>
                     </button>
                 </div>
                 </form>

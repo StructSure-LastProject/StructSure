@@ -57,7 +57,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
 
     const { fetchData, statusCode, error } = useFetch();
 
-    await fetchData(`/api/sensors`, {
+    await fetchData("/api/sensors", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

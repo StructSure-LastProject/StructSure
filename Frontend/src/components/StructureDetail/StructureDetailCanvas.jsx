@@ -527,37 +527,37 @@ function StructureDetailCanvas(props) {
                         <DrawClickedSensor colors={getColorFromSensor(clickExistingPoint())} />
                     </Show>
                     <div 
-                        class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] bg-white px-5 py-[15px] flex-col gap-y-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
+                        class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] flex flex-col gap-5  bg-white px-5 py-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
                         style={{
                             top: `${popupCanvasY()}px`,
                             left: `${popupCanvasX()}px`,
                         }}
                     >
                         <div class="w-full flex justify-between items-center">
-                            <h1 class="title poppins text-[25px] font-semibold">Ouvrages</h1>
+                            <h1 class="title">Ouvrages</h1>
                             <div class="flex gap-x-[10px]">
-                                <button class="bg-E9E9EB rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                    <Check color="black"/>
+                                <button class="bg-lightgray rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                                    <Check color="black" stroke-width="2.5" width="20px" height="20px"/>
                                 </button>
                                 <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                    <Trash2 color="red"/>
+                                    <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
                                 </button>
                             </div>
                         </div>
                         <div class="flex flex-col gap-y-[5px]">
-                            <p class="HeadLineMedium poppins font-normal">Capteur</p>
-                            <div class="bg-E9E9EB px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
-                                <input type="text" class="bg-E9E9EB font-poppins poppins text-[16px] font-semibold w-full">Capteur P</input>
+                            <p class="normal opacity-50">Capteur</p>
+                            <div class="bg-lightgray px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
+                                <input type="text" class="bg-transparent subtitle w-full">Capteur P</input>
                                 <button class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center">
                                     <ChevronDown color="black" />
                                 </button>
                             </div>
                             <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
-                                <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur PA</p>
-                                <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
-                                <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8S</p>
-                                <div class="w-full h-[1px] bg-[#F6F6F8]"></div>
-                                <p class="font-poppins poppins font-normal text-14px/[21px]">Capteur P8N</p>
+                                <p class="normal">Capteur PA</p>
+                                <div class="w-full h-[1px] bg-lightgray"></div>
+                                <p class="normal">Capteur P8S</p>
+                                <div class="w-full h-[1px] bg-lightgray"></div>
+                                <p class="normal">Capteur P8N</p>
                             </div>
                         </div>
                     </div>

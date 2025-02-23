@@ -4,8 +4,8 @@
  */
 const ModalField = ({ label, value, maxLength, onInput, placeholder }) => (
   <div>
-    <label class="block text-sm font-medium">
-      {label}
+    <label class="flex flex-col gap-[5px]">
+      <p class="normal opacity-75">{label}</p>
       <input
         type="text"
         maxlength={maxLength}
@@ -13,7 +13,7 @@ const ModalField = ({ label, value, maxLength, onInput, placeholder }) => (
         pattern="[a-zA-Z0-9]+"
         onInput={onInput}
         placeholder={placeholder}
-        class="mt-1 w-full px-3 py-2 border rounded-[10px]"
+        class="w-full px-[16px] py-[8px] bg-lightgray normal text-black rounded-[10px]"
       />
     </label>
   </div>

@@ -2,74 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --black: #181818;
+    --white: #FFFFFF;
+    --lightgray: #F2F2F4;
+    --red: #F13327;
+    --green: #25B61F;
+    --gray: #6A6A6A;
+    --orange: #F19327;
+}
+
 *:focus-visible {
     outline: none;
 }
 
-.title {
-    font-weight: 600;
-    font-size: 1.5625rem;
-    color: black;
+body {
+    color: var(--black);
 }
 
 .poppins {
+    font-family: 'Poppins';
     line-height: 24px;
     text-align: left;
     text-underline-position: from-font;
     text-decoration-skip-ink: none;
 }
 
+.title {
+    font-family: 'Poppins';
+    font-size: 1.5625rem;
+    font-weight: 600;
+}
+
+.subtitle {
+    font-family: 'Poppins';
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.accent {
+    font-family: 'Poppins';
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
 .normal {
-    font-size: 14px;
-    line-height: 21px;
-    text-align: left;
+    font-family: 'Poppins';
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
     text-underline-position: from-font;
     text-decoration-skip-ink: none;
 }
-
-
-.HeadLineMedium {
-    font-size: 14px;
-    line-height: 21px;
-    letter-spacing: 0%;
-}
-
 
 .bg-E9E9EB {
     background: #E9E9EB;
 }
 
-.font-1 {
-    color: black;
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 24px;
-}
-
 .user-role {
     font-weight: 600;
     font-size: 14px;
-    line-height: 21px;
-}
-
-.title-medium {
-    color: black;
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: 600;
-}
-
-.title-medium-name {
-    color: black;
-    font-size: 16px;
-    line-height: 16px;
-    font-weight: 600;
-}
-
-
-.HeadLineMedium {
-    font-size: 14px;
-    font-weight: 400;
     line-height: 21px;
 }
 
