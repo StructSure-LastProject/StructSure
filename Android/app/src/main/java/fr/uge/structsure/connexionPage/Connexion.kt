@@ -115,6 +115,7 @@ fun ConnexionCard(navController: NavController, backRoute: String, accountDao: A
                         } catch (e: Exception) {
                             errorMessage =
                                 "Une erreur est survenue: ${e.message}" // Set error message
+                            e.printStackTrace()
                         }
                     }
                 }
