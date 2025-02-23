@@ -100,7 +100,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         viewModelScope.launch(Dispatchers.IO) {
             val scannedSensors = resultDao.getAllResults()
             val stateCounts = SensorState.entries.associateWith { state ->
-                if (state == SensorState.UNKNOWN) sensorCache.size() - scannedSensors.size
+                if (state == SensorState.UNSCANNED) sensorCache.size() - scannedSensors.size
                 else scannedSensors.count { it.state == state.name }
             }
             sensorStateCounts.postValue(stateCounts)
@@ -163,7 +163,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             val sensors = sensorDao.getAllSensors(structureId)
             sensorsNotScanned.postValue(sensors)
             val stateCounts = SensorState.entries.associateWith { state ->
-                if (state == SensorState.UNKNOWN) sensors.size else 0
+                if (state == SensorState.UNSCANNED) sensors.size else 0
             }
             sensorStateCounts.postValue(stateCounts)
             sensorCache.insertSensors(sensors)
@@ -183,11 +183,18 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
             val updatedSensors = sensors.map { sensor ->
                 val result = scannedResults.find { it.id == sensor.sensorId }
-                sensor.copy(state = result?.state ?: "UNKNOWN")
+                sensor.copy(state = result?.state ?: sensor.state)
             }
 
             sensorsNotScanned.postValue(updatedSensors)
         }
+    }
+
+    /**
+     * Gets the previous state for a sensor
+     */
+    fun getPreviousState(sensorId: String): String {
+        return sensorCache.getPreviousState(sensorId)
     }
 
     /**

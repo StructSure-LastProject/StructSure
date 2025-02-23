@@ -141,7 +141,9 @@ private fun SensorPopUp(
     val planImagePath by planViewModel.planImagePath.observeAsState()
 
     val currentResults by scanViewModel.currentResults.observeAsState(initial = emptyList())
-    val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: "UNKNOWN"
+    val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: sensor.state
+
+    val lastState = scanViewModel.getPreviousState(sensor.sensorId)
 
     PopUp(onCancel) {
         Title(sensor.name, false) {
@@ -188,9 +190,9 @@ private fun SensorPopUp(
         SensorDetails(
             Black,
             "Etat courant:",
-            sensor.state,
+            currentState,
             "Dernier état:",
-            currentState
+            lastState
         )
 
         InputTextArea(

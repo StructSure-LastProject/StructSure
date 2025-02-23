@@ -122,8 +122,8 @@ class StructureRepository : ViewModel() {
                             sensor.name,
                             sensor.note,
                             sensor.installationDate,
-                            "", // TODO
                             sensor.plan,
+                            "Non scanné",
                             sensor.x,
                             sensor.y,
                             structure.id

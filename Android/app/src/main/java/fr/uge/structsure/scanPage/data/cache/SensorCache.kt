@@ -31,6 +31,19 @@ class SensorCache {
         }
     }
 
+
+    /**
+     * Gets the previous state of a sensor from the cache
+     * @param sensorId the ID of the sensor
+     * @return the previous state or the default state ("Non scanné") if not found
+     */
+    fun getPreviousState(sensorId: String): String {
+        synchronized(lock) {
+            val pair = sensorMap[sensorId]
+            return pair?.second ?: pair?.first?.state ?: pair?.first?.state!!
+        }
+    }
+
     /**
      * Finds a sensor by its chip ID.
      * Returns null if the sensor is not found.
