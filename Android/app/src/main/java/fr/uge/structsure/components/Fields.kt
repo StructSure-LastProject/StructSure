@@ -255,27 +255,35 @@ fun InputTextArea (
  */
 @Composable
 fun InputSearch(
-    modifier: Modifier = Modifier,
+    label: String? = null,
     value: String,
     placeholder: String = "",
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit = {}
 ) {
-    BasicTextField(
-        value = value,
-        onValueChange = onChange,
-        modifier = modifier.fillMaxWidth()
-            .height(40.dp)
-            .background(color = White, shape = RoundedCornerShape(50.dp))
-            .padding(horizontal = 16.dp, vertical = 9.dp),
-        enabled = true,
-        textStyle = typography.bodyLarge,
-        keyboardOptions = keyboardOptions,
-        singleLine = true,
-        decorationBox = { innerTextField -> // Placeholder
-            PlaceHolder(value, placeholder, innerTextField, R.drawable.search)
-        }
-    )
+    if (label != null) {
+        Input(Modifier, label, value, placeholder, false, onChange, false,
+            enabled = true,
+            decorations = { innerTextField -> PlaceHolder(value, placeholder, innerTextField, R.drawable.search) },
+            backgroundColor = White
+        )
+    } else {
+        BasicTextField(
+            value = value,
+            onValueChange = onChange,
+            modifier = Modifier.fillMaxWidth()
+                .height(40.dp)
+                .background(color = White, shape = RoundedCornerShape(50.dp))
+                .padding(start = 0.dp, end = 16.dp, top = 9.dp, bottom = 9.dp),
+            enabled = true,
+            textStyle = typography.bodyLarge,
+            keyboardOptions = keyboardOptions,
+            singleLine = true,
+            decorationBox = { innerTextField -> // Placeholder
+                PlaceHolder(value, placeholder, innerTextField, R.drawable.search)
+            }
+        )
+    }
 }
 
 @Composable
@@ -336,7 +344,7 @@ private fun PlaceHolder(
 ) {
     Row (
         Modifier.padding(
-            start = if (iconPrefix == null) 16.dp else 0.dp,
+            start = 16.dp,
             end = if (iconSuffix == null) 16.dp else 0.dp,
             top = if (iconPrefix == null && iconSuffix == null) 9.dp else 0.dp,
             bottom = if (iconPrefix == null && iconSuffix == null) 9.dp else 0.dp
