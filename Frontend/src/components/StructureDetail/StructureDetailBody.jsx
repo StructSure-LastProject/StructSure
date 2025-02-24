@@ -10,7 +10,7 @@ import useFetch from '../../hooks/useFetch';
 /**
  * Will fetch the sensors for the plan
  */
-export const planSensorsFetchRequest = async (structureId, planId = 1, setPlanSensors) => {
+export const planSensorsFetchRequest = async (structureId, setPlanSensors, planId = 1) => {
     const requestData = {
         method: "GET",
         headers: {
@@ -32,7 +32,7 @@ export const planSensorsFetchRequest = async (structureId, planId = 1, setPlanSe
 /**
  * Will fetch the list of the sensors of this structure
  */
-export const sensorsFetchRequest = async (structureId, filters = {}, setSensors) => {
+export const sensorsFetchRequest = async (structureId, setSensors, filters = {}) => {
     const { fetchData, statusCode, data, errorFetch } = useFetch();
 
     // Construire le body avec les filtres
@@ -97,8 +97,8 @@ function StructureDetailBody(props) {
 
     createEffect(() => {
         structureDetailsFetchRequest(props.structureId);
-        sensorsFetchRequest(props.structureId, {}, setSensors);
-        planSensorsFetchRequest(props.structureId,1,setPlanSensors);
+        sensorsFetchRequest(props.structureId, setSensors);
+        planSensorsFetchRequest(props.structureId, setPlanSensors);
     });
     
     return (
@@ -109,7 +109,7 @@ function StructureDetailBody(props) {
               structureId={props.structureId}
               planSensors={planSensors()}
               selectedPlanId={selectedPlanId}
-              setSelectedPlanId={selectedPlanId()}
+              setSelectedPlanId={setSelectedPlanId}
             />
             <StructureDetailRow structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} />
         </div>

@@ -50,6 +50,12 @@ public class PlanService {
         MediaType.IMAGE_PNG
     );
 
+    /**
+     * Constructor
+     * @param planRepository The plan repo
+     * @param structureService The structure service
+     * @param sensorService The sensor service
+     */
     @Autowired
     public PlanService(PlanRepository planRepository, StructureService structureService, SensorService sensorService) {
         this.planRepository = planRepository;

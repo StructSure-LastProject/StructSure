@@ -20,7 +20,7 @@ import plan_not_found from '/src/assets/plan_not_found.png';
  * @param {Function} setSensorName The setter function for the sensor name
  * @returns The panel header component
  */
-const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEditMode, handleSubmit, setSensorName, error}) => {
+const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEditMode, handleSubmit, setSensorName, validationError}) => {
 
   /**
    * Change edit mode and vice versa
@@ -29,7 +29,7 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
     if (editMode() && !handleSubmit()) {
       setEditMode(!editMode());
     }
-    if (editMode() && error() !== "") {
+    if (editMode() && validationError() !== "") {
       return;
     }
     setEditMode(!editMode());
@@ -99,6 +99,7 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
         <img
           class={"w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px] object-cover"} 
           src={plan_not_found} 
+          alt="plan not found"
         />
       }>
         <StructureDetailCanvas
@@ -159,7 +160,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
   const [comment, setComment] = createSignal(sensorDetails.note);
   const [editMode, setEditMode] = createSignal(false);
 
-  const [error, setError] = createSignal("");
+  const [validationError, setvalidationError] = createSignal("");
   
   /**
    * Handle the submit
@@ -167,16 +168,16 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
    */
   const handleSubmit = async () => {
     if (sensorName() === "") {
-      setError("Le nom du capteur est obligatoire");
+      setvalidationError("Le nom du capteur est obligatoire");
       return false;
     }
     if(!containsNonLetters(sensorName())){
-      setError("Le nom doit contenir uniquement des lettres.");
+      setvalidationError("Le nom doit contenir uniquement des lettres.");
       return false;
     }
     
     if (installationDate() === "") {
-      setError("La date d'installation du capteur est obligatoire");
+      setvalidationError("La date d'installation du capteur est obligatoire");
       return false;
     }
 
@@ -203,12 +204,12 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
     await fetchData("/api/sensors/edit", requestData);
 
     if (statusCode() === 200) {
-      setError("");
+      setvalidationError("");
       sensorsFetchRequest(structureId, {}, setSensors);
       closeSensorPanel();
       return true;
     }    
-    setError(error().errorData)
+    setvalidationError(error().errorData)
     return false;
   }
 
@@ -233,10 +234,10 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
           setEditMode={setEditMode}
           handleSubmit={handleSubmit}
           setSensorName={setSensorName}
-          error={error}
+          validationError={validationError}
         />
         {
-          error() && <p class="text-[#F13327] font-poppins HeadLineMedium">{error()}</p>
+          validationError() && <p class="text-[#F13327] font-poppins HeadLineMedium">{validationError()}</p>
         }
         <div class="overflow-auto flex flex-col gap-[25px] rounded-[18px]">
           <div class="lg:flex lg:flex-row lg:gap-[25px] flex flex-col gap-[25px]">
