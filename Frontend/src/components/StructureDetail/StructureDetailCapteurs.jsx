@@ -4,6 +4,7 @@ import SensorPanel from '../SensorPanel/SensorPanel';
 import getSensorStatusColor from "../SensorStatusColorGen"
 import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
 import SensorFilter from '../SensorFilter';
+import { Pagination } from '../Pagination.jsx';
 
 /**
  * Show the sensors part of the structure detail page
@@ -111,6 +112,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
                     )}
                 </For>
             </div>
+            <Pagination/>
             {
                 openSensorPanel() && (
                     <SensorPanel structureId={structureId} sensors={sensors} setSensors={setSensors} selectedPlanId={selectedPlanId} sensorDetails={clickedSensor()} closeSensorPanel={closeSensorPanelHandler} />
