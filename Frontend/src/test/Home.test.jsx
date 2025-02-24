@@ -29,7 +29,7 @@ describe('Home component', () => {
 
     // Assert that the root div has the expected classes
     expect(container.firstChild).toHaveClass('p-25px');
-    expect(container.firstChild).toHaveClass('bg-gray-100');
-    expect(container.firstChild).toHaveClass('h-screen');
+    expect(container.firstChild).toHaveClass('bg-lightgray');
+    expect(container.firstChild).toHaveClass('min-h-screen');
   });
 });
