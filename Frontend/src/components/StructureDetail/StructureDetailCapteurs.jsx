@@ -99,7 +99,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <For each={sensors()}>
                     {(sensor) => (
-                        <div class="cursor-pointer flex justify-between rounded-[50px] px-[25px] py-[10px] bg-white">    
+                        <div class="flex justify-between rounded-[50px] px-[25px] py-[10px] bg-white">    
                             <button class="flex gap-x-[15px] items-center" onClick={() => openSensorPanelHandler(sensor)} >
                                 <div class={`w-[16px] min-w-[16px] h-[16px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
                                 <p class="subtitle text-left w-full">{sensor.name}</p>

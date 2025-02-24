@@ -1,9 +1,8 @@
 import { Pencil, X, Check } from 'lucide-solid';
-import Header from '../Header';
 import getSensorStatusColor from "../SensorStatusColorGen";
 import { createResource, createSignal, Show } from 'solid-js';
 import SensorFieldComponent from './SensorFieldComponent';
-import { containsNonLetters } from '../../hooks/vaildateUserAccountForm';
+import { loginValidator } from '../../hooks/vaildateUserAccountForm';
 import StructureDetailCanvas from "../StructureDetail/StructureDetailCanvas"
 import useFetch from '../../hooks/useFetch';
 import {sensorsFetchRequest} from "../StructureDetail/StructureDetailBody"
@@ -94,7 +93,7 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
   
   return (
     <div class="lg:flex lg:flex-col lg:gap-[10px]">
-      <h1 class="font-poppins font-[600] text-[16px] leading-[24px] tracking-[0%] text-[#181818]">OA/Zone</h1>
+      <h1 class="font-poppins font-[600] text-[16px] leading-[24px] tracking-[0%] text-[#181818] pl-1">OA/Zone</h1>
       <Show when={image() !== null} fallback={
         <img
           class={"w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px] object-cover"} 
@@ -115,17 +114,12 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
 
 /**
  * The sensor comment section
- * @param {String} comment The comment
- * @param {Function} setComment The function to set the comment
- * @param {Boolean} editMode The mode
- * @param {String} minLength The minimum length of the input
- * @param {String} maxLength The maximum length of the input
- * @param {Boolean} isRequired The input is required or not
+ * @param {String} comment The comment200is required or not
  * @returns The component contains the comment of the sensor
  */
 const SensorCommentSection = ({
-  comment,
-  setComment, 
+  note,
+  setNote, 
   editMode,
   minLength, 
   maxLength,
@@ -134,8 +128,8 @@ const SensorCommentSection = ({
   return (
     <div class="flex flex-col gap-[5px] lg:gap-[10px]">
       <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">Note</p>
-      <textarea required={isRequired} minLength={minLength} maxLength={maxLength} disabled={!editMode()} onChange={(e) => setComment(e.target.value)} class="rounded-[18px] w-full px-[16px] py-[8px] flex gap-[10px] bg-[#F2F2F4] font-poppins font-[400] text-[14px] leading-[21px] text-[#181818]"
-        value={comment()}
+      <textarea required={isRequired} minLength={minLength} maxLength={maxLength} disabled={!editMode()} onChange={(e) => setNote(e.target.value)} class="rounded-[18px] w-full px-[16px] py-[8px] flex gap-[10px] bg-[#F2F2F4] font-poppins font-[400] text-[14px] leading-[21px] text-[#181818]"
+        value={note()}
       >
       </textarea>
     </div>
@@ -157,8 +151,9 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
 
   const [sensorName, setSensorName] = createSignal(sensorDetails.name);
   const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate.split('T')[0]);
-  const [comment, setComment] = createSignal(sensorDetails.note);
+  const [note, setNote] = createSignal(sensorDetails?.note);
   const [editMode, setEditMode] = createSignal(false);
+  
 
   const [validationError, setvalidationError] = createSignal("");
   
@@ -171,8 +166,8 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
       setvalidationError("Le nom du capteur est obligatoire");
       return false;
     }
-    if(!containsNonLetters(sensorName())){
-      setvalidationError("Le nom doit contenir uniquement des lettres.");
+    if(!loginValidator(sensorName())){
+      setvalidationError("Le nom doit contenir uniquement des lettres, des chiffres, des underscores et des @");
       return false;
     }
     
@@ -189,11 +184,11 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
       measureChip: sensorDetails.measureChip,
       name: sensorName(),
       installationDate: installationDate(),
-      comment: comment() === null ? "" : comment()
+      note: note() === null ? "" : note()
     }
 
     const requestData = {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -222,9 +217,6 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
   
   return (
     <div class="min-h-[100vh] bg-[#F2F2F403] backdrop-blur-[25px] z-[100] flex items-end justify-center align-middle w-[100vw] fixed top-0 left-0">
-      <div class="w-full p-[25px] fixed top-0 left-0 z-[150]">
-        <Header />
-      </div>
       <div class="max-w-[963px] max-h-[calc(100vh-7rem)] justify-center flex flex-col gap-[25px] w-[100%] rounded-t-[35px] p-[25px] lg:p-[50px] bg-[#FFFFFF] shadow-[0px_4px_100px_0px_rgba(151,151,167,0.50)] mx-auto">
         <PanelHeader 
           sensorName={sensorName} 
@@ -236,9 +228,9 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
           setSensorName={setSensorName}
           validationError={validationError}
         />
-        {
-          validationError() && <p class="text-[#F13327] font-poppins HeadLineMedium">{validationError()}</p>
-        }
+        <Show when={validationError() !== ""}>
+          <p class="text-[#F13327] font-poppins HeadLineMedium">{validationError()}</p>
+        </Show>
         <div class="overflow-auto flex flex-col gap-[25px] rounded-[18px]">
           <div class="lg:flex lg:flex-row lg:gap-[25px] flex flex-col gap-[25px]">
             <SensorPlan
@@ -248,8 +240,8 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
               structureId={structureId}
             />
             <SensorCommentSection 
-              comment={comment} 
-              setComment={setComment} 
+              note={note} 
+              setNote={setNote} 
               editMode={editMode}
               minLength={"0"}
               maxLength={"1000"}

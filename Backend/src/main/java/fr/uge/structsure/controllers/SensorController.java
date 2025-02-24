@@ -90,9 +90,8 @@ public class SensorController {
      * Edit a sensor
      * @return The edit sensor response DTO
      */
-    @PostMapping("/sensors/edit")
+    @PutMapping("/sensors/edit")
     public ResponseEntity<?> editSensor(@RequestBody EditSensorRequestDTO editSensorRequestDTO){
-        Objects.requireNonNull(editSensorRequestDTO);
         try {
             return ResponseEntity.ok(sensorService.editSensor(editSensorRequestDTO));
         } catch (TraitementException e){

@@ -13,7 +13,7 @@ public class EditSensorRequestDTO {
   private final String measureChip;
   private final String name;
   private final String installationDate;
-  private final String comment;
+  private final String note;
 
 
   /**
@@ -22,46 +22,49 @@ public class EditSensorRequestDTO {
    * @param controlChip The control chip
    * @param measureChip The measure chip
    * @param installationDate The installation date of the sensor
-   * @param comment The comment attached to the sensor
+   * @param note The note attached to the sensor
    * @throws TraitementException Custom exception
    */
-  public EditSensorRequestDTO(String controlChip, String measureChip, String name, String installationDate, String comment) throws TraitementException {
+  public EditSensorRequestDTO(String controlChip, String measureChip, String name, String installationDate, String note) throws TraitementException {
     if (controlChip == null || controlChip.isEmpty() || measureChip == null || measureChip.isEmpty()){
       throw new TraitementException(Error.SENSOR_CHIP_TAGS_IS_EMPTY);
     }
+    this.controlChip = controlChip;
+    this.measureChip = measureChip;
     if (name == null || name.isEmpty()){
       throw new TraitementException(Error.SENSOR_NAME_IS_EMPTY);
     }
+    if (name.length() > 32) {
+      throw new TraitementException(Error.SENSOR_NAME_EXCEED_LIMIT);
+    }
+    this.name = name;
     if (installationDate == null || installationDate.isEmpty()){
       throw new TraitementException(Error.SENSOR_INSTALLATION_DATE_IS_EMPTY);
     }
-    if (comment == null){
-      throw new TraitementException(Error.SENSOR_COMMENT_IS_EMPTY);
-    }
-    this.controlChip = controlChip;
-    this.measureChip = measureChip;
-    this.name = name;
     this.installationDate = installationDate;
-    this.comment = comment;
+    if (note != null && note.length() > 1000) {
+      throw new TraitementException(Error.SENSOR_COMMENT_EXCEED_LIMIT);
+    }
+    this.note = Objects.requireNonNullElse(note, "");
   }
 
-  public String getName() {
+  public String name() {
     return name;
   }
 
-  public String getInstallationDate() {
+  public String installationDate() {
     return installationDate;
   }
 
-  public String getComment() {
-    return comment;
+  public String note() {
+    return note;
   }
 
-  public String getControlChip() {
+  public String controlChip() {
     return controlChip;
   }
 
-  public String getMeasureChip() {
+  public String measureChip() {
     return measureChip;
   }
 }

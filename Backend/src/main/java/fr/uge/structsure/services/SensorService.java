@@ -218,27 +218,18 @@ public class SensorService {
      */
     public EditSensorResponseDTO editSensor(EditSensorRequestDTO editSensorRequestDTO) throws TraitementException {
         Objects.requireNonNull(editSensorRequestDTO);
-        var sensorOptional = sensorRepository.findByChips(editSensorRequestDTO.getControlChip(), editSensorRequestDTO.getMeasureChip());
-        if (sensorOptional.isEmpty()){
-            throw new TraitementException(Error.SENSOR_ID_NOT_FOUND);
+        var sensor = sensorRepository.findByChips(editSensorRequestDTO.controlChip(), editSensorRequestDTO.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_ID_NOT_FOUND));
+        if (!sensor.getName().equals(editSensorRequestDTO.name())){
+            if (sensorRepository.nameAlreadyExists(editSensorRequestDTO.name())) {
+                throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
+            }
+            sensor.setName(editSensorRequestDTO.name());
         }
-        if (editSensorRequestDTO.getName().length() > 32){
-            throw new TraitementException(Error.SENSOR_NAME_EXCEED_LIMIT);
-        }
-        if (editSensorRequestDTO.getComment().length() > 1000){
-            throw new TraitementException(Error.SENSOR_COMMENT_EXCEED_LIMIT);
-        }
-        var existingSensor = sensorRepository.findByName(editSensorRequestDTO.getName());
-        if (existingSensor.isPresent() && !existingSensor.get().getSensorId().equals(sensorOptional.get().getSensorId())){
-            throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
-        }
-        var sensor = sensorOptional.get();
-        sensor.setName(editSensorRequestDTO.getName());
+        sensor.setNote(editSensorRequestDTO.note());
         var formatter = DateTimeFormatter.ISO_LOCAL_DATE;
-        sensor.setInstallationDate(LocalDate.parse(editSensorRequestDTO.getInstallationDate(), formatter));
-        sensor.setNote(editSensorRequestDTO.getComment());
-        sensorRepository.save(sensor);
-        return new EditSensorResponseDTO(editSensorRequestDTO.getControlChip(), editSensorRequestDTO.getMeasureChip(), LocalDateTime.now().toString());
+        sensor.setInstallationDate(LocalDate.parse(editSensorRequestDTO.installationDate(), formatter));
+        var sensorSaved = sensorRepository.save(sensor);
+        return new EditSensorResponseDTO(sensorSaved.getSensorId().getControlChip(), sensorSaved.getSensorId().getMeasureChip(), LocalDateTime.now().toString());
     }
 
 
