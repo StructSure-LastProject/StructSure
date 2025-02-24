@@ -297,5 +297,4 @@ public class SensorService {
         sensorRepository.save(existingSensor);
         return new SensorPositionResponseDTO(request.controlChip(), request.measureChip());
     }
-
 }
