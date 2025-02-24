@@ -65,7 +65,6 @@ SensorRepository extends JpaRepository<Sensor, Long> {
     """)
     boolean nameAlreadyExists(String name);
 
-
     /**
      * Will find sensors of the structure
      * @param structure the structure
@@ -74,18 +73,14 @@ SensorRepository extends JpaRepository<Sensor, Long> {
     List<Sensor> findByStructure(Structure structure);
 
     /**
-     * Will find sensors prensent in a Plan
-     * @param plan the plan
+     * Will find sensors associated with a specific Plan
+     * @param planId the plan id
      * @return List<Sensor> list of the sensors
      */
     @Query("""
-    SELECT sensor
-    FROM Sensor sensor
-    JOIN Structure structure ON sensor.structure = structure
-    JOIN Plan plan ON plan.structure = structure
-    WHERE plan = :plan
+    SELECT s FROM Sensor s WHERE s.plan.id = :planId
     """)
-    List<Sensor> findByPlan(Plan plan);
+    List<Sensor> findByPlanId(Long planId);
 
     /**
      * Counts the number of sensors in the structure
@@ -100,7 +95,7 @@ SensorRepository extends JpaRepository<Sensor, Long> {
      * @return true if yes and false if not
      */
     @Query("""
-    SELECT COUNT(sensor.sensorId) > 0 
+    SELECT COUNT(sensor.sensorId) > 0
     FROM Sensor sensor
     JOIN Result result ON result.sensor = sensor
     WHERE sensor.structure = :structure
@@ -114,7 +109,7 @@ SensorRepository extends JpaRepository<Sensor, Long> {
      * @return true if yes and false if not
      */
     @Query("""
-        SELECT COUNT(sensor.sensorId) > 0 
+        SELECT COUNT(sensor.sensorId) > 0
         FROM Sensor sensor
         JOIN Result result ON result.sensor = sensor
         WHERE sensor.structure = :structure

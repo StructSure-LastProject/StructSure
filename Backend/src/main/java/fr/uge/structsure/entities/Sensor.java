@@ -33,7 +33,6 @@ public class Sensor {
     @JoinColumn(name = "structure_id", nullable = true)
     private Structure structure;
 
-
     private LocalDate installationDate;
 
     @ManyToOne
@@ -189,10 +188,6 @@ public class Sensor {
     }
 
     public Double getX() {
-        // todo default value to remove
-        if (Objects.isNull(x)) {
-            return 0.0;
-        }
         return x;
     }
 
@@ -201,10 +196,6 @@ public class Sensor {
     }
 
     public Double getY() {
-        // todo default value to remove
-        if (Objects.isNull(y)) {
-            return 0.0;
-        }
         return y;
     }
 
