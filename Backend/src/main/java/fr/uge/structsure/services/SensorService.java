@@ -137,11 +137,7 @@ public class SensorService {
                 request.measureChip(),
                 request.name(),
                 request.note() == null ? "": request.note(),
-                LocalDate.parse(request.installationDate(), formatter),
-                request.x(),
-                request.y(),
-                false,
-                structure.get());
+                structure);
         var saved = sensorRepository.save(sensor);
         return new AddSensorResponseDTO(saved.getSensorId().getControlChip(), saved.getSensorId().getMeasureChip());
     }

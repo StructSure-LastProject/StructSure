@@ -2,7 +2,6 @@ package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.sensors.BaseSensorDTO;
 import com.fasterxml.jackson.core.JsonParseException;
-import fr.uge.structsure.dto.sensors.AddSensorRequestDTO;
 import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
 import fr.uge.structsure.dto.sensors.EditSensorRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;

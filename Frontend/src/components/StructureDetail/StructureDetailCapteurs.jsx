@@ -1,7 +1,5 @@
 import { ArrowDownNarrowWide, Filter, Plus, Trash2 } from 'lucide-solid';
 import {createEffect, createSignal, For, Show} from 'solid-js';
-import { Plus, Trash2 } from 'lucide-solid';
-import { createSignal } from 'solid-js';
 import SensorPanel from '../SensorPanel/SensorPanel';
 import getSensorStatusColor from "../SensorStatusColorGen"
 import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";

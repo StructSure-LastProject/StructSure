@@ -41,7 +41,7 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
         <div class="w-[39px] h-[39px] flex items-center justify-center">
           <div class={`w-[20px] h-[20px] rounded-[50px] border-[3px] ${getSensorStatusColor(sensorState)}`}></div>
         </div>
-        <input class="font-poppins font-[600] max-w-[150px] text-[25px] leading-[37.5px] tracking-[0%] text-[#181818]"
+        <input class="font-poppins font-[600] max-w-[150px] lg:max-w-[714px] text-[25px] leading-[37.5px] tracking-[0%] text-[#181818]"
           type="text"
           value={sensorName()}
           onChange={(e) => setSensorName(e.target.value)}

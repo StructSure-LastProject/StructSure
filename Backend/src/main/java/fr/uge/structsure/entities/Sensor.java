@@ -76,7 +76,7 @@ public class Sensor {
     @SuppressWarnings("java:S107")
     public Sensor(
         SensorId sensorId, String name, String note, Structure structure,
-        LocalDateTime installationDate, Plan plan, Double x, Double y,
+        LocalDate installationDate, Plan plan, Double x, Double y,
         Boolean archived, Set<Result> results
     ) {
         this.sensorId = sensorId;
@@ -108,7 +108,7 @@ public class Sensor {
     @SuppressWarnings("java:S107")
     public Sensor(
         String controlChip, String measureChip, String name, String note,
-        Structure structure, LocalDateTime installationDate, Plan plan,
+        Structure structure, LocalDate installationDate, Plan plan,
         Double x, Double y, Boolean archived
     ) {
         Objects.requireNonNull(controlChip);
