@@ -1,5 +1,5 @@
 import { ChevronDown, SortAsc, SortDesc, MoveRight } from 'lucide-solid';
-import { createSignal } from 'solid-js';
+import { createEffect, createSignal } from 'solid-js';
 import SensorFieldComponent from "../components/SensorPanel/SensorFieldComponent";
 
 /**
@@ -10,12 +10,12 @@ import SensorFieldComponent from "../components/SensorPanel/SensorFieldComponent
  * @param {String} styles The tailwind css
  * @returns The drop down component
  */
-const CustomDropDown = ({dropDownTitle, dropDownValues , children, styles}) => {
+const CustomDropDown = ({dropDownTitle, dropDownValues , children, styles, setter}) => {
     return (
         <div class="flex flex-col gap-[5px] w-[100%] min-w-[140px]">
             <p className="font-poppins HeadLineMedium text-[#181818] opacity-[75%]">{dropDownTitle}</p>
             <div class="flex">
-                <select name="sort" id="sort" class={`bg-[#F2F2F4] w-[100%] rounded-l-[10px] px-[16px] py-[8px] appearance-none ${styles}`}>
+                <select onChange={(e) => setter(e.target.value)} name="sort" id="sort" class={`bg-[#F2F2F4] w-[100%] rounded-l-[10px] px-[16px] py-[8px] appearance-none ${styles}`}>
                     <For each={dropDownValues}>
                         {
                             item => <option value={item}>{item}</option>
@@ -40,8 +40,7 @@ const CustomDropDown = ({dropDownTitle, dropDownValues , children, styles}) => {
  * @param {Array} dropDownValues The array of drop down values
  * @returns The component for the sort filter field
  */
-const SortFilterField = ({dropDownValues}) => {
-    const [sortOrder, setSortOrder] = createSignal(false);
+const SortFilterField = ({dropDownValues, setOrderType, sortOrder, setSortOrder}) => {
 
     /**
      * Handle the sort button
@@ -50,11 +49,11 @@ const SortFilterField = ({dropDownValues}) => {
         setSortOrder(!sortOrder());
     }
 
-
     return (
         <CustomDropDown
             dropDownTitle={"Trier"}
-            dropDownValues={dropDownValues}  
+            dropDownValues={dropDownValues}
+            setter={setOrderType}  
             children={
                 <button onClick={handleSortOrder} class="flex rounded-r-[10px] justify-center items-center bg-[#181818] min-w-[56px]">
                     {sortOrder() ? <SortAsc color="white" /> : <SortDesc color="white"/>}
@@ -133,18 +132,35 @@ const CheckBoxComponent = ({description, isChecked, setIsChecked}) => {
  * @returns The component
  */
 const SensorFilter = () => {
-    const SORT_VALUES = ["Nom"];
-    const FILTER_VALUES = ["Tout"];
+    const SORT_VALUES = ["Tout", "Nom", "Etat", "Date d'installation"];
+    const FILTER_VALUES = ["Tout", "OK", "NOK", "Défaillant", "Non détecté"];
 
     const [isChecked, setIsChecked] = createSignal(false);
     const [startDate, setStartDate] = createSignal("");
     const [endDate, setEndDate] = createSignal("");
+    const [filter, setFilter] = createSignal(FILTER_VALUES[0]);
+    const [sortOrder, setSortOrder] = createSignal(true);
+    const [orderType, setOrderType] = createSignal(SORT_VALUES[0]);
+
+    createEffect(() => {
+        /*console.log(isChecked());
+        console.log(startDate());
+        console.log(endDate());
+        console.log(filter());
+        console.log(sortOrder());
+        console.log(orderType());*/
+        
+    });
+
 
     return (
         <div class="flex flex-col rounded-[20px] px-[20px] py-[15px] gap-[20px] bg-[#FFFFFF]">
             <div class="lg:flex lg:flex-row lg:gap-[20px] flex flex-col gap-[20px]">
                 <SortFilterField 
                     dropDownValues={SORT_VALUES}
+                    setOrderType={setOrderType}
+                    sortOrder={sortOrder}
+                    setSortOrder={setSortOrder}
                 />
                 <DateFilterField 
                     startDate={startDate}
@@ -158,6 +174,7 @@ const SensorFilter = () => {
                     dropDownTitle={"Filtrer"}
                     dropDownValues={FILTER_VALUES}
                     styles={"rounded-[10px]"}
+                    setter={setFilter}
                 />
                 <CheckBoxComponent 
                     description={"Capteurs du plan sélectionné uniquement"}
