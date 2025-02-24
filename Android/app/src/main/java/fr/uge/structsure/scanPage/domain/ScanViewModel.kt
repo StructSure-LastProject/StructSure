@@ -22,7 +22,6 @@ import java.sql.Timestamp
 /**
  * ViewModel responsible for managing the scanning process.
  * It interacts with the database, sensor cache, and scanner hardware to handle sensor states and user actions.
-
  */
 class ScanViewModel(context: Context, private val structureViewModel: StructureViewModel) : ViewModel() {
 
@@ -44,35 +43,40 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Repository to interact with the scan database */
     private val scanRepository: ScanRepository = ScanRepository(context)
 
-    // Scanner hardware for reading RFID chips
+    /** Scanner hardware for reading RFID chips */
     private val cs108Scanner =
         Cs108Scanner { chip ->
             onTagScanned(chip.id)
         }
 
-    // Current state of the scan process: NOT_STARTED, STARTED, PAUSED, STOPPED
+    /** Current state of the scan process: NOT_STARTED, STARTED, PAUSED, STOPPED */
     val currentScanState = MutableLiveData(ScanState.NOT_STARTED)
 
-    // ID of the currently active scan
+    /** ID of the currently active scan */
     private var activeScanId: Long? = null
 
-    // Sensor cache for managing sensor states in memory
+    /** Sensor cache for managing sensor states in memory */
     private val sensorCache = SensorCache()
 
-    // LiveData for displaying sensor messages which have a "OK" state
+    /** LiveData for displaying sensor messages which have a "OK" state */
     val sensorMessages = MutableLiveData<String>()
 
-    // LiveData for displaying sensor messages which have a "NOK" / "DEFECTIVE" state
+    /** LiveData for displaying sensor messages which have a "NOK" / "DEFECTIVE" state */
     val alertMessages = MutableLiveData<AlertInfo?>()
 
-    // Buffer to manage RFID chip scanning with timeout handling
+    /** Buffer to manage RFID chip scanning with timeout handling */
     private val rfidBuffer = TimedBuffer { _, chipId ->
         processChip(chipId)
     }
 
     val sensorsNotScanned = MutableLiveData<List<SensorDB>>()
 
+    /** Counts how many results are in a given state for the scan weather */
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
+
+    /** Sub-ViewModel that handle all plan selection/display logic */
+    val planViewModel = PlanViewModel(context, this)
+
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -88,18 +92,22 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
     }
 
-
     /**
      * Changes the structureId of the scanViewModel. This will reload
      * the sensors if the given id is not the same as the saved one.
+     * @param context used to load the image of the plan if changed
      * @param structureId the id of the structure in use
      */
-    fun setStructure(structureId: Long) {
+    fun setStructure(context: Context, structureId: Long) {
         if (this.structureId == structureId) return
         this.structureId = structureId
         this.activeScanId = null
-        sensorCache.clearCache()
+        if (structureId == -1L) {
+            planViewModel.reset()
+            return
+        }
         viewModelScope.launch(Dispatchers.IO) {
+            sensorCache.clearCache()
             val sensors = sensorDao.getAllSensors(structureId)
             sensorsNotScanned.postValue(sensors)
             val stateCounts = SensorState.entries.associateWith { state ->
@@ -107,6 +115,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             }
             sensorStateCounts.postValue(stateCounts)
             sensorCache.insertSensors(sensors)
+            planViewModel.loadPlans(context, structureId)
         }
     }
 
@@ -126,8 +135,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             sensorsNotScanned.postValue(updatedSensors)
         }
     }
-
-
 
     /**
      * Adds a scanned RFID chip ID to the buffer for processing.

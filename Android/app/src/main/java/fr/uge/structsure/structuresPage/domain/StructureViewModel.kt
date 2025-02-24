@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
+import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.structuresPage.data.StructureData
 import fr.uge.structsure.structuresPage.data.StructureRepository
@@ -38,23 +39,21 @@ class StructureViewModel(private val structureRepository: StructureRepository,
                          private val scanRepository: ScanRepository,
                          private val context: Context
 ): ViewModel() {
-
     companion object {
         private const val TAG = "StructureViewModel"
     }
 
     private val connectivityViewModel: ConnectivityViewModel = ConnectivityViewModel(context)
-    val getAllStructures = MutableLiveData<List<StructureData>?>()
+    val getAllStructures = MutableLiveData<List<StructureWithState>?>()
     private val uploadInProgress = MutableLiveData<Boolean>(false)
-    val structureStates = MutableLiveData<MutableMap<Long, StructureStates>>(mutableMapOf())
-
+    
     /**
      * Initializes the view model.
      */
     init {
         connectivityViewModel.isConnected.distinctUntilChanged().observeForever { isConnected ->
+            if (!RetrofitInstance.isInitialized()) return@observeForever // Server URL not configured yet
             if (isConnected) getAllStructures()
-
             if (!isConnected || uploadInProgress.value == true) return@observeForever
 
             tryUploadScans(isConnected, uploadInProgress.value ?: false, null)
@@ -66,7 +65,16 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      */
     fun getAllStructures() {
         viewModelScope.launch {
+            val structures = structureRepository.getAllStructures().map { StructureWithState(it) }
+            getAllStructures.postValue(structures)
+        }
+    }
+
+
+    fun findAll() {
+        viewModelScope.launch {
             val structures = structureRepository.getAllStructures()
+                .map { StructureWithState(it) }
             getAllStructures.postValue(structures)
         }
     }
@@ -75,19 +83,22 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      * Downloads the structure with the given data.
      * @param structureData the data of the structure to download
      */
-    fun downloadStructure(structureData: StructureData) {
+    fun download(structureData: StructureWithState){
         viewModelScope.launch {
-            structureRepository.downloadStructure(structureData, context)
+            structureData.state.value = StructureStates.DOWNLOADING
+            val success = structureRepository.downloadStructure(structureData.raw, context)
+            structureData.state.value = if (success) StructureStates.AVAILABLE else StructureStates.ONLINE
         }
     }
 
     /**
-     * Deletes the structure with the given id.
+     * Deletes the given structure
      * @param structureId the id of the structure to delete
      */
-    fun deleteStructure(structureId: Long) {
+    fun delete(structureId: Long){
         viewModelScope.launch {
             structureRepository.deleteStructure(structureId, context)
+            findAll() // forces refresh to adapt to connectivity state
         }
     }
 
@@ -97,9 +108,9 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      * @param state the state to set
      */
     private fun setStructureState(structureId: Long, state: StructureStates) {
-        val currentStates = structureStates.value ?: mutableMapOf()
-        currentStates[structureId] = state
-        structureStates.postValue(currentStates)
+        val structure = getAllStructures.value?.find { it.id == structureId }
+        if (structure == null) return
+        structure.state.postValue(state)
     }
 
     /**
@@ -123,7 +134,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
         scanRepository.submitScanResults(scanRequest)
             .onSuccess {
                 Log.i(TAG, "Scan #${scanId} successfully uploaded, removing data...")
-                deleteStructure(structureId)
+                delete(structureId)
                 setStructureState(structureId, StructureStates.ONLINE)
                 getAllStructures()
             }.onFailure { e ->
@@ -168,4 +179,18 @@ class StructureViewModel(private val structureRepository: StructureRepository,
             }
         }
     }
+}
+
+data class StructureWithState(
+    val id: Long = 0,
+    val name: String,
+    val state: MutableLiveData<StructureStates>,
+    val raw: StructureData
+) {
+    constructor(data: StructureData) : this(
+        data.id,
+        data.name,
+        MutableLiveData(if (data.downloaded) StructureStates.AVAILABLE else StructureStates.ONLINE),
+        data
+    )
 }

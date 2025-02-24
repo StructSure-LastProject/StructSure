@@ -51,7 +51,7 @@ class StructureRepository : ViewModel() {
                     emptyList()
                 }
             } catch (e: Exception) {
-                Log.d("ERROR API", e.message.toString())
+                Log.w(TAG, "Failed to get structures from API: ${e.message}")
                 emptyList()
             }
         }
@@ -72,20 +72,20 @@ class StructureRepository : ViewModel() {
                 val response = call.execute()  // This is a synchronous call
                 if (response.isSuccessful && response.body() != null) {
                     val result = response.body()!!
-                    Optional.of(StructureDetailsData(
-                        result.id,
-                        result.name,
-                        result.note,
-                        result.plans,
-                        result.sensors
-                    ))
-                } else {
-                    Optional.empty()
+                    return@withContext Optional.of(
+                        StructureDetailsData(
+                            result.id,
+                            result.name,
+                            result.note,
+                            result.plans,
+                            result.sensors
+                        )
+                    )
                 }
             } catch (e: Exception) {
-                Log.d("ERROR API", e.message.toString())
-                Optional.empty()
+                Log.w(TAG, "Failed to get details from API: ${e.message}")
             }
+            Optional.empty()
         }
     }
 
@@ -94,9 +94,9 @@ class StructureRepository : ViewModel() {
      * @param structure the structure to download
      * @param context the context needed for file operations
      */
-    suspend fun downloadStructure(structure: StructureData, context: Context) {
+    suspend fun downloadStructure(structure: StructureData, context: Context): Boolean {
         val optionalResult = getStructureDetailsFromApi(structure.id)
-        if(optionalResult.isPresent) {
+        if (optionalResult.isPresent) {
             val result = optionalResult.get()
             CoroutineScope(Dispatchers.IO).launch {
                 result.plans.forEach { plan ->
@@ -119,9 +119,10 @@ class StructureRepository : ViewModel() {
                             sensor.sensorId.controlChip,
                             sensor.sensorId.measureChip,
                             sensor.name,
-                            sensor.note ?: "",
+                            sensor.note,
                             sensor.installationDate,
                             "", // TODO
+                            sensor.plan,
                             sensor.x,
                             sensor.y,
                             structure.id
@@ -129,9 +130,11 @@ class StructureRepository : ViewModel() {
                     )
                 }
             }
+            structure.downloaded = true
+            structureDao.upsertStructure(structure)
+            return true
         }
-        structure.downloaded = true
-        structureDao.upsertStructure(structure)
+        return false
     }
 
     /**
@@ -142,26 +145,24 @@ class StructureRepository : ViewModel() {
      * @param context Context needed for file operations
      */
     fun deleteStructure(structureId: Long, context: Context) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val scan = scanDao.getScanByStructure(structureId)
-                scan?.let { resultDao.deleteResultsByScan(it.id) }
-                sensorDao.deleteSensorsByStructureId(structureId)
-                planDao.getPlanByStructureId(structureId).forEach { planId ->
-                    FileUtils.deletePlanImage(context, planId)
-                }
-                planDao.deletePlansByStructureId(structureId)
-                scanDao.deleteScanByStructure(structureId)
-                structureDao.deleteStructure(structureId)
-
-                Log.d(TAG, "Structure $structureId and all associated data deleted successfully")
-            } catch (e: SQLiteException) {
-                Log.e(TAG, "Database error while deleting structure $structureId", e)
-            } catch (e: IOException) {
-                Log.e(TAG, "I/O error while deleting structure files $structureId", e)
-            } catch (e: SecurityException) {
-                Log.e(TAG, "Security error while accessing files for structure $structureId", e)
+        try {
+            val scan = scanDao.getScanByStructure(structureId)
+            scan?.let { resultDao.deleteResultsByScan(it.id) }
+            sensorDao.deleteSensorsByStructureId(structureId)
+            planDao.getPlansByStructureId(structureId).forEach { plan ->
+                FileUtils.deletePlanImage(context, plan.id)
             }
+            planDao.deletePlansByStructureId(structureId)
+            scanDao.deleteScanByStructure(structureId)
+            structureDao.deleteStructure(structureId)
+
+            Log.d(TAG, "Structure $structureId and all associated data deleted successfully")
+        } catch (e: SQLiteException) {
+            Log.e(TAG, "Database error while deleting structure $structureId", e)
+        } catch (e: IOException) {
+            Log.e(TAG, "I/O error while deleting structure files $structureId", e)
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Security error while accessing files for structure $structureId", e)
         }
     }
 
@@ -171,7 +172,7 @@ class StructureRepository : ViewModel() {
      * @param planId the id of the plan
      * @return the path to the saved image file
      */
-    suspend fun downloadPlanImage(context: Context, planId: Long): String? {
+    private suspend fun downloadPlanImage(context: Context, planId: Long): String? {
         return withContext(Dispatchers.IO) {
             try {
                 val response = RetrofitInstance.structureApi.downloadPlanImage(planId)

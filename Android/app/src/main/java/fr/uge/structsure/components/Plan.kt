@@ -1,7 +1,6 @@
 package fr.uge.structsure.components
 
 import android.graphics.Bitmap
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -27,11 +26,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import fr.uge.structsure.scanPage.presentation.components.SensorState
+import fr.uge.structsure.structuresPage.data.SensorDB
 import kotlin.math.sqrt
 
 /**
@@ -40,7 +38,7 @@ import kotlin.math.sqrt
  * @param y the y coordinate of the point
  * @param state the state of the sensor at this point
  */
-data class Point(val x: Int, val y: Int, val state: SensorState)
+data class Point(val x: Double, val y: Double, val state: SensorState)
 
 /**
  * Composable that displays a plan image and allows to add points on it.
@@ -48,8 +46,13 @@ data class Point(val x: Int, val y: Int, val state: SensorState)
  * @param points the list of points to display on the image
  */
 @Composable
-fun Plan(image: Bitmap, points: MutableList<Point>) {
-    val painter = remember { BitmapPainter(image.asImageBitmap()) }
+fun Plan(
+    image: Bitmap,
+    points: List<SensorDB>,
+    addPoint: (Double, Double) -> Unit,
+    deletePoint: (SensorDB) -> Unit
+) {
+    val painter = remember(image) { BitmapPainter(image.asImageBitmap()) }
     val factor = remember(image) { Factor(painter.intrinsicSize) }
 
     var scale by remember { mutableFloatStateOf(factor.transform) }
@@ -63,11 +66,11 @@ fun Plan(image: Bitmap, points: MutableList<Point>) {
         Alignment.Center
     ) {
         Image(
-            painter = painter,
-            contentDescription = "Plan",
-            modifier = Modifier
+            painter,
+            "Plan",
+            Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) {  /* Zoom and pane the image*/
+                .pointerInput(Unit) { /* Zoom and pane the image*/
                     detectTransformGestures { centroid, pan, zoom, _ ->
                         val adjustment = centroid * (1 - zoom)
                         offset = (offset + pan) * zoom + adjustment
@@ -83,8 +86,8 @@ fun Plan(image: Bitmap, points: MutableList<Point>) {
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(
-                        onTap = { pos -> onTap(factor, size.toSize(), scale, offset, pos, points) },
-                        onLongPress = { pos -> onTap(factor, size.toSize(), scale, offset, pos, points, true) }
+                        onTap = { pos -> onTap(factor, size.toSize(), scale, offset, pos, points, addPoint, deletePoint) },
+                        onLongPress = { pos -> onTap(factor, size.toSize(), scale, offset, pos, points, addPoint, deletePoint, true) }
                     )
                 }
                 .graphicsLayer(
@@ -96,7 +99,7 @@ fun Plan(image: Bitmap, points: MutableList<Point>) {
             val transformPoint = factor.transformPoint(size)
             points.forEach {
                 val panned = imgToCanvas(offset, scale, size, transformPoint, factor.offset, it.x, it.y)
-                point(size, panned.x, panned.y, it.state)
+                point(size, panned.x, panned.y, SensorState.from(it.state))
             }
         }
     }
@@ -114,27 +117,26 @@ fun Plan(image: Bitmap, points: MutableList<Point>) {
  * @param points all the points contained in the plan
  * @param long true if the press was a long press, false otherwise
  */
-private fun onTap(factor: Factor, size: Size, scale: Float, offset: Offset, pos: Offset, points: MutableList<Point>, long: Boolean = false) {
+private fun onTap(
+    factor: Factor,
+    size: Size,
+    scale: Float,
+    offset: Offset,
+    pos: Offset,
+    points: List<SensorDB>,
+    addPoint: (Double, Double) -> Unit,
+    deletePoint: (SensorDB) -> Unit,
+    long: Boolean = false
+) {
     val range = (30 / factor.transform / scale).toInt()
     val imgPos = canvasToImg(offset, scale, size, factor.transformPoint(size), factor.offset, pos.x, pos.y)
-    val imgPoint = Point(imgPos.x.toInt(), imgPos.y.toInt(), SensorState.NOK)
-    for (i in 0 ..< points.size) {
-        if (imgPoint.inRange(points[i], range)) {
-            if (long) onPointLongPress(points, i) else onPointTap(points, i)
+    for (i in points.indices) {
+        if (points[i].inRange(imgPos.x.toDouble(), imgPos.y.toDouble(), range)) {
+            if (long) deletePoint(points[i]) else onPointTap(points, i)
             return
         }
     }
-    if (!long) onVoidTap(points, imgPos.x.toInt(), imgPos.y.toInt())
-}
-
-/**
- * Action to run when one point is pressed.
- * @param points the list of points that contains the pressed point
- * @param x coordinate of the click in the image
- * @param y coordinate of the click in the image
- */
-private fun onVoidTap(points: MutableList<Point>, x: Int, y: Int) {
-    points.add(Point(x, y, SensorState.DEFECTIVE))
+    if (!long) addPoint(imgPos.x.toDouble(), imgPos.y.toDouble())
 }
 
 /**
@@ -142,17 +144,8 @@ private fun onVoidTap(points: MutableList<Point>, x: Int, y: Int) {
  * @param points the list of points that contains the pressed point
  * @param i the index of the point in the list
  */
-private fun onPointTap(points: MutableList<Point>, i: Int) {
-    points[i] = Point(points[i].x, points[i].y, if (points[i].state == SensorState.NOK) SensorState.OK else SensorState.NOK)
-}
-
-/**
- * Action to run when one point is pressed for a long time
- * @param points the list of points that contains the pressed point
- * @param i the index of the point in the list
- */
-private fun onPointLongPress(points: MutableList<Point>, i: Int) {
-    points.removeAt(i)
+private fun onPointTap(points: List<SensorDB>, i: Int) {
+    println("TODO Point pressed: ${points[i]}")
 }
 
 /**
@@ -188,14 +181,14 @@ private fun DrawScope.point(size: Size, x: Float, y: Float, state: SensorState) 
  * @param x the initial x coordinate in the image
  * @param y the initial y coordinate in the image
  */
-private fun imgToCanvas(pan: Offset, zoom: Float, size: Size, transformPoint: Float, offsetFactor: Offset, x: Int, y: Int): Offset {
+private fun imgToCanvas(pan: Offset, zoom: Float, size: Size, transformPoint: Float, offsetFactor: Offset, x: Double, y: Double): Offset {
     val centerX = size.width / 2f
     val centerY = size.height / 2f
     val posX = x * transformPoint + size.width * offsetFactor.x
     val posY = y * transformPoint + size.height * offsetFactor.y
     return Offset(
-        (posX - centerX) * zoom + centerX + pan.x,
-        (posY - centerY) * zoom + centerY + pan.y
+        ((posX - centerX) * zoom + centerX + pan.x).toFloat(),
+        ((posY - centerY) * zoom + centerY + pan.y).toFloat()
     )
 }
 
@@ -223,19 +216,20 @@ private fun canvasToImg(pan: Offset, zoom: Float, size: Size, transformPoint: Fl
 
 /**
  * Checks if the given point is in range of this point or too far
- * @param point the point to try to reach
+ * @param x the x coordinate of the point to try to reach
+ * @param y the y coordinate of the point to try to reach
  * @param range the maximum allowed distance between points
  * @return true if in range, false otherwise
  */
-private fun Point.inRange(point: Point, range: Int): Boolean {
-    val dx = point.x - x
-    val dy = point.y - y
+private fun SensorDB.inRange(x: Double, y: Double, range: Int): Boolean {
+    val dx = this.x - x
+    val dy = this.y - y
 
     // Square range check (much faster)
     if (dx * dx + dy * dy > range * range) return false
 
     // Pythagore for exact values
-    return sqrt((dx * dx + dy * dy).toDouble()) <= range
+    return sqrt(dx * dx + dy * dy) <= range
 }
 
 /**

@@ -2,11 +2,15 @@ package fr.uge.structsure.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import org.hibernate.validator.internal.util.stereotypes.Lazy;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.io.IOException;
 import java.util.*;
 
 @Entity
@@ -30,10 +34,15 @@ public class Sensor {
 
     private LocalDateTime installationDate;
 
-    @Column(columnDefinition = "REAL")
+    @ManyToOne
+    @JoinColumn(name="plan_id")
+    @JsonSerialize(using = PlanIdSerializer.class)
+    private Plan plan;
+
+    @Column
     private Double x;
 
-    @Column(columnDefinition = "REAL")
+    @Column
     private Double y;
 
     private Boolean archived=false;
@@ -43,10 +52,6 @@ public class Sensor {
     @Lazy
     private Set<Result> results;
 
-    @JsonBackReference
-    @ManyToOne
-    @JoinColumn(name="plan_id")
-    private Plan plan;
 
     //constructeurs nécéssaire
     public Sensor(){
@@ -55,18 +60,23 @@ public class Sensor {
 
     /**
      * The constructor for the Sensor entity
-     * @param sensorId the sensor id
-     * @param name the name of the sensor
-     * @param note the note of the sensor
-     * @param structure the structure
-     * @param installationDate the installation date
-     * @param x the position x
-     * @param y the position y
+     * @param sensorId the control and measure chips Ids
+     * @param name the display name of the sensor
+     * @param note the note of the sensor (empty if not set)
+     * @param structure the structure that contains the sensor
+     * @param installationDate the installation date (optional)
+     * @param plan the plan where this sensor is placed (optional)
+     * @param x the x coordinate of the point in the plan (optional)
+     * @param y the y coordinate of the point in the plan (optional)
      * @param archived if its archived
      * @param results the results
-     * @param plan the plan
      */
-    public Sensor(SensorId sensorId, String name, String note, Structure structure, LocalDateTime installationDate, Double x, Double y, Boolean archived, Set<Result> results, Plan plan) {
+    @SuppressWarnings("java:S107")
+    public Sensor(
+        SensorId sensorId, String name, String note, Structure structure,
+        LocalDateTime installationDate, Plan plan, Double x, Double y,
+        Boolean archived, Set<Result> results
+    ) {
         this.sensorId = sensorId;
         this.name = name;
         this.note = note;
@@ -78,20 +88,27 @@ public class Sensor {
         this.results =  new HashSet<>(results);
         this.plan = plan;
     }
-
+    
+    
     /**
      * The constructor for the Sensor entity
      * @param controlChip the control chip id
      * @param measureChip the measure chip id
-     * @param name the name of the sensor
-     * @param note the note of the sensor
-     * @param structure the structure
-     * @param installationDate the installation date
-     * @param x the position x
-     * @param y the position y
+     * @param name the display name of the sensor
+     * @param note the note of the sensor (empty if not set)
+     * @param structure the structure that contains the sensor
+     * @param installationDate the installation date (optional)
+     * @param plan the plan where this sensor is placed (optional)
+     * @param x the x coordinate of the point in the plan (optional)
+     * @param y the y coordinate of the point in the plan (optional)
      * @param archived if its archived
      */
-    public Sensor(String controlChip, String measureChip, String name, String note, LocalDateTime installationDate, Double x, Double y, Boolean archived, Structure structure) {
+    @SuppressWarnings("java:S107")
+    public Sensor(
+        String controlChip, String measureChip, String name, String note,
+        Structure structure, LocalDateTime installationDate, Plan plan,
+        Double x, Double y, Boolean archived
+    ) {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
         Objects.requireNonNull(name);
@@ -102,8 +119,9 @@ public class Sensor {
         this.name = name;
         this.note = note;
         this.installationDate = installationDate;
-        this.x = x;
-        this.y = y;
+        this.plan = plan; // Nullable
+        this.x = x;       // Nullable
+        this.y = y;       // Nullable
         this.archived = archived;
         this.structure = structure;
     }
@@ -216,4 +234,16 @@ public class Sensor {
     public void setPlan(Plan plan) {
         this.plan = plan;
     }
+
+    /**
+     * Serializer the sensor's plan in JSON only with its ID instead
+     * of all its fields
+     */
+    public static class PlanIdSerializer extends JsonSerializer<Plan> {
+        @Override
+        public void serialize(Plan plan, JsonGenerator gen, SerializerProvider s) throws IOException {
+            gen.writeObject(plan == null ? null : plan.getId());
+        }
+    }
 }
+    
