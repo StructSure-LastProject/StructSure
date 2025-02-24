@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
@@ -46,6 +47,7 @@ import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.Typography
+import kotlinx.coroutines.launch
 
 /**
  * Home screen of the application when the user starts a scan.
@@ -138,20 +140,23 @@ private fun SensorPopUp(
     val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
 
     val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: "UNKNOWN"
+    val coroutineScope = rememberCoroutineScope()
 
-    var note by remember {
-        mutableStateOf(currentResults.find { it.id == sensor.sensorId }?.note ?: "")
-    }
-    PopUp(onCancel) {
+    var sensorNote by remember { mutableStateOf(sensor.note ?: "") }
+
+        PopUp(onCancel) {
         Title(sensor.name, false) {
             Button(
                 R.drawable.check,
                 "valider",
                 MaterialTheme.colorScheme.onSurface,
                 MaterialTheme.colorScheme.surface,
-                onClick = {
-                    if(scanViewModel.updateSensorNote(sensor.sensorId, note)) {
-                        onSubmit()
+                onClick =
+                {
+                    coroutineScope.launch {
+                        if (scanViewModel.updateSensorNote(sensorId = sensor.sensorId, sensorNote)) {
+                            onSubmit()
+                        }
                     }
                 }
             )
@@ -207,9 +212,9 @@ private fun SensorPopUp(
 
         InputTextArea(
             label = "Note",
-            value = note,
+            value = sensorNote,
             placeholder = "Aucune note pour le moment",
             enabled = currentResults.any { it.id == sensor.sensorId }
-        ) { s -> if (s.length <= 1000) note = s }
+        ) { s -> if (s.length <= 1000) sensorNote = s }
     }
 }

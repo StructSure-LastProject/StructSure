@@ -11,6 +11,6 @@ data class ResultSensors(
     val controlChip: String,
     val measureChip: String,
     val state: String,
-    val note: String,
-    val scanId: Long)
+    val scanId: Long
+)
 

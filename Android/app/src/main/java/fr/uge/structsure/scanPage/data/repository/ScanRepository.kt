@@ -18,7 +18,9 @@ class ScanRepository(private val context: Context) {
     private val scanDao = db.scanDao()
     private val resultDao = db.resultDao()
     private val sensorDao = db.sensorDao()
+    private val accountDao = db.accountDao()
     private val connectivityViewModel = ConnectivityViewModel(context)
+    private val sensorScanModificationDao = db.sensorScanModificationDao()
 
     /**
      * Updates the end timestamp of a scan in local database
@@ -80,40 +82,40 @@ class ScanRepository(private val context: Context) {
 
 
     /**
-     * Converts local scan results into a DTO format for API submission
-     * Takes local database entities and maps them to transfer objects
-     * Process:
-     * 1. Maps each ResultSensors to ScanResultDTO
-     * 2. Fetches sensor details for each result
-     * 3. Combines all data into final ScanRequestDTO
-     *
-     * @param scanId the id of the scan that contains the results
-     * @param results List of local scan results to be converted
-     * @return ScanRequestDTO Complete DTO ready to be sent to server
+     * Converts the scan results to a DTO to send to the server
+     * @param currentScanId ID of the scan to convert
+     * @param scannedSensorResults List of results to convert
+     * @return DTO containing all scan data
      */
     suspend fun convertToScanRequest(
-        scanId: Long,
-        results: List<ResultSensors>
+        currentScanId: Long,
+        scannedSensorResults: List<ResultSensors>
     ): ScanRequestDTO {
+        val currentScan = scanDao.getScanById(currentScanId)
+        val currentUser = accountDao.get()
+        val sensorNoteModifications = sensorScanModificationDao.getModificationsByScanId(currentScanId)
 
-        val scanResults = results.mapNotNull{ result ->
-            val sensor = sensorDao.getSensor(result.id) ?: return@mapNotNull null
+        val scanResults = scannedSensorResults.map { sensorResult ->
+            val originalSensor = sensorDao.getSensor(sensorResult.id)
+            val sensorNoteModification = sensorNoteModifications.find { it.sensorId == sensorResult.id }
+
             ScanResultDTO(
-                sensorId = result.id,
-                control_chip = result.controlChip,
-                measure_chip = result.measureChip,
-                name = sensor.name,
-                state = result.state,
-                note = result.note,
-                installation_date = "0" // TODO
+                sensorId = sensorResult.id,
+                control_chip = sensorResult.controlChip,
+                measure_chip = sensorResult.measureChip,
+                name = originalSensor?.name ?: "",
+                state = sensorResult.state,
+                note = sensorNoteModification?.modifiedNote ?: originalSensor?.note ?: "",
+                installation_date = currentScan.start_timestamp
             )
         }
 
-        val scan = scanDao.getScanById(scanId)
         return ScanRequestDTO(
-            scanId = scanId,
-            launchDate = scan.start_timestamp,
-            note = scan.note,
+            structureId = currentScan.structureId,
+            scanId = currentScanId,
+            launchDate = currentScan.start_timestamp,
+            note = currentScan.note ?: "",
+            login = currentUser?.login ?: "",
             results = scanResults
         )
     }

@@ -8,7 +8,6 @@ package fr.uge.structsure.scanPage.data.network.dto
  * @property measure_chip ID of the measure RFID chip
  * @property name Name of the sensor
  * @property state Current state of the sensor (OK, NOK, DEFECTIVE)
- * @property note Optional note for this specific result
  * @property installation_date Timestamp when the sensor was installed
  */
 data class ScanResultDTO(
