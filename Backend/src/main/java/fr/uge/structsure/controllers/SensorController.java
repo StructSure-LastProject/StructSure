@@ -1,16 +1,20 @@
 package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.sensors.BaseSensorDTO;
+import com.fasterxml.jackson.core.JsonParseException;
 import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
+import fr.uge.structsure.dto.sensors.EditSensorRequestDTO;
 import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.SensorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -77,6 +81,20 @@ public class SensorController {
             List<SensorDTO> sensorDTOs = sensorService.getSensorsByPlanId(structureId, planId);
             return ResponseEntity.ok(sensorDTOs);
         } catch (TraitementException e) {
+            return e.toResponseEntity();
+        }
+    }
+
+
+    /**
+     * Edit a sensor
+     * @return The edit sensor response DTO
+     */
+    @PutMapping("/sensors/edit")
+    public ResponseEntity<?> editSensor(@RequestBody EditSensorRequestDTO editSensorRequestDTO){
+        try {
+            return ResponseEntity.ok(sensorService.editSensor(editSensorRequestDTO));
+        } catch (TraitementException e){
             return e.toResponseEntity();
         }
     }

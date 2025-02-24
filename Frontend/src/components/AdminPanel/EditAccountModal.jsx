@@ -255,7 +255,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                                             ))
                                         }
                                     </select>
-                                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
+                                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
                                         <ChevronDown size={20} strokeWidth={2.5} />
                                     </div>
                                 </div>

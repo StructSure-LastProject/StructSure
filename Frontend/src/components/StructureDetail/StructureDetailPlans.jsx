@@ -15,7 +15,6 @@ function StructureDetailPlans(props) {
 
     // Plans and modals state management
     const [plans, setPlans] = createSignal([]);
-    const [selectedPlanId, setSelectedPlanId] = createSignal(null);
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
     const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
     const [selectedPlan, setSelectedPlan] = createSignal(null);
@@ -152,7 +151,7 @@ function StructureDetailPlans(props) {
                     class="flex flex-col gap-y-[5px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         <DropdownsSection
                         data={plans()}
-                        selectedPlanId={selectedPlanId()}
+                        selectedPlanId={props.selectedPlanId()}
                         onEdit={handleEdit}
                         onPlanEdit={handleEditSave}
                         structureId={props.structureId}

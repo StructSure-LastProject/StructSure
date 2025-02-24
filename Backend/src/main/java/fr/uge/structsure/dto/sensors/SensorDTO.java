@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.State;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 /**
  * The sensor dto
@@ -26,7 +26,7 @@ public record SensorDTO(
         String note,
         State state,
         Boolean archived,
-        LocalDateTime installationDate,
+        LocalDate installationDate,
         Double x,
         Double y
 ) {
@@ -50,7 +50,7 @@ public record SensorDTO(
             String note,
             Integer state,
             boolean archived,
-            LocalDateTime installationDate,
+            LocalDate installationDate,
             Double x,
             Double y
     ) {

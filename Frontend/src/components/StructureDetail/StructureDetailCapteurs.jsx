@@ -3,12 +3,17 @@ import {createEffect, createSignal, For, Show} from 'solid-js';
 import SensorPanel from '../SensorPanel/SensorPanel';
 import getSensorStatusColor from "../SensorStatusColorGen"
 import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
+import SensorFilter from '../SensorFilter';
 
 /**
  * Show the sensors part of the structure detail page
+ * @param {String} structureId The structure id
+ * @param {Function} setSensors The set sonsors function
+ * @param {String} selectedPlanId The selected plan id
+ * @param {Array} sensors The sensors array
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({sensors, sensorsFetchRequest, structureId}) {
+function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, sensors}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
@@ -90,22 +95,25 @@ function StructureDetailCapteurs({sensors, sensorsFetchRequest, structureId}) {
                     </Show>
                 </div>
             </div>
+            <SensorFilter/>
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <For each={sensors()}>
                     {(sensor) => (
-                        <button onClick={() => openSensorPanelHandler(sensor)} class="cursor-pointer flex justify-between gap-x-[15px] rounded-[50px] px-[25px] py-[10px] bg-white items-center">
-                            <div class={`w-[16px] min-w-[16px] h-[16px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
-                            <p class="subtitle text-left w-full">{sensor.name}</p>
-                            <div class="w-5 h-5 rounded-[50px] flex justify-center items-center">
+                        <div class="flex justify-between rounded-[50px] px-[25px] py-[10px] bg-white">    
+                            <button class="flex gap-x-[15px] items-center" onClick={() => openSensorPanelHandler(sensor)} >
+                                <div class={`w-[16px] min-w-[16px] h-[16px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
+                                <p class="subtitle text-left w-full">{sensor.name}</p>
+                            </button>
+                            <button class="w-5 h-5 rounded-[50px] flex justify-center items-center">
                                 <Trash2 size={20} />
-                            </div>
-                        </button>
+                            </button>
+                        </div>
                     )}
                 </For>
             </div>
             {
                 openSensorPanel() && (
-                    <SensorPanel sensorDetails={clickedSensor()} closeSensorPanel={closeSensorPanelHandler} />
+                    <SensorPanel structureId={structureId} sensors={sensors} setSensors={setSensors} selectedPlanId={selectedPlanId} sensorDetails={clickedSensor()} closeSensorPanel={closeSensorPanelHandler} />
                 )
             }
         </div>

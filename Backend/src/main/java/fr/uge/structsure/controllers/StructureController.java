@@ -152,6 +152,34 @@ public class StructureController {
         }
     }
 
+    /**
+     * Retrieves the image of a plan within a structure that associated with the given sensor.
+     *
+     * @param controlChip The control chip
+     * @param measureChip The measure chip
+     * @param structureId The structure id
+     * @return ResponseEntity containing the plan image if successful, or an error message if the operation fails
+     */
+    @GetMapping("/plans/{structureId}/{controlChip}/{measureChip}/image")
+    public ResponseEntity<?> downloadPlanImageAssociatedToTheSensor(
+            @PathVariable("structureId") long structureId,
+            @PathVariable("controlChip") String controlChip,
+            @PathVariable("measureChip") String measureChip
+        ) {
+        Objects.requireNonNull(controlChip);
+        Objects.requireNonNull(measureChip);
+        try {
+            var imageResponse = planService.downloadPlanImageAssociatedToTheSensor(structureId, controlChip, measureChip);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename=\"" + imageResponse.filename() + "\"")
+                    .contentType(imageResponse.mediaType())
+                    .body(imageResponse.resource());
+        } catch (TraitementException e) {
+            return e.toResponseEntity();
+        }
+    }
+
 
     /**
      * This method handle the structure endpoint to get all structures

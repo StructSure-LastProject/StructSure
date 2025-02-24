@@ -1,6 +1,7 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.sensors.*;
+import fr.uge.structsure.entities.Plan;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.State;
 import fr.uge.structsure.entities.Structure;
@@ -14,6 +15,10 @@ import fr.uge.structsure.repositories.StructureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
 
@@ -202,7 +207,43 @@ public class SensorService {
             throw new TraitementException(Error.SENSOR_NAME_EXCEED_LIMIT);
         }
         if (request.note() != null && request.note().length() > 1000) {
-            throw new TraitementException(Error.SENSOR_NOTE_EXCEED_LIMIT);
+            throw new TraitementException(Error.SENSOR_COMMENT_EXCEED_LIMIT);
         }
     }
+
+
+    /**
+     * Service that will handle the edit sensor request
+     * @param editSensorRequestDTO The edit sensor request DTO
+     */
+    public EditSensorResponseDTO editSensor(EditSensorRequestDTO editSensorRequestDTO) throws TraitementException {
+        Objects.requireNonNull(editSensorRequestDTO);
+        var sensor = sensorRepository.findByChips(editSensorRequestDTO.controlChip(), editSensorRequestDTO.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_ID_NOT_FOUND));
+        if (!sensor.getName().equals(editSensorRequestDTO.name())){
+            if (sensorRepository.nameAlreadyExists(editSensorRequestDTO.name())) {
+                throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
+            }
+            sensor.setName(editSensorRequestDTO.name());
+        }
+        sensor.setNote(editSensorRequestDTO.note());
+        var formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+        sensor.setInstallationDate(LocalDate.parse(editSensorRequestDTO.installationDate(), formatter));
+        var sensorSaved = sensorRepository.save(sensor);
+        return new EditSensorResponseDTO(sensorSaved.getSensorId().getControlChip(), sensorSaved.getSensorId().getMeasureChip(), LocalDateTime.now().toString());
+    }
+
+
+    /**
+     * Get the plan associated to a sensor
+     * @param controlChip The control chip od the sensor
+     * @param measureChip The measure chip of the sensor
+     * @return The Plan associated to the sensor
+     */
+    public Plan getPlanFromSensor(String controlChip, String measureChip) throws TraitementException {
+        Objects.requireNonNull(controlChip);
+        Objects.requireNonNull(measureChip);
+        var sensor = sensorRepository.findByChips(controlChip, measureChip).orElseThrow(() -> new TraitementException(Error.SENSOR_ID_NOT_FOUND));
+        return sensor.getPlan();
+    }
+
 }
