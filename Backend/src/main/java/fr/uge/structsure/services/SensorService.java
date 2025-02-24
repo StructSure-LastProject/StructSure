@@ -1,6 +1,7 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.sensors.*;
+import fr.uge.structsure.entities.Plan;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.State;
 import fr.uge.structsure.entities.Structure;
@@ -14,6 +15,7 @@ import fr.uge.structsure.repositories.StructureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -135,7 +137,11 @@ public class SensorService {
                 request.measureChip(),
                 request.name(),
                 request.note() == null ? "": request.note(),
-                structure);
+                LocalDate.parse(request.installationDate(), formatter),
+                request.x(),
+                request.y(),
+                false,
+                structure.get());
         var saved = sensorRepository.save(sensor);
         return new AddSensorResponseDTO(saved.getSensorId().getControlChip(), saved.getSensorId().getMeasureChip());
     }
@@ -226,17 +232,31 @@ public class SensorService {
         if (editSensorRequestDTO.getComment().length() > 1000){
             throw new TraitementException(Error.SENSOR_COMMENT_EXCEED_LIMIT);
         }
-        if (sensorRepository.findByName(editSensorRequestDTO.getName()).isPresent()){
+        var existingSensor = sensorRepository.findByName(editSensorRequestDTO.getName());
+        if (existingSensor.isPresent() && !existingSensor.get().getSensorId().equals(sensorOptional.get().getSensorId())){
             throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
         }
         var sensor = sensorOptional.get();
         sensor.setName(editSensorRequestDTO.getName());
-        var formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        sensor.setInstallationDate(LocalDateTime.parse(editSensorRequestDTO.getInstallationDate(), formatter));
+        var formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+        sensor.setInstallationDate(LocalDate.parse(editSensorRequestDTO.getInstallationDate(), formatter));
         sensor.setNote(editSensorRequestDTO.getComment());
         sensorRepository.save(sensor);
         return new EditSensorResponseDTO(editSensorRequestDTO.getControlChip(), editSensorRequestDTO.getMeasureChip(), LocalDateTime.now().toString());
     }
 
+
+    /**
+     * Get the plan associated to a sensor
+     * @param controlChip The control chip od the sensor
+     * @param measureChip The measure chip of the sensor
+     * @return The Plan associated to the sensor
+     */
+    public Plan getPlanFromSensor(String controlChip, String measureChip) throws TraitementException {
+        Objects.requireNonNull(controlChip);
+        Objects.requireNonNull(measureChip);
+        var sensor = sensorRepository.findByChips(controlChip, measureChip).orElseThrow(() -> new TraitementException(Error.SENSOR_ID_NOT_FOUND));
+        return sensor.getPlan();
+    }
 
 }

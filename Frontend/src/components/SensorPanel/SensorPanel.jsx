@@ -6,7 +6,8 @@ import SensorFieldComponent from './SensorFieldComponent';
 import { containsNonLetters } from '../../hooks/vaildateUserAccountForm';
 import StructureDetailCanvas from "../StructureDetail/StructureDetailCanvas"
 import useFetch from '../../hooks/useFetch';
-import {planSensorsFetchRequest} from "../StructureDetail/StructureDetailBody"
+import {sensorsFetchRequest} from "../StructureDetail/StructureDetailBody"
+import plan_not_found from '/src/assets/plan_not_found.png';
 
 /**
  * The panel header
@@ -19,7 +20,7 @@ import {planSensorsFetchRequest} from "../StructureDetail/StructureDetailBody"
  * @param {Function} setSensorName The setter function for the sensor name
  * @returns The panel header component
  */
-const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEditMode, handleSubmit, setSensorName}) => {
+const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEditMode, handleSubmit, setSensorName, error}) => {
 
   /**
    * Change edit mode and vice versa
@@ -27,6 +28,9 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
   const changeMode = () => {
     if (editMode() && !handleSubmit()) {
       setEditMode(!editMode());
+    }
+    if (editMode() && error() !== "") {
+      return;
     }
     setEditMode(!editMode());
   }
@@ -37,7 +41,7 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
         <div class="w-[39px] h-[39px] flex items-center justify-center">
           <div class={`w-[20px] h-[20px] rounded-[50px] border-[3px] ${getSensorStatusColor(sensorState)}`}></div>
         </div>
-        <input class="font-poppins font-[600] text-[25px] leading-[37.5px] tracking-[0%] text-[#181818]"
+        <input class="font-poppins font-[600] max-w-[150px] text-[25px] leading-[37.5px] tracking-[0%] text-[#181818]"
           type="text"
           value={sensorName()}
           onChange={(e) => setSensorName(e.target.value)}
@@ -69,11 +73,11 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
  * The sensor plan 
  * @returns The component contains a canva with sensor on a image
  */
-const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails}) => {  
+const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => {  
   const planId = selectedPlanId() === null ? 1 : selectedPlanId();
   const { fetchImage, image, statusCode } = useFetch();
   const token = localStorage.getItem("token");
-  const endpoint = `/api/structures/plans/${planId}/image`;
+  const endpoint = `/api/structures/plans/${structureId}/${sensorDetails.controlChip}/${sensorDetails.measureChip}/image`;
 
   const requestData = {
     method: "GET",
@@ -83,24 +87,20 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails}) => {
     },
   };
   
-  // Function to check if an object exists by controlChip
-  const checkSensorExistence = (controlChip) => {
-    return sensorMap.has(controlChip);
-  };
-
+  
   createResource(async () => {
     await fetchImage(endpoint, requestData);
-    if (statusCode() === 200) {
-      if (checkSensorExistence(sensorDetails.controlChip)) {
-        setPlan(image());
-      }
-    }
   })
   
   return (
     <div class="lg:flex lg:flex-col lg:gap-[10px]">
       <h1 class="font-poppins font-[600] text-[16px] leading-[24px] tracking-[0%] text-[#181818]">OA/Zone</h1>
-      <Show when={image()}>
+      <Show when={image() !== null} fallback={
+        <img
+          class={"w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px] object-cover"} 
+          src={plan_not_found} 
+        />
+      }>
         <StructureDetailCanvas
           styles={"w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px]"} 
           plan={image()} 
@@ -144,11 +144,15 @@ const SensorCommentSection = ({
 
 /**
  * Shows the sensor panel with extra details of the clicked sensor
- * @param {Object} sensorDetails contains all the information about the clicked sensor 
+ * @param {String} structureId The structure id
+ * @param {Array} sensors The sensors array
+ * @param {Function} setSensors The set sonsors function
+ * @param {String} selectedPlanId The selected plan id
+ * @param {Object} sensorDetails contains all the information about the clickded sensor 
  * @param {Function} closeSensorPanel Function that close the sensor panel
  * @returns The sensor panel component
  */
-const SensorPanel = ({planSensors, selectedPlanId, sensorDetails, closeSensorPanel}) => {
+const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDetails, closeSensorPanel}) => {
 
   const [sensorName, setSensorName] = createSignal(sensorDetails.name);
   const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate.split('T')[0]);
@@ -170,6 +174,11 @@ const SensorPanel = ({planSensors, selectedPlanId, sensorDetails, closeSensorPan
       setError("Le nom doit contenir uniquement des lettres.");
       return false;
     }
+    
+    if (installationDate() === "") {
+      setError("La date d'installation du capteur est obligatoire");
+      return false;
+    }
 
     const { fetchData, error, statusCode } = useFetch();
     const token = localStorage.getItem("token");
@@ -179,11 +188,11 @@ const SensorPanel = ({planSensors, selectedPlanId, sensorDetails, closeSensorPan
       measureChip: sensorDetails.measureChip,
       name: sensorName(),
       installationDate: installationDate(),
-      comment: comment()
+      comment: comment() === null ? "" : comment()
     }
 
     const requestData = {
-      method: "PUT",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -191,20 +200,22 @@ const SensorPanel = ({planSensors, selectedPlanId, sensorDetails, closeSensorPan
       body: JSON.stringify(requestBody)
     };
 
-    await fetchData("/api/sensors", requestData);
+    await fetchData("/api/sensors/edit", requestData);
 
     if (statusCode() === 200) {
       setError("");
-      planSensorsFetchRequest();
+      sensorsFetchRequest(structureId, {}, setSensors);
+      closeSensorPanel();
       return true;
     }    
     setError(error().errorData)
     return false;
   }
 
+
   const sensorMap = new Map();
-  planSensors().forEach(sensor => {
-      sensorMap.set(sensor.controlChip, sensor);
+  sensors().forEach(sensor => {
+    sensorMap.set(sensor.controlChip, sensor);
   });
     
   
@@ -222,6 +233,7 @@ const SensorPanel = ({planSensors, selectedPlanId, sensorDetails, closeSensorPan
           setEditMode={setEditMode}
           handleSubmit={handleSubmit}
           setSensorName={setSensorName}
+          error={error}
         />
         {
           error() && <p class="text-[#F13327] font-poppins HeadLineMedium">{error()}</p>
@@ -232,6 +244,7 @@ const SensorPanel = ({planSensors, selectedPlanId, sensorDetails, closeSensorPan
               selectedPlanId={selectedPlanId}
               sensorDetails={sensorDetails}
               sensorMap={sensorMap}
+              structureId={structureId}
             />
             <SensorCommentSection 
               comment={comment} 

@@ -91,7 +91,7 @@ public class SensorController {
      * Edit a sensor
      * @return The edit sensor response DTO
      */
-    @PutMapping("/sensors/")
+    @PostMapping("/sensors/edit")
     public ResponseEntity<?> editSensor(@RequestBody EditSensorRequestDTO editSensorRequestDTO){
         Objects.requireNonNull(editSensorRequestDTO);
         try {

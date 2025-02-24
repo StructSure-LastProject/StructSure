@@ -5,6 +5,8 @@ import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.State;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * The sensor dto
@@ -26,7 +28,7 @@ public record SensorDTO(
         String note,
         State state,
         Boolean archived,
-        LocalDateTime installationDate,
+        LocalDate installationDate,
         Double x,
         Double y
 ) {

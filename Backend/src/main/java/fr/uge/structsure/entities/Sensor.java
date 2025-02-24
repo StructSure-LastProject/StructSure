@@ -11,6 +11,7 @@ import org.hibernate.validator.internal.util.stereotypes.Lazy;
 
 import java.time.LocalDateTime;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
@@ -32,7 +33,8 @@ public class Sensor {
     @JoinColumn(name = "structure_id", nullable = true)
     private Structure structure;
 
-    private LocalDateTime installationDate;
+
+    private LocalDate installationDate;
 
     @ManyToOne
     @JoinColumn(name="plan_id")
@@ -178,12 +180,11 @@ public class Sensor {
         this.structure = structure;
     }
 
-    public LocalDateTime getInstallationDate() {
-        // todo default value to remove
-        return Objects.requireNonNullElseGet(this.installationDate, LocalDateTime::now);
+    public LocalDate getInstallationDate() {
+        return installationDate;
     }
 
-    public void setInstallationDate(LocalDateTime installationDate) {
+    public void setInstallationDate(LocalDate installationDate) {
         this.installationDate = installationDate;
     }
 

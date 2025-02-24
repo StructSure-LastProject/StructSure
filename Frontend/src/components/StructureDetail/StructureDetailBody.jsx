@@ -27,6 +27,41 @@ export const planSensorsFetchRequest = async (structureId, planId = 1, setPlanSe
     // }
 };
 
+
+
+/**
+ * Will fetch the list of the sensors of this structure
+ */
+export const sensorsFetchRequest = async (structureId, filters = {}, setSensors) => {
+    const { fetchData, statusCode, data, errorFetch } = useFetch();
+
+    // Construire le body avec les filtres
+    const requestBody = {
+        orderByColumn: filters.orderByColumn || "STATE",
+        orderType: filters.orderType || "ASC",
+        offset: filters.offset ?? 0,
+        limit: filters.limit ?? 5,
+    };
+
+    const requestUrl = `/api/structures/${structureId}/sensors`;
+
+    const requestData = {
+        method: "POST",  // Changer GET en POST
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody) // Ajouter les paramètres dans le body
+    };
+
+    await fetchData(requestUrl, requestData);
+
+    if (statusCode() === 200) {
+        setSensors(data());
+    }// Uncomment this when error barre is developped
+    // else if (statusCode() === 404) {
+    // }
+};
+
 /**
  * Shows the body part of the strcutre detail page
  * @returns component for the body part
@@ -38,38 +73,6 @@ function StructureDetailBody(props) {
     const [planSensors, setPlanSensors] = createSignal([]);
     const [selectedPlanId, setSelectedPlanId] = createSignal(null);
 
-    /**
-     * Will fetch the list of the sensors of this structure
-     */
-    const sensorsFetchRequest = async (structureId, filters = {}) => {
-        const { fetchData, statusCode, data, errorFetch } = useFetch();
-    
-        // Construire le body avec les filtres
-        const requestBody = {
-            orderByColumn: filters.orderByColumn || "STATE",
-            orderType: filters.orderType || "ASC",
-            offset: filters.offset ?? 0,
-            limit: filters.limit ?? 5,
-        };
-    
-        const requestUrl = `/api/structures/${structureId}/sensors`;
-    
-        const requestData = {
-            method: "POST",  // Changer GET en POST
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(requestBody) // Ajouter les paramètres dans le body
-        };
-    
-        await fetchData(requestUrl, requestData);
-    
-        if (statusCode() === 200) {
-            setSensors(data());
-        }// Uncomment this when error barre is developped
-        // else if (statusCode() === 404) {
-        // }
-    };
 
     /**
      * Will fetch the structure details
@@ -94,7 +97,7 @@ function StructureDetailBody(props) {
 
     createEffect(() => {
         structureDetailsFetchRequest(props.structureId);
-        sensorsFetchRequest(props.structureId);
+        sensorsFetchRequest(props.structureId, {}, setSensors);
         planSensorsFetchRequest(props.structureId,1,setPlanSensors);
     });
     
@@ -108,7 +111,7 @@ function StructureDetailBody(props) {
               selectedPlanId={selectedPlanId}
               setSelectedPlanId={selectedPlanId()}
             />
-            <StructureDetailRow planSensors={planSensors} selectedPlanId={selectedPlanId} sensors={sensors} />
+            <StructureDetailRow structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} />
         </div>
     );
 }

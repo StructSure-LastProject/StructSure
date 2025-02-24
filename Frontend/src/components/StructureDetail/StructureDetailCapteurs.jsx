@@ -9,9 +9,13 @@ import SensorFilter from '../SensorFilter';
 
 /**
  * Show the sensors part of the structure detail page
+ * @param {String} structureId The structure id
+ * @param {Function} setSensors The set sonsors function
+ * @param {String} selectedPlanId The selected plan id
+ * @param {Array} sensors The sensors array
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({planSensors, selectedPlanId, sensors}) {
+function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, sensors}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
@@ -109,7 +113,7 @@ function StructureDetailCapteurs({planSensors, selectedPlanId, sensors}) {
             </div>
             {
                 openSensorPanel() && (
-                    <SensorPanel planSensors={planSensors} selectedPlanId={selectedPlanId} sensorDetails={clickedSensor()} closeSensorPanel={closeSensorPanelHandler} />
+                    <SensorPanel structureId={structureId} sensors={sensors} setSensors={setSensors} selectedPlanId={selectedPlanId} sensorDetails={clickedSensor()} closeSensorPanel={closeSensorPanelHandler} />
                 )
             }
         </div>

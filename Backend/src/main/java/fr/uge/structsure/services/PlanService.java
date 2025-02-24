@@ -5,10 +5,10 @@ import fr.uge.structsure.dto.plan.EditPlanResponseDTO;
 import fr.uge.structsure.dto.plan.PlanImageResponseDTO;
 import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.entities.Plan;
+import fr.uge.structsure.entities.SensorId;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
-import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.PlanRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +32,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 /**
  * Plan service class
  */
@@ -43,6 +40,7 @@ public class PlanService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlanService.class);
     private final PlanRepository planRepository;
     private final StructureService structureService;
+    private final SensorService sensorService;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -53,9 +51,10 @@ public class PlanService {
     );
 
     @Autowired
-    public PlanService(PlanRepository planRepository, StructureService structureService) {
+    public PlanService(PlanRepository planRepository, StructureService structureService, SensorService sensorService) {
         this.planRepository = planRepository;
         this.structureService = structureService;
+        this.sensorService = sensorService;
     }
 
     /**
@@ -482,5 +481,31 @@ public class PlanService {
             LOGGER.error("IOException when retrieving plan image", e);
             throw new TraitementException(Error.SERVER_ERROR);
         }
+    }
+
+    /**
+     * Downloads the image of a plan.
+     * The image is retrieved from the server and returned as a DTO containing the image resource and metadata.
+     *
+     * @param structureId The ID of the structure
+     * @param controlChip The control chip of the sensor
+     * @param measureChip The measure chip of the sensor
+     * @return PlanImageResponseDTO containing the image resource and metadata
+     * @throws TraitementException if the plan is not found, structure is not found, or if there are issues retrieving the image
+     */
+    public PlanImageResponseDTO downloadPlanImageAssociatedToTheSensor(long structureId, String controlChip, String measureChip) throws TraitementException {
+        Objects.requireNonNull(controlChip);
+        Objects.requireNonNull(measureChip);
+        var plan = sensorService.getPlanFromSensor(controlChip, measureChip);
+        if(structureService.getStructureById(structureId)
+                .sensors()
+                .stream()
+                .noneMatch(sensor -> sensor.getSensorId().equals(new SensorId(controlChip, measureChip)))){
+            throw new TraitementException(Error.SENSOR_ID_NOT_FOUND);
+        }
+        if (plan == null){
+            throw new TraitementException(Error.PLAN_NOT_FOUND);
+        }
+        return downloadPlanImage(plan.getId());
     }
 }

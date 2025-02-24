@@ -35,7 +35,7 @@ public class EditSensorRequestDTO {
     if (installationDate == null || installationDate.isEmpty()){
       throw new TraitementException(Error.SENSOR_INSTALLATION_DATE_IS_EMPTY);
     }
-    if (comment == null || comment.isEmpty()){
+    if (comment == null){
       throw new TraitementException(Error.SENSOR_COMMENT_IS_EMPTY);
     }
     this.controlChip = controlChip;
