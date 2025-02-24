@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,6 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -44,26 +48,25 @@ import fr.uge.structsure.ui.theme.White
  * This button shows the bluetooth state
  */
 @Composable
-fun BluetoothButton(connexion: Cs108Connector) {
+fun BluetoothButton(connexion: Cs108Connector, inverted: Boolean = false) {
+    val foreground = if (inverted) White else Black
+    val background = if (inverted) Black else White
     val isBluetoothConnected = Cs108Connector.isBleConnected.observeAsState().value?:false
 
     var batteryLevel by remember { mutableIntStateOf(Cs108Connector.battery) }
     var showPopUp by remember { mutableStateOf(false) }
 
     // Determine color based on battery level
-    val color = if (batteryLevel <= 20) Red else Black
+    val color = if (batteryLevel in 1..20) Red else foreground
 
     connexion.onBatteryChange { battery -> batteryLevel = battery }
 
-    BigButton(
-        onClick =  { showPopUp = !showPopUp }
-    ) {
+    BigButton({ showPopUp = !showPopUp }, background) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             // Display appropriate Bluetooth icon based on connection status and battery level
             val bluetoothIcon = when {
-                isBluetoothConnected && batteryLevel <= 20 -> R.drawable.red_bluetooth
                 isBluetoothConnected -> R.drawable.bluetooth
                 else -> R.drawable.bluetooth_not_connected
             }
@@ -71,10 +74,17 @@ fun BluetoothButton(connexion: Cs108Connector) {
             Image(
                 painter = painterResource(id = bluetoothIcon),
                 contentDescription = "bluetooth connection information",
-                contentScale = ContentScale.None
+                contentScale = ContentScale.None,
+                colorFilter = ColorFilter.tint(color)
             )
 
-            if (isBluetoothConnected) {
+            if (isBluetoothConnected && batteryLevel == -1) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp).padding(start = 5.dp, top = 5.dp),
+                    color = color,
+                    strokeWidth = 2.dp
+                )
+            } else if (isBluetoothConnected) {
                 Text(
                     text = "$batteryLevel%",
                     style = TextStyle(
@@ -107,13 +117,13 @@ fun BluetoothButton(connexion: Cs108Connector) {
 }
 
 @Composable
-fun BigButton(onClick: () -> Unit, content: @Composable () -> Unit) {
+fun BigButton(onClick: () -> Unit, background: Color = White, content: @Composable () -> Unit) {
     Row(
         modifier = Modifier
             .width(77.dp)
             .height(58.dp)
-            .clip(RoundedCornerShape(size = 45.dp))
-            .background(White)
+            .clip(RoundedCornerShape(45.dp))
+            .background(background)
             .clickable { onClick() },
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically

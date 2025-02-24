@@ -96,6 +96,22 @@ class SensorCache {
     }
 
     /**
+     * Manually hard set the state of the given sensor in the cache.
+     * This function is only intended for initialization, otherwise you
+     * should use [updateSensorState] instead.
+     *
+     * @param chip One chip of the sensor to edit
+     * @param state The state of the sensor.
+     */
+    fun setSensorState(chip: String, state: String) {
+        synchronized(lock) {
+            findSensor(chip)?.let { sensor ->
+                sensorMap[sensor.sensorId] = Pair(sensor, state)
+            }
+        }
+    }
+
+    /**
      * Counts the number of sensor in the cache
      * @return how many sensor are present
      */

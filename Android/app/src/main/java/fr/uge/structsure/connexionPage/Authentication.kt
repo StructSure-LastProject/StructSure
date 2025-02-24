@@ -2,6 +2,7 @@ import android.util.Log
 import androidx.navigation.NavController
 import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.connexionPage.data.AccountEntity
+import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.retrofit.LoginApi
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.retrofit.response.Datamodel
@@ -13,9 +14,12 @@ import java.util.Optional
 
 private const val TAG = "AuthenticationAPI"
 
-suspend fun auth(login:String, password:String, dao: AccountDao,
-    navController: NavController, structureViewModel: StructureViewModel? = null
-): String {
+suspend fun auth(login:String,
+                 password:String,
+                 dao: AccountDao,
+                 navController: NavController,
+                 backRoute: String,
+                 structureViewModel: StructureViewModel? = null ): String {
     if (login.isEmpty()){
         return "Veuillez renseigner votre identifiant"
     } else if (password.isEmpty()){
@@ -29,7 +33,7 @@ suspend fun auth(login:String, password:String, dao: AccountDao,
         structureViewModel?.tryUploadScans(true, false, login)
         val out = dao.upsertAccount(entity)
         // TODO clear all data from the DB if dap.upsertAccount return false
-        navController.navigate("HomePage");
+        navController.navigateNoReturn(backRoute)
         return ""
     }
 

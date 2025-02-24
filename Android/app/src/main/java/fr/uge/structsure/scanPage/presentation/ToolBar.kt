@@ -29,6 +29,7 @@ import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.BigButton
 import fr.uge.structsure.components.BluetoothButton
+import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
@@ -70,7 +71,7 @@ fun ToolBar(
     ) {
         // Button Undo
         if (currentState == ScanState.NOT_STARTED) {
-            BigButton({ navController.navigate("HomePage") }) {
+            BigButton({ navController.navigateNoReturn("HomePage") }) {
                 Image(
                     painter = painterResource(R.drawable.undo),
                     contentDescription = "Back",
