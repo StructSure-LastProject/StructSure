@@ -24,7 +24,7 @@ class SensorCache {
     fun insertSensors(sensors: List<SensorDB>) {
         synchronized(lock) {
             for (sensor in sensors) {
-                sensorMap[sensor.sensorId] = Pair(sensor, null)
+                sensorMap[sensor.sensorId] = Pair(sensor, sensor.state)
                 chipToSensorIdMap[sensor.controlChip] = sensor.sensorId
                 chipToSensorIdMap[sensor.measureChip] = sensor.sensorId
             }
@@ -35,7 +35,7 @@ class SensorCache {
     /**
      * Gets the previous state of a sensor from the cache
      * @param sensorId the ID of the sensor
-     * @return the previous state or the default state ("Non scanné") if not found
+     * @return the previous state
      */
     fun getPreviousState(sensorId: String): String {
         synchronized(lock) {
@@ -71,7 +71,7 @@ class SensorCache {
      * @param newState The new state received from the RFID chip.
      */
     private fun mergeStates(lastState: String?, newState: String): String {
-        if (lastState.isNullOrEmpty()){
+        if (lastState == "Non scanné"){
             return newState
         }
         if (lastState == "NOK" || newState == "NOK") {
@@ -96,18 +96,15 @@ class SensorCache {
      */
     fun updateSensorState(sensor: SensorDB, newState: String): String? {
         synchronized(lock) {
-            val serverState = sensor.state
-            val secondPair = sensorMap[sensor.sensorId]?.second
-            val lastState = if(secondPair.isNullOrEmpty()) serverState else secondPair
+            val lastState = sensorMap[sensor.sensorId]?.second ?: sensor.state
             val computedState = mergeStates(lastState, newState)
             if (computedState != lastState) {
-                sensorMap[sensor.sensorId] = Pair(sensor,computedState)
+                sensorMap[sensor.sensorId] = Pair(sensor, lastState)
                 return computedState
             }
             return null
         }
     }
-
     /**
      * Manually hard set the state of the given sensor in the cache.
      * This function is only intended for initialization, otherwise you

@@ -98,7 +98,10 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      */
     private fun updateSensorStateCounts() {
         viewModelScope.launch(Dispatchers.IO) {
-            val scannedSensors = resultDao.getAllResults()
+            val scannedSensors = activeScanId?.let { scanId ->
+                resultDao.getResultsByScan(scanId)
+            } ?: emptyList()
+
             val stateCounts = SensorState.entries.associateWith { state ->
                 if (state == SensorState.UNSCANNED) sensorCache.size() - scannedSensors.size
                 else scannedSensors.count { it.state == state.name }
@@ -179,7 +182,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     private fun refreshSensorStates() {
         viewModelScope.launch(Dispatchers.IO) {
             val sensors = sensorDao.getAllSensors(structureId?: return@launch)
-            val scannedResults = resultDao.getAllResults()
+            val scannedResults = activeScanId?.let { scanId ->
+                resultDao.getResultsByScan(scanId)
+            } ?: emptyList()
 
             val updatedSensors = sensors.map { sensor ->
                 val result = scannedResults.find { it.id == sensor.sensorId }
