@@ -27,7 +27,4 @@ interface ResultDao {
 
     @Query("DELETE FROM resultSensor WHERE id = :resultId")
     fun deleteResult(resultId: String)
-
-    @Query("UPDATE resultSensor SET note = :note WHERE id = :sensorId AND scanID =:scanId")
-    fun updateNoteForSensor(sensorId: String, scanId: Long, note: String)
 }

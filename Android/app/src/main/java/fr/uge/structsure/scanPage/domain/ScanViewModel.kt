@@ -141,6 +141,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         return true
     }
 
+
     /**
      * Changes the structureId of the scanViewModel. This will reload
      * the sensors if the given id is not the same as the saved one.
