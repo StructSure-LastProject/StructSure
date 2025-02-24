@@ -76,16 +76,16 @@ const SortFilterField = ({dropDownValues}) => {
  */
 const DateFilterField = ({startDate, setStartDate, endDate, setEndDate}) => {
     return (
-        <div class="flex flex-col lg:flex-row lg:justify-evenly lg:items-center justify-between gap-[15px] lg:gap-[20px]">
+        <div class="flex lg:flex-row lg:justify-evenly lg:items-center justify-between gap-[15px] lg:gap-[20px] min-w-[140px] w-full">
             <SensorFieldComponent 
-                title={"Date d’installation du"} 
+                title={"Installation du"} 
                 value={startDate}
                 editMode={() => true} 
                 type={"date"}
                 isRequired={true} 
                 setter={setStartDate}
-                styles={"bg-[#F2F2F4] rounded-[10px] py-[8px] px-[16px] flex gap-[10px] lg:max-w-[271px] font-poppins font-[400] text-[14px] leading-[21px] bg-[#F2F2F4] text-[#181818]"}
-                parentStyles={"flex flex-col gap-[5px] min-w-[140px]"}
+                styles={"bg-lightgray rounded-[10px] py-[8px] px-[16px] flex gap-[10px] lg:max-w-[271px] normal"}
+                parentStyles={"flex flex-col gap-[5px] min-w-[140px] w-full"}
             />
             <SensorFieldComponent 
                 title={"Au"} 
@@ -94,8 +94,8 @@ const DateFilterField = ({startDate, setStartDate, endDate, setEndDate}) => {
                 type={"date"}
                 isRequired={true} 
                 setter={setEndDate}
-                styles={"bg-[#F2F2F4] rounded-[10px] py-[8px] px-[16px] flex gap-[10px] lg:max-w-[271px] font-poppins font-[400] text-[14px] leading-[21px] bg-[#F2F2F4] text-[#181818]"}
-                parentStyles={"flex flex-col gap-[5px] min-w-[140px]"}
+                styles={"bg-lightgray rounded-[10px] py-[8px] px-[16px] flex gap-[10px] lg:max-w-[271px] normal"}
+                parentStyles={"flex flex-col gap-[5px] min-w-[140px] w-full"}
             />
         </div>
     );
@@ -141,7 +141,7 @@ const SensorFilter = () => {
     const [endDate, setEndDate] = createSignal("");
 
     return (
-        <div class="flex flex-col rounded-[20px] px-[20px] py-[15px] gap-[15px] bg-[#FFFFFF]">
+        <div class="flex flex-col rounded-[20px] px-[20px] py-[15px] gap-[20px] bg-[#FFFFFF]">
             <div class="lg:flex lg:flex-row lg:gap-[20px] flex flex-col gap-[20px]">
                 <SortFilterField 
                     dropDownValues={SORT_VALUES}
