@@ -33,6 +33,7 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Connector.Companion.bluetoothAdapt
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.retrofit.RetrofitInstance
+import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.ScanPage
 import fr.uge.structsure.settingsPage.presentation.SettingsPage
@@ -75,6 +76,7 @@ class MainActivity : ComponentActivity() {
         }
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
+        val planViewModel = PlanViewModel(applicationContext, scanViewModel)
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(bluetoothAdapter, filter)
         requestPermissions()
@@ -99,7 +101,7 @@ class MainActivity : ComponentActivity() {
                 composable("SettingsPage") { SettingsPage(navController) }
                 composable("ScanPage?structureId={structureId}") { backStackEntry ->
                     val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                    ScanPage(applicationContext, scanViewModel, structureId, connexionCS108, navController)
+                    ScanPage(applicationContext, scanViewModel, planViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
                 composable("LoginPage?backRoute={backRoute}") { backStackEntry ->

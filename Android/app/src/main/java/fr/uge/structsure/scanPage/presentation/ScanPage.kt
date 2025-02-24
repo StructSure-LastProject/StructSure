@@ -26,9 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
@@ -40,13 +40,14 @@ import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
-import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.scanPage.data.findPlanById
+import fr.uge.structsure.scanPage.data.getPlanSectionName
+import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
 import kotlinx.coroutines.launch
-import fr.uge.structsure.structuresPage.data.PlanDB
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
@@ -65,6 +66,7 @@ import fr.uge.structsure.ui.theme.Typography
 @Composable
 fun ScanPage(context: Context,
              scanViewModel: ScanViewModel,
+             planViewModel: PlanViewModel,
              structureId: Long,
              connexionCS108: Cs108Connector,
              navController: NavController) {
@@ -137,8 +139,14 @@ private fun SensorPopUp(
     onSubmit: () -> Unit,
     onCancel: () -> Unit
 ) {
+    val current = LocalContext.current
+
+    LaunchedEffect(sensor.plan) {
+        sensor.plan?.let { planViewModel.loadPlanById(current, it) }
+    }
+
     var note by remember { mutableStateOf(sensor.note ?: "") }
-    val planImagePath by planViewModel.planImagePath.observeAsState()
+    val planImage by planViewModel.image.observeAsState()
 
     val currentResults by scanViewModel.currentResults.observeAsState(initial = emptyList())
     val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: sensor.state
@@ -160,19 +168,22 @@ private fun SensorPopUp(
             verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start,
         ) {
+            val planNode = sensor.plan?.let { planViewModel.plans.value?.findPlanById(it) }
+            val sectionName = planNode?.let { getPlanSectionName(it) } ?: "Section inconnue"
+
             Text(
-                text = "OA Zone 04", // TODO: get the zone name from the plan section
+                text = sectionName,
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            planImagePath?.let { path ->
+            planImage?.let { bitmap ->
                 Image(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(156.dp)
                         .clip(shape = RoundedCornerShape(size = 15.dp))
                         .border(width = 3.dp, color = LightGray, shape = RoundedCornerShape(size = 15.dp)),
-                    bitmap = BitmapFactory.decodeFile(path).asImageBitmap(),
+                    bitmap = bitmap.asImageBitmap(),
                     contentDescription = "Plan",
                 )
             } ?: Box(

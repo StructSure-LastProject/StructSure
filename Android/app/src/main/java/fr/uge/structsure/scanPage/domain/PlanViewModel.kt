@@ -122,4 +122,19 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
             .filter { selected != null && it.plan == selected.plan.id }
         filteredPoints.postValue(filtered)
     }
+
+
+    /**
+     * Load the image of the plan by its ID in background so that it
+     * does not affect the main thread. Once the image is loaded, the
+     * Bitmap is sent to the [image] variable.
+     * @param context needed to read the file from the device
+     * @param planId the id of the plan to load the image for
+     */
+    fun loadPlanById(context: Context, planId: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val path = FileUtils.getLocalPlanImage(context, planId)
+            image.postValue(if (path == null) defaultImage else BitmapFactory.decodeFile(path))
+        }
+    }
 }
