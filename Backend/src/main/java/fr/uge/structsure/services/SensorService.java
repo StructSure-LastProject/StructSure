@@ -74,15 +74,9 @@ public class SensorService {
      * @return List<SensorDTO> the list of the sensors
      */
     public List<SensorDTO> getSensorsByPlanId(long structureId, long planId) throws TraitementException {
-        var structure = structureRepository.findById(structureId);
-        if (structure.isEmpty()) {
-            throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
-        }
-        var plan = planRepository.findByStructureAndId(structure.get(), planId);
-        if (plan.isEmpty()) {
-            throw new TraitementException(Error.PLAN_NOT_FOUND);
-        }
-        var sensors = sensorRepository.findByPlanId(plan.get().getId());
+        var structure = structureRepository.findById(structureId).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        var plan = planRepository.findByStructureAndId(structure, planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
+        var sensors = sensorRepository.findByPlan(plan);
         return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
     }
 

@@ -73,16 +73,6 @@ SensorRepository extends JpaRepository<Sensor, Long> {
     List<Sensor> findByStructure(Structure structure);
 
     /**
-     * Will find sensors associated with a specific Plan
-     * @param planId the plan id
-     * @return List<Sensor> list of the sensors
-     */
-    @Query("""
-    SELECT s FROM Sensor s WHERE s.plan.id = :planId
-    """)
-    List<Sensor> findByPlanId(Long planId);
-
-    /**
      * Counts the number of sensors in the structure
      * @param structure the structure
      * @return the number of sensors
@@ -120,4 +110,10 @@ SensorRepository extends JpaRepository<Sensor, Long> {
     @Query("SELECT s FROM Sensor s WHERE s.sensorId.controlChip = :controlChip AND s.sensorId.measureChip = :measureChip")
     Optional<Sensor> findByChips(@Param("controlChip") String controlChip, @Param("measureChip") String measureChip);
 
+    /**
+     * Will find sensors associated with a specific Plan
+     * @param plan the plan
+     * @return List<Sensor> list of the sensors
+     */
+    List<Sensor> findByPlan(Plan plan);
 }
