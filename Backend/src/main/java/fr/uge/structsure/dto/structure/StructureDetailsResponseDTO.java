@@ -44,7 +44,7 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
         }
     }
 
-    public record Sensor(String controlChip, String measureChip, String name) {
+    public record Sensor(String controlChip, String measureChip, String name, Integer x, Integer y) {
         public Sensor {
             Objects.requireNonNull(controlChip);
             Objects.requireNonNull(measureChip);
@@ -52,7 +52,8 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
         }
 
         public static Sensor fromSensorEntity(fr.uge.structsure.entities.Sensor sensor) {
-            return new Sensor(sensor.getSensorId().getControlChip(), sensor.getSensorId().getMeasureChip(), sensor.getName());
+            return new Sensor(sensor.getSensorId().getControlChip(), sensor.getSensorId().getMeasureChip(), sensor.getName(),
+                    sensor.getX(), sensor.getY());
         }
     }
 }

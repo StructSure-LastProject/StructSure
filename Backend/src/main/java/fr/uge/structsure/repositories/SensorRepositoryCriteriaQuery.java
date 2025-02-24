@@ -50,8 +50,8 @@ public class SensorRepositoryCriteriaQuery {
         predicates.add(cb.equal(sensor.get("structure").get("id"), structureId));
 
         Expression<Long> resultCount = cb.count(result);
-        Expression<Boolean> isNokPresent = checkIsNokPresent(cb, result);
-        Expression<Boolean> isDefectivePresent = checkIsDefectivePresent(cb, result);
+        Expression<Long> isNokPresent = countNok(cb, result);
+        Expression<Long> isDefectivePresent = countDefective(cb, result);
 
         Expression<Integer> state = getState(cb, resultCount, isNokPresent, isDefectivePresent);
 
@@ -85,10 +85,10 @@ public class SensorRepositoryCriteriaQuery {
         var orderType = OrderEnum.valueOf(request.orderType());
         Order order = switch (orderByColumn) {
             case NAME -> orderType.equals(OrderEnum.ASC) ?
-                        cb.asc(sensor.get(orderByColumn.getValue())) : cb.desc(sensor.get(orderByColumn.getValue()));
+                    cb.asc(sensor.get(orderByColumn.getValue())) : cb.desc(sensor.get(orderByColumn.getValue()));
             case STATE -> orderType.equals(OrderEnum.ASC) ? cb.asc(getWhen(cb, state)) : cb.desc(getWhen(cb, state));
             case INSTALLATION_DATE -> orderType.equals(OrderEnum.ASC) ?
-                        cb.asc(sensor.get("installationDate")) : cb.desc(sensor.get("installationDate"));
+                    cb.asc(sensor.get("installationDate")) : cb.desc(sensor.get("installationDate"));
         };
         cq.orderBy(order);
         var query = em.createQuery(cq);
@@ -174,11 +174,10 @@ public class SensorRepositoryCriteriaQuery {
      * @param result the result of the join
      * @return Predicate the number of defective states
      */
-    private static Predicate checkIsDefectivePresent(CriteriaBuilder cb, Join<Object, Object> result) {
-        return cb.greaterThan(
-                cb.count(cb.<Long>selectCase().when(cb.equal(result.get("state"), StateEnum.DEFECTIVE), 1L)),
-                0L
-        );
+    private static Expression<Long> countDefective(CriteriaBuilder cb, Join<Object, Object> result) {
+        return cb.sum(cb.<Long>selectCase()
+                .when(cb.equal(result.get("state"), StateEnum.DEFECTIVE), 1L)
+                .otherwise(0L)); // On garde 0 pour les autres cas
     }
 
     /**
@@ -187,12 +186,12 @@ public class SensorRepositoryCriteriaQuery {
      * @param result the result of the join
      * @return Predicate the number of nok states
      */
-    private static Predicate checkIsNokPresent(CriteriaBuilder cb, Join<Object, Object> result) {
-        return cb.greaterThan(
-                cb.count(cb.<Long>selectCase().when(cb.equal(result.get("state"), StateEnum.NOK), 1L)),
-                0L
-        );
+    private static Expression<Long> countNok(CriteriaBuilder cb, Join<Object, Object> result) {
+        return cb.sum(cb.<Long>selectCase()
+                .when(cb.equal(result.get("state"), StateEnum.NOK), 1L)
+                .otherwise(0L)); // Même logique ici
     }
+
 
     /**
      * Returns the state of the sensor
@@ -202,11 +201,11 @@ public class SensorRepositoryCriteriaQuery {
      * @param isDefectivePresent the number of defective states
      * @return
      */
-    private static Expression<Integer> getState(CriteriaBuilder cb, Expression<Long> resultCount, Expression<Boolean> isNokPresent, Expression<Boolean> isDefectivePresent) {
+    private static Expression<Integer> getState(CriteriaBuilder cb, Expression<Long> resultCount, Expression<Long> isNokPresent, Expression<Long> isDefectivePresent) {
         return cb.<Integer>selectCase()
                 .when(cb.equal(resultCount, 0), State.UNKNOWN.ordinal())
-                .when(isNokPresent, State.NOK.ordinal())
-                .when(isDefectivePresent, State.DEFECTIVE.ordinal())
+                .when(cb.greaterThan(isDefectivePresent, 0L), State.DEFECTIVE.ordinal())
+                .when(cb.greaterThan(isNokPresent, 0L), State.NOK.ordinal())
                 .otherwise(State.OK.ordinal());
     }
 

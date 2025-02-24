@@ -182,8 +182,8 @@ function StructureDetailPlans(props) {
                 <div class="lg:w-[75%] rounded-[20px] bg-white">
                     <div class="w-full p-[20px]">
                         <div class="w-full relative">
-                            <StructureDetailCanvas plan={plan} interactiveMode={true} planSensors={props.planSensors} />
-                        
+                            <StructureDetailCanvas structureId={props.structureId} plan={plan} interactiveMode={true} planSensors={props.planSensors} structureDetails={props.structureDetails} 
+                            setPlanSensors={props.setPlanSensors} setSensors={props.setSensors}/>
                         </div>
                     </div>
                 </div>
@@ -191,6 +191,5 @@ function StructureDetailPlans(props) {
         </>
     );
 }
-
 
 export default StructureDetailPlans

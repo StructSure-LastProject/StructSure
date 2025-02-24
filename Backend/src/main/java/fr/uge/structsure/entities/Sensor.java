@@ -40,11 +40,11 @@ public class Sensor {
     @JsonSerialize(using = PlanIdSerializer.class)
     private Plan plan;
 
-    @Column
-    private Double x;
+    @Column(columnDefinition = "REAL")
+    private Integer x;
 
-    @Column
-    private Double y;
+    @Column(columnDefinition = "REAL")
+    private Integer y;
 
     private Boolean archived=false;
 
@@ -75,7 +75,7 @@ public class Sensor {
     @SuppressWarnings("java:S107")
     public Sensor(
         SensorId sensorId, String name, String note, Structure structure,
-        LocalDate installationDate, Plan plan, Double x, Double y,
+        LocalDate installationDate, Plan plan, Integer x, Integer y,
         Boolean archived, Set<Result> results
     ) {
         this.sensorId = sensorId;
@@ -108,7 +108,7 @@ public class Sensor {
     public Sensor(
         String controlChip, String measureChip, String name, String note,
         Structure structure, LocalDate installationDate, Plan plan,
-        Double x, Double y, Boolean archived
+        Integer x, Integer y, Boolean archived
     ) {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
@@ -187,19 +187,19 @@ public class Sensor {
         this.installationDate = installationDate;
     }
 
-    public Double getX() {
-        return x;
-    }
-
-    public void setX(Double x) {
-        this.x = x;
-    }
-
-    public Double getY() {
+    public Integer getY() {
         return y;
     }
 
-    public void setY(Double y) {
+    public Integer getX() {
+        return x;
+    }
+
+    public void setX(Integer x) {
+        this.x = x;
+    }
+
+    public void setY(Integer y) {
         this.y = y;
     }
 
