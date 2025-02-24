@@ -118,12 +118,12 @@ const CheckBoxComponent = ({description, isChecked, setIsChecked}) => {
                 class="accent-[#181818]  min-w-[14px] min-h-[14px] rounded-[3px]"
                 checked={isChecked()}
             />
-            <span 
+            <button 
                 onClick={() => setIsChecked(!isChecked())} 
                 class="font-poppins font-[400] text-[14px] leading-[21px] tracking-[0%] opacity-[75%] text-[#181818]"
             >
                 {description}
-            </span>
+            </button>
         </div>
     );
 }
