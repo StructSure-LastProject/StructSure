@@ -1,5 +1,6 @@
 package fr.uge.structsure.connexionPage
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -115,7 +116,7 @@ fun ConnexionCard(navController: NavController, backRoute: String, accountDao: A
                         } catch (e: Exception) {
                             errorMessage =
                                 "Une erreur est survenue: ${e.message}" // Set error message
-                            e.printStackTrace()
+                            Log.w("Connection", e)
                         }
                     }
                 }

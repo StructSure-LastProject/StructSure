@@ -199,7 +199,7 @@ class MainActivity : ComponentActivity() {
         }
         val unfinished = db.scanDao().getUnfinishedScan()
         if (unfinished != null) {
-            scanViewModel.setStructure(unfinished.structureId, unfinished.id)
+            scanViewModel.setStructure(applicationContext, unfinished.structureId, unfinished.id)
             return "ScanPage?structureId=${unfinished.structureId}"
         } else if (db.accountDao().get()?.token == null) {
             return "LoginPage?backRoute=$HOME_PAGE" // User not logged in
@@ -226,7 +226,9 @@ fun NavController.navigateNoReturn(route: String) {
  * the current page as the next page to display after login success.
  */
 fun NavController.requestLogin() {
-    navigate("LoginPage?backRoute=${currentBackStackEntry?.destination?.route?:MainActivity.HOME_PAGE}") {
+    var backRoute = currentBackStackEntry?.destination?.route
+    if (backRoute == null || backRoute.startsWith("LoginPage")) backRoute = MainActivity.HOME_PAGE
+    navigate("LoginPage?backRoute=$backRoute") {
         popUpTo(0) { inclusive = true } // Prevent going back
         launchSingleTop = true
     }

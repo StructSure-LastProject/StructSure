@@ -141,7 +141,7 @@ fun SettingsPage(navController: NavController) {
                             PreferencesManager.clearServerUrl(context)
                             RetrofitInstance.init(serverAddress)
                             errorMessage = ""
-                            navController.navigateNoReturn("LoginPage")
+                            navController.navigateNoReturn("LoginPage?backRoute=HomePage")
                         } else {
                             errorMessage = "L'adresse du serveur n'a pas changé. Vous êtes déjà connecté."
                         }

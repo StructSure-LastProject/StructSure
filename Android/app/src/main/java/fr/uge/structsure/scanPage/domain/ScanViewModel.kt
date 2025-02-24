@@ -99,7 +99,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      * @param structureId the id of the structure in use
      * @param scanId the id of the uncompleted scan to continue
      */
-    fun setStructure(structureId: Long, scanId: Long? = null) {
+    fun setStructure(context: Context, structureId: Long, scanId: Long? = null) {
         if (this.structureId == structureId) return
         this.structureId = structureId
         this.activeScanId = null
