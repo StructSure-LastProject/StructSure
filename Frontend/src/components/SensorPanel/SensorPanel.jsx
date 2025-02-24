@@ -205,7 +205,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
 
     if (statusCode() === 200) {
       setvalidationError("");
-      sensorsFetchRequest(structureId, {}, setSensors);
+      sensorsFetchRequest(structureId, setSensors);
       closeSensorPanel();
       return true;
     }    
