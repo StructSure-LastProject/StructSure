@@ -54,6 +54,7 @@ public record SensorDTO(
             Integer x,
             Integer y
     ) {
+
         this(controlChip, measureChip, name, note, State.values()[state], archived, installationDate, x, y);
     }
 

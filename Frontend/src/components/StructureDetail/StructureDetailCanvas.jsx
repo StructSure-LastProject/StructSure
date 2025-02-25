@@ -2,6 +2,7 @@ import { createSignal, onMount, onCleanup, Show, createEffect, createMemo } from
 import { Check, ChevronDown, Trash2 } from 'lucide-solid';
 import useFetch from '../../hooks/useFetch';
 import Alert from '../Alert';
+import getSensorStatusColor from "../SensorStatusColorGen";
 
 /**
  * Shows the plans part
@@ -570,12 +571,10 @@ function StructureDetailCanvas(props) {
      */
     function DrawClickedSensor(props) {
         return (
-            <div class="absolute z-20 border-4 w-5 h-5 rounded-[50px]"
+            <div class={`absolute z-20 border-[2px] w-5 h-5 rounded-[50px] ${getSensorStatusColor(props.state)}`}
                 style={{
                     top: `${popupCanvasY()-10}px`,
-                    left: `${popupCanvasX()-10}px`,
-                    "background-color": props.colors[0],
-                    "border-color": props.colors[1],
+                    left: `${popupCanvasX()-10}px`
                 }}>
             </div>
         );
@@ -601,7 +600,7 @@ function StructureDetailCanvas(props) {
                         </div>
                     </Show>
                     <Show when={clickExistingPoint()}>
-                        <DrawClickedSensor colors={getColorFromSensor(clickExistingPoint())} />
+                        <DrawClickedSensor state={clickExistingPoint().state} />
                     </Show>
                     <div 
                         class="absolute z-10 w-[351px] rounded-tr-[20px] rounded-b-[20px] flex flex-col gap-5  bg-white px-5 py-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
@@ -613,59 +612,63 @@ function StructureDetailCanvas(props) {
                         <div class="w-full flex justify-between items-center">
                             <h1 class="title">{clickExistingPoint() != null ? clickExistingPoint().name : "Nouveau point"}</h1>
                             <div class="flex gap-x-[10px]">
-                                <button class="bg-lightgray rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onClick={() => {
-                                    if (selectedSensor() != null) {
-                                        positionSensorFetchRequest(props.structureId, selectedSensor().controlChip, selectedSensor().measureChip, 1, popupX(), popupY());
-                                    }
-                                }}>
-                                    <Check color="black" stroke-width="2.5" width="20px" height="20px"/>
-                                </button>
+                                <Show when={!clickExistingPoint()}>
+                                    <button class="bg-lightgray rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onClick={() => {
+                                        if (selectedSensor() != null) {
+                                            positionSensorFetchRequest(props.structureId, selectedSensor().controlChip, selectedSensor().measureChip, 1, popupX(), popupY());
+                                        }
+                                    }}>
+                                        <Check color="black" stroke-width="2.5" width="20px" height="20px"/>
+                                    </button>
+                                </Show>
                                 <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
                                     <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
                                 </button>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-y-[5px]">
-                            <p class="normal opacity-50">Capteur</p>
+                        <Show when={!clickExistingPoint()}>
+                            <div class="flex flex-col gap-y-[5px]">
+                                <p class="normal opacity-50">Capteur</p>
 
-                            <div class="bg-lightgray px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
-                                <input
-                                    type="text"
-                                    class="bg-transparent subtitle w-full"
-                                    value={inputValue()}
-                                    onInput={(e) => setInputValue(e.currentTarget.value)}
-                                    onFocus={() => setIsOpen(true)} // Open dropdown on focus
-                                />
-                                <button
-                                    class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center"
-                                    onClick={() => setIsOpen(!isOpen())}
-                                >
-                                    <ChevronDown class={`transition-transform ${isOpen() ? "rotate-180" : ""}`} color="black" />
-                                </button>
-                            </div>
-                            <Show when={isOpen() && filteredOptions().length > 0}>
-                                <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
-                                    {filteredOptions().map((option, index) => (
-                                    <>
-                                        <p
-                                            class="normal cursor-pointer"
-                                            onClick={(event) => {
-                                                event.stopImmediatePropagation();
-                                                setInputValue(option.name);
-                                                setSelectedSensor(option);
-                                                setIsOpen(false);
-                                            }}
-                                        >
-                                        {option.name}
-                                        </p>
-                                        <Show when={index < filteredOptions().length - 1}>
-                                            <div class="w-full h-[1px] bg-lightgray"></div>
-                                        </Show>
-                                    </>
-                                    ))}
+                                <div class="bg-lightgray px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
+                                    <input
+                                        type="text"
+                                        class="bg-transparent subtitle w-full"
+                                        value={inputValue()}
+                                        onInput={(e) => setInputValue(e.currentTarget.value)}
+                                        onFocus={() => setIsOpen(true)} // Open dropdown on focus
+                                    />
+                                    <button
+                                        class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center"
+                                        onClick={() => setIsOpen(!isOpen())}
+                                    >
+                                        <ChevronDown class={`transition-transform ${isOpen() ? "rotate-180" : ""}`} color="black" />
+                                    </button>
                                 </div>
-                            </Show>
-                        </div>
+                                <Show when={isOpen() && filteredOptions().length > 0}>
+                                    <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
+                                        {filteredOptions().map((option, index) => (
+                                        <>
+                                            <p
+                                                class="normal cursor-pointer"
+                                                onClick={(event) => {
+                                                    event.stopImmediatePropagation();
+                                                    setInputValue(option.name);
+                                                    setSelectedSensor(option);
+                                                    setIsOpen(false);
+                                                }}
+                                            >
+                                            {option.name}
+                                            </p>
+                                            <Show when={index < filteredOptions().length - 1}>
+                                                <div class="w-full h-[1px] bg-lightgray"></div>
+                                            </Show>
+                                        </>
+                                        ))}
+                                    </div>
+                                </Show>
+                            </div>
+                        </Show>
                     </div>
                 </div>
             </Show>
