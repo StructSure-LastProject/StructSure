@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.distinctUntilChanged
 import fr.uge.structsure.R
+import fr.uge.structsure.components.AddPointPane
 import fr.uge.structsure.components.Plan
 import fr.uge.structsure.scanPage.data.TreePlan
 import fr.uge.structsure.scanPage.data.TreeSection
@@ -87,8 +89,17 @@ fun PlansView(scanViewModel: ScanViewModel) {
                     .height(1.dp)
                     .background(LightGray) )
 
-            plans.value?.let {
-                Section(planViewModel, it, true)
+            var addPoint by remember { mutableStateOf(true) }
+            if (addPoint) {
+                AddPointPane(
+                    listOf("Capteur PA", "Capteur P8S", "Capteur P8N", "Capteur A", "Sensor B"),
+                    { addPoint = false },
+                    { addPoint = false }
+                )
+            } else {
+                plans.value?.let {
+                    Section(planViewModel, it, true)
+                }
             }
         }
     }

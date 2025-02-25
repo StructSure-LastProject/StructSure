@@ -5,7 +5,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -28,8 +31,12 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import fr.uge.structsure.R
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.ui.theme.Black
+import fr.uge.structsure.ui.theme.Red
+import fr.uge.structsure.ui.theme.White
 import kotlin.math.sqrt
 
 /**
@@ -102,6 +109,39 @@ fun Plan(
                 point(size, panned.x, panned.y, SensorState.from(it.state))
             }
         }
+    }
+}
+
+/**
+ * Component that prompts the user to select a point to place on the
+ * plan.
+ * @param options the list of available sensors
+ * @param onSubmit the action to run when a sensor is selected
+ * @param onCancel the action to run when the cancel button is pressed
+ */
+@Composable
+fun AddPointPane(
+    options: List<String>,
+    onSubmit: (String) -> Unit,
+    onCancel: () -> Unit
+) {
+    var search by remember { mutableStateOf("") }
+    val valid = options.contains(search)
+    Column(
+        Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Title("Nouveau point", false) {
+            Button(R.drawable.x, "Cancel") { onCancel() }
+            Box (Modifier.alpha(if (valid) 1f else .25f)) {
+                Button(R.drawable.check, "Save", White, Black) {
+                    if (valid) onSubmit(search)
+                }
+            }
+            // Button(R.drawable.trash, "Save", Red, Red.copy(alpha = 0.1f))
+        }
+        ComboBox("Capteur", options, search, { search = it }, if (valid) Black else Red)
     }
 }
 
