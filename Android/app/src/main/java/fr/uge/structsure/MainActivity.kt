@@ -76,7 +76,6 @@ class MainActivity : ComponentActivity() {
         }
         structureViewModel = ViewModelProvider(this, viewModelFactory)[StructureViewModel::class.java]
         csLibrary4A = Cs108Library4A(this, TextView(this))
-        val planViewModel = PlanViewModel(applicationContext, scanViewModel)
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(bluetoothAdapter, filter)
         requestPermissions()
@@ -101,7 +100,7 @@ class MainActivity : ComponentActivity() {
                 composable("SettingsPage") { SettingsPage(navController) }
                 composable("ScanPage?structureId={structureId}") { backStackEntry ->
                     val structureId = backStackEntry.arguments?.getString("structureId")?.toLong() ?: 1L
-                    ScanPage(applicationContext, scanViewModel, planViewModel, structureId, connexionCS108, navController)
+                    ScanPage(applicationContext, scanViewModel, structureId, connexionCS108, navController)
                     SetDynamicStatusBar()
                 }
                 composable("LoginPage?backRoute={backRoute}") { backStackEntry ->

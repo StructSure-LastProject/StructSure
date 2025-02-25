@@ -1,7 +1,6 @@
 package fr.uge.structsure.scanPage.domain
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,6 +21,7 @@ import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
+import android.util.Log
 
 /**
  * ViewModel responsible for managing the scanning process.
@@ -77,7 +77,11 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         processChip(chipId)
     }
 
+    /** LiveData for displaying the sensors that have not been scanned yet */
     val sensorsNotScanned = MutableLiveData<List<SensorDB>>()
+
+    /** LiveData for displaying the scanned sensors */
+    val sensorsScanned = MutableLiveData<List<ResultSensors>>()
 
     /** Counts how many results are in a given state for the scan weather */
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
@@ -91,8 +95,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Displaying error messages when updating notes */
     val noteErrorMessage = MutableLiveData<String>()
 
-    val currentResults = MutableLiveData<List<ResultSensors>>()
-
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
      */
@@ -103,7 +105,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             } ?: emptyList()
 
             val stateCounts = SensorState.entries.associateWith { state ->
-                if (state == SensorState.UNSCANNED) sensorCache.size() - scannedSensors.size
+                if (state == SensorState.UNKNOWN) sensorCache.size() - scannedSensors.size
                 else scannedSensors.count { it.state == state.name }
             }
             sensorStateCounts.postValue(stateCounts)
@@ -166,7 +168,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             val sensors = sensorDao.getAllSensors(structureId)
             sensorsNotScanned.postValue(sensors)
             val stateCounts = SensorState.entries.associateWith { state ->
-                if (state == SensorState.UNSCANNED) sensors.size else 0
+                if (state == SensorState.UNKNOWN) sensors.size else 0
             }
             sensorStateCounts.postValue(stateCounts)
             sensorCache.insertSensors(sensors)
@@ -203,6 +205,13 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     }
 
     /**
+     * Gets the display name for a sensor state
+     */
+    fun getStateDisplayName(state: String): String {
+        return SensorState.from(state).displayName
+    }
+
+    /**
      * Adds a scanned RFID chip ID to the buffer for processing.
      * @param chip The details of the scanned chip
      */
@@ -230,17 +239,18 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
     /**
      * Computes the new state of a sensor based on the scanned chip and the presence of the other chip.
+     * Returns the internal state name (NOT the display name).
      *
      * @param sensor The sensor being processed.
      * @param scannedChip The chip that was scanned.
      * @param otherChipInBuffer Whether the other chip is present in the buffer.
-     * @return The new state of the sensor.
+     * @return The new state of the sensor as an internal name.
      */
     private fun computeSensorState(sensor: SensorDB, scannedChip: String, otherChipInBuffer: Boolean): String {
         return if (scannedChip == sensor.controlChip) {
-            if (otherChipInBuffer) "NOK" else "OK"
+            if (otherChipInBuffer) SensorState.NOK.name else SensorState.OK.name
         } else {
-            if (otherChipInBuffer) "NOK" else "DEFECTIVE"
+            if (otherChipInBuffer) SensorState.NOK.name else SensorState.DEFECTIVE.name
         }
     }
 
@@ -264,36 +274,39 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             )
             resultDao.insertResult(result)
 
-            val currentList = currentResults.value?.toMutableList() ?: mutableListOf()
+            val currentList = sensorsScanned.value?.toMutableList() ?: mutableListOf()
             currentList.removeAll { it.id == sensor.sensorId }
             currentList.add(result)
-            currentResults.postValue(currentList)
+            sensorsScanned.postValue(currentList)
         }
 
-        when (stateChanged) {
-            "OK" -> {
-                sensorMessages.postValue("Sensor ${sensor.name} is OK")
+        when (val sensorState = SensorState.from(stateChanged)) {
+            SensorState.OK -> {
+                sensorMessages.postValue("Capteur ${sensor.name} est ${sensorState.displayName}")
             }
-            "NOK" -> {
+            SensorState.NOK -> {
                 pauseScan()
+                val previousState = SensorState.from(sensor.state).displayName
                 alertMessages.postValue(
                     AlertInfo(
                         state = true,
                         sensorName = "Capteur ${sensor.name}",
-                        lastStateSensor = sensor.state
+                        lastStateSensor = previousState
                     )
                 )
             }
-            "DEFECTIVE" -> {
+            SensorState.DEFECTIVE -> {
                 pauseScan()
+                val previousState = SensorState.from(sensor.state).displayName
                 alertMessages.postValue(
                     AlertInfo(
                         state = false,
                         sensorName = "Capteur ${sensor.name}",
-                        lastStateSensor = sensor.state
+                        lastStateSensor = previousState
                     )
                 )
             }
+            else -> Unit
         }
     }
 
@@ -311,7 +324,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         cs108Scanner.start()
         currentScanState.postValue(ScanState.STARTED)
         alertMessages.postValue(null)
-        currentResults.postValue(emptyList())
+        sensorsScanned.postValue(emptyList())
 
         if (activeScanId != null) return // already created
 

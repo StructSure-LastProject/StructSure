@@ -10,11 +10,14 @@ class SensorCache {
 
     private val lock = Any()
 
-    // Map: sensorId -> (SensorDB, previousState)
+    // Map: sensorId -> (SensorDB, currentState)
     private val sensorMap = mutableMapOf<String, Pair<SensorDB, String?>>()
 
     // Map: chipId -> sensorId
     private val chipToSensorIdMap = mutableMapOf<String, String>()
+
+    // Map: sensorId -> previousState
+    private val previousStatesMap = mutableMapOf<String, String>()
 
     /**
      * Inserts a list of sensors into the cache.
@@ -31,7 +34,6 @@ class SensorCache {
         }
     }
 
-
     /**
      * Gets the previous state of a sensor from the cache
      * @param sensorId the ID of the sensor
@@ -39,8 +41,7 @@ class SensorCache {
      */
     fun getPreviousState(sensorId: String): String {
         synchronized(lock) {
-            val pair = sensorMap[sensorId]
-            return pair?.second ?: pair?.first?.state ?: pair?.first?.state!!
+            return previousStatesMap[sensorId] ?: sensorMap[sensorId]?.second ?: sensorMap[sensorId]?.first?.state ?: ""
         }
     }
 
@@ -96,15 +97,22 @@ class SensorCache {
      */
     fun updateSensorState(sensor: SensorDB, newState: String): String? {
         synchronized(lock) {
-            val lastState = sensorMap[sensor.sensorId]?.second ?: sensor.state
-            val computedState = mergeStates(lastState, newState)
-            if (computedState != lastState) {
-                sensorMap[sensor.sensorId] = Pair(sensor, lastState)
+            val currentState = sensorMap[sensor.sensorId]?.second ?: sensor.state
+            val computedState = mergeStates(currentState, newState)
+
+            if (computedState != currentState) {
+                // Sauvegarde l'état actuel comme état précédent
+                previousStatesMap[sensor.sensorId] = currentState
+
+                // Met à jour l'état actuel
+                sensorMap[sensor.sensorId] = Pair(sensor, computedState)
+
                 return computedState
             }
             return null
         }
     }
+
     /**
      * Manually hard set the state of the given sensor in the cache.
      * This function is only intended for initialization, otherwise you
@@ -116,6 +124,10 @@ class SensorCache {
     fun setSensorState(chip: String, state: String) {
         synchronized(lock) {
             findSensor(chip)?.let { sensor ->
+                val currentState = sensorMap[sensor.sensorId]?.second
+                if (currentState != null && currentState != state) {
+                    previousStatesMap[sensor.sensorId] = currentState
+                }
                 sensorMap[sensor.sensorId] = Pair(sensor, state)
             }
         }
@@ -138,6 +150,7 @@ class SensorCache {
         synchronized(lock) {
             sensorMap.clear()
             chipToSensorIdMap.clear()
+            previousStatesMap.clear()
         }
     }
 }

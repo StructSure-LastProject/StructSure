@@ -4,18 +4,18 @@ import androidx.compose.ui.graphics.Color
 import fr.uge.structsure.ui.theme.Gray
 import fr.uge.structsure.ui.theme.Ok
 import fr.uge.structsure.ui.theme.Red
-import fr.uge.structsure.ui.theme.Unscanned
+import fr.uge.structsure.ui.theme.Unknown
 
 /**
  * Represents the state of a sensor with an associated color for UI representation.
  *
  * @param color The color associated with the sensor state.
  */
-enum class SensorState(val color: Color) {
-    OK(Ok),
-    NOK(Red),
-    DEFECTIVE(Gray),
-    UNSCANNED(Unscanned);
+enum class SensorState(val displayName: String, val color: Color) {
+    OK("OK", Ok),
+    NOK("NOk", Red),
+    DEFECTIVE("Défaillant", Gray),
+    UNKNOWN("Non scanné", Unknown);
 
     companion object {
         /**
@@ -25,6 +25,6 @@ enum class SensorState(val color: Color) {
          * @return The corresponding `SensorState`, or `UNKNOWN` if no match is found.
          */
         fun from(name: String): SensorState =
-            entries.firstOrNull { it.name.equals(name, ignoreCase = true) } ?: UNSCANNED
+            entries.firstOrNull { it.name.equals(name, ignoreCase = true) } ?: UNKNOWN
     }
 }

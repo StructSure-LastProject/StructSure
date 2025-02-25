@@ -42,7 +42,6 @@ import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.scanPage.data.findPlanById
 import fr.uge.structsure.scanPage.data.getPlanSectionName
-import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
@@ -66,7 +65,6 @@ import fr.uge.structsure.ui.theme.Typography
 @Composable
 fun ScanPage(context: Context,
              scanViewModel: ScanViewModel,
-             planViewModel: PlanViewModel,
              structureId: Long,
              connexionCS108: Cs108Connector,
              navController: NavController) {
@@ -75,12 +73,6 @@ fun ScanPage(context: Context,
     scanViewModel.setStructure(context, structureId)
 
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
-
-    LaunchedEffect(sensorPopup) {
-        if (sensorPopup != null) {
-            planViewModel.loadPlans(context, structureId)
-        }
-    }
 
     Page(
         Modifier.padding(bottom = 100.dp),
@@ -135,23 +127,24 @@ fun ScanPage(context: Context,
 private fun SensorPopUp(
     sensor: SensorDB,
     scanViewModel: ScanViewModel,
-    planViewModel: PlanViewModel,
     onSubmit: () -> Unit,
     onCancel: () -> Unit
 ) {
     val current = LocalContext.current
 
     LaunchedEffect(sensor.plan) {
-        sensor.plan?.let { planViewModel.loadPlanById(current, it) }
+        sensor.plan?.let { scanViewModel.planViewModel.loadPlanById(current, it) }
     }
 
     var note by remember { mutableStateOf(sensor.note ?: "") }
-    val planImage by planViewModel.image.observeAsState()
+    val planImage by scanViewModel.planViewModel.image.observeAsState()
 
-    val currentResults by scanViewModel.currentResults.observeAsState(initial = emptyList())
-    val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: sensor.state
+    val currentResults by scanViewModel.sensorsScanned.observeAsState(initial = emptyList())
+    val currentStateRaw = currentResults.find { it.id == sensor.sensorId }?.state ?: sensor.state
+    val currentStateDisplay = scanViewModel.getStateDisplayName(currentStateRaw)
 
-    val lastState = scanViewModel.getPreviousState(sensor.sensorId)
+    val lastStateRaw = scanViewModel.getPreviousState(sensor.sensorId)
+    val lastStateDisplay = scanViewModel.getStateDisplayName(lastStateRaw)
 
     PopUp(onCancel) {
         Title(sensor.name, false) {
@@ -168,7 +161,7 @@ private fun SensorPopUp(
             verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start,
         ) {
-            val planNode = sensor.plan?.let { planViewModel.plans.value?.findPlanById(it) }
+            val planNode = sensor.plan?.let { scanViewModel.planViewModel.plans.value?.findPlanById(it) }
             val sectionName = planNode?.let { getPlanSectionName(it) } ?: "Section inconnue"
 
             Text(
@@ -200,10 +193,10 @@ private fun SensorPopUp(
 
         SensorDetails(
             Black,
-            "Etat courant:",
-            currentState,
+            "État courant:",
+            currentStateDisplay,
             "Dernier état:",
-            lastState
+            lastStateDisplay
         )
 
         InputTextArea(
