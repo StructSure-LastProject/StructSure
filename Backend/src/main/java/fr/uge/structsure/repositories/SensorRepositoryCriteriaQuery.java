@@ -161,7 +161,7 @@ public class SensorRepositoryCriteriaQuery {
 
         if (request.maxInstallationDate() != null && !request.maxInstallationDate().isEmpty()) {
             try {
-                predicates.add(cb.lessThanOrEqualTo(sensor.get("installationDate"), LocalDate.parse(request.maxInstallationDate(), formatter)));
+                predicates.add(cb.lessThanOrEqualTo(sensor.get("installationDate"), LocalDate.parse(request.maxInstallationDate(), formatter).plusDays(1)));
             } catch (DateTimeParseException e) {
                 throw new TraitementException(Error.DATE_TIME_FORMAT_ERROR);
             }
