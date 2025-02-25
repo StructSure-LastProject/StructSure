@@ -507,7 +507,7 @@ public class PlanService {
                 .sensors()
                 .stream()
                 .noneMatch(sensor -> sensor.getSensorId().equals(new SensorId(controlChip, measureChip)))){
-            throw new TraitementException(Error.SENSOR_ID_NOT_FOUND);
+            throw new TraitementException(Error.SENSOR_NOT_FOUND);
         }
         if (plan == null){
             throw new TraitementException(Error.PLAN_NOT_FOUND);

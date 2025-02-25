@@ -1,5 +1,8 @@
-import { createSignal, onMount, onCleanup, Show, createEffect } from "solid-js";
+import { createSignal, onMount, onCleanup, Show, createEffect, createMemo } from "solid-js";
 import { Check, ChevronDown, Trash2 } from 'lucide-solid';
+import useFetch from '../../hooks/useFetch';
+import Alert from '../Alert';
+import getSensorStatusColor from "../SensorStatusColorGen";
 
 /**
  * Shows the plans part
@@ -19,7 +22,7 @@ function StructureDetailCanvas(props) {
     const [canvasRatio, setCanvasRatio] = createSignal(0);
     const [drawWidth, setDrawWidth] = createSignal(0);
     const [drawHeight, setDrawHeight] = createSignal(0);
-    const [error, setError] = createSignal("");
+    const [errorFront, setErrorFront] = createSignal("");
 
     const [isPopupVisible, setIsPopupVisible] = createSignal(false);
     const [popupX, setPopupX] = createSignal(0);
@@ -31,12 +34,83 @@ function StructureDetailCanvas(props) {
     const [cClickX, setCClickX] = createSignal(0);
     const [cClickY, setCClickY] = createSignal(0);
 
+    const [inputValue, setInputValue] = createSignal("");
+    const [isOpen, setIsOpen] = createSignal(false);
+
+    const [selectedSensor, setSelectedSensor] = createSignal(null);
+
+    const filteredOptions = createMemo(() => {
+        if (!props.structureDetails().sensors) return [];
+        return props.structureDetails().sensors.filter(detailSensor =>
+            detailSensor.x == null && detailSensor.y == null & detailSensor.name?.toLowerCase().includes(inputValue().toLowerCase() || "")
+        );
+    });
+
+    /**
+     * Updates data when a sensor is placed in the canvas
+     */
+    const updateWhenSensorPlaced = () => {
+        if (selectedSensor()) {
+            const newSensor = {
+                ...selectedSensor(),
+                x: popupX(),
+                y: popupY()
+            };
+            props.setPlanSensors(props.planSensors().map(sensor =>
+                sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
+            ));
+            props.setSensors(props.structureDetails().sensors.map(sensor =>
+                sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
+            ));
+            setSelectedSensor(null);
+            setInputValue("");
+            setIsPopupVisible(false);    
+            drawImage();
+        }
+    };
+
+
+    /**
+     * Will call the endpoint that places a sensor in a plan
+     */
+    const positionSensorFetchRequest = async (structureId, controlChip, measureChip, planId, x, y) => {
+        const { fetchData, statusCode, error } = useFetch();
+    
+        const requestBody = {
+            structureId: structureId,
+            controlChip: controlChip,
+            measureChip: measureChip,
+            planId: planId,
+            x: parseInt(x),
+            y: parseInt(y)
+        };
+    
+        const requestUrl = "/api/sensors/position";
+    
+        const requestData = {
+            method: "POST",  // Changer GET en POST
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody) // Ajouter les paramètres dans le body
+        };
+    
+        await fetchData(requestUrl, requestData);
+    
+        if (statusCode() === 200) {
+            updateWhenSensorPlaced();
+        } else if (statusCode() === 404 || statusCode() === 422) {
+            setErrorFront(error().errorData.error);
+        }
+    };
+    
     const img = new Image();
     let canvasRef;
     let isMouseDown = false;
     let startX = 0;
     let startY = 0;
     let popupRef;
+    let refLstOfSensors;
     let hasMoved = false;
 
     /**
@@ -117,7 +191,7 @@ function StructureDetailCanvas(props) {
                 borderColor = "#6a6a6a40";
                 break;
             default:
-                setError("L'etat du sensor inconnu");
+                setErrorFront("L'etat du sensor inconnu");
                 break;
         }
         return [bgColor, borderColor];
@@ -136,19 +210,21 @@ function StructureDetailCanvas(props) {
         const ctx = ctxCanvas();
         const scaleX = (drawWidth + zoomX) / img.width;
         const scaleY = (drawHeight + zoomY) / img.height;
-        props.planSensors.forEach(sensor => {
-            const [bgColor, borderColor] = getColorFromSensor(sensor);
-            const sensorCanvasX = imgStartX + sensor.x * scaleX;
-            const sensorCanvasY = imgStartY + sensor.y * scaleY;
-            ctx.beginPath();
-            ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE - 2, 0, Math.PI * 2);
-            ctx.fillStyle = bgColor;
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE, 0, Math.PI * 2);
-            ctx.fillStyle = borderColor;
-            ctx.fill();
-            ctx.closePath();
+        props.planSensors().forEach(sensor => {
+            if (sensor.x != null && sensor.y != null) {
+                const [bgColor, borderColor] = getColorFromSensor(sensor);
+                const sensorCanvasX = imgStartX + sensor.x * scaleX;
+                const sensorCanvasY = imgStartY + sensor.y * scaleY;
+                ctx.beginPath();
+                ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE - 2, 0, Math.PI * 2);
+                ctx.fillStyle = bgColor;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(sensorCanvasX, sensorCanvasY, SENSOR_POINT_SIZE, 0, Math.PI * 2);
+                ctx.fillStyle = borderColor;
+                ctx.fill();
+                ctx.closePath();   
+            }
         });
     };
 
@@ -269,7 +345,8 @@ function StructureDetailCanvas(props) {
      * @param {Event} event the click in the page
      */
     const handleOutsideClick = (event) => {
-        if ((canvasRef && !canvasRef.contains(event.target)) && (popupRef && !popupRef.contains(event.target))) {
+        if ((canvasRef && !canvasRef.contains(event.target)) && (popupRef && !popupRef.contains(event.target))
+        && (refLstOfSensors && !refLstOfSensors.contains(event.target))) {
             setIsPopupVisible(false);
         }
     };
@@ -298,7 +375,7 @@ function StructureDetailCanvas(props) {
      * @returns {object|null} - The clicked sensor object or null if no match
      */
     const findClickedSensor = (x, y) => {
-        return props.planSensors.find(sensor => {
+        return props.planSensors().find(sensor => {
             const [scx, scy] = canvasPositionFromOriginal(sensor.x, sensor.y);
             const distance = Math.sqrt(
                 Math.pow(x - scx, 2) + Math.pow(y - scy, 2)
@@ -361,8 +438,8 @@ function StructureDetailCanvas(props) {
             setPopupX(px);
             setPopupY(py);
         }
-        setPosX(Math.round(px));
-        setPosY(Math.round(py));
+        setPosX(parseInt(px));
+        setPosY(parseInt(py));
         setIsPopupVisible(true);
     };
 
@@ -496,12 +573,10 @@ function StructureDetailCanvas(props) {
      */
     function DrawClickedSensor(props) {
         return (
-            <div class="absolute z-20 border-4 w-5 h-5 rounded-[50px]"
+            <div class={`absolute z-20 border-[2px] w-5 h-5 rounded-[50px] ${getSensorStatusColor(props.state)}`}
                 style={{
                     top: `${popupCanvasY()-10}px`,
-                    left: `${popupCanvasX()-10}px`,
-                    "background-color": props.colors[0],
-                    "border-color": props.colors[1],
+                    left: `${popupCanvasX()-10}px`
                 }}>
             </div>
         );
@@ -509,6 +584,9 @@ function StructureDetailCanvas(props) {
     
     return (
         <>
+            <Show when={errorFront().length > 0}>
+                <Alert message={errorFront()}/>
+            </Show>
             <canvas
                 ref={canvasRef}
                 class={props.styles === undefined ? `w-full bg-white` : props.styles }
@@ -524,42 +602,75 @@ function StructureDetailCanvas(props) {
                         </div>
                     </Show>
                     <Show when={clickExistingPoint()}>
-                        <DrawClickedSensor colors={getColorFromSensor(clickExistingPoint())} />
+                        <DrawClickedSensor state={clickExistingPoint().state} />
                     </Show>
                     <div 
-                        class="absolute z-10 w-[351px] h-[275px] rounded-tr-[20px] rounded-b-[20px] flex flex-col gap-5  bg-white px-5 py-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
+                        class="absolute z-10 w-[351px] rounded-tr-[20px] rounded-b-[20px] flex flex-col gap-5  bg-white px-5 py-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
                         style={{
                             top: `${popupCanvasY()}px`,
                             left: `${popupCanvasX()}px`,
                         }}
                     >
                         <div class="w-full flex justify-between items-center">
-                            <h1 class="title">Ouvrages</h1>
+                            <h1 class="title">{clickExistingPoint() != null ? clickExistingPoint().name : "Nouveau point"}</h1>
                             <div class="flex gap-x-[10px]">
-                                <button class="bg-lightgray rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                    <Check color="black" stroke-width="2.5" width="20px" height="20px"/>
-                                </button>
+                                <Show when={!clickExistingPoint()}>
+                                    <button class="bg-lightgray rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onClick={() => {
+                                        if (selectedSensor() != null) {
+                                            positionSensorFetchRequest(props.structureId, selectedSensor().controlChip, selectedSensor().measureChip, 1, popupX(), popupY());
+                                        }
+                                    }}>
+                                        <Check color="black" stroke-width="2.5" width="20px" height="20px"/>
+                                    </button>
+                                </Show>
                                 <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
                                     <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
                                 </button>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-y-[5px]">
-                            <p class="normal opacity-50">Capteur</p>
-                            <div class="bg-lightgray px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
-                                <input type="text" class="bg-transparent subtitle w-full">Capteur P</input>
-                                <button class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center">
-                                    <ChevronDown color="black" />
-                                </button>
+                        <Show when={!clickExistingPoint()}>
+                            <div class="flex flex-col gap-y-[5px]">
+                                <p class="normal opacity-50">Capteur</p>
+
+                                <div class="bg-lightgray px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
+                                    <input
+                                        type="text"
+                                        class="bg-transparent subtitle w-full"
+                                        value={inputValue()}
+                                        onInput={(e) => setInputValue(e.currentTarget.value)}
+                                        onFocus={() => setIsOpen(true)} // Open dropdown on focus
+                                    />
+                                    <button
+                                        class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center"
+                                        onClick={() => setIsOpen(!isOpen())}
+                                    >
+                                        <ChevronDown class={`transition-transform ${isOpen() ? "rotate-180" : ""}`} color="black" />
+                                    </button>
+                                </div>
+                                <Show when={isOpen() && filteredOptions().length > 0}>
+                                    <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
+                                        {filteredOptions().map((option, index) => (
+                                        <>
+                                            <p
+                                                class="normal cursor-pointer"
+                                                onClick={(event) => {
+                                                    event.stopImmediatePropagation();
+                                                    setInputValue(option.name);
+                                                    setSelectedSensor(option);
+                                                    setIsOpen(false);
+                                                }}
+                                            >
+                                            {option.name}
+                                            </p>
+                                            <Show when={index < filteredOptions().length - 1}>
+                                                <div class="w-full h-[1px] bg-lightgray"></div>
+                                            </Show>
+                                        </>
+                                        ))}
+                                    </div>
+                                </Show>
                             </div>
-                            <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
-                                <p class="normal">Capteur PA</p>
-                                <div class="w-full h-[1px] bg-lightgray"></div>
-                                <p class="normal">Capteur P8S</p>
-                                <div class="w-full h-[1px] bg-lightgray"></div>
-                                <p class="normal">Capteur P8N</p>
-                            </div>
-                        </div>
+                        </Show>
                     </div>
                 </div>
             </Show>

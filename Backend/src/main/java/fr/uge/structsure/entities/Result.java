@@ -18,6 +18,7 @@ public class Result {
     })
     private Sensor sensor;
 
+    @Enumerated(EnumType.ORDINAL)
     private State state;
 
     @JsonBackReference
@@ -26,10 +27,15 @@ public class Result {
 
     public Result() {}
 
+    /**
+     * Constructor for the result entity
+     * @param state the state
+     * @param sensor the sensor
+     * @param scan the scan
+     */
     public Result(State state, Sensor sensor, Scan scan) {
         this.state = Objects.requireNonNull(state);
         this.sensor = Objects.requireNonNull(sensor);
-        this.scan = Objects.requireNonNull(scan);
     }
 
     public long getId() {

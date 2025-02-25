@@ -76,7 +76,7 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
 function StructureDetailBody(props) {
 
     const [sensors, setSensors] = createSignal({});
-    const [structureDetails, setStructureDetails] = createSignal({"scans": [], "plans": []});
+    const [structureDetails, setStructureDetails] = createSignal({"scans": [], "plans": [], "sensors": []});
     const [planSensors, setPlanSensors] = createSignal([]);
     const [selectedPlanId, setSelectedPlanId] = createSignal(null);
     const [totalItems, setTotalItems] = createSignal(0);
@@ -107,16 +107,27 @@ function StructureDetailBody(props) {
         sensorsFetchRequest(props.structureId, setSensors, setTotalItems);
         planSensorsFetchRequest(props.structureId, setPlanSensors);
     });
-    
+
+    /**
+     * Sets the sensor in the structure details
+     * @param {list} sensors list of the sensors
+     */
+    const setSensorsDetail = (sensors) => {
+        setStructureDetails(prev => ({ ...prev, sensors }));
+    };
+
+
     return (
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
             <StructureDetailHead scans={structureDetails().scans}/>
             <StructureDetailPlans
-              plans={structureDetails().plans}
+              structureDetails={structureDetails}
               structureId={props.structureId}
-              planSensors={planSensors()}
               selectedPlanId={selectedPlanId}
               setSelectedPlanId={setSelectedPlanId}
+              planSensors={planSensors}
+              setPlanSensors={setPlanSensors}
+              setSensors={setSensorsDetail}
             />
             <StructureDetailRow structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
         </div>

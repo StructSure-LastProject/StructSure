@@ -17,6 +17,7 @@ export default {
         green: '#25B61F',
         gray: '#6A6A6A',
         orange: '#F19327',
+        red100: '#F1332740'
       }
     },
   },

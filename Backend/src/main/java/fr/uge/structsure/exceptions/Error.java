@@ -28,6 +28,7 @@ public enum Error {
     STRUCTURE_NAME_EXCEED_LIMIT(422, "Le nom d'un ouvrage ne peut pas dépasser 64 caractères"),
     STRUCTURE_NOTE_EXCEED_LIMIT(422, "La note d'un ouvrage ne peut pas dépasser 1000 caractères"),
 
+    PLAN_NOT_BELONG_TO_STRUCTURE(422, "Plan n’appartient pas à l’ouvrage"),
     PLAN_STRUCTURE_ID_IS_EMPTY(422, "Le champ structureId est requis"),
     PLAN_STRUCTURE_NOT_FOUND(404, "Ouvrage introuvable"),
     PLAN_FILE_INVALID_FORMAT(422, "Format du fichier non valide"),
@@ -47,7 +48,7 @@ public enum Error {
     PLAN_IS_ARCHIVED(409, "Le plan à été archivé"),
     STRUCTURE_IS_ARCHIVED(409, "L'ouvrage à été archivé"),
 
-    SENSOR_ID_NOT_FOUND(404, "Capteur introuvable"),
+    SENSOR_NOT_FOUND(404, "Capteur introuvable"),
     SENSOR_CHIP_TAGS_IS_EMPTY(422, "Les champs [controlChip | measureChip] sont obligatoires"),
     SENSOR_NAME_IS_EMPTY(422, "Le champ name est obligatoire"),
     SENSOR_COMMENT_IS_EMPTY(422, "Le champ note est obligatoire"),

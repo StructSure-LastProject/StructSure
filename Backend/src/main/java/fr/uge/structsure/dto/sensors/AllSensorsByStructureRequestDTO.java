@@ -6,9 +6,7 @@ import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.utils.EnumValidatorFromString;
 import fr.uge.structsure.utils.OrderEnum;
-import fr.uge.structsure.utils.StateEnum;
 
-import java.util.Date;
 import java.util.Objects;
 
 /**

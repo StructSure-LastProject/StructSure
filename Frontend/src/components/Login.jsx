@@ -82,7 +82,7 @@ function Login() {
                     </div>
 
                     <div>
-                        <p class="text-sm text-center text-red-500">{errorFront()}</p>
+                        <p class="text-sm text-center text-red">{errorFront()}</p>
                     </div>
 
                     <div class="flex flex-col gap-y-25px">

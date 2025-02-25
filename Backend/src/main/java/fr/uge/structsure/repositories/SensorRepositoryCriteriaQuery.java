@@ -7,7 +7,6 @@ import fr.uge.structsure.entities.State;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.utils.OrderEnum;
-import fr.uge.structsure.utils.StateEnum;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
@@ -85,10 +84,10 @@ public class SensorRepositoryCriteriaQuery {
         var orderType = OrderEnum.valueOf(request.orderType());
         Order order = switch (orderByColumn) {
             case NAME -> orderType.equals(OrderEnum.ASC) ?
-                        cb.asc(sensor.get(orderByColumn.getValue())) : cb.desc(sensor.get(orderByColumn.getValue()));
+                    cb.asc(sensor.get(orderByColumn.getValue())) : cb.desc(sensor.get(orderByColumn.getValue()));
             case STATE -> orderType.equals(OrderEnum.ASC) ? cb.asc(getWhen(cb, state)) : cb.desc(getWhen(cb, state));
             case INSTALLATION_DATE -> orderType.equals(OrderEnum.ASC) ?
-                        cb.asc(sensor.get("installationDate")) : cb.desc(sensor.get("installationDate"));
+                    cb.asc(sensor.get("installationDate")) : cb.desc(sensor.get("installationDate"));
         };
         cq.orderBy(order);
         var query = em.createQuery(cq);
@@ -176,23 +175,25 @@ public class SensorRepositoryCriteriaQuery {
      */
     private static Predicate checkIsDefectivePresent(CriteriaBuilder cb, Join<Object, Object> result) {
         return cb.greaterThan(
-                cb.count(cb.<Long>selectCase().when(cb.equal(result.get("state"), StateEnum.DEFECTIVE), 1L)),
+                cb.count(cb.<Long>selectCase().when(cb.equal(result.get("state"), State.DEFECTIVE), 1L)),
                 0L
         );
     }
 
+
     /**
-     * Returns the number results with nok state
+     * Checks the number results with nok state
      * @param cb the Criteria Builder
      * @param result the result of the join
-     * @return Predicate the number of nok states
+     * @return Predicate true if nok present and false if not
      */
     private static Predicate checkIsNokPresent(CriteriaBuilder cb, Join<Object, Object> result) {
         return cb.greaterThan(
-                cb.count(cb.<Long>selectCase().when(cb.equal(result.get("state"), StateEnum.NOK), 1L)),
+                cb.count(cb.<Long>selectCase().when(cb.equal(result.get("state"), State.NOK), 1L)),
                 0L
         );
     }
+
 
     /**
      * Returns the state of the sensor

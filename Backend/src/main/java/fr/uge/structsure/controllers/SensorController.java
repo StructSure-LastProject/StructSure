@@ -93,4 +93,18 @@ public class SensorController {
             return e.toResponseEntity();
         }
     }
+
+    /**
+     * Endpoint to give a position to a sensor in a plan
+     * @return ResponseEntity<?> the response containing the sensor id if success, and error if not
+     */
+    @PostMapping("sensors/position")
+    public ResponseEntity<?> getSensorsByStructure(@RequestBody SensorPositionRequestDTO request) {
+        try {
+            SensorPositionResponseDTO sensorDTOs = sensorService.positionSensor(request);
+            return ResponseEntity.ok(sensorDTOs);
+        } catch (TraitementException e) {
+            return e.toResponseEntity();
+        }
+    }
 }

@@ -4,10 +4,8 @@ import fr.uge.structsure.dto.structure.AllStructureRequestDTO;
 import fr.uge.structsure.dto.structure.AllStructureResponseDTO;
 import fr.uge.structsure.entities.*;
 import fr.uge.structsure.utils.OrderEnum;
-import fr.uge.structsure.utils.StateEnum;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.springframework.stereotype.Repository;
 

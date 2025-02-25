@@ -27,8 +27,8 @@ public record SensorDTO(
         State state,
         Boolean archived,
         LocalDate installationDate,
-        Double x,
-        Double y
+        Integer x,
+        Integer y
 ) {
 
     /**
@@ -51,9 +51,10 @@ public record SensorDTO(
             Integer state,
             boolean archived,
             LocalDate installationDate,
-            Double x,
-            Double y
+            Integer x,
+            Integer y
     ) {
+
         this(controlChip, measureChip, name, note, State.values()[state], archived, installationDate, x, y);
     }
 

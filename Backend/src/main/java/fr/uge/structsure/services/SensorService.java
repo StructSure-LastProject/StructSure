@@ -1,10 +1,7 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.sensors.*;
-import fr.uge.structsure.entities.Plan;
-import fr.uge.structsure.entities.Sensor;
-import fr.uge.structsure.entities.State;
-import fr.uge.structsure.entities.Structure;
+import fr.uge.structsure.entities.*;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.PlanRepository;
@@ -19,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -228,7 +226,7 @@ public class SensorService {
      */
     public EditSensorResponseDTO editSensor(EditSensorRequestDTO editSensorRequestDTO) throws TraitementException {
         Objects.requireNonNull(editSensorRequestDTO);
-        var sensor = sensorRepository.findByChips(editSensorRequestDTO.controlChip(), editSensorRequestDTO.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_ID_NOT_FOUND));
+        var sensor = sensorRepository.findByChipsId(editSensorRequestDTO.controlChip(), editSensorRequestDTO.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
         if (!sensor.getName().equals(editSensorRequestDTO.name())){
             if (sensorRepository.nameAlreadyExists(editSensorRequestDTO.name())) {
                 throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
@@ -252,8 +250,52 @@ public class SensorService {
     public Plan getPlanFromSensor(String controlChip, String measureChip) throws TraitementException {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
-        var sensor = sensorRepository.findByChips(controlChip, measureChip).orElseThrow(() -> new TraitementException(Error.SENSOR_ID_NOT_FOUND));
+        var sensor = sensorRepository.findByChipsId(controlChip, measureChip).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
         return sensor.getPlan();
+    }
+
+    /**
+     * Positions a sensor on a specified plan within a given structure.
+     *
+     * @param request The {@link SensorPositionRequestDTO} containing the structure ID, plan ID, sensor chip IDs, and coordinates.
+     * @return A {@link SensorPositionResponseDTO} containing the sensor's control chip and measure chip.
+     * @throws TraitementException If:
+     *         <ul>
+     *           <li>The structure is not found ({@code SENSOR_STRUCTURE_NOT_FOUND}).</li>
+     *           <li>The plan is not found ({@code PLAN_NOT_FOUND}).</li>
+     *           <li>The plan does not belong to the specified structure ({@code PLAN_NOT_BELONG_TO_STRUCTURE}).</li>
+     *           <li>The sensor is not found ({@code SENSOR_NOT_FOUND}).</li>
+     *         </ul>
+     */
+    public SensorPositionResponseDTO positionSensor(SensorPositionRequestDTO request) throws TraitementException {
+        request.checkFields();
+        var structure = structureRepository.findById(request.structureId());
+        if (structure.isEmpty()) {
+            throw new TraitementException(Error.SENSOR_STRUCTURE_NOT_FOUND);
+        }
+        var plan = planRepository.findById(request.planId());
+        if (plan.isEmpty()) {
+            throw new TraitementException(Error.PLAN_NOT_FOUND);
+        }
+        if (plan.get().getStructure().getId() != request.structureId()) {
+            throw new TraitementException(Error.PLAN_NOT_BELONG_TO_STRUCTURE);
+        }
+        var sensor = sensorRepository.findByChipsId(request.controlChip(), request.measureChip());
+        if (sensor.isEmpty()) {
+            throw new TraitementException(Error.SENSOR_NOT_FOUND);
+        }
+        var existingPlan = plan.get();
+        var existingSensor = sensor.get();
+        if (existingPlan.getSensors() == null) {
+            existingPlan.setSensors(new HashSet<>());
+        }
+        existingSensor.setX(request.x());
+        existingSensor.setY(request.y());
+        existingPlan.getSensors().add(existingSensor);
+        existingSensor.setPlan(existingPlan);
+        planRepository.save(existingPlan);
+        sensorRepository.save(existingSensor);
+        return new SensorPositionResponseDTO(request.controlChip(), request.measureChip());
     }
 
 }
