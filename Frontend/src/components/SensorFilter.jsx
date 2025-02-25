@@ -1,6 +1,7 @@
 import { ChevronDown, SortAsc, SortDesc, MoveRight } from 'lucide-solid';
 import { createEffect, createSignal } from 'solid-js';
 import SensorFieldComponent from "../components/SensorPanel/SensorFieldComponent";
+import { sensorsFetchRequest } from './StructureDetail/StructureDetailBody';
 
 /**
  * Custom drop down menu
@@ -8,6 +9,7 @@ import SensorFieldComponent from "../components/SensorPanel/SensorFieldComponent
  * @param {Array} dropDownValues The array of values
  * @param {JSX} children The children component
  * @param {String} styles The tailwind css
+ * @param {Function} setter The setter function to update the create signal value
  * @returns The drop down component
  */
 const CustomDropDown = ({dropDownTitle, dropDownValues , children, styles, setter}) => {
@@ -38,25 +40,28 @@ const CustomDropDown = ({dropDownTitle, dropDownValues , children, styles, sette
 /**
  * Sort filter field
  * @param {Array} dropDownValues The array of drop down values
+ * @param {Function} setOrderByColumn The setter function to update the order by column value
+ * @param {String} orderType The order type value
+ * @param {Function} The setter function to update the order type value
  * @returns The component for the sort filter field
  */
-const SortFilterField = ({dropDownValues, setOrderType, sortOrder, setSortOrder}) => {
+const SortFilterField = ({dropDownValues, setOrderByColumn, orderType, setOrderType}) => {
 
     /**
      * Handle the sort button
      */
-    const handleSortOrder = () => {
-        setSortOrder(!sortOrder());
+    const handleOrderType = () => {
+        setOrderType(!orderType());
     }
 
     return (
         <CustomDropDown
             dropDownTitle={"Trier"}
             dropDownValues={dropDownValues}
-            setter={setOrderType}  
+            setter={setOrderByColumn}  
             children={
-                <button onClick={handleSortOrder} class="flex rounded-r-[10px] justify-center items-center bg-[#181818] min-w-[56px]">
-                    {sortOrder() ? <SortAsc color="white" /> : <SortDesc color="white"/>}
+                <button onClick={handleOrderType} class="flex rounded-r-[10px] justify-center items-center bg-[#181818] min-w-[56px]">
+                    {orderType() ? <SortAsc color="white" /> : <SortDesc color="white"/>}
                 </button>
             }
         />
@@ -103,11 +108,11 @@ const DateFilterField = ({startDate, setStartDate, endDate, setEndDate}) => {
 /**
  * The checkbox component
  * @param {String} description The description of the component
- * @param {Boolean} isChecked The description of the component
- * @param {Function} setIsChecked The setter of the checkbox component
+ * @param {Boolean} value The value filter of checkbox
+ * @param {Function} setter The setter of the checkbox
  * @returns The check box component
  */
-const CheckBoxComponent = ({description, isChecked, setIsChecked}) => {
+const CheckBoxComponent = ({description, value, setter}) => {
     return (
         <div class="flex gap-[10px] w-full items-center rounded-[10px] py-[8px] h-fit">
             <input 
@@ -115,10 +120,10 @@ const CheckBoxComponent = ({description, isChecked, setIsChecked}) => {
                 name="display_sensors_from_selected_image" 
                 id="displat_sensors_image" 
                 class="accent-[#181818]  min-w-[14px] min-h-[14px] rounded-[3px]"
-                checked={isChecked()}
+                checked={value()}
             />
             <button 
-                onClick={() => setIsChecked(!isChecked())} 
+                onClick={() => setter(!value())} 
                 class="font-poppins font-[400] text-[14px] leading-[21px] tracking-[0%] opacity-[75%] text-[#181818]"
             >
                 {description}
@@ -129,26 +134,43 @@ const CheckBoxComponent = ({description, isChecked, setIsChecked}) => {
 
 /**
  * Sensor filter the compoenent
+ * @param {Number} structureId The structure id
+ * @param {Function} setSensors The setter function for sensors
+ * @param {Number} limit The limit
+ * @param {Number} offset The offset
+ * @param {Function} setTotalItems The setter function
  * @returns The component
  */
-const SensorFilter = () => {
-    const SORT_VALUES = ["Tout", "Nom", "Etat", "Date d'installation"];
-    const FILTER_VALUES = ["Tout", "OK", "NOK", "Défaillant", "Non détecté"];
+const SensorFilter = ({structureId, setSensors, limit, offset, setTotalItems}) => {
+    const SORT_VALUES = {
+        "Tout" : "Tout", "Nom": "NAME", "Etat": "STATE", "Date d'installation": "INSTALLATION_DATE"
+    };
+    const FILTER_VALUES = {"Tout" : "Tout", "OK" : "OK", "NOK" : "NOK", "Défaillant" : "DEFECTIVE", "Non détecté" : "UNKNOWN"};
 
-    const [isChecked, setIsChecked] = createSignal(false);
+    
+    const [orderByColumn, setOrderByColumn] = createSignal(SORT_VALUES.Tout);
+    const [orderType, setOrderType] = createSignal(true);
+    const [isCheckedPlanFilter, setIsCheckedPlanFilter] = createSignal(false);
+    const [isCheckedArchivedFilter, setIsCheckedArchivedFilter] = createSignal(false);
     const [startDate, setStartDate] = createSignal("");
     const [endDate, setEndDate] = createSignal("");
-    const [filter, setFilter] = createSignal(FILTER_VALUES[0]);
-    const [sortOrder, setSortOrder] = createSignal(true);
-    const [orderType, setOrderType] = createSignal(SORT_VALUES[0]);
+    const [statefilter, setStateFilter] = createSignal(FILTER_VALUES.Tout);
 
+    /**
+     * Create effect to update sensors when filter added
+     */
     createEffect(() => {
-        /*console.log(isChecked());
-        console.log(startDate());
-        console.log(endDate());
-        console.log(filter());
-        console.log(sortOrder());
-        console.log(orderType());*/
+        sensorsFetchRequest(structureId, setSensors, setTotalItems, {
+            orderByColumn: orderByColumn() !== "Tout" ? SORT_VALUES[orderByColumn()] : "STATE",
+            orderType: orderType() ? "ASC" : "DESC",
+            limit: limit(),
+            offset: offset(),
+            ...(statefilter() !== "Tout" && {stateFilter: FILTER_VALUES[statefilter()] }),
+            ...(isCheckedArchivedFilter() ? {archivedFilter: isCheckedArchivedFilter()} : false),
+            /*...(filters?.planFilter && {planFilter: filters.planFilter}),*/
+            ...(startDate() !== "" && {minInstallationDate: startDate()}),
+            ...(endDate() !== "" && {maxInstallationDate: endDate()})
+        })
         
     });
 
@@ -157,10 +179,10 @@ const SensorFilter = () => {
         <div class="flex flex-col rounded-[20px] px-[20px] py-[15px] gap-[20px] bg-[#FFFFFF]">
             <div class="lg:flex lg:flex-row lg:gap-[20px] flex flex-col gap-[20px]">
                 <SortFilterField 
-                    dropDownValues={SORT_VALUES}
+                    dropDownValues={Object.keys(SORT_VALUES)}
+                    setOrderByColumn={setOrderByColumn}
+                    orderType={orderType}
                     setOrderType={setOrderType}
-                    sortOrder={sortOrder}
-                    setSortOrder={setSortOrder}
                 />
                 <DateFilterField 
                     startDate={startDate}
@@ -172,15 +194,22 @@ const SensorFilter = () => {
             <div class="lg:flex lg:flex-row lg:gap-[20px] flex flex-col gap-[10px] items-end">
                 <CustomDropDown 
                     dropDownTitle={"Filtrer"}
-                    dropDownValues={FILTER_VALUES}
+                    dropDownValues={Object.keys(FILTER_VALUES)}
                     styles={"rounded-[10px]"}
-                    setter={setFilter}
+                    setter={setStateFilter}
                 />
-                <CheckBoxComponent 
-                    description={"Capteurs du plan sélectionné uniquement"}
-                    isChecked={isChecked}
-                    setIsChecked={setIsChecked}
-                />
+                <div class="flex flex-col w-full">
+                    <CheckBoxComponent 
+                        description={"Capteurs du plan sélectionné uniquement"}
+                        value={isCheckedPlanFilter}
+                        setter={setIsCheckedPlanFilter}
+                    />
+                    <CheckBoxComponent 
+                        description={"Capteurs archivés"}
+                        value={isCheckedArchivedFilter}
+                        setter={setIsCheckedArchivedFilter}
+                    />
+                </div>
             </div>
         </div>
     );

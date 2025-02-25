@@ -1,20 +1,14 @@
 package fr.uge.structsure.controllers;
 
-import fr.uge.structsure.dto.sensors.BaseSensorDTO;
-import com.fasterxml.jackson.core.JsonParseException;
-import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
-import fr.uge.structsure.dto.sensors.EditSensorRequestDTO;
-import fr.uge.structsure.dto.sensors.SensorDTO;
+import fr.uge.structsure.dto.sensors.*;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.SensorService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -64,7 +58,8 @@ public class SensorController {
     public ResponseEntity<?> getSensorsByStructure(@PathVariable("id") long id, @RequestBody AllSensorsByStructureRequestDTO request) {
         try {
             List<SensorDTO> sensorDTOs = sensorService.getSensors(id, request);
-            return ResponseEntity.ok(sensorDTOs);
+            var sizeOfResult = sensorService.countSensors(id, request);
+            return ResponseEntity.ok(new SensorByStructureResponseDTO(sizeOfResult, sensorDTOs));
         } catch (TraitementException e) {
             return e.toResponseEntity();
         }
