@@ -37,7 +37,7 @@ export const Pagination = ({ limit, offset, totalItems, setOffset }) => {
   const handleNextPage = () => {
     if (offset() + limit() < totalItems()) {
       setOffset(offset() + limit());
-      updateCurrentPage
+      updateCurrentPage();
     }
   };
 

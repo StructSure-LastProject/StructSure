@@ -36,7 +36,7 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
     const { fetchData, statusCode, data, errorFetch } = useFetch();
 
     // Construire le body avec les filtres
-    let requestBody = {
+    const requestBody = {
         orderByColumn: filters.orderByColumn || "STATE",
         orderType: filters.orderType || "ASC",
         limit: filters.limit ?? 5,
