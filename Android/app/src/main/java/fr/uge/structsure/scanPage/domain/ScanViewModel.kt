@@ -14,6 +14,7 @@ import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
+import fr.uge.structsure.structuresPage.data.Sensor
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
@@ -169,6 +170,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 note = sensor.note,
                 installationDate = sensor.installationDate,
                 state = "Non scanné",
+                plan = sensor.plan,
                 x = sensor.x,
                 y = sensor.y,
                 structureId = structureId
