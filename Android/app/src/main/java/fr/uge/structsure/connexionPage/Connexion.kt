@@ -82,7 +82,6 @@ fun ConnexionCard(navController: NavController, backRoute: String, accountDao: A
                 )
             }
 
-
             var login by remember { mutableStateOf("") }  //se souvient de la valeur entre deux reload de l'affichage
             InputText(
                 label = "Identifiant",
