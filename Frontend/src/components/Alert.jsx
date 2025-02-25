@@ -1,9 +1,15 @@
 import { CircleAlert } from "lucide-solid";
 import { createSignal, Show } from "solid-js";
 
+/**
+ * Component the shows an alert in the page for 3 seconds
+*/
 const Alert = (props) => {
   const [visible, setVisible] = createSignal(false);
 
+  /**
+   * Shows the alert in the page for 3 seconds
+   */
   const showAlert = () => {
     setVisible(true);
     setTimeout(() => setVisible(false), 3000);

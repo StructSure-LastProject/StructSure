@@ -47,10 +47,34 @@ function StructureDetailCanvas(props) {
     });
 
     /**
+     * Updates data when a sensor is placed in the canvas
+     */
+    const updateWhenSensorPlaced = () => {
+        if (selectedSensor()) {
+            const newSensor = {
+                ...selectedSensor(),
+                x: popupX(),
+                y: popupY()
+            };
+            props.setPlanSensors(props.planSensors().map(sensor =>
+                sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
+            ));
+            props.setSensors(props.structureDetails().sensors.map(sensor =>
+                sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
+            ));
+            setSelectedSensor(null);
+            setInputValue("");
+            setIsPopupVisible(false);    
+            drawImage();
+        }
+    };
+
+
+    /**
      * Will call the endpoint that places a sensor in a plan
      */
     const positionSensorFetchRequest = async (structureId, controlChip, measureChip, planId, x, y) => {
-        const { fetchData, statusCode, data, error } = useFetch();
+        const { fetchData, statusCode, error } = useFetch();
     
         const requestBody = {
             structureId: structureId,
@@ -61,7 +85,7 @@ function StructureDetailCanvas(props) {
             y: parseInt(y)
         };
     
-        const requestUrl = `/api/sensors/position`;
+        const requestUrl = "/api/sensors/position";
     
         const requestData = {
             method: "POST",  // Changer GET en POST
@@ -79,29 +103,7 @@ function StructureDetailCanvas(props) {
             setErrorFront(error().errorData.error);
         }
     };
-
-
-    const updateWhenSensorPlaced = () => {
-        if (!selectedSensor()) return;
-        const newSensor = {
-            ...selectedSensor(),
-            x: popupX(),
-            y: popupY()
-        };
-        props.setPlanSensors(props.planSensors().map(sensor =>
-            sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
-        ));
-        props.setSensors(props.structureDetails().sensors.map(sensor =>
-            sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
-        ));
-        setSelectedSensor(null);
-        setInputValue("");
-        setIsPopupVisible(false);    
-        drawImage();
-    };
     
-
-
     const img = new Image();
     let canvasRef;
     let isMouseDown = false;
@@ -189,7 +191,7 @@ function StructureDetailCanvas(props) {
                 borderColor = "#6a6a6a40";
                 break;
             default:
-                setError("L'etat du sensor inconnu");
+                setErrorFront("L'etat du sensor inconnu");
                 break;
         }
         return [bgColor, borderColor];

@@ -108,13 +108,14 @@ function StructureDetailBody(props) {
         planSensorsFetchRequest(props.structureId, setPlanSensors);
     });
 
+    /**
+     * Sets the sensor in the structure details
+     * @param {list} sensors list of the sensors
+     */
     const setSensorsDetail = (sensors) => {
         setStructureDetails(prev => ({ ...prev, sensors }));
     };
 
-    createEffect(() => {
-        console.log("plansensors:", planSensors());
-    });
 
     return (
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">

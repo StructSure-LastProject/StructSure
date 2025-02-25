@@ -226,7 +226,7 @@ public class SensorService {
      */
     public EditSensorResponseDTO editSensor(EditSensorRequestDTO editSensorRequestDTO) throws TraitementException {
         Objects.requireNonNull(editSensorRequestDTO);
-        var sensor = sensorRepository.findByChips(editSensorRequestDTO.controlChip(), editSensorRequestDTO.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
+        var sensor = sensorRepository.findByChipsId(editSensorRequestDTO.controlChip(), editSensorRequestDTO.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
         if (!sensor.getName().equals(editSensorRequestDTO.name())){
             if (sensorRepository.nameAlreadyExists(editSensorRequestDTO.name())) {
                 throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
@@ -250,7 +250,7 @@ public class SensorService {
     public Plan getPlanFromSensor(String controlChip, String measureChip) throws TraitementException {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
-        var sensor = sensorRepository.findByChips(controlChip, measureChip).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
+        var sensor = sensorRepository.findByChipsId(controlChip, measureChip).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
         return sensor.getPlan();
     }
 

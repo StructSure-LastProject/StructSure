@@ -112,8 +112,8 @@ function StructureDetailPlans(props) {
     createEffect(() => {
         const userRole = localStorage.getItem("role");
         setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE")
-        if (props.plans) {
-            const newPlans = props.plans.map(plan => {
+        if (props.structureDetails().plans) {
+            const newPlans = props.structureDetails().plans.map(plan => {
                 if (plan.archived) {
                     return {
                         ...plan,
