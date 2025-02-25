@@ -68,6 +68,22 @@ public class SensorService {
     }
 
     /**
+     * Count sensors
+     * @param structureId the structure id
+     * @param request The request DTO
+     * @return long The total number of sensors
+     * @throws TraitementException throw if structure not found or DATE_FORMAT_ERROR if there is an error while converting date
+     */
+    public long countSensors(long structureId, AllSensorsByStructureRequestDTO request) throws TraitementException {
+        request.checkFields();
+        var structure = structureRepository.findById(structureId);
+        if (structure.isEmpty()) {
+            throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
+        }
+        return sensorRepositoryCriteriaQuery.countSensorsByStructureId(structureId, request);
+    }
+
+    /**
      * Returns the list of sensors present in a plan
      * @param structureId the structure id
      * @param planId the plan id

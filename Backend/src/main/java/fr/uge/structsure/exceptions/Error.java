@@ -65,7 +65,7 @@ public enum Error {
 
     LIST_STRUCTURES_EMPTY(404, "Aucun ouvrage enregistré dans le système"),
     DATE_FORMAT_ERROR(422, "Le format de la date n'est pas correct JJ-MM-AAAA"),
-    DATE_TIME_FORMAT_ERROR(422, "Le format de la date n'est pas correct AA-MM-JJTHH:MM:SS");
+    DATE_TIME_FORMAT_ERROR(422, "Le format de la date n'est pas correct AA-MM-JJ");
 
 
     public final int code;

@@ -12,15 +12,21 @@ import { Pagination } from '../Pagination.jsx';
  * @param {Function} setSensors The set sonsors function
  * @param {String} selectedPlanId The selected plan id
  * @param {Array} sensors The sensors array
+ * @param {Number} totalItems Total number of sensors
+ * @param {Function} setTotalItems setter to set the total number of sensor 
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, sensors}) {
+function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, sensors, totalItems, setTotalItems}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
     
     const [isAuthorized, setIsAuthorized] = createSignal(false);
+
+    const [limit, setLimit] = createSignal(30)
+    const [offset, setOffset] = createSignal(0);
+    
 
     /**
      * Open the sensor panel
@@ -96,7 +102,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
                     </Show>
                 </div>
             </div>
-            <SensorFilter/>
+            <SensorFilter structureId={structureId} setSensors={setSensors} limit={limit} offset={offset} setTotalItems={setTotalItems}/>
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <For each={sensors()}>
                     {(sensor) => (
@@ -112,7 +118,14 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
                     )}
                 </For>
             </div>
-            <Pagination/>
+            <Show when={totalItems() !== 0}>
+                <Pagination
+                    limit={limit}
+                    offset={offset}
+                    setOffset={setOffset}
+                    totalItems={totalItems}
+                />
+            </Show> 
             {
                 openSensorPanel() && (
                     <SensorPanel structureId={structureId} sensors={sensors} setSensors={setSensors} selectedPlanId={selectedPlanId} sensorDetails={clickedSensor()} closeSensorPanel={closeSensorPanelHandler} />

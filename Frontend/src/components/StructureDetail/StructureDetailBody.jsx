@@ -32,16 +32,22 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
 /**
  * Will fetch the list of the sensors of this structure
  */
-export const sensorsFetchRequest = async (structureId, setSensors, filters = {}) => {
+export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems, filters = {}) => {
     const { fetchData, statusCode, data, errorFetch } = useFetch();
 
     // Construire le body avec les filtres
     const requestBody = {
         orderByColumn: filters.orderByColumn || "STATE",
         orderType: filters.orderType || "ASC",
-        offset: filters.offset ?? 0,
         limit: filters.limit ?? 5,
+        offset: filters.offset ?? 0,
+        ...(filters?.stateFilter && { stateFilter: filters.stateFilter }),
+        ...(filters?.archivedFilter && {archivedFilter: filters.archivedFilter}),
+        ...(filters?.planFilter && {planFilter: filters.planFilter}),
+        ...(filters?.minInstallationDate && {minInstallationDate: filters.minInstallationDate}),
+        ...(filters?.maxInstallationDate && {maxInstallationDate: filters.maxInstallationDate})
     };
+
 
     const requestUrl = `/api/structures/${structureId}/sensors`;
 
@@ -56,7 +62,8 @@ export const sensorsFetchRequest = async (structureId, setSensors, filters = {})
     await fetchData(requestUrl, requestData);
 
     if (statusCode() === 200) {
-        setSensors(data());
+        setTotalItems(data().sizeOfResult);
+        setSensors((data().sensors));
     }// Uncomment this when error barre is developped
     // else if (statusCode() === 404) {
     // }
@@ -68,11 +75,11 @@ export const sensorsFetchRequest = async (structureId, setSensors, filters = {})
  */
 function StructureDetailBody(props) {
 
-    const [sensors, setSensors] = createSignal([]);
+    const [sensors, setSensors] = createSignal({});
     const [structureDetails, setStructureDetails] = createSignal({"scans": [], "plans": []});
     const [planSensors, setPlanSensors] = createSignal([]);
     const [selectedPlanId, setSelectedPlanId] = createSignal(null);
-
+    const [totalItems, setTotalItems] = createSignal(0);
 
     /**
      * Will fetch the structure details
@@ -97,7 +104,7 @@ function StructureDetailBody(props) {
 
     createEffect(() => {
         structureDetailsFetchRequest(props.structureId);
-        sensorsFetchRequest(props.structureId, setSensors);
+        sensorsFetchRequest(props.structureId, setSensors, setTotalItems);
         planSensorsFetchRequest(props.structureId, setPlanSensors);
     });
     
@@ -111,7 +118,7 @@ function StructureDetailBody(props) {
               selectedPlanId={selectedPlanId}
               setSelectedPlanId={setSelectedPlanId}
             />
-            <StructureDetailRow structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} />
+            <StructureDetailRow structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
         </div>
     );
 }

@@ -13,6 +13,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -96,6 +97,50 @@ public class SensorRepositoryCriteriaQuery {
         return query.getResultList();
     }
 
+
+    /**
+     * Count the total number of sensors that are present in the structure
+     * @param structureId the structure id
+     * @param request the request containing data like filter by and order by
+     * @return long the total number of sensors
+     * @throws TraitementException error with code DATE_FORMAT_ERROR if there is an error while converting date
+     */
+    public long countSensorsByStructureId(long structureId, AllSensorsByStructureRequestDTO request) throws TraitementException {
+        var cb = em.getCriteriaBuilder();
+        var cq = cb.createQuery(Long.class);
+        var sensor = cq.from(Sensor.class);
+        var result = sensor.join("results", JoinType.LEFT);
+        var plan = sensor.join("plan", JoinType.LEFT);
+
+        var predicates = new ArrayList<Predicate>();
+        if (request.planFilter() != null) {
+            predicates.add(cb.equal(plan.get("id"), request.planFilter()));
+        }
+        predicates.add(cb.equal(sensor.get("structure").get("id"), structureId));
+
+        Expression<Long> resultCount = cb.count(result);
+        Expression<Boolean> isNokPresent = checkIsNokPresent(cb, result);
+        Expression<Boolean> isDefectivePresent = checkIsDefectivePresent(cb, result);
+
+        Expression<Integer> state = getState(cb, resultCount, isNokPresent, isDefectivePresent);
+        cq.select(cb.count(sensor));
+
+        if (request.archivedFilter() != null) {
+            predicates.add(cb.equal(sensor.get("archived"), request.archivedFilter()));
+        }
+        addMinAndMaxInstallationDatePredicate(request, predicates, cb, sensor);
+        cq.where(predicates.toArray(new Predicate[0]));
+        if (request.stateFilter() != null) {
+            var stateFilterEnum = State.valueOf(request.stateFilter());
+            cq.having(cb.equal(state, stateFilterEnum.ordinal()));
+        }
+
+        var query = em.createQuery(cq);
+        var results = query.getResultList();
+        return results.isEmpty() ? 0 : results.getFirst();
+    }
+
+
     /**
      * Will add the min/max Installation date filter to the list of predicates
      * @param request the request dto
@@ -105,10 +150,10 @@ public class SensorRepositoryCriteriaQuery {
      * @throws TraitementException throws DATE_TIME_FORMAT_ERROR if there is an error while parsing the date time
      */
     private static void addMinAndMaxInstallationDatePredicate(AllSensorsByStructureRequestDTO request, ArrayList<Predicate> predicates, CriteriaBuilder cb, Root<Sensor> sensor) throws TraitementException {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
         if (request.minInstallationDate() != null && !request.minInstallationDate().isEmpty()) {
             try {
-                predicates.add(cb.greaterThanOrEqualTo(sensor.get("installationDate"), LocalDateTime.parse(request.minInstallationDate(), formatter)));
+                predicates.add(cb.greaterThanOrEqualTo(sensor.get("installationDate"), LocalDate.parse(request.minInstallationDate(), formatter)));
             } catch (DateTimeParseException e) {
                 throw new TraitementException(Error.DATE_TIME_FORMAT_ERROR);
             }
@@ -116,7 +161,7 @@ public class SensorRepositoryCriteriaQuery {
 
         if (request.maxInstallationDate() != null && !request.maxInstallationDate().isEmpty()) {
             try {
-                predicates.add(cb.lessThanOrEqualTo(sensor.get("installationDate"), LocalDateTime.parse(request.maxInstallationDate(), formatter)));
+                predicates.add(cb.lessThanOrEqualTo(sensor.get("installationDate"), LocalDate.parse(request.maxInstallationDate(), formatter).plusDays(1)));
             } catch (DateTimeParseException e) {
                 throw new TraitementException(Error.DATE_TIME_FORMAT_ERROR);
             }

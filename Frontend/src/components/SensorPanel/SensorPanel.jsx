@@ -150,7 +150,7 @@ const SensorCommentSection = ({
 const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDetails, closeSensorPanel}) => {
 
   const [sensorName, setSensorName] = createSignal(sensorDetails.name);
-  const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate.split('T')[0]);
+  const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate === null ? "" : sensorDetails.installationDate.split('T')[0]);
   const [note, setNote] = createSignal(sensorDetails?.note);
   const [editMode, setEditMode] = createSignal(false);
   
