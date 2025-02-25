@@ -41,6 +41,7 @@ import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.scanPage.data.findPlanById
 import fr.uge.structsure.scanPage.data.getPlanSectionName
+import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
@@ -73,6 +74,14 @@ fun ScanPage(context: Context,
     scanViewModel.setStructure(context, structureId)
 
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
+    var showScanNotePopup by remember { mutableStateOf(false) } // Control the scan note popup visibility
+
+    // Observe the active scan
+    val activeScan by scanViewModel.activeScan.observeAsState()
+
+    val showToast: (String) -> Unit = { message ->
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 
     Page(
         Modifier.padding(bottom = 100.dp),
@@ -91,7 +100,11 @@ fun ScanPage(context: Context,
                     navController.navigateNoReturn("HomePage")
                 },
                 onContentClick = {
-
+                    if (activeScan != null) {
+                        showScanNotePopup = true
+                    } else {
+                        showToast("Veuillez lancer un scan avant d'ajouter une note")
+                    }
                 },
                 connexionCS108 = connexionCS108,
                 navController = navController
@@ -106,12 +119,22 @@ fun ScanPage(context: Context,
                 onCancel = { sensorPopup = null }
             )
         }
+
+        if (showScanNotePopup && activeScan != null) {
+            ScanNotePopUp(
+                scan = activeScan!!,
+                scanViewModel = scanViewModel,
+                onSubmit = { showScanNotePopup = false },
+                onCancel = { showScanNotePopup = false }
+            )
+        }
+
         ScanWeather(viewModel = scanViewModel, scrollState)
         PlansView(scanViewModel)
         SensorsList(scanViewModel) { s -> sensorPopup = s }
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            showToast(it)
             scanViewModel.sensorMessages.value = null
         }
 
@@ -204,5 +227,60 @@ private fun SensorPopUp(
             value = note,
             placeholder = "Aucune note pour le moment"
         ) { s -> if (s.length <= 1000) note = s }
+    }
+}
+
+
+
+@Composable
+private fun ScanNotePopUp(
+    scan: ScanEntity,
+    scanViewModel: ScanViewModel,
+    onSubmit: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
+    var scanNote by remember { mutableStateOf(scan.note ?: "") }
+
+    PopUp(onCancel) {
+        Title("Note du scan", false) {
+            Button(
+                R.drawable.check,
+                "valider",
+                MaterialTheme.colorScheme.onSurface,
+                MaterialTheme.colorScheme.surface,
+                onClick =
+                {
+                    coroutineScope.launch {
+                        if (scanViewModel.updateScanNote(scanNote)) {
+                            onSubmit()
+                        }
+                    }
+                }
+            )
+        }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            InputTextArea(
+                label = "Note",
+                value = scanNote,
+                placeholder = "Aucune note pour le moment",
+            ) { s -> if (s.length <= 1000) scanNote = s }
+        }
+
+
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = Red,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
     }
 }

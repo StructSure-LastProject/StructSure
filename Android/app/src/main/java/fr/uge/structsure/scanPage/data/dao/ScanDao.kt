@@ -38,9 +38,7 @@ interface ScanDao {
     @Query("DELETE FROM scan WHERE structureId = :id")
     fun deleteScanByStructure(id: Long)
 
-    // TODO scan note
     @Query("UPDATE scan SET note = :note WHERE id = :scanId")
     suspend fun updateScanNote(scanId: Long, note: String)
-
 }
 

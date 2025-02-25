@@ -20,6 +20,7 @@ import fr.uge.structsure.settingsPage.presentation.PreferencesManager.getScanner
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
 
@@ -105,18 +106,26 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
     }
 
-    // TODO : ISSUE #207
-    fun updateScanNote(note: String): Boolean {
-        if (activeScanId == null) {
-            noteErrorMessage.postValue("Aucun scan en cours")
-            return false
-        }
+    suspend fun updateScanNote(note: String): Boolean {
+        return viewModelScope.async(Dispatchers.IO) {
+            try {
+                activeScanId?.let { scanId ->
+                    scanDao.updateScanNote(scanId, note)
 
-        if (note.length > 1000) return false
-        viewModelScope.launch(Dispatchers.IO) {
-            activeScanId?.let { scanId -> scanDao.updateScanNote(scanId, note) }
-        }
-        return true
+                    val updatedScan = scanDao.getScanById(scanId).copy(note = note)
+                    activeScan.postValue(updatedScan)
+
+                    noteErrorMessage.postValue(null)
+                    true
+                } ?: run {
+                    noteErrorMessage.postValue("Aucun scan actif trouvé")
+                    false
+                }
+            } catch (e: Exception) {
+                noteErrorMessage.postValue("Erreur lors de la mise à jour de la note: ${e.message}")
+                false
+            }
+        }.await()
     }
 
     /**
@@ -314,6 +323,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         if (activeScanId != null) return // already created
 
         val now = Timestamp(System.currentTimeMillis()).toString()
+
         val newScan = ScanEntity(
             structureId = structureId,
             start_timestamp = now,
@@ -324,6 +334,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
         activeScanId = scanDao.insertScan(newScan)
         this.structureId = structureId
+
+        activeScan.postValue(newScan.copy(id = activeScanId!!))
 
         refreshSensorStates()
         updateSensorStateCounts()
@@ -341,6 +353,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         if (activeScanId != null) return // already created
         activeScanId = scanId
         this.structureId = scanDao.getScanById(scanId).structureId
+
+        activeScan.postValue(scanDao.getScanById(scanId))
+
         refreshSensorStates()
         updateSensorStateCounts()
         resultDao.getResultsByScan(scanId).forEach {

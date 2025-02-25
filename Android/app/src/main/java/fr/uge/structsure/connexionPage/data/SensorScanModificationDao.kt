@@ -16,6 +16,6 @@ interface SensorScanModificationDao {
     @Query("SELECT * FROM sensor_scan_modifications WHERE scanId = :scanId")
     fun getModificationsByScanId(scanId: Long): List<SensorScanModification>
 
-    @Query("DELETE FROM sensor_scan_modifications WHERE structureId = :structureId")
-    fun deleteModificationsByStructureId(structureId: Long)
+    @Query("DELETE FROM sensor_scan_modifications WHERE scanId = :id")
+    fun deleteModificationsByScanId(id: Long)
 }
