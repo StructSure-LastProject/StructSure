@@ -24,7 +24,4 @@ interface ResultDao {
 
     @Query("DELETE FROM resultSensor WHERE scanId = :scanId")
     fun deleteResultsByScan(scanId: Long)
-
-    @Query("DELETE FROM resultSensor WHERE id = :resultId")
-    fun deleteResult(resultId: String)
 }
