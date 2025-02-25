@@ -78,7 +78,9 @@ function StructureDetailBody(props) {
     const [sensors, setSensors] = createSignal({});
     const [structureDetails, setStructureDetails] = createSignal({"scans": [], "plans": [], "sensors": []});
     const [planSensors, setPlanSensors] = createSignal([]);
-    const [selectedPlanId, setSelectedPlanId] = createSignal(null);
+    const [selectedPlanId, setSelectedPlanId] = createSignal(2);
+
+    createEffect(() => console.log("Selected Plan Id : ", selectedPlanId()));
     const [totalItems, setTotalItems] = createSignal(0);
 
     /**
@@ -121,13 +123,13 @@ function StructureDetailBody(props) {
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
             <StructureDetailHead scans={structureDetails().scans}/>
             <StructureDetailPlans
-              structureDetails={structureDetails}
-              structureId={props.structureId}
-              selectedPlanId={selectedPlanId}
-              setSelectedPlanId={setSelectedPlanId}
-              planSensors={planSensors}
-              setPlanSensors={setPlanSensors}
-              setSensors={setSensorsDetail}
+                structureDetails={structureDetails}
+                structureId={props.structureId}
+                selectedPlanId={selectedPlanId}
+                setSelectedPlanId={setSelectedPlanId}
+                planSensors={planSensors}
+                setPlanSensors={setPlanSensors}
+                setSensors={setSensorsDetail}
             />
             <StructureDetailRow structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
         </div>

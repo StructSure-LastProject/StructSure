@@ -150,11 +150,12 @@ function StructureDetailPlans(props) {
                     <div
                     class="flex flex-col gap-y-[5px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         <DropdownsSection
-                        data={plans()}
-                        selectedPlanId={props.selectedPlanId()}
-                        onEdit={handleEdit}
-                        onPlanEdit={handleEditSave}
-                        structureId={props.structureId}
+                            data={plans()}
+                            selectedPlanId={props.selectedPlanId}
+                            setSelectedPlanId={props.setSelectedPlanId}
+                            onEdit={handleEdit}
+                            onPlanEdit={handleEditSave}
+                            structureId={props.structureId}
                         />
                     </div>
                     <Show when={isAddModalOpen()}>
