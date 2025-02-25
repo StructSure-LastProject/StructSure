@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.graphics.asImageBitmap
@@ -250,6 +249,61 @@ private fun ScanNotePopUp(
             scanNote = db.scanDao().getNote(scanId) ?: ""
         }
     }
+
+    PopUp(onCancel) {
+        Title("Note du scan", false) {
+            Button(
+                R.drawable.check,
+                "valider",
+                MaterialTheme.colorScheme.onSurface,
+                MaterialTheme.colorScheme.surface,
+                onClick =
+                {
+                    coroutineScope.launch {
+                        if (scanViewModel.updateScanNote(scanNote)) {
+                            onSubmit()
+                        }
+                    }
+                }
+            )
+        }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            InputTextArea(
+                label = "Note",
+                value = scanNote,
+                placeholder = "Aucune note pour le moment",
+            ) { s -> if (s.length <= 1000) scanNote = s }
+        }
+
+
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = Red,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+    }
+}
+
+
+
+@Composable
+private fun ScanNotePopUp(
+    scan: ScanEntity,
+    scanViewModel: ScanViewModel,
+    onSubmit: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
+    var scanNote by remember { mutableStateOf(scan.note ?: "") }
 
     PopUp(onCancel) {
         Title("Note du scan", false) {
