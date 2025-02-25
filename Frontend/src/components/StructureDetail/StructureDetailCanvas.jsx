@@ -42,7 +42,7 @@ function StructureDetailCanvas(props) {
     const filteredOptions = createMemo(() => {
         if (!props.structureDetails().sensors) return [];
         return props.structureDetails().sensors.filter(detailSensor =>
-            detailSensor.x == null && detailSensor.y == null & detailSensor.name?.includes(inputValue() || "")
+            detailSensor.x == null && detailSensor.y == null & detailSensor.name?.toLowerCase().includes(inputValue().toLowerCase() || "")
         );
     });
 
