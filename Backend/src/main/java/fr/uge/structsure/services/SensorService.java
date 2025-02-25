@@ -254,6 +254,19 @@ public class SensorService {
         return sensor.getPlan();
     }
 
+    /**
+     * Positions a sensor on a specified plan within a given structure.
+     *
+     * @param request The {@link SensorPositionRequestDTO} containing the structure ID, plan ID, sensor chip IDs, and coordinates.
+     * @return A {@link SensorPositionResponseDTO} containing the sensor's control chip and measure chip.
+     * @throws TraitementException If:
+     *         <ul>
+     *           <li>The structure is not found ({@code SENSOR_STRUCTURE_NOT_FOUND}).</li>
+     *           <li>The plan is not found ({@code PLAN_NOT_FOUND}).</li>
+     *           <li>The plan does not belong to the specified structure ({@code PLAN_NOT_BELONG_TO_STRUCTURE}).</li>
+     *           <li>The sensor is not found ({@code SENSOR_NOT_FOUND}).</li>
+     *         </ul>
+     */
     public SensorPositionResponseDTO positionSensor(SensorPositionRequestDTO request) throws TraitementException {
         request.checkFields();
         var structure = structureRepository.findById(request.structureId());

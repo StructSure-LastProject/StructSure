@@ -3,9 +3,25 @@ package fr.uge.structsure.dto.structure;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Represents the detailed response of a structure, including its scans, plans, and sensors.
+ *
+ * @param id      The unique identifier of the structure.
+ * @param name    The name of the structure.
+ * @param note    Additional notes about the structure.
+ * @param scans   The list of scans associated with the structure.
+ * @param plans   The list of plans related to the structure.
+ * @param sensors The list of sensors within the structure.
+ */
 public record StructureDetailsResponseDTO(long id, String name, String note,
                                          List<Scan> scans, List<Plan> plans, List<Sensor> sensors) {
 
+    /**
+     * Validates the required fields of the structure details response.
+     *
+     * @throws IllegalArgumentException If {@code id} is negative.
+     * @throws NullPointerException If any of the fields {@code name}, {@code note}, {@code scans}, {@code plans}, or {@code sensors} is null.
+     */
     public StructureDetailsResponseDTO {
         if (id < 0) {
             throw new IllegalArgumentException("id < 0");
@@ -17,7 +33,19 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
         Objects.requireNonNull(scans);
     }
 
+    /**
+     * Represents a scan associated with a structure.
+     *
+     * @param id   The unique identifier of the scan.
+     * @param name The name of the scan, usually including author and date details.
+     */
     public record Scan(long id, String name) {
+        /**
+         * Validates the scan fields.
+         *
+         * @throws IllegalArgumentException If {@code id} is negative.
+         * @throws NullPointerException If {@code name} is null.
+         */
         public Scan {
             if (id < 0) {
                 throw new IllegalArgumentException("id < 0");
@@ -25,6 +53,12 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
             Objects.requireNonNull(name);
         }
 
+        /**
+         * Converts a {@link fr.uge.structsure.entities.Scan} entity into a {@code Scan} DTO.
+         *
+         * @param scan The scan entity to convert.
+         * @return A new {@code Scan} DTO.
+         */
         public static Scan fromScanEntity(fr.uge.structsure.entities.Scan scan) {
             return new Scan(scan.getId(), scan.getAuthor().getFirstname() + " " + scan.getAuthor().getLastname()
                 + " - " + scan.getDate() + " - #"  + scan.getId());
@@ -44,6 +78,14 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
         }
     }
 
+    /**
+     * The sensor dto
+     * @param controlChip the control chip
+     * @param measureChip the measure chip
+     * @param name the name of the sensor
+     * @param x the position x of the sensor
+     * @param y the position y of the sensor
+     */
     public record Sensor(String controlChip, String measureChip, String name, Integer x, Integer y) {
         public Sensor {
             Objects.requireNonNull(controlChip);
@@ -51,6 +93,11 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
             Objects.requireNonNull(name);
         }
 
+        /**
+         * Creates the dto from the sensor entity
+         * @param sensor the sensor entity
+         * @return the sensor dto
+         */
         public static Sensor fromSensorEntity(fr.uge.structsure.entities.Sensor sensor) {
             return new Sensor(sensor.getSensorId().getControlChip(), sensor.getSensorId().getMeasureChip(), sensor.getName(),
                     sensor.getX(), sensor.getY());

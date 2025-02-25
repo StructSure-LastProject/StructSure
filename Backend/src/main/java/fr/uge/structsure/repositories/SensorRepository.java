@@ -107,6 +107,12 @@ SensorRepository extends JpaRepository<Sensor, Long> {
     """)
     boolean existsSensorWithDefectiveState(Structure structure);
 
+    /**
+     * Finds the sensor by chip ids
+     * @param controlChip the control chip id
+     * @param measureChip the measure chip id
+     * @return Option with sensor if exists or optional empty
+     */
     @Query("SELECT s FROM Sensor s WHERE s.sensorId.controlChip = :controlChip AND s.sensorId.measureChip = :measureChip")
     Optional<Sensor> findByChipsId(@Param("controlChip") String controlChip, @Param("measureChip") String measureChip);
 
