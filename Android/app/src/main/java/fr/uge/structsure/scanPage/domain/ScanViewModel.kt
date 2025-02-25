@@ -43,7 +43,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     private val accountDao = db.accountDao()
 
     /** ID of the structure being scanned */
-    private var structureId: Long? = null
+    var structureId: Long? = null
+        private set
 
     /** Repository to interact with the scan database */
     private val scanRepository: ScanRepository = ScanRepository(context)
@@ -175,7 +176,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /**
      * Refreshes the states of the sensors after starting a scan.
      */
-    private fun refreshSensorStates() {
+    fun refreshSensorStates() {
         viewModelScope.launch(Dispatchers.IO) {
             val sensors = sensorDao.getAllSensors(structureId?: return@launch)
             val scannedResults = activeScanId?.let { scanId ->

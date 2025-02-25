@@ -143,4 +143,17 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
             popupImage.postValue(if (path == null) defaultImage else BitmapFactory.decodeFile(path))
         }
     }
+    
+    /**
+     * Adds a position to a sensor and saves it in the database. The
+     * sensor must have no position defined yet.
+     * @param sensor the sensor to place
+     * @param plan the id of the plan to put the sensor on
+     * @param x the x coordinate of the point in the image
+     * @param y the y coordinate of the point in the image
+     */
+    fun placeSensor(sensor: SensorDB, plan: Long?, x: Double, y: Double) {
+        db.sensorDao().placeSensor(sensor.sensorId, plan, x, y)
+        scanViewModel.refreshSensorStates()
+    }
 }
