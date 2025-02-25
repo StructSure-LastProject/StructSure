@@ -1,7 +1,7 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.scan.AndroidScanResultDTO;
-import fr.uge.structsure.dto.scan.AndroidSensorResultDTO;
+import fr.uge.structsure.dto.scan.AndroidSensorEditDTO;
 import fr.uge.structsure.entities.*;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,7 +25,7 @@ import java.util.Objects;
  */
 @Service
 public class ScanService {
-    private static final Logger logger = LoggerFactory.getLogger(ScanService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScanService.class);
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     private final ResultRepository resultRepository;
@@ -68,15 +69,17 @@ public class ScanService {
     @Transactional
     public void saveScanResults(AndroidScanResultDTO scanData) throws TraitementException {
         validateScanData(scanData);
+        if (scanAlreadyExists(scanData)) return;
 
         Structure structure = findStructure(scanData.structureId());
         Account account = findAccount(scanData.login());
 
         Scan scan = createScan(structure, scanData, account);
+        processEdits(scanData.sensorEdits());
         List<Result> results = processResults(scan, scanData);
 
         resultRepository.saveAll(results);
-        logger.info("Saved {} results for scan {}", results.size(), scanData.scanId());
+        LOGGER.info("Saved {} results for scan {}", results.size(), scanData.scanId());
     }
 
     /**
@@ -87,9 +90,26 @@ public class ScanService {
      */
     private void validateScanData(AndroidScanResultDTO scanData) throws TraitementException {
         if (scanData.results().isEmpty()) {
-            logger.warn("Received empty scan results, ignoring");
-            throw new TraitementException(Error.SERVER_ERROR);
+            LOGGER.warn("Received empty scan results, ignoring");
+            throw new TraitementException(Error.INVALID_FIELDS);
         }
+    }
+
+    /**
+     * Tests if the scan given by the client has already been saved in
+     * the database or not.
+     * This case can occur when the data has been completely received
+     * and computed, but the client has not received the response due
+     * to lag, crash or connection loses.
+     * @param scanData the data of the scan to search
+     * @return true if already saved, false otherwise
+     * @throws TraitementException if the scan time is not an ISO date
+     */
+    private boolean scanAlreadyExists(AndroidScanResultDTO scanData) throws TraitementException {
+        LocalDateTime date = parseDate(scanData.launchDate());
+        return scanRepository.findById(scanData.structureId()).stream()
+            .filter(scan -> scan.getAuthor().getLogin().equals(scanData.login()))
+            .anyMatch(scan -> scan.getDate().isEqual(date));
     }
 
     /**
@@ -123,10 +143,11 @@ public class ScanService {
      * @param scanData  The DTO containing the scan data
      * @param account   The Account entity associated with the scan
      * @return The created and saved Scan entity
+     * @throws TraitementException if the scan time is not an ISO date
      */
-    private Scan createScan(Structure structure, AndroidScanResultDTO scanData, Account account) {
-        LocalDateTime launchDate = LocalDateTime.parse(scanData.launchDate(), DATETIME_FORMATTER);
-        Scan scan = new Scan(structure, launchDate, scanData.note(), account);
+    private Scan createScan(Structure structure, AndroidScanResultDTO scanData, Account account) throws TraitementException {
+        LocalDateTime date = parseDate(scanData.launchDate());
+        Scan scan = new Scan(structure, date, scanData.note(), account);
         return scanRepository.save(scan);
     }
 
@@ -141,11 +162,11 @@ public class ScanService {
     private List<Result> processResults(Scan scan, AndroidScanResultDTO scanData) throws TraitementException {
         List<Result> results = new ArrayList<>();
 
-        for (var sensorResult : scanData.results()) {
-            Sensor sensor = findOrCreateSensor(sensorResult);
-            updateSensorNoteIfChanged(sensor, sensorResult);
-
-            Result result = createScanResult(sensor, scan, sensorResult);
+        for (var rawResult : scanData.results()) {
+            var sensorId = SensorId.from(rawResult.sensorId());
+            var sensor = sensorRepository.findBySensorId(sensorId)
+                .orElseThrow(() -> new TraitementException(Error.SENSOR_ID_NOT_FOUND));
+            Result result = new Result(State.valueOf(rawResult.state()), sensor, scan);
             results.add(result);
         }
 
@@ -153,45 +174,33 @@ public class ScanService {
     }
 
     /**
-     * Finds an existing Sensor entity or creates a new one if not found.
+     * Updates sensors (and structure eventually) if edited or added
+     * during the scan.
      *
-     * @param sensorResult The DTO containing the sensor data
-     * @return The found or created Sensor entity
-     * @throws TraitementException If the sensor is not found and cannot be created
+     * @param edits All the editions done on sensors during the scan
      */
-    private Sensor findOrCreateSensor(AndroidSensorResultDTO sensorResult) throws TraitementException {
-        return sensorRepository.findBySensorId(
-                new SensorId(sensorResult.control_chip(), sensorResult.measure_chip())
-        ).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
-    }
-
-    /**
-     * Updates the note of a Sensor entity if it has changed.
-     *
-     * @param sensor       The Sensor entity to update
-     * @param sensorResult The DTO containing the new sensor data
-     */
-    private void updateSensorNoteIfChanged(Sensor sensor, AndroidSensorResultDTO sensorResult) {
-        if (sensorResult.note() != null && !sensorResult.note().equals(sensor.getNote())) {
-            sensor.setNote(sensorResult.note());
-            sensorRepository.save(sensor);
-            logger.info("Updated sensor note: {}", sensorResult.note());
+    private void processEdits(List<AndroidSensorEditDTO> edits) throws TraitementException {
+        var sensors = new ArrayList<Sensor>();
+        for (var edit : edits) {
+            var sensor = sensorRepository.findBySensorId(SensorId.from(edit.sensorId()))
+                .orElseThrow(() -> new TraitementException(Error.SENSOR_ID_NOT_FOUND));
+            if (edit.note() != null) sensor.setNote(edit.note());
+            sensors.add(sensor);
         }
+        sensorRepository.saveAll(sensors);
     }
 
     /**
-     * Creates a new Result entity from the provided data.
-     *
-     * @param sensor       The Sensor entity associated with this result
-     * @param scan         The Scan entity associated with this result
-     * @param sensorResult The DTO containing the result data
-     * @return The created Result entity
+     * Parses the given string into a date using {@link #DATETIME_FORMATTER}
+     * @param date the date to parse
+     * @return the corresponding LocalDateTime object
+     * @throws TraitementException of the date format is not valid
      */
-    private Result createScanResult(Sensor sensor, Scan scan, AndroidSensorResultDTO sensorResult) {
-        return new Result(
-                State.valueOf(sensorResult.state()),
-                sensor,
-                scan
-        );
+    private static LocalDateTime parseDate(String date) throws TraitementException {
+        try {
+            return LocalDateTime.parse(date, DATETIME_FORMATTER);
+        } catch(DateTimeParseException e) {
+            throw new TraitementException(Error.DATE_TIME_FORMAT_ERROR);
+        }
     }
 }

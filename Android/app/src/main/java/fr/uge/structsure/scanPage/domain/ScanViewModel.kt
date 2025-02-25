@@ -9,8 +9,9 @@ import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.bluetooth.cs108.RfidChip
-import fr.uge.structsure.connexionPage.data.SensorScanModification
+import fr.uge.structsure.scanPage.data.EditType
 import fr.uge.structsure.scanPage.data.ResultSensors
+import fr.uge.structsure.scanPage.data.ScanEdits
 import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
@@ -112,11 +113,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
 
         if (note.length > 1000) return false
-
         viewModelScope.launch(Dispatchers.IO) {
-            scanDao.updateScanNote(activeScanId!!, note)
+            activeScanId?.let { scanId -> scanDao.updateScanNote(scanId, note) }
         }
-
         return true
     }
 
@@ -133,21 +132,12 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
 
         if (note.length > 1000) return false
-
-        viewModelScope.launch(Dispatchers.IO) {
-            val modification = SensorScanModification(
-                scanId = activeScanId!!,
-                structureId = structureId ?: return@launch,
-                sensorId = sensorId,
-                originalNote = sensorDao.getSensor(sensorId)?.note,
-                modifiedNote = note,
-                timestamp = Timestamp(System.currentTimeMillis()).toString()
-            )
-
-            val sensorScanModificationDao = db.sensorScanModificationDao()
-            sensorScanModificationDao.insertModification(modification)
+        activeScanId?.let { scanId ->
+            viewModelScope.launch(Dispatchers.IO) {
+                db.sensorDao().updateNote(sensorId, note)
+                db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_NOTE, sensorId))
+            }
         }
-
         return true
     }
 
@@ -308,7 +298,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      *
      * @param structureId ID of the structure to scan.
      */
-    fun createNewScan(structureId: Long) {
+    fun startNewScan(structureId: Long) {
         if (!Cs108Connector.isReady) {
             sensorMessages.postValue("Interrogateur non connecté")
             return
@@ -338,7 +328,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     }
 
     /**
-     * Same function as [createNewScan] but for the special case of
+     * Same function as [startNewScan] but for the special case of
      * continuing an existing scan (for example after the app crashed)
      * @param scanId the id of the scan to continue
      */

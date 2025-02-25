@@ -20,4 +20,7 @@ interface SensorDao {
     
     @Query("SELECT * from sensors as s WHERE s.`plan` = :plan")
     fun getAllSensorsByPlan(plan: Long): List<SensorDB>
+
+    @Query("UPDATE sensors SET note = :note WHERE sensorId = :sensorId")
+    fun updateNote(sensorId: String, note: String)
 }

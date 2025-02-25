@@ -3,8 +3,10 @@ package fr.uge.structsure.scanPage.presentation
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,20 +15,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
-import android.graphics.BitmapFactory
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
@@ -78,7 +76,7 @@ fun ScanPage(context: Context,
             ToolBar(
                 currentState = currentState.value,
                 onPlayClick = {
-                    scanViewModel.createNewScan(structureId)
+                    scanViewModel.startNewScan(structureId)
                 },
                 onPauseClick = {
                     scanViewModel.pauseScan()
@@ -127,6 +125,7 @@ private fun SensorPopUp(
     onSubmit: () -> Unit,
     onCancel: () -> Unit
 ) {
+    val state by scanViewModel.currentScanState.observeAsState(ScanState.NOT_STARTED)
     val currentResults by scanViewModel.currentResults.observeAsState(initial = emptyList())
     val planImagePath by scanViewModel.planViewModel.image.observeAsState()
     val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
@@ -134,7 +133,7 @@ private fun SensorPopUp(
     val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: "UNKNOWN"
     val coroutineScope = rememberCoroutineScope()
 
-    var sensorNote by remember { mutableStateOf(sensor.note ?: "") }
+    var sensorNote by remember { mutableStateOf(sensor.note.orEmpty()) }
 
         PopUp(onCancel) {
         Title(sensor.name, false) {
@@ -202,11 +201,14 @@ private fun SensorPopUp(
             )
         }
 
+        val placeholder = if (state == ScanState.NOT_STARTED)
+            "Aucune note pour le moment.  Commencez un scan pour ajouter une note"
+            else "Aucune note pour le moment."
         InputTextArea(
             label = "Note",
             value = sensorNote,
-            placeholder = "Aucune note pour le moment",
-            enabled = currentResults.any { it.id == sensor.sensorId }
+            placeholder = placeholder,
+            enabled = state == ScanState.STARTED || state == ScanState.PAUSED
         ) { s -> if (s.length <= 1000) sensorNote = s }
     }
 }

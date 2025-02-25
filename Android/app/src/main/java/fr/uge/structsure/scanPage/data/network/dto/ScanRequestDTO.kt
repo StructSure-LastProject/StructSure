@@ -16,5 +16,6 @@ data class ScanRequestDTO(
     val launchDate: String,
     val note: String,
     val login: String,
-    val results: List<ScanResultDTO>
+    val results: List<ScanResultDTO>,
+    val sensorEdits: List<SensorEditDTO>
 )
