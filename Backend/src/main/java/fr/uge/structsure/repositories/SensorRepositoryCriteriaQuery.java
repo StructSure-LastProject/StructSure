@@ -48,8 +48,8 @@ public class SensorRepositoryCriteriaQuery {
         predicates.add(cb.equal(sensor.get("structure").get("id"), structureId));
 
         Expression<Long> resultCount = cb.count(result);
-        Expression<Long> isNokPresent = countNok(cb, result);
-        Expression<Long> isDefectivePresent = countDefective(cb, result);
+        Expression<Boolean> isNokPresent = checkIsNokPresent(cb, result);
+        Expression<Boolean> isDefectivePresent = checkIsDefectivePresent(cb, result);
 
         Expression<Integer> state = getState(cb, resultCount, isNokPresent, isDefectivePresent);
 
@@ -203,11 +203,11 @@ public class SensorRepositoryCriteriaQuery {
      * @param isDefectivePresent the number of defective states
      * @return
      */
-    private static Expression<Integer> getState(CriteriaBuilder cb, Expression<Long> resultCount, Expression<Long> isNokPresent, Expression<Long> isDefectivePresent) {
+    private static Expression<Integer> getState(CriteriaBuilder cb, Expression<Long> resultCount, Expression<Boolean> isNokPresent, Expression<Boolean> isDefectivePresent) {
         return cb.<Integer>selectCase()
                 .when(cb.equal(resultCount, 0), State.UNKNOWN.ordinal())
-                .when(cb.greaterThan(isDefectivePresent, 0L), State.DEFECTIVE.ordinal())
-                .when(cb.greaterThan(isNokPresent, 0L), State.NOK.ordinal())
+                .when(isNokPresent, State.NOK.ordinal())
+                .when(isDefectivePresent, State.DEFECTIVE.ordinal())
                 .otherwise(State.OK.ordinal());
     }
 
