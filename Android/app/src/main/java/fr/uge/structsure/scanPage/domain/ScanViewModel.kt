@@ -84,6 +84,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Sub-ViewModel that handle all plan selection/display logic */
     val planViewModel = PlanViewModel(context, this)
 
+    /** LiveData for the current results of the scan */
+    val currentResults = MutableLiveData<List<ResultSensors>>()
 
     /** Displaying error messages when updating notes */
     val noteErrorMessage = MutableLiveData<String>()

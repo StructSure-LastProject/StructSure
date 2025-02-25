@@ -71,12 +71,6 @@ fun ScanPage(context: Context,
 
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
 
-    LaunchedEffect(sensorPopup) {
-        if (sensorPopup != null) {
-            planViewModel.loadPlans(context, structureId)
-        }
-    }
-
     Page(
         Modifier.padding(bottom = 100.dp),
         navController = navController,
@@ -104,7 +98,6 @@ fun ScanPage(context: Context,
         sensorPopup?.let { sensor ->
             SensorPopUp(
                 sensor = sensor,
-                planViewModel = planViewModel,
                 scanViewModel = scanViewModel,
                 onSubmit = { sensorPopup = null },
                 onCancel = { sensorPopup = null }
@@ -131,12 +124,11 @@ fun ScanPage(context: Context,
 private fun SensorPopUp(
     sensor: SensorDB,
     scanViewModel: ScanViewModel,
-    planViewModel: PlanViewModel,
     onSubmit: () -> Unit,
     onCancel: () -> Unit
 ) {
     val currentResults by scanViewModel.currentResults.observeAsState(initial = emptyList())
-    val planImagePath by planViewModel.planImagePath.observeAsState()
+    val planImagePath by scanViewModel.planViewModel.image.observeAsState()
     val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
 
     val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: "UNKNOWN"
@@ -171,14 +163,14 @@ private fun SensorPopUp(
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            planImagePath?.let { path ->
+            planImagePath?.let { bitmap ->
                 Image(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(156.dp)
                         .clip(shape = RoundedCornerShape(size = 15.dp))
                         .border(width = 3.dp, color = LightGray, shape = RoundedCornerShape(size = 15.dp)),
-                    bitmap = BitmapFactory.decodeFile(path).asImageBitmap(),
+                    bitmap = bitmap.asImageBitmap(),
                     contentDescription = "Plan",
                 )
             } ?: Box(

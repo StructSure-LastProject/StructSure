@@ -8,6 +8,8 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import fr.uge.structsure.connexionPage.data.AccountDao
 import fr.uge.structsure.connexionPage.data.AccountEntity
+import fr.uge.structsure.connexionPage.data.SensorScanModification
+import fr.uge.structsure.connexionPage.data.SensorScanModificationDao
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.dao.ResultDao
@@ -29,8 +31,8 @@ import fr.uge.structsure.structuresPage.data.StructureData
  */
 @Database(
     entities = [ScanEntity::class, AccountEntity::class,
-        StructureData::class, SensorDB::class, PlanDB::class, ResultSensors::class],
-    version = 13,
+        StructureData::class, SensorDB::class, PlanDB::class, ResultSensors::class, SensorScanModification::class],
+    version = 14,
     exportSchema = false
 )
 /**
@@ -74,4 +76,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun planDao(): PlanDao
     abstract fun sensorDao(): SensorDao
     abstract fun resultDao(): ResultDao
+    abstract fun sensorScanModificationDao(): SensorScanModificationDao
 }
