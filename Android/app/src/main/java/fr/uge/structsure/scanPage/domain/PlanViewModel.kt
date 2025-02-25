@@ -35,6 +35,9 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
     /** Image of the currently selected plan */
     val image = MutableLiveData(defaultImage)
 
+    /** Image for displaying in the sensor popup  */
+    val popupImage = MutableLiveData(defaultImage)
+
     init {
         val mediator = MediatorLiveData<List<SensorDB>>()
         mediator.addSource(scanViewModel.sensorsNotScanned) { sensors ->
@@ -123,18 +126,21 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
         filteredPoints.postValue(filtered)
     }
 
-
     /**
-     * Load the image of the plan by its ID in background so that it
-     * does not affect the main thread. Once the image is loaded, the
-     * Bitmap is sent to the [image] variable.
+     * Load the image of the plan by its ID specifically for the popup without affecting
+     * the main plan display. The image is loaded in background.
      * @param context needed to read the file from the device
      * @param planId the id of the plan to load the image for
      */
-    fun loadPlanById(context: Context, planId: Long) {
+    fun loadPlanForPopup(context: Context, planId: Long?) {
         viewModelScope.launch(Dispatchers.IO) {
+            if (planId == null) {
+                popupImage.postValue(defaultImage)
+                return@launch
+            }
+
             val path = FileUtils.getLocalPlanImage(context, planId)
-            image.postValue(if (path == null) defaultImage else BitmapFactory.decodeFile(path))
+            popupImage.postValue(if (path == null) defaultImage else BitmapFactory.decodeFile(path))
         }
     }
 }

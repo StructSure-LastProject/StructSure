@@ -205,13 +205,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     }
 
     /**
-     * Gets the display name for a sensor state
-     */
-    fun getStateDisplayName(state: String): String {
-        return SensorState.from(state).displayName
-    }
-
-    /**
      * Adds a scanned RFID chip ID to the buffer for processing.
      * @param chip The details of the scanned chip
      */

@@ -42,9 +42,11 @@ import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.scanPage.data.findPlanById
 import fr.uge.structsure.scanPage.data.getPlanSectionName
+import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
+import fr.uge.structsure.scanPage.presentation.components.SensorState.Companion.getStateDisplayName
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
 import kotlinx.coroutines.launch
 import fr.uge.structsure.structuresPage.data.SensorDB
@@ -133,18 +135,18 @@ private fun SensorPopUp(
     val current = LocalContext.current
 
     LaunchedEffect(sensor.plan) {
-        sensor.plan?.let { scanViewModel.planViewModel.loadPlanById(current, it) }
+        scanViewModel.planViewModel.loadPlanForPopup(current, sensor.plan)
     }
 
     var note by remember { mutableStateOf(sensor.note ?: "") }
-    val planImage by scanViewModel.planViewModel.image.observeAsState()
+    val planImage by scanViewModel.planViewModel.popupImage.observeAsState()
 
-    val currentResults by scanViewModel.sensorsScanned.observeAsState(initial = emptyList())
-    val currentStateRaw = currentResults.find { it.id == sensor.sensorId }?.state ?: sensor.state
-    val currentStateDisplay = scanViewModel.getStateDisplayName(currentStateRaw)
+    val currentStateDisplay = getStateDisplayName(
+        scanViewModel.sensorsScanned.observeAsState(initial = emptyList()).value
+            .find { it.id == sensor.sensorId }?.state ?: sensor.state
+    )
 
-    val lastStateRaw = scanViewModel.getPreviousState(sensor.sensorId)
-    val lastStateDisplay = scanViewModel.getStateDisplayName(lastStateRaw)
+    val lastStateDisplay = getStateDisplayName(scanViewModel.getPreviousState(sensor.sensorId))
 
     PopUp(onCancel) {
         Title(sensor.name, false) {

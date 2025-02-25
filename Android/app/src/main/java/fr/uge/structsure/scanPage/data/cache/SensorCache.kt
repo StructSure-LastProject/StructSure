@@ -1,5 +1,6 @@
 package fr.uge.structsure.scanPage.data.cache
 
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.SensorDB
 
 /**
@@ -72,7 +73,7 @@ class SensorCache {
      * @param newState The new state received from the RFID chip.
      */
     private fun mergeStates(lastState: String?, newState: String): String {
-        if (lastState == "Non scanné"){
+        if (lastState == SensorState.UNKNOWN.displayName){
             return newState
         }
         if (lastState == "NOK" || newState == "NOK") {
