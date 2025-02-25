@@ -48,6 +48,7 @@ return (
           maxLength={maxLength}
           required={isRequired}
           disabled={!editMode()}
+          lang={type === "date" ? "fr-FR" : undefined}
         />
     </div>
   );
