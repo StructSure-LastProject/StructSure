@@ -40,14 +40,6 @@ import fr.uge.structsure.ui.theme.White
 import kotlin.math.sqrt
 
 /**
- * Represents a point on the plan image.
- * @param x the x coordinate of the point
- * @param y the y coordinate of the point
- * @param state the state of the sensor at this point
- */
-data class Point(val x: Double, val y: Double, val state: SensorState)
-
-/**
  * Composable that displays a plan image and allows to add points on it.
  * @param image the image to display
  * @param points the list of points to display on the image

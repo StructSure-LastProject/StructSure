@@ -31,4 +31,6 @@ data class SensorDB(
     val x: Double,
     val y: Double,
     val structureId: Long
-)
+) {
+    companion object
+}

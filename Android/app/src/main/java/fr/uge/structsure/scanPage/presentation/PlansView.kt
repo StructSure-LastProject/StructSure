@@ -41,6 +41,8 @@ import fr.uge.structsure.scanPage.data.TreePlan
 import fr.uge.structsure.scanPage.data.TreeSection
 import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanViewModel
+import fr.uge.structsure.scanPage.presentation.components.SensorState
+import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Typography
@@ -56,6 +58,7 @@ fun PlansView(scanViewModel: ScanViewModel) {
     val planViewModel = scanViewModel.planViewModel
     val plans = planViewModel.plans.observeAsState()
     val points = planViewModel.filteredPoints.distinctUntilChanged().observeAsState(listOf())
+    var addPoint by remember { mutableStateOf<SensorDB?>(null) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -78,8 +81,8 @@ fun PlansView(scanViewModel: ScanViewModel) {
             val image = planViewModel.image.observeAsState(planViewModel.defaultImage)
             Plan(
                 image = image.value,
-                points = points.value,
-                addPoint = { _, _ ->/* TODO enable to place points */ },
+                points = if (addPoint == null) points.value else points.value.plus(addPoint!!),
+                addPoint = { x, y -> addPoint = SensorDB.point(x, y) },
                 deletePoint = { /* TODO enable to remove points */ }
             )
 
@@ -89,12 +92,11 @@ fun PlansView(scanViewModel: ScanViewModel) {
                     .height(1.dp)
                     .background(LightGray) )
 
-            var addPoint by remember { mutableStateOf(true) }
-            if (addPoint) {
+            if (addPoint != null) {
                 AddPointPane(
                     listOf("Capteur PA", "Capteur P8S", "Capteur P8N", "Capteur A", "Sensor B"),
-                    { addPoint = false },
-                    { addPoint = false }
+                    { addPoint = null },
+                    { addPoint = null }
                 )
             } else {
                 plans.value?.let {
@@ -103,6 +105,23 @@ fun PlansView(scanViewModel: ScanViewModel) {
             }
         }
     }
+}
+
+private fun SensorDB.Companion.point(x: Double, y: Double): SensorDB {
+    return SensorDB(
+        sensorId = "",
+        controlChip = "",
+        measureChip = "",
+        name = "",
+        note =
+        "",
+        installationDate = null,
+        state = SensorState.UNKNOWN.name,
+        plan = 0, // TODO
+        x = x,
+        y = y,
+        structureId = 0 // TODO
+    )
 }
 
 /**
