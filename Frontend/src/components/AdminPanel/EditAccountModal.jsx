@@ -62,6 +62,22 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     };
     
 
+
+    /**
+     * Create effect to fill the two arrays
+     */
+    createEffect(() => {
+        if (copyOfStructureSelection.length === 0) {
+            if (data() !== null) {
+                for (const e of data().structureAcessDetailsList) {
+                    copyOfStructureSelection.push({structureId: e.structureId, structureName: e.structureName, hasAccess: e.hasAccess});
+                }
+                
+            }
+        }
+    })
+
+
     /**
      * Function that verify if the two arrays are equal
      * @param {Array} arr1 First Array 
@@ -94,13 +110,11 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         }
         
         if (Object.keys(a).length !== Object.keys(b).length) return false;
-
+        
         for (const key in a) {
-            if (!Object.prototype.hasOwnProperty.call(a, key)) continue;
-
+            if (!a.hasOwnProperty(key)) continue;
             if (!deepCompare(a[key], b[key])) return false;
         }
-
         
         return true;
     };
@@ -112,7 +126,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     createEffect(() => {
         if (copyOfStructureSelection.length === 0) {
             if (data() !== null) {
-                for (const e of data().structureAcessDetailsList) {
+                for (let e of data().structureDetailsList) {
                     copyOfStructureSelection.push({structureId: e.structureId, structureName: e.structureName, hasAccess: e.hasAccess});
                 }
                 
@@ -137,17 +151,12 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         await fetchData(`/api/accounts/${login}/structures`, requestData);
 
         if (statusCode() === 200) {
-            setStructureSelection(data().structureAcessDetailsList);
+            setStructureSelection(data().structureDetailsList);
         }
 
     }
       
     
-
-    createEffect(() => {
-        structureSelection()
-        isStructureSelectionModified = true;
-    })
 
     /**
      * Handle the submit buttom
