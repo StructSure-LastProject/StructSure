@@ -7,8 +7,11 @@ import java.util.List;
  * It contains the structure id, the scan id, the launch date, the note, the login
  */
 public record AndroidScanResultDTO(
+        Long structureId,
         Long scanId,
         String launchDate,
         String note,
-        List<AndroidSensorResultDTO> results
+        String login,
+        List<AndroidSensorResultDTO> results,
+        List<AndroidSensorEditDTO> sensorEdits
 ) {}

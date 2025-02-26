@@ -24,7 +24,6 @@ class ScanRepository(context: Context) {
     private val accountDao = db.accountDao()
     private val scanEditsDao = db.scanEditsDao()
     private val connectivityViewModel = ConnectivityViewModel(context)
-    private val sensorScanModificationDao = db.sensorScanModificationDao()
 
     /**
      * Updates the end timestamp of a scan in local database
@@ -42,7 +41,6 @@ class ScanRepository(context: Context) {
      * @return List of all result for the given scan
      */
     fun getResultsByScan(scanId: Long): List<ResultSensors> = resultDao.getResultsByScan(scanId)
-
 
     /**
      * Retrieves all scan that are done but have not been sent to the

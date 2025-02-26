@@ -20,14 +20,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
@@ -39,9 +38,9 @@ import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
+import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.findPlanById
 import fr.uge.structsure.scanPage.data.getPlanSectionName
-import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
@@ -50,6 +49,7 @@ import fr.uge.structsure.scanPage.presentation.components.SensorsList
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
+import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.Typography
 import kotlinx.coroutines.launch
 

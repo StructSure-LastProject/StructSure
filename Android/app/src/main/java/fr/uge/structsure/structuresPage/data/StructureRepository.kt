@@ -26,7 +26,6 @@ class StructureRepository : ViewModel() {
     private val sensorDao = MainActivity.db.sensorDao()
     private val resultDao = MainActivity.db.resultDao()
     private val scanDao = MainActivity.db.scanDao()
-    private val sensorScanModificationDao = MainActivity.db.sensorScanModificationDao()
 
     private fun getApiInterface() = RetrofitInstance.structureApi
 
