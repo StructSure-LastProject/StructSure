@@ -35,7 +35,7 @@ function StructureDetailHead(props) {
                             )}
                         </For>
                     </select>
-                    <Show when={localStorage.getItem("role").toLocaleUpperCase() === "RESPONSABLE" && props.selectedScan() === -1}>
+                    <Show when={(localStorage.getItem("role").toLocaleUpperCase() === "RESPONSABLE" || localStorage.getItem("role").toLocaleUpperCase() === "ADMIN") && props.selectedScan() === -1}>
                         <button class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onclick={openModal}>
                             <Pencil />
                         </button>

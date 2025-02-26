@@ -1,13 +1,10 @@
 import { createEffect, createSignal } from "solid-js";
 import useFetch from "../../hooks/useFetch";
-import { useNavigate } from "@solidjs/router";
 
 /**
  * Show the modal to edit structure
  */
 function StructureDetailEdit(props) {
-
-    const navigate = useNavigate();
 
     /**
      * Will send request to edit the structure details (name, note)
@@ -38,8 +35,6 @@ function StructureDetailEdit(props) {
                 name: name(),
                 note: note()
             });
-        } else if (statusCode() === 401) {
-            navigate("/login");
         } else {
             setErrorFronted(error().errorData.error);
         }
