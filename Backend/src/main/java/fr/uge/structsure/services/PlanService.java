@@ -10,6 +10,7 @@ import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.repositories.PlanRepository;
+import fr.uge.structsure.repositories.SensorRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ import java.util.Optional;
 public class PlanService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlanService.class);
     private final PlanRepository planRepository;
+    private final SensorRepository sensorRepository;
     private final StructureService structureService;
     private final SensorService sensorService;
 
@@ -53,12 +55,15 @@ public class PlanService {
     /**
      * Constructor
      * @param planRepository The plan repo
+     * @param sensorRepository The sensor repo
      * @param structureService The structure service
      * @param sensorService The sensor service
      */
     @Autowired
-    public PlanService(PlanRepository planRepository, StructureService structureService, SensorService sensorService) {
+    public PlanService(PlanRepository planRepository, SensorRepository sensorRepository,
+           StructureService structureService, SensorService sensorService) {
         this.planRepository = planRepository;
+        this.sensorRepository = sensorRepository;
         this.structureService = structureService;
         this.sensorService = sensorService;
     }
@@ -162,7 +167,7 @@ public class PlanService {
      */
     private void checkState(Plan plan, Structure structure) throws TraitementException {
         checkState(structure);
-        if (plan.getArchived()) {
+        if (plan.isArchived()) {
             throw new TraitementException(Error.PLAN_IS_ARCHIVED);
         }
     }
@@ -503,9 +508,7 @@ public class PlanService {
         Objects.requireNonNull(controlChip);
         Objects.requireNonNull(measureChip);
         var plan = sensorService.getPlanFromSensor(controlChip, measureChip);
-        if(structureService.getStructureById(structureId)
-                .sensors()
-                .stream()
+        if(sensorRepository.findByStructureId(structureId).stream()
                 .noneMatch(sensor -> sensor.getSensorId().equals(new SensorId(controlChip, measureChip)))){
             throw new TraitementException(Error.SENSOR_NOT_FOUND);
         }

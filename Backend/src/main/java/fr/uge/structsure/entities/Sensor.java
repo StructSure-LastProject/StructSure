@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import org.hibernate.validator.internal.util.stereotypes.Lazy;
 
-import java.time.LocalDateTime;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
@@ -203,7 +202,7 @@ public class Sensor {
         this.y = y;
     }
 
-    public Boolean getArchived() {
+    public Boolean isArchived() {
         return archived;
     }
 

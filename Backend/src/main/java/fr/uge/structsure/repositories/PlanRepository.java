@@ -14,13 +14,6 @@ import java.util.Optional;
 public interface PlanRepository extends JpaRepository<Plan, Long> {
 
     /**
-     * Counts the number of plan in the structure
-     * @param structure the structure
-     * @return the number
-     */
-    long countByStructure(Structure structure);
-
-    /**
      * Will find the plan by its id, and also that is present in the structure
      * @param structure the structure
      * @param planId the plan id
@@ -34,6 +27,14 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
      * @return the list of plans
      */
     List<Plan> findByStructure(Structure structure);
+
+    /**
+     * Finds all the plan linked to the given structure that are not
+     * archived.
+     * @param structure the structure to get plans from
+     * @return all the not archived structure's plan
+     */
+    List<Plan> findByStructureAndArchivedFalse(Structure structure);
 
     @Query("SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM Plan p WHERE p.imageUrl = :url")
     boolean planFileAlreadyExists(String url);

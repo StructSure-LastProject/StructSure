@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -103,7 +102,7 @@ public class Plan {
      * Checks if the plan is archived
      * @return true if paln archived and false if not
      */
-    public boolean getArchived() {
+    public boolean isArchived() {
         return archived;
     }
 
