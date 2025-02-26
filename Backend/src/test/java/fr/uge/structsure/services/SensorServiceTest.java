@@ -55,7 +55,7 @@ class SensorServiceTest {
         when(structureRepository.findById(structureId)).thenReturn(Optional.empty());
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.getSensors(structureId,
                 new AllSensorsByStructureRequestDTO("STATE",
-                        "ASC", null, null, null, null, 0, 5, null)));
+                        "ASC", null, null, null, null, 0, 5, null, null)));
         assertEquals(Error.STRUCTURE_ID_NOT_FOUND, exception.error);
     }
 
@@ -67,7 +67,7 @@ class SensorServiceTest {
             return;
         }
         List<SensorDTO> sensors = sensorService.getSensors(structureId, new AllSensorsByStructureRequestDTO("STATE",
-                "ASC", null, null, null, null, 0, 5, null));
+                "ASC", null, null, null, null, 0, 5, null, null));
         assertNotNull(sensors);
         assertEquals(1, sensors.size());
     }

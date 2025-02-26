@@ -1,5 +1,6 @@
 package fr.uge.structsure.dto.structure;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,9 +38,12 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
      * Represents a scan associated with a structure.
      *
      * @param id   The unique identifier of the scan.
-     * @param name The name of the scan, usually including author and date details.
+     * @param note The note of the scan.
+     * @param name The name of the scan author (firstname, lastname).
+     * @param date The date of the scan.
+     * @param dataRow The data row representation of the scan
      */
-    public record Scan(long id, String name) {
+    public record Scan(long id, String note, String name, String date, String dataRow) {
         /**
          * Validates the scan fields.
          *
@@ -50,7 +54,10 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
             if (id < 0) {
                 throw new IllegalArgumentException("id < 0");
             }
+            Objects.requireNonNull(note);
             Objects.requireNonNull(name);
+            Objects.requireNonNull(date);
+            Objects.requireNonNull(dataRow);
         }
 
         /**
@@ -60,8 +67,11 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
          * @return A new {@code Scan} DTO.
          */
         public static Scan fromScanEntity(fr.uge.structsure.entities.Scan scan) {
-            return new Scan(scan.getId(), scan.getAuthor().getFirstname() + " " + scan.getAuthor().getLastname()
-                + " - " + scan.getDate() + " - #"  + scan.getId());
+            var name = scan.getAuthor().getFirstname() + " " + scan.getAuthor().getLastname();
+            var format = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+            var date = scan.getDate().format(format);
+            var dataRow = name + " - " + date + " - #"  + scan.getId();
+            return new Scan(scan.getId(), scan.getNote(), name, date, dataRow);
         }
     }
 

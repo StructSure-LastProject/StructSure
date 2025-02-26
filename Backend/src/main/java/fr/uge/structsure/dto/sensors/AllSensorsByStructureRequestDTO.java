@@ -20,11 +20,12 @@ import java.util.Objects;
  * @param limit the limit
  * @param offset the offset
  * @param archivedFilter the archived filter true or false
+ * @param scanFilter the scan filter
  */
 @JsonSerialize
 public record AllSensorsByStructureRequestDTO(String orderByColumn, String orderType, String stateFilter, Integer planFilter,
                                               String minInstallationDate, String maxInstallationDate, Integer limit, Integer offset,
-                                              Boolean archivedFilter) {
+                                              Boolean archivedFilter, Integer scanFilter) {
 
     /**
      * Represents enum for the supported order
@@ -61,7 +62,7 @@ public record AllSensorsByStructureRequestDTO(String orderByColumn, String order
         if (!EnumValidatorFromString.validateEnumValue(OrderByColumn.class, orderByColumn) ||
                 !EnumValidatorFromString.validateEnumValue(OrderEnum.class, orderType) ||
                 (!Objects.isNull(stateFilter) && !EnumValidatorFromString.validateEnumValue(State.class, stateFilter))
-                || (planFilter != null && planFilter < 0)) {
+                || (planFilter != null && planFilter < 0) || (scanFilter != null && scanFilter < 0)) {
             throw new TraitementException(Error.INCORRECT_FIELD_VALUE);
         }
     }
