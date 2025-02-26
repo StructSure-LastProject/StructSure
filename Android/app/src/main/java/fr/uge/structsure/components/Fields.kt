@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -41,11 +43,64 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import fr.uge.structsure.R
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
+
+/**
+ * Assisted input text with selectable options list
+ * @param label the name of this field
+ * @param options all the available options
+ * @param value the value currently written
+ * @param onChange callback to capture the value changes
+ * @param color color of the text
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ComboBox(
+    label: String,
+    options: Set<String>,
+    value: String,
+    onChange: (String) -> Unit,
+    color: Color = Black
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val filtered = remember(value) { options.filter { it.contains(value, true)} }
+    ExposedDropdownMenuBox(expanded, { expanded = !expanded }) {
+        Input(
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable, true),
+            label = label,
+            value = value,
+            placeholder = "",
+            password = false,
+            onChange = { onChange(it) },
+            enabled = true,
+            color = color,
+            backgroundColor = LightGray,
+            decorations = { innerTextField -> PlaceHolder(value, "", innerTextField, null, R.drawable.chevron_down) },
+        )
+        DropdownMenu(
+            expanded, { expanded = false },
+            Modifier.exposedDropdownSize(true),
+            properties = PopupProperties(focusable = false),
+            shape = RoundedCornerShape(20.dp),
+            containerColor = White
+        ) {
+            filtered.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option, style = typography.bodyLarge) },
+                    onClick = {
+                        onChange(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
 
 /**
  * Select component with a label, a select and an options list
@@ -246,7 +301,7 @@ fun InputTextArea (
 
 /**
  * Field containing a single line text input and a label.
- * @param modifier to customise the text input
+ * @param label the name of the field
  * @param value the variable in which the value will be stored
  * @param placeholder indicative text placed in the input when no
  *     value is typed
@@ -262,7 +317,8 @@ fun InputSearch(
     onChange: (String) -> Unit = {}
 ) {
     if (label != null) {
-        Input(Modifier, label, value, placeholder, false, onChange, false,
+        Input(
+            Modifier, label, value, placeholder, null, false, onChange, false,
             enabled = true,
             decorations = { innerTextField -> PlaceHolder(value, placeholder, innerTextField, R.drawable.search) },
             backgroundColor = White
@@ -274,7 +330,7 @@ fun InputSearch(
             modifier = Modifier.fillMaxWidth()
                 .height(40.dp)
                 .background(color = White, shape = RoundedCornerShape(50.dp))
-                .padding(start = 0.dp, end = 16.dp, top = 9.dp, bottom = 9.dp),
+                .padding(start = 0.dp, end = 16.dp, top = 0.dp, bottom = 0.dp),
             enabled = true,
             textStyle = typography.bodyLarge,
             keyboardOptions = keyboardOptions,
@@ -298,6 +354,7 @@ private fun Input(
     multiLines: Boolean = false,
     enabled: Boolean = true,
     decorations: (@Composable (@Composable () -> Unit) -> Unit)? = null,
+    color: Color = Black,
     backgroundColor: Color = LightGray,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
@@ -305,6 +362,7 @@ private fun Input(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
         horizontalAlignment = Alignment.Start,
     ) {
+        val textStyle = if (multiLines) typography.bodyMedium else typography.bodyLarge
         Label(label)
         BasicTextField(
             value = value,
@@ -314,7 +372,7 @@ private fun Input(
                 .clip(RoundedCornerShape(size = if (multiLines) 10.dp else 50.dp))
                 .background(backgroundColor),
             enabled = enabled,
-            textStyle = if (multiLines) typography.bodyMedium else typography.bodyLarge,
+            textStyle = textStyle.copy(color = color),
             keyboardOptions = if (password) KeyboardOptions(keyboardType = KeyboardType.Password) else keyboardOptions,
             singleLine = !multiLines,
             visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
@@ -343,22 +401,20 @@ private fun PlaceHolder(
     iconSuffix: Int? = null
 ) {
     Row (
-        Modifier.padding(
-            start = 16.dp,
-            end = if (iconSuffix == null) 16.dp else 0.dp,
-            top = if (iconPrefix == null && iconSuffix == null) 9.dp else 0.dp,
-            bottom = if (iconPrefix == null && iconSuffix == null) 9.dp else 0.dp
-        ),
+        Modifier.padding(16.dp,  0.dp),
         horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.Start),
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         iconPrefix?.let { Icon(painterResource(it), "prefix icon", Modifier.size(20.dp)) }
-        Box (Modifier.weight(1f)) { // Placeholder
-            if (value.isEmpty()) Text(
+        Box (
+            Modifier.weight(1f).padding(0.dp, 10.dp).fillMaxHeight(),
+            contentAlignment = Alignment.TopStart
+        ) {
+            innerTextField.invoke()
+            if (value.isEmpty()) Text( // Placeholder
                 placeholder,
                 Modifier.alpha(.5f),
                 style = typography.bodyMedium)
-            innerTextField.invoke()
         }
         iconSuffix?.let { Icon(painterResource(it), "suffix icon") }
     }
