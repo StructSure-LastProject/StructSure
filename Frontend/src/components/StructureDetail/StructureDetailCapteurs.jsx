@@ -53,7 +53,7 @@ function StructureDetailCapteurs({scanChanged, structureId, setSensors, selected
     /**
      * Handles saving a newly added plan
      */
-    const handleAddSave = async () => {
+    const handleAddSave = () => {
         sensorsFetchRequest(structureId, setSensors, setTotalItems, {limit: limit(), offset: offset()});
         closeAddModal();
     };

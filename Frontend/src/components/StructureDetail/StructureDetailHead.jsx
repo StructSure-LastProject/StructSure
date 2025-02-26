@@ -30,7 +30,7 @@ function StructureDetailHead({setScanChanged, structureId, selectedPlanId, struc
   const handleScanChange = (event) => {
     const selectedValue = event.target.value;
     if (selectedValue >= 0) {
-      const selectedScan = structureDetails().scans.find(scan => scan.id == selectedValue);
+      const selectedScan = structureDetails().scans.find(scan => String.valueOf(scan.id) === String.valueOf(selectedValue));
       if (selectedScan) {
         setName(selectedScan.name || "");
         setDate(selectedScan.date || "");
