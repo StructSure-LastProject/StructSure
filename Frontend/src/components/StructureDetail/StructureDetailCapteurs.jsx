@@ -5,18 +5,20 @@ import getSensorStatusColor from "../SensorStatusColorGen"
 import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
 import SensorFilter from '../SensorFilter';
 import { Pagination } from '../Pagination.jsx';
+import {sensorsFetchRequest} from "./StructureDetailBody.jsx";
 
 /**
  * Show the sensors part of the structure detail page
+ * @param {boolean} scanChanged If scan changed
  * @param {String} structureId The structure id
  * @param {Function} setSensors The set sonsors function
- * @param {String} selectedPlanId The selected plan id
+ * @param {function} selectedPlanId The selected plan id
  * @param {Array} sensors The sensors array
  * @param {Number} totalItems Total number of sensors
- * @param {Function} setTotalItems setter to set the total number of sensor 
+ * @param {Function} setTotalItems setter to set the total number of sensor
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, sensors, totalItems, setTotalItems}) {
+function StructureDetailCapteurs({scanChanged, structureId, setSensors, selectedPlanId, sensors, totalItems, setTotalItems}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
@@ -52,7 +54,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
      * Handles saving a newly added plan
      */
     const handleAddSave = async () => {
-        await sensorsFetchRequest(structureId);
+        sensorsFetchRequest(structureId, setSensors, setTotalItems, {limit: limit(), offset: offset()});
         closeAddModal();
     };
 
@@ -75,7 +77,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
     return (
         <div class="w-full flex flex-col gap-y-[15px]">
             <div class="flex justify-between">
-                <p class="title">Capteurs</p>
+                <p class="title">{ scanChanged() ? "Résultats" : "Capteurs"}</p>
                 <div class="flex justify-between gap-x-[10px]">
                     <div class="w-10 h-10 rounded-[50px] bg-white flex justify-center items-center">
                         <ArrowDownNarrowWide size={20}/>
@@ -83,7 +85,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
                     <div class="w-10 h-10 rounded-[50px] bg-white flex justify-center items-center">
                         <Filter size={20}/>
                     </div>
-                    <Show when={isAuthorized()}>
+                    <Show when={isAuthorized() && !scanChanged()}>
                         <button
                             title="Ajouter un capteur"
                             onClick={openAddModal}

@@ -6,7 +6,6 @@ import { createEffect, createSignal } from "solid-js";
 
 import useFetch from '../../hooks/useFetch';
 
-
 /**
  * Will fetch the sensors for the plan
  */
@@ -27,7 +26,45 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
     // }
 };
 
+const MAX_INT_VALUE = 2147483647;
 
+/**
+ * Fetch sensors from a scan and plan
+ * @param structureId The structure id
+ * @param scanId The scan id
+ * @param planId The plan id
+ * @param setPlanSensors The setter of plan sensors
+ */
+export const planSensorsScanFetchRequest = async (structureId, scanId, planId = 1, setPlanSensors) => {
+    const { fetchData, statusCode, data, errorFetch } = useFetch();
+
+    const requestBody = {
+        orderByColumn: "STATE",
+        orderType: "ASC",
+        limit: MAX_INT_VALUE,
+        offset: 0,
+        scanFilter: scanId,
+        planFilter: planId
+    };
+
+    const requestUrl = `/api/structures/${structureId}/sensors`;
+
+    const requestData = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+    };
+
+    await fetchData(requestUrl, requestData);
+
+    if (statusCode() === 200) {
+        setPlanSensors((data().sensors));
+    }// Uncomment this when error barre is developped
+    // else if (statusCode() === 404) {
+    // }
+};
 
 /**
  * Will fetch the list of the sensors of this structure
@@ -44,10 +81,10 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
         ...(filters?.stateFilter && { stateFilter: filters.stateFilter }),
         ...(filters?.archivedFilter && {archivedFilter: filters.archivedFilter}),
         ...(filters?.planFilter && {planFilter: filters.planFilter}),
+        ...(filters?.scanFilter && {scanFilter: filters.scanFilter}),
         ...(filters?.minInstallationDate && {minInstallationDate: filters.minInstallationDate}),
         ...(filters?.maxInstallationDate && {maxInstallationDate: filters.maxInstallationDate})
     };
-
 
     const requestUrl = `/api/structures/${structureId}/sensors`;
 
@@ -74,12 +111,13 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
  * @returns component for the body part
  */
 function StructureDetailBody(props) {
-
     const [sensors, setSensors] = createSignal({});
-    const [structureDetails, setStructureDetails] = createSignal({"scans": [], "plans": [], "sensors": []});
+    const [structureDetails, setStructureDetails] = createSignal({"note": "", "scans": [], "plans": [], "sensors": []});
     const [planSensors, setPlanSensors] = createSignal([]);
-    const [selectedPlanId, setSelectedPlanId] = createSignal(null);
+    const [selectedPlanId, setSelectedPlanId] = createSignal(1);
     const [totalItems, setTotalItems] = createSignal(0);
+    const [note, setNote] = createSignal("");
+    const [scanChanged, setScanChanged] = createSignal(false);
 
     /**
      * Will fetch the structure details
@@ -95,7 +133,8 @@ function StructureDetailBody(props) {
         await fetchData(`/api/structures/${structureId}`, requestData);
         if (statusCode() === 200) {
             setStructureDetails(data());
-        } 
+            setNote(structureDetails().note);
+        }
         // Uncomment this when error barre is developped
         // else if (statusCode() === 404) {
         // }
@@ -119,7 +158,16 @@ function StructureDetailBody(props) {
 
     return (
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
-            <StructureDetailHead scans={structureDetails().scans}/>
+            <StructureDetailHead
+              setScanChanged={setScanChanged}
+              structureId={props.structureId}
+              structureDetails={structureDetails}
+              setPlanSensors={setPlanSensors}
+              setSensors={setSensors}
+              setNote={setNote}
+              setTotalItems={setTotalItems}
+              selectedPlanId={selectedPlanId}
+            />
             <StructureDetailPlans
               structureDetails={structureDetails}
               structureId={props.structureId}
@@ -129,7 +177,16 @@ function StructureDetailBody(props) {
               setPlanSensors={setPlanSensors}
               setSensors={setSensorsDetail}
             />
-            <StructureDetailRow structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
+            <StructureDetailRow
+              scanChanged={scanChanged}
+              note={note}
+              structureId={props.structureId}
+              setSensors={setSensors}
+              selectedPlanId={selectedPlanId}
+              sensors={sensors}
+              totalItems={totalItems}
+              setTotalItems={setTotalItems}
+            />
         </div>
     );
 }
