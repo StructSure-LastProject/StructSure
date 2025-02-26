@@ -146,7 +146,7 @@ public class SensorRepositoryCriteriaQuery {
      * @param predicates the list of predicates
      * @param cb the Criteria Builder
      * @param sensor the sensor entity
-     * @throws TraitementException throws DATE_TIME_FORMAT_ERROR if there is an error while parsing the date time
+     * @throws TraitementException throws DATE_TIME_ISO_FORMAT_ERROR if there is an error while parsing the date time
      */
     private static void addMinAndMaxInstallationDatePredicate(AllSensorsByStructureRequestDTO request, ArrayList<Predicate> predicates, CriteriaBuilder cb, Root<Sensor> sensor) throws TraitementException {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
@@ -154,7 +154,7 @@ public class SensorRepositoryCriteriaQuery {
             try {
                 predicates.add(cb.greaterThanOrEqualTo(sensor.get("installationDate"), LocalDate.parse(request.minInstallationDate(), formatter)));
             } catch (DateTimeParseException e) {
-                throw new TraitementException(Error.DATE_TIME_FORMAT_ERROR);
+                throw new TraitementException(Error.DATE_TIME_ISO_FORMAT_ERROR);
             }
         }
 
@@ -162,7 +162,7 @@ public class SensorRepositoryCriteriaQuery {
             try {
                 predicates.add(cb.lessThanOrEqualTo(sensor.get("installationDate"), LocalDate.parse(request.maxInstallationDate(), formatter).plusDays(1)));
             } catch (DateTimeParseException e) {
-                throw new TraitementException(Error.DATE_TIME_FORMAT_ERROR);
+                throw new TraitementException(Error.DATE_TIME_ISO_FORMAT_ERROR);
             }
         }
     }

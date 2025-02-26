@@ -1,5 +1,7 @@
 package fr.uge.structsure.entities;
 
+import fr.uge.structsure.exceptions.Error;
+import fr.uge.structsure.exceptions.TraitementException;
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
@@ -16,6 +18,20 @@ public class SensorId implements Serializable {
     public SensorId(String controlChip, String measureChip) {
         this.controlChip = Objects.requireNonNull(controlChip);
         this.measureChip = Objects.requireNonNull(measureChip);
+    }
+
+    /**
+     * Safely creates and returns a SensorId object from the dto
+     * sensor id string, parsing the field with a '-'
+     * @param stringId the sensor id object with control chip and then
+     *     measure chip separated by a '-'
+     * @return the SensorId corresponding to the given string
+     * @throws TraitementException if the sensorId is malformed
+     */
+    public static SensorId from(String stringId) throws TraitementException {
+        var split = stringId.split("-");
+        if (split.length != 2) throw new TraitementException(Error.INVALID_FIELDS);
+        return new SensorId(split[0], split[1]);
     }
 
     // Getters

@@ -3,8 +3,10 @@ package fr.uge.structsure.scanPage.presentation
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,11 +19,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
@@ -40,6 +43,9 @@ import fr.uge.structsure.scanPage.presentation.components.ScanWeather
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
+import fr.uge.structsure.ui.theme.Red
+import fr.uge.structsure.ui.theme.Typography
+import kotlinx.coroutines.launch
 
 /**
  * Home screen of the application when the user starts a scan.
@@ -70,7 +76,7 @@ fun ScanPage(context: Context,
             ToolBar(
                 currentState = currentState.value,
                 onPlayClick = {
-                    scanViewModel.createNewScan(structureId)
+                    scanViewModel.startNewScan(structureId)
                 },
                 onPauseClick = {
                     scanViewModel.pauseScan()
@@ -87,7 +93,14 @@ fun ScanPage(context: Context,
             )
         }
     ) { scrollState ->
-        if (sensorPopup != null) SensorPopUp({ sensorPopup = null }, { sensorPopup = null })
+        sensorPopup?.let { sensor ->
+            SensorPopUp(
+                sensor = sensor,
+                scanViewModel = scanViewModel,
+                onSubmit = { sensorPopup = null },
+                onCancel = { sensorPopup = null }
+            )
+        }
         ScanWeather(viewModel = scanViewModel, scrollState)
         PlansView(scanViewModel)
         SensorsList(scanViewModel) { s -> sensorPopup = s }
@@ -104,13 +117,40 @@ fun ScanPage(context: Context,
    }
 }
 
-@Composable
-private fun SensorPopUp(onSubmit: () -> Unit, onCancel: () -> Unit) {
-    var note by remember { mutableStateOf("") }
 
-    PopUp(onCancel) {
-        Title("Capteur 04", false) {
-            Button(R.drawable.check, "valider", MaterialTheme.colorScheme.onSurface, MaterialTheme.colorScheme.surface, onSubmit)
+@Composable
+private fun SensorPopUp(
+    sensor: SensorDB,
+    scanViewModel: ScanViewModel,
+    onSubmit: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val state by scanViewModel.currentScanState.observeAsState(ScanState.NOT_STARTED)
+    val currentResults by scanViewModel.currentResults.observeAsState(initial = emptyList())
+    val planImagePath by scanViewModel.planViewModel.image.observeAsState()
+    val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
+
+    val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: "UNKNOWN"
+    val coroutineScope = rememberCoroutineScope()
+
+    var sensorNote by remember { mutableStateOf(sensor.note.orEmpty()) }
+
+        PopUp(onCancel) {
+        Title(sensor.name, false) {
+            Button(
+                R.drawable.check,
+                "valider",
+                MaterialTheme.colorScheme.onSurface,
+                MaterialTheme.colorScheme.surface,
+                onClick =
+                {
+                    coroutineScope.launch {
+                        if (scanViewModel.updateSensorNote(sensorId = sensor.sensorId, sensorNote)) {
+                            onSubmit()
+                        }
+                    }
+                }
+            )
         }
 
         Column(
@@ -118,26 +158,57 @@ private fun SensorPopUp(onSubmit: () -> Unit, onCancel: () -> Unit) {
             horizontalAlignment = Alignment.Start,
         ) {
             Text(
-                text = "OA Zone 04",
+                text = "OA Zone 04", // TODO: get the zone name from the plan section
                 style = MaterialTheme.typography.headlineMedium
             )
-            Image(
+
+            planImagePath?.let { bitmap ->
+                Image(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(156.dp)
+                        .clip(shape = RoundedCornerShape(size = 15.dp))
+                        .border(width = 3.dp, color = LightGray, shape = RoundedCornerShape(size = 15.dp)),
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = "Plan",
+                )
+            } ?: Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(156.dp)
                     .clip(shape = RoundedCornerShape(size = 15.dp))
-                    .border(width = 3.dp, color = LightGray, shape = RoundedCornerShape(size = 15.dp)),
-                painter = painterResource(id = R.drawable.plan_glaciere),
-                contentDescription = "Plan",
+                    .background(LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Loading...", style = Typography.titleMedium)
+            }
+        }
 
+        SensorDetails(
+            Black,
+            "Etat courant:",
+            sensor.state,
+            "Dernier état:",
+            currentState
+        )
+
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = Red,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
         }
-        SensorDetails(Black, "Etat courant:", "Non scanné", "Dernier état:", "OK")
 
+        val placeholder = if (state == ScanState.NOT_STARTED)
+            "Aucune note pour le moment.  Commencez un scan pour ajouter une note"
+            else "Aucune note pour le moment."
         InputTextArea(
             label = "Note",
-            value = note,
-            placeholder = "Aucune note pour le moment"
-        ) { s -> if (s.length <= 1000) note = s }
+            value = sensorNote,
+            placeholder = placeholder,
+            enabled = state == ScanState.STARTED || state == ScanState.PAUSED
+        ) { s -> if (s.length <= 1000) sensorNote = s }
     }
 }

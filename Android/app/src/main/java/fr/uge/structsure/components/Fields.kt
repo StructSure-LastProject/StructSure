@@ -91,10 +91,11 @@ fun InputTextArea (
     label: String,
     value: String,
     placeholder: String = "",
+    enabled : Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit = {}
 ) {
-    Input(Modifier.defaultMinSize(minHeight = 75.dp).then(modifier), label, value, placeholder, null, false, onChange, true, keyboardOptions)
+    Input(Modifier.defaultMinSize(minHeight = 75.dp).then(modifier), label, value, placeholder, null, false, onChange, true, keyboardOptions, enabled = enabled)
 }
 
 /**
@@ -153,7 +154,8 @@ private fun Input(
     password: Boolean,
     onChange: (String) -> Unit,
     multiLines: Boolean = false,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    enabled: Boolean = true
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -167,7 +169,7 @@ private fun Input(
                 .height(40.dp)
                 .background(color = LightGray, shape = RoundedCornerShape(size = if (multiLines) 10.dp else 50.dp))
                 .padding(horizontal = 16.dp, vertical = 9.dp),
-            enabled = true,
+            enabled = enabled,
             textStyle = if (multiLines) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
             keyboardOptions = if (password) KeyboardOptions(keyboardType = KeyboardType.Password) else keyboardOptions,
             singleLine = !multiLines,

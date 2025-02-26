@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteException
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import fr.uge.structsure.MainActivity
+import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.utils.FileUtils
 import kotlinx.coroutines.CoroutineScope
@@ -147,7 +148,10 @@ class StructureRepository : ViewModel() {
     fun deleteStructure(structureId: Long, context: Context) {
         try {
             val scan = scanDao.getScanByStructure(structureId)
-            scan?.let { resultDao.deleteResultsByScan(it.id) }
+            scan?.let {
+                resultDao.deleteResultsByScan(it.id)
+                db.scanEditsDao().deleteByScanId(it.id)
+            }
             sensorDao.deleteSensorsByStructureId(structureId)
             planDao.getPlansByStructureId(structureId).forEach { plan ->
                 FileUtils.deletePlanImage(context, plan.id)

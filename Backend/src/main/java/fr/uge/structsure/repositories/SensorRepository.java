@@ -122,4 +122,10 @@ SensorRepository extends JpaRepository<Sensor, Long> {
      * @return List<Sensor> list of the sensors
      */
     List<Sensor> findByPlan(Plan plan);
+    /**
+     * Will find a sensor by its id
+     * @param sensorId the id of the sensor
+     * @return optional with the sensor if there is a sensor and optional empty if not
+     */
+    Optional<Sensor> findBySensorId(SensorId sensorId);
 }

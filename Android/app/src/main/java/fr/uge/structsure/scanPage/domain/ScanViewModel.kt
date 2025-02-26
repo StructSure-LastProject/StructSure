@@ -9,7 +9,9 @@ import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
 import fr.uge.structsure.bluetooth.cs108.RfidChip
+import fr.uge.structsure.scanPage.data.EditType
 import fr.uge.structsure.scanPage.data.ResultSensors
+import fr.uge.structsure.scanPage.data.ScanEdits
 import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
@@ -83,6 +85,11 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Sub-ViewModel that handle all plan selection/display logic */
     val planViewModel = PlanViewModel(context, this)
 
+    /** LiveData for the current results of the scan */
+    val currentResults = MutableLiveData<List<ResultSensors>>()
+
+    /** Displaying error messages when updating notes */
+    val noteErrorMessage = MutableLiveData<String>()
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -96,6 +103,42 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             }
             sensorStateCounts.postValue(stateCounts)
         }
+    }
+
+    // TODO : ISSUE #207
+    fun updateScanNote(note: String): Boolean {
+        if (activeScanId == null) {
+            noteErrorMessage.postValue("Aucun scan en cours")
+            return false
+        }
+
+        if (note.length > 1000) return false
+        viewModelScope.launch(Dispatchers.IO) {
+            activeScanId?.let { scanId -> scanDao.updateScanNote(scanId, note) }
+        }
+        return true
+    }
+
+    /**
+     * Updates the note of a sensor in the modal dialog of the sensor when the scan is in progress.
+     * @param sensorId the id of the sensor to update
+     * @param note the new note to set
+     * @return true if the note was updated, false otherwise
+     */
+    fun updateSensorNote(sensorId: String, note: String): Boolean {
+        if (activeScanId == null) {
+            noteErrorMessage.postValue("Aucun scan en cours")
+            return false
+        }
+
+        if (note.length > 1000) return false
+        activeScanId?.let { scanId ->
+            viewModelScope.launch(Dispatchers.IO) {
+                db.sensorDao().updateNote(sensorId, note)
+                db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_NOTE, sensorId))
+            }
+        }
+        return true
     }
 
     /**
@@ -196,18 +239,32 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     private fun updateSensorState(sensor: SensorDB, newState: String) {
         val stateChanged = sensorCache.updateSensorState(sensor, newState) ?: return
 
-        activeScanId?.let { scanId ->
-            resultDao.insertResult(
-                ResultSensors(
-                    id = sensor.sensorId,
-                    timestamp = Timestamp(System.currentTimeMillis()).toString(),
-                    scanId = scanId,
-                    controlChip = sensor.controlChip,
-                    measureChip = sensor.measureChip,
-                    state = stateChanged
-                )
+        if (activeScanId == null) {
+            val now = Timestamp(System.currentTimeMillis()).toString()
+            val newScan = ScanEntity(
+                structureId = structureId ?: return,
+                start_timestamp = now,
+                end_timestamp = "",
+                technician = accountDao.getLogin(),
+                note = ""
             )
+            activeScanId = scanDao.insertScan(newScan)
         }
+
+        val result = ResultSensors(
+            id = sensor.sensorId,
+            timestamp = Timestamp(System.currentTimeMillis()).toString(),
+            scanId = activeScanId!!,
+            controlChip = sensor.controlChip,
+            measureChip = sensor.measureChip,
+            state = stateChanged
+        )
+        resultDao.insertResult(result)
+
+        val currentList = currentResults.value?.toMutableList() ?: mutableListOf()
+        currentList.removeAll { it.id == sensor.sensorId }
+        currentList.add(result)
+        currentResults.postValue(currentList)
 
         when (stateChanged) {
             "OK" -> {
@@ -241,7 +298,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      *
      * @param structureId ID of the structure to scan.
      */
-    fun createNewScan(structureId: Long) {
+    fun startNewScan(structureId: Long) {
         if (!Cs108Connector.isReady) {
             sensorMessages.postValue("Interrogateur non connecté")
             return
@@ -250,6 +307,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         cs108Scanner.start()
         currentScanState.postValue(ScanState.STARTED)
         alertMessages.postValue(null)
+        currentResults.postValue(emptyList())
 
         if (activeScanId != null) return // already created
 
@@ -270,7 +328,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     }
 
     /**
-     * Same function as [createNewScan] but for the special case of
+     * Same function as [startNewScan] but for the special case of
      * continuing an existing scan (for example after the app crashed)
      * @param scanId the id of the scan to continue
      */
@@ -317,7 +375,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
                 activeScanId?.let { scanId ->
                     val results = resultDao.getAllResults()
-                    if (results.isNotEmpty()) {
+                    if (results.isNotEmpty() || db.scanEditsDao().getAllByScanId(scanId).isNotEmpty()) {
                         val now = Timestamp(System.currentTimeMillis()).toString()
                         scanRepository.updateScanEndTime(scanId, now)
                         structureId?.let { structureViewModel.tryUploadScan(it, scanId) }

@@ -4,20 +4,25 @@ import android.content.Context
 import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.exception.NoConnectivityException
 import fr.uge.structsure.retrofit.RetrofitInstance
+import fr.uge.structsure.scanPage.data.EditType
 import fr.uge.structsure.scanPage.data.ResultSensors
+import fr.uge.structsure.scanPage.data.ScanEdits
 import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.network.dto.ScanRequestDTO
 import fr.uge.structsure.scanPage.data.network.dto.ScanResultDTO
+import fr.uge.structsure.scanPage.data.network.dto.SensorEditDTO
 import fr.uge.structsure.structuresPage.domain.ConnectivityViewModel
 
 /**
  * Repository class handling all scan-related data operations
  * Manages both local database operations and server communication
  */
-class ScanRepository(private val context: Context) {
+class ScanRepository(context: Context) {
     private val scanDao = db.scanDao()
     private val resultDao = db.resultDao()
     private val sensorDao = db.sensorDao()
+    private val accountDao = db.accountDao()
+    private val scanEditsDao = db.scanEditsDao()
     private val connectivityViewModel = ConnectivityViewModel(context)
 
     /**
@@ -63,7 +68,7 @@ class ScanRepository(private val context: Context) {
                 throw NoConnectivityException()
             }
 
-            if (scanRequest.results.isEmpty()) {
+            if (scanRequest.results.isEmpty() && scanRequest.sensorEdits.isEmpty()) {
                 return Result.success(Unit)
             }
 
@@ -80,42 +85,46 @@ class ScanRepository(private val context: Context) {
 
 
     /**
-     * Converts local scan results into a DTO format for API submission
-     * Takes local database entities and maps them to transfer objects
-     * Process:
-     * 1. Maps each ResultSensors to ScanResultDTO
-     * 2. Fetches sensor details for each result
-     * 3. Combines all data into final ScanRequestDTO
-     *
-     * @param scanId the id of the scan that contains the results
-     * @param results List of local scan results to be converted
-     * @return ScanRequestDTO Complete DTO ready to be sent to server
+     * Converts the scan results to a DTO to send to the server
+     * @param scanId ID of the scan to convert
+     * @param results List of results to convert
+     * @return DTO containing all scan data
      */
     suspend fun convertToScanRequest(
         scanId: Long,
         results: List<ResultSensors>
     ): ScanRequestDTO {
+        val scan = scanDao.getScanById(scanId)
+        val login = accountDao.get()?.login.orEmpty()
+        val edits = scanEditsDao.getAllByScanId(scanId)
 
-        val scanResults = results.mapNotNull{ result ->
-            val sensor = sensorDao.getSensor(result.id) ?: return@mapNotNull null
-            ScanResultDTO(
-                sensorId = result.id,
-                control_chip = result.controlChip,
-                measure_chip = result.measureChip,
-                name = sensor.name,
-                state = result.state,
-                note = "", // TODO
-                installation_date = "0" // TODO
-            )
+        val scanResults = results.map { ScanResultDTO.from(it) }
+        val sensorEdits = getSensorEdits(edits)
+
+        return ScanRequestDTO(scan.structureId, scanId, scan.start_timestamp, scan.note, login,
+            scanResults, sensorEdits)
+    }
+
+    /**
+     * Retrieves all the edits that corresponds to a sensor and build
+     * a list of ScanSensorEditDTOs that regroups all edits by sensors.
+     * @param edits the list of all edits of the scan
+     * @return the edits grouped by sensor
+     */
+    private suspend fun getSensorEdits(edits: List<ScanEdits>): List<SensorEditDTO> {
+        val sensorEdits = mutableMapOf<String, SensorEditDTO>()
+
+        edits.forEach {
+            when (it.type) {
+                EditType.SENSOR_NOTE -> {
+                    /* Get the new note of the sensor */
+                    val sensor = sensorEdits.getOrPut(it.value) { SensorEditDTO(it.value) }
+                    sensorEdits[it.value] = sensor.copy(note = sensorDao.getSensor(it.value)?.note)
+                }
+            }
         }
 
-        val scan = scanDao.getScanById(scanId)
-        return ScanRequestDTO(
-            scanId = scanId,
-            launchDate = scan.start_timestamp,
-            note = scan.note,
-            results = scanResults
-        )
+        return sensorEdits.values.toList()
     }
 }
 
