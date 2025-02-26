@@ -1,8 +1,8 @@
 import { Trash2, X, ChevronDown } from 'lucide-solid';
-import StructureNameCard from '../StructureNameCard';
-import { createSignal } from 'solid-js';
+import { createEffect, createSignal } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
 import useFetch from '../../hooks/useFetch';
+import AccountStructureSection from './AccountStructureSection';
 
 /**
  * Edit account modal component
@@ -18,6 +18,8 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     const [accountState, setAccountState] = createSignal(userDetails.accountState);
     const [errorModal, setErrorModal] = createSignal([]);
     const [apiError, setApiError] = createSignal("");
+    const [structureSelection, setStructureSelection] = createSignal([]);
+    let copyOfstructureSelection = [];
     const login = userDetails.login;
 
     /**
@@ -54,6 +56,11 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     
     
 
+    createEffect(() => {
+        structureSelection()
+        isStructureSelectionModified = true;
+    })
+
     /**
      * Handle the submit buttom
      */
@@ -74,7 +81,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
             if (role() !== userDetails.role) updatedFields.push("role");
             if (accountState() !== userDetails.accountState) updatedFields.push("accountState");
             if (password() !== "") updatedFields.push("password");
-
+            if (isStructureSelectionModified) updatedFields.push("structure");
 
             if (updatedFields.length === 0) {
                 setApiError("");
@@ -138,9 +145,14 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                 editError = error().errorData.error;
             }
             if (statusCode() === 200) {
-                closeModal();
-                fetchUserDetails();
-                setApiError("");
+                requestData.body = JSON.stringify({ access: structureSelection() });
+                await fetchData(`/api/accounts/${login()}/access`, requestData);
+                
+                if (statusCode() === 200) {
+                    closeModal();
+                    fetchUserDetails();
+                    setApiError("");
+                }
             }
             else if (statusCode() === 404){
                 setApiError(editError);
@@ -279,20 +291,11 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                         
                     </div>
 
-                    {<div class="flex flex-col w-[100%] h-auto gap-[5px]">
-                        <p class="normal opacity-50">Ouvrages autorisés</p>
-                        <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
-                            <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
-                            <StructureNameCard structureName={"Pont de Tournon-sur-Rhône"} isChoosed={true}/>
-                            <StructureNameCard structureName={"Pegasus Bridge"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont Albert-Louppe"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont Boutiron"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont d’Ain"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont levant de La Seyne-sur-Mer"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont d’Èze"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont suspendu de Saint-Ilpize"} isChoosed={false}/>
+                    {
+                        <div class="flex flex-col w-[100%] h-auto gap-[5px]">
+                            <p class="normal opacity-50">Ouvrages autorisés</p>
+                            <AccountStructureSection setStructureSelection={setStructureSelection}/>
                         </div>
-                    </div>
                     }
                     <div class="md:flex md:flex-row-reverse">
                         <button type="submit" onClick={handleSubmit} class="rounded-[50px] px-[16px] py-[8px] bg-lightgray">

@@ -6,6 +6,8 @@ import fr.uge.structsure.dto.auth.LoginResponseDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterResponseDTO;
 import fr.uge.structsure.dto.userAccount.*;
+import fr.uge.structsure.dto.userAccount.accountStructure.GetStructureListForUserAccountsResponseDTO;
+import fr.uge.structsure.dto.userAccount.accountStructure.StructureDetails;
 import fr.uge.structsure.dto.userAccount.accountStructure.UpdateUserStructureAccessResponseDTO;
 import fr.uge.structsure.dto.userAccount.accountStructure.StructurePermission;
 import fr.uge.structsure.entities.Account;
@@ -273,6 +275,19 @@ public class AccountService {
         return new RegisterResponseDTO(userAccount.getLogin());
     }
 
+    /**
+     * Method to check if the given login is valid
+     * @param login The login
+     * @return The Account object
+     * @throws TraitementException thrown custom exception if the login is not related to a valid user account
+     */
+    private Account checkIfAccountExist(String login) throws TraitementException {
+        var userAccount = accountRepository.findByLogin(Objects.requireNonNull(login));
+        if (userAccount.isEmpty()){
+            throw new TraitementException(Error.USER_ACCOUNT_NOT_FOUND);
+        }
+        return userAccount.get();
+    }
 
     /**
      * Check if is possible to change role of the given user
@@ -292,21 +307,17 @@ public class AccountService {
             throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
         }
 
-        var userAccount = accountRepository.findByLogin(userUpdateRequestDTO.login());
+        var userAccount = checkIfAccountExist(userUpdateRequestDTO.login());
 
-        if (userAccount.isEmpty()){
-            throw new TraitementException(Error.USER_ACCOUNT_NOT_FOUND);
-        }
-
-        if (userAccount.get().getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.get().getRole() == Role.ADMIN){
+        if (userAccount.getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.getRole() == Role.ADMIN){
             throw new TraitementException(Error.SUPER_ADMIN_ACCOUNT_CANT_BE_MODIFIED);
         }
 
-        if (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.get().getRole() == Role.ADMIN){
+        if (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.getRole() == Role.ADMIN){
             throw new TraitementException(Error.ADMIN_ACCOUNT_CANT_BE_MODIFIED_BY_AN_ADMIN_ACCOUNT);
         }
 
-        return userAccount.get();
+        return userAccount;
     }
 
     /**
@@ -406,9 +417,7 @@ public class AccountService {
     public UpdateUserStructureAccessResponseDTO updateUserStructureAccess(String login, UserStructureAccessRequestDTO userStructureAccessRequestDTO) throws TraitementException{
         Objects.requireNonNull(login);
         Objects.requireNonNull(userStructureAccessRequestDTO);
-        if (accountRepository.findByLogin(login).isEmpty()){
-            throw new TraitementException(Error.USER_ACCOUNT_NOT_FOUND);
-        }
+        checkIfAccountExist(login);
 
         if (userStructureAccessRequestDTO.access().isEmpty()){
             return UpdateUserStructureAccessResponseDTO.success(login, List.of());
@@ -423,6 +432,29 @@ public class AccountService {
             return UpdateUserStructureAccessResponseDTO.error("Ouvrage introuvable", Collections.unmodifiableList(changedAccess), Collections.unmodifiableList(unChangedAccess));
         }
         return UpdateUserStructureAccessResponseDTO.success(login, Collections.unmodifiableList(changedAccess));
+    }
+
+
+    /**
+     * Service that will get structure list of the given login (user account)
+     * @param login The login
+     * @return The response DTO
+     * @throws TraitementException Thrown custom exceptions
+     */
+    public GetStructureListForUserAccountsResponseDTO getStructureListForUserAccounts(String login) throws TraitementException {
+        Objects.requireNonNull(login);
+        var userAccount = checkIfAccountExist(login);
+        var structures = structureRepository.findAll();
+        var allowedStructures = userAccount.getAllowedStructures();
+        var resultList = new ArrayList<StructureDetails>();
+        structures.forEach(structure -> {
+            resultList.add(new StructureDetails(
+                    structure.getId(),
+                    structure.getName(),
+                    allowedStructures.contains(structure)
+            ));
+        });
+        return new GetStructureListForUserAccountsResponseDTO(resultList);
     }
 
 }

@@ -1,3 +1,4 @@
+import { createSignal } from "solid-js";
 
 /**
  * Structure name card component
@@ -5,22 +6,27 @@
  * @param {boolean} isChoosed If the structure is choosed or not 
  * @returns 
  */
-const StructureNameCard = ({structureName, isChoosed}) => {
+const StructureNameCard = ({add, remove, structureId, structureName, isSelected}) => {
 
-    const cardColor = isChoosed ? {
-        bg: "bg-black",
-        text: "text-white" 
-    }: {
-        bg: "bg-lightgray",
-        text: "text-black"
+    const [isChoosed, setIsChoosed] = createSignal(isSelected);
+
+    const handleClick = (e) => {
+        e.preventDefault();
+        setIsChoosed((prevState) => !prevState);
+
+        if (isChoosed()) {
+            add(structureId, true);
+        } else {
+            remove(structureId);
+        }
     };
-    
+
     return (
-        <div class={`items-center w-auto sm:w-[auto] rounded-[50px] px-[12px] py-[4px] gap-[8px] ${cardColor.bg}`}>
-            <p class={`${cardColor.text} accent`}>
+        <button onClick={handleClick} class={`items-center w-auto sm:w-[auto] rounded-[50px] px-[12px] py-[4px] gap-[8px] ${isChoosed() ? "bg-black" : "bg-lightgray" }`}>
+            <p class={`${isChoosed() ? "text-white" : "text-black" } accent`}>
                 {structureName}
             </p>
-        </div>
+        </button>
 
     )
 }

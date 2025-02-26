@@ -1,8 +1,8 @@
 import { X, ChevronDown } from 'lucide-solid';
-import StructureNameCard from '../StructureNameCard';
 import { createSignal } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
 import useFetch from '../../hooks/useFetch';
+
 
 /**
  * Add account modal component
@@ -86,7 +86,7 @@ const AddAccountModal = ({ closeModal }) => {
             };
     
             await fetchData("/api/accounts", requestData);
-            
+
             let creationError = "";
             if(error() !== null){
                 creationError = error().errorData.error;
@@ -227,23 +227,6 @@ const AddAccountModal = ({ closeModal }) => {
                         </div>
                         
                     </div>
-                
-
-                {<div class="flex flex-col w-[100%] h-auto gap-[5px]">
-                    <p class="normal opacity-50">Ouvrages autorisés</p>
-                    <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
-                        <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
-                        <StructureNameCard structureName={"Pont de Tournon-sur-Rhône"} isChoosed={true}/>
-                        <StructureNameCard structureName={"Pegasus Bridge"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont Albert-Louppe"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont Boutiron"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont d’Ain"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont levant de La Seyne-sur-Mer"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont d’Èze"} isChoosed={false}/>
-                        <StructureNameCard structureName={"Pont suspendu de Saint-Ilpize"} isChoosed={false}/>
-                    </div>
-                </div>
-                }
                 <div class="md:flex md:flex-row-reverse">
                     <button type="submit" onClick={handleSubmit}  class="rounded-[50px] px-[16px] py-[8px] gap-[10px] bg-black">
                         <p class="accent text-white">Créer</p>

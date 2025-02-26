@@ -148,4 +148,13 @@ public class UserAccountController {
         }
     }
 
+    @GetMapping("/accounts/{login}/structures")
+    public ResponseEntity<?> getStructureListForUserAccounts(@PathVariable String login){
+        try {
+            return ResponseEntity.status(200).body(accountService.getStructureListForUserAccounts(login));
+        } catch (TraitementException e){
+            return e.toResponseEntity();
+        }
+    }
+
 }
