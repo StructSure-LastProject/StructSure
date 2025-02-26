@@ -3,6 +3,7 @@ import { createEffect, createResource, createSignal } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
 import useFetch from '../../hooks/useFetch';
 import AccountStructureSection from './AccountStructureSection';
+import { useNavigate } from '@solidjs/router';
 
 /**
  * Edit account modal component
@@ -22,6 +23,8 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     const [apiError, setApiError] = createSignal("");
     const [structureSelection, setStructureSelection] = createSignal([]);
     const copyOfStructureSelection = [];
+    const login = userDetails.login;
+    const navigate = useNavigate();
 
 
     const login = userDetails.login;
@@ -171,7 +174,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
         const token = localStorage.getItem("token")
 
-        
         if (errorModal().length === 0) {
             const updatedFields = [];
 
@@ -244,7 +246,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                 }
             }
             
-            await fetchData("/api/accounts/reset", createRequestData("PUT", requestBody));
+            await fetchData(navigate, "/api/accounts/reset", createRequestData("PUT", requestBody));
 
             
             let editError = "";

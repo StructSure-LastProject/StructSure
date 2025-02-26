@@ -1,9 +1,10 @@
 import {createSignal, Show} from "solid-js";
-import useFetch from "../../hooks/useFetch.js";
-import ModalHeader from "../Modal/ModalHeader.jsx";
-import ErrorMessage from "../Modal/ErrorMessage.jsx";
-import ModalField from "../Modal/ModalField.jsx";
-import ModalComment from "../Modal/ModalComment.jsx";
+import useFetch from "../../hooks/useFetch";
+import ModalHeader from "../Modal/ModalHeader";
+import ErrorMessage from "../Modal/ErrorMessage";
+import ModalField from "../Modal/ModalField";
+import ModalComment from "../Modal/ModalComment";
+import { useNavigate } from "@solidjs/router";
 
 /**
  * Modal for adding a sensor.
@@ -18,6 +19,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
   const [note, setNote] = createSignal("");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const [errorMsg, setError] = createSignal("");
+  const navigate = useNavigate();
 
   /**
    * Handles the form submission for adding a new sensor.
@@ -57,7 +59,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
 
     const { fetchData, statusCode, error } = useFetch();
 
-    await fetchData("/api/sensors", {
+    await fetchData(navigate, "/api/sensors", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

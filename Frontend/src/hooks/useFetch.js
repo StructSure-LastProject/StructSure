@@ -13,10 +13,11 @@ const useFetch = () => {
 
   /**
    * Will fetch data from server
+   * @param {Navigator} navigate function to redirect to login if not authenticated
    * @param {String} endpoint the endpoint
    * @param {Object} requestData the object containing request informations
    */
-  const fetchData = async (endpoint, requestData) => {
+  const fetchData = async (navigate, endpoint, requestData) => {
     setLoading(true);
         try {
             const response = await fetch(endpoint, requestData);
@@ -24,8 +25,13 @@ const useFetch = () => {
             if (response.ok) {    
                 const jsonData = await response.json();
                 setData(jsonData);
-            }
-            else {
+            } else {
+                if (response.status === 401) {
+                    const currentRoute = window.location.pathname + window.location.search
+                    if (!currentRoute.startsWith("/login")) localStorage.setItem("loginForward", currentRoute);
+                    navigate("/login");
+                    return
+                }
                 const errorData = await response.json();
                 setError({
                     statusCode: response.status,

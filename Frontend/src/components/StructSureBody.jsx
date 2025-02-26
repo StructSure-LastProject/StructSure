@@ -35,15 +35,13 @@ function StructSureBody() {
             }
         };
 
-        
-        await fetchData(urlWithParams, requestData);
+        const { fetchData, statusCode, data } = useFetch();
+        await fetchData(navigate, urlWithParams, requestData);
  
 
         if (statusCode() === 200) {
             const res = data()
             setStructures(res);
-        } else if (statusCode() === 401) {
-            navigate("/login");
         } else {
             setErrorStructurePage(error().errorData.error);
         }

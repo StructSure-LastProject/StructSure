@@ -7,6 +7,7 @@ import Canvas from './Canvas';
 import useFetch from '../../hooks/useFetch';
 import {sensorsFetchRequest} from "../StructureDetail/StructureDetailBody"
 import plan_not_found from '/src/assets/plan_not_found.png';
+import { useNavigate } from '@solidjs/router';
 
 /**
  * The panel header
@@ -153,6 +154,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
   const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate === null ? "" : sensorDetails.installationDate.split('T')[0]);
   const [note, setNote] = createSignal(sensorDetails?.note);
   const [editMode, setEditMode] = createSignal(false);
+  const navigate = useNavigate();
   
 
   const [validationError, setvalidationError] = createSignal("");
@@ -196,7 +198,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
       body: JSON.stringify(requestBody)
     };
 
-    await fetchData("/api/sensors/edit", requestData);
+    await fetchData(navigate, "/api/sensors/edit", requestData);
 
     if (statusCode() === 200) {
       setvalidationError("");
