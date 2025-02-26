@@ -3,7 +3,7 @@ import getSensorStatusColor from "../SensorStatusColorGen";
 import { createResource, createSignal, Show } from 'solid-js';
 import SensorFieldComponent from './SensorFieldComponent';
 import { loginValidator } from '../../hooks/vaildateUserAccountForm';
-import StructureDetailCanvas from "../StructureDetail/StructureDetailCanvas"
+import Canvas from './Canvas';
 import useFetch from '../../hooks/useFetch';
 import {sensorsFetchRequest} from "../StructureDetail/StructureDetailBody"
 import plan_not_found from '/src/assets/plan_not_found.png';
@@ -74,7 +74,7 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
  */
 const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => {  
   const planId = selectedPlanId() === null ? 1 : selectedPlanId();
-  const { fetchImage, image, statusCode } = useFetch();
+  const { fetchImage, image, loading } = useFetch();
   const token = localStorage.getItem("token");
   const endpoint = `/api/structures/plans/${structureId}/${sensorDetails.controlChip}/${sensorDetails.measureChip}/image`;
 
@@ -88,20 +88,20 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
   
   
   createResource(async () => {
-    await fetchImage(endpoint, requestData);
+    await fetchImage(endpoint, requestData);    
   })
   
   return (
     <div class="lg:flex lg:flex-col lg:gap-[10px]">
       <h1 class="font-poppins font-[600] text-[16px] leading-[24px] tracking-[0%] text-[#181818] pl-1">OA/Zone</h1>
-      <Show when={image() !== null} fallback={
+      <Show when={!loading() && image() !== null} fallback={
         <img
           class={"w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px] object-cover"} 
           src={plan_not_found} 
           alt="plan not found"
         />
       }>
-        <StructureDetailCanvas
+        <Canvas
           styles={"w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px]"} 
           plan={image()} 
           interactiveMode={false} 
@@ -147,7 +147,7 @@ const SensorCommentSection = ({
  * @param {Function} closeSensorPanel Function that close the sensor panel
  * @returns The sensor panel component
  */
-const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDetails, closeSensorPanel}) => {
+const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDetails, closeSensorPanel, setTotalItems}) => {
 
   const [sensorName, setSensorName] = createSignal(sensorDetails.name);
   const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate === null ? "" : sensorDetails.installationDate.split('T')[0]);
@@ -200,7 +200,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
 
     if (statusCode() === 200) {
       setvalidationError("");
-      sensorsFetchRequest(structureId, setSensors);
+      sensorsFetchRequest(structureId, setSensors, setTotalItems);
       closeSensorPanel();
       return true;
     }    

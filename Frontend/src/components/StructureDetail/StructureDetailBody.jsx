@@ -42,6 +42,7 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
     const token = localStorage.getItem("token");
     const { fetchData, statusCode, data, errorFetch } = useFetch();
 
+
     // Construire le body avec les filtres
     const requestBody = {
         orderByColumn: filters.orderByColumn || "STATE",
