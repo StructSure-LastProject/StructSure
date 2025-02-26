@@ -14,4 +14,7 @@ interface ScanEditsDao {
 
     @Query("SELECT * FROM scan_edits WHERE scanId = :scanId")
     fun getAllByScanId(scanId: Long): List<ScanEdits>
+
+    @Query("DELETE FROM scan_edits WHERE scanId = :scanId")
+    fun deleteByScanId(scanId: Long)
 }

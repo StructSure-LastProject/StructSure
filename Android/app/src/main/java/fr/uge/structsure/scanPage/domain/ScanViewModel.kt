@@ -375,7 +375,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
                 activeScanId?.let { scanId ->
                     val results = resultDao.getAllResults()
-                    if (results.isNotEmpty()) {
+                    if (results.isNotEmpty() || db.scanEditsDao().getAllByScanId(scanId).isNotEmpty()) {
                         val now = Timestamp(System.currentTimeMillis()).toString()
                         scanRepository.updateScanEndTime(scanId, now)
                         structureId?.let { structureViewModel.tryUploadScan(it, scanId) }

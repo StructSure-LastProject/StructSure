@@ -68,7 +68,7 @@ class ScanRepository(context: Context) {
                 throw NoConnectivityException()
             }
 
-            if (scanRequest.results.isEmpty()) {
+            if (scanRequest.results.isEmpty() && scanRequest.sensorEdits.isEmpty()) {
                 return Result.success(Unit)
             }
 

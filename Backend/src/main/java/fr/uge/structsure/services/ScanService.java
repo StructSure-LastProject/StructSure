@@ -89,7 +89,7 @@ public class ScanService {
      * @throws TraitementException If the scan data is invalid (e.g., empty results)
      */
     private void validateScanData(AndroidScanResultDTO scanData) throws TraitementException {
-        if (scanData.results().isEmpty()) {
+        if (scanData.results().isEmpty() && scanData.sensorEdits().isEmpty()) {
             LOGGER.warn("Received empty scan results, ignoring");
             throw new TraitementException(Error.INVALID_FIELDS);
         }
@@ -165,7 +165,7 @@ public class ScanService {
         for (var rawResult : scanData.results()) {
             var sensorId = SensorId.from(rawResult.sensorId());
             var sensor = sensorRepository.findBySensorId(sensorId)
-                .orElseThrow(() -> new TraitementException(Error.SENSOR_ID_NOT_FOUND));
+                .orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
             Result result = new Result(State.valueOf(rawResult.state()), sensor, scan);
             results.add(result);
         }
@@ -183,7 +183,7 @@ public class ScanService {
         var sensors = new ArrayList<Sensor>();
         for (var edit : edits) {
             var sensor = sensorRepository.findBySensorId(SensorId.from(edit.sensorId()))
-                .orElseThrow(() -> new TraitementException(Error.SENSOR_ID_NOT_FOUND));
+                .orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
             if (edit.note() != null) sensor.setNote(edit.note());
             sensors.add(sensor);
         }
