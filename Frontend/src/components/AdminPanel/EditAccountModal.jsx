@@ -144,6 +144,11 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
       
     
 
+    createEffect(() => {
+        structureSelection()
+        isStructureSelectionModified = true;
+    })
+
     /**
      * Handle the submit buttom
      * @param {Event} e The click event
