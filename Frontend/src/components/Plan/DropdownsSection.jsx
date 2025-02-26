@@ -34,7 +34,6 @@ const Section = (props) => {
 const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId}) => (
   <div class={`px-[8px] py-[9px] rounded-[10px] cursor-pointer flex items-center gap-x-[10px] justify-between hover:bg-[#F2F2F4] ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`}
   onClick={(event) => {
-    console.log("Click detected");
     setSelectedPlanId(planId);
   }}>
     <div class="flex items-center gap-x-[10px]">
@@ -59,7 +58,6 @@ const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId}) => (
 const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId}) => (
   <div class={`py-[8px] px-[9px] rounded-[10px] flex items-center cursor-pointer gap-x-[10px] justify-between hover:bg-gray-100 group ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`} 
   onClick={(event) => {
-    console.log("Click detected");
     setSelectedPlanId(planId);
   }}>
     <div class="flex items-center gap-x-[10px]">
@@ -186,12 +184,8 @@ const TreeNode = (props) => {
     setIsOpen(!isOpen());
   };
 
-  console.log("props.type: ", props.type, ", is selected: ", props.isSelected);
 
   if (props.type === "section") {
-    Object.entries(props.children).forEach(([key, child]) => {
-      console.log("props.selectedPlanId: ", props.selectedPlanId(), ", child.id: ", child.id);
-    });
     return (
       <div class="mb-2">
         <Section
@@ -296,6 +290,11 @@ const DropdownsSection = (props) => {
   /*const [selectedPlan, setSelectedPlan] = createSignal(null);*/
 
   const safeData = () => {
+    if (Array.isArray(props.data)) {
+      if (props.data.length > 0 && props.selectedPlanId() == null) {
+        props.setSelectedPlanId(props.data[0].id);
+      }
+    }
     return Array.isArray(props.data) ? props.data : [];
   };
 

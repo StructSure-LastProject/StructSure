@@ -51,7 +51,7 @@ const useFetch = () => {
     const fetchImage = async (endpoint, requestData) => {
         setLoading(true);
         try {
-        const response = await fetch(endpoint, requestData);
+        const response = await fetch("http://localhost:8080" +endpoint, requestData);
         setStatusCode(response.status);
     
         if (response.ok) {
