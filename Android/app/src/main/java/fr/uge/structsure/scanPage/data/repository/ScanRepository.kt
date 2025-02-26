@@ -42,7 +42,6 @@ class ScanRepository(context: Context) {
      */
     fun getResultsByScan(scanId: Long): List<ResultSensors> = resultDao.getResultsByScan(scanId)
 
-
     /**
      * Retrieves all scan that are done but have not been sent to the
      * server yet.

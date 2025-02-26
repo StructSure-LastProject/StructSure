@@ -20,6 +20,7 @@ import fr.uge.structsure.settingsPage.presentation.PreferencesManager.getScanner
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
 
@@ -57,7 +58,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     val currentScanState = MutableLiveData(ScanState.NOT_STARTED)
 
     /** ID of the currently active scan */
-    private var activeScanId: Long? = null
+    var activeScanId: Long? = null
 
     /** Sensor cache for managing sensor states in memory */
     private val sensorCache = SensorCache()
@@ -86,7 +87,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     val planViewModel = PlanViewModel(context, this)
 
     /** Displaying error messages when updating notes */
-    private val noteErrorMessage = MutableLiveData<String>()
+    val noteErrorMessage = MutableLiveData<String>()
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -105,18 +106,17 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
     }
 
-    // TODO : ISSUE #207
-    fun updateScanNote(note: String): Boolean {
-        if (activeScanId == null) {
-            noteErrorMessage.postValue("Aucun scan en cours")
-            return false
-        }
-
-        if (note.length > 1000) return false
-        viewModelScope.launch(Dispatchers.IO) {
-            activeScanId?.let { scanId -> scanDao.updateScanNote(scanId, note) }
-        }
-        return true
+    suspend fun updateScanNote(note: String): Boolean {
+        return viewModelScope.async(Dispatchers.IO) {
+            activeScanId?.let { scanId ->
+                scanDao.updateScanNote(scanId, note)
+                noteErrorMessage.postValue(null)
+                true
+            } ?: run {
+                noteErrorMessage.postValue("Aucun scan actif trouvé")
+                false
+            }
+        }.await()
     }
 
     /**
@@ -140,6 +140,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
         return true
     }
+
 
     /**
      * Changes the structureId of the scanViewModel. This will reload
@@ -313,6 +314,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         if (activeScanId != null) return // already created
 
         val now = Timestamp(System.currentTimeMillis()).toString()
+
         val newScan = ScanEntity(
             structureId = structureId,
             start_timestamp = now,
@@ -340,6 +342,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         if (activeScanId != null) return // already created
         activeScanId = scanId
         this.structureId = scanDao.getScanById(scanId).structureId
+
         refreshSensorStates()
         updateSensorStateCounts()
         resultDao.getResultsByScan(scanId).forEach {
