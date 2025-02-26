@@ -1,6 +1,7 @@
 package fr.uge.structsure.scanPage.domain
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,17 +22,12 @@ import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
-import android.util.Log
 
 /**
  * ViewModel responsible for managing the scanning process.
  * It interacts with the database, sensor cache, and scanner hardware to handle sensor states and user actions.
  */
 class ScanViewModel(context: Context, private val structureViewModel: StructureViewModel) : ViewModel() {
-
-    companion object {
-        const val TAG = "ScanViewModel"
-    }
 
     /** DAO to interact with the scan database */
     private val scanDao = db.scanDao()
@@ -89,11 +85,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Sub-ViewModel that handle all plan selection/display logic */
     val planViewModel = PlanViewModel(context, this)
 
-    /** LiveData for the current results of the scan */
-    val currentResults = MutableLiveData<List<ResultSensors>>()
-
     /** Displaying error messages when updating notes */
-    val noteErrorMessage = MutableLiveData<String>()
+    private val noteErrorMessage = MutableLiveData<String>()
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -200,9 +193,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /**
      * Gets the previous state for a sensor
      */
-    fun getPreviousState(sensorId: String): String {
-        return sensorCache.getPreviousState(sensorId)
-    }
+    fun getPreviousState(sensorId: String): String = sensorCache.getPreviousState(sensorId)
 
     /**
      * Adds a scanned RFID chip ID to the buffer for processing.
@@ -273,9 +264,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             sensorsScanned.postValue(currentList)
         }
 
-        when (val sensorState = SensorState.from(stateChanged)) {
+        when (SensorState.from(stateChanged)) {
             SensorState.OK -> {
-                sensorMessages.postValue("Capteur ${sensor.name} est ${sensorState.displayName}")
+                sensorMessages.postValue("${sensor.name} est OK")
             }
             SensorState.NOK -> {
                 pauseScan()

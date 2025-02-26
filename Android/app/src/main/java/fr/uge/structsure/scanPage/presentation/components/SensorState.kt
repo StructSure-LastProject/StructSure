@@ -30,8 +30,6 @@ enum class SensorState(val displayName: String, val color: Color) {
         /**
          * Gets the display name for a sensor state
          */
-        fun getStateDisplayName(state: String): String {
-            return SensorState.from(state).displayName
-        }
+        fun getStateDisplayName(state: String): String = SensorState.from(state).displayName
     }
 }

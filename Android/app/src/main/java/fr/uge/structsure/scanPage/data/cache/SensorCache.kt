@@ -42,7 +42,7 @@ class SensorCache {
      */
     fun getPreviousState(sensorId: String): String {
         synchronized(lock) {
-            return previousStatesMap[sensorId] ?: sensorMap[sensorId]?.second ?: sensorMap[sensorId]?.first?.state ?: ""
+            return previousStatesMap[sensorId] ?: sensorMap[sensorId]?.second ?: sensorMap[sensorId]?.first?.state.orEmpty()
         }
     }
 
