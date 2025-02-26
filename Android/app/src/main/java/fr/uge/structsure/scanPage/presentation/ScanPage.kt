@@ -15,16 +15,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.R
@@ -36,16 +37,17 @@ import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
-import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.scanPage.data.findPlanById
+import fr.uge.structsure.scanPage.data.getPlanSectionName
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
+import fr.uge.structsure.scanPage.presentation.components.SensorState.Companion.getStateDisplayName
 import fr.uge.structsure.scanPage.presentation.components.SensorsList
+import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
-import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.Typography
-import kotlinx.coroutines.launch
 
 /**
  * Home screen of the application when the user starts a scan.
@@ -125,31 +127,30 @@ private fun SensorPopUp(
     onSubmit: () -> Unit,
     onCancel: () -> Unit
 ) {
-    val state by scanViewModel.currentScanState.observeAsState(ScanState.NOT_STARTED)
-    val currentResults by scanViewModel.currentResults.observeAsState(initial = emptyList())
-    val planImagePath by scanViewModel.planViewModel.image.observeAsState()
-    val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
+    val current = LocalContext.current
 
-    val currentState = currentResults.find { it.id == sensor.sensorId }?.state ?: "UNKNOWN"
-    val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(sensor.plan) {
+        scanViewModel.planViewModel.loadPlanForPopup(current, sensor.plan)
+    }
 
-    var sensorNote by remember { mutableStateOf(sensor.note.orEmpty()) }
+    var note by remember { mutableStateOf(sensor.note.orEmpty()) }
+    val planImage by scanViewModel.planViewModel.popupImage.observeAsState()
 
-        PopUp(onCancel) {
+    val currentStateDisplay = getStateDisplayName(
+        scanViewModel.sensorsScanned.observeAsState(initial = emptyList()).value
+            .find { it.id == sensor.sensorId }?.state ?: sensor.state
+    )
+
+    val lastStateDisplay = getStateDisplayName(scanViewModel.getPreviousState(sensor.sensorId))
+
+    PopUp(onCancel) {
         Title(sensor.name, false) {
             Button(
                 R.drawable.check,
                 "valider",
                 MaterialTheme.colorScheme.onSurface,
                 MaterialTheme.colorScheme.surface,
-                onClick =
-                {
-                    coroutineScope.launch {
-                        if (scanViewModel.updateSensorNote(sensorId = sensor.sensorId, sensorNote)) {
-                            onSubmit()
-                        }
-                    }
-                }
+                onSubmit
             )
         }
 
@@ -157,12 +158,15 @@ private fun SensorPopUp(
             verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start,
         ) {
+            val planNode = sensor.plan?.let { scanViewModel.planViewModel.plans.value?.findPlanById(it) }
+            val sectionName = planNode?.let { getPlanSectionName(it) } ?: "Section inconnue"
+
             Text(
-                text = "OA Zone 04", // TODO: get the zone name from the plan section
+                text = sectionName,
                 style = MaterialTheme.typography.headlineMedium
             )
 
-            planImagePath?.let { bitmap ->
+            planImage?.let { bitmap ->
                 Image(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -186,29 +190,16 @@ private fun SensorPopUp(
 
         SensorDetails(
             Black,
-            "Etat courant:",
-            sensor.state,
+            "État courant:",
+            currentStateDisplay,
             "Dernier état:",
-            currentState
+            lastStateDisplay
         )
 
-        errorMessage?.let {
-            Text(
-                text = it,
-                color = Red,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
-
-        val placeholder = if (state == ScanState.NOT_STARTED)
-            "Aucune note pour le moment.  Commencez un scan pour ajouter une note"
-            else "Aucune note pour le moment."
         InputTextArea(
             label = "Note",
-            value = sensorNote,
-            placeholder = placeholder,
-            enabled = state == ScanState.STARTED || state == ScanState.PAUSED
-        ) { s -> if (s.length <= 1000) sensorNote = s }
+            value = note,
+            placeholder = "Aucune note pour le moment"
+        ) { s -> if (s.length <= 1000) note = s }
     }
 }

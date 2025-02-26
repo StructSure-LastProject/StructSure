@@ -11,11 +11,11 @@ import fr.uge.structsure.ui.theme.Unknown
  *
  * @param color The color associated with the sensor state.
  */
-enum class SensorState(val color: Color) {
-    OK(Ok),
-    NOK(Red),
-    DEFECTIVE(Gray),
-    UNKNOWN(Unknown);
+enum class SensorState(val displayName: String, val color: Color) {
+    OK("OK", Ok),
+    NOK("NOk", Red),
+    DEFECTIVE("Défaillant", Gray),
+    UNKNOWN("Non scanné", Unknown);
 
     companion object {
         /**
@@ -26,5 +26,10 @@ enum class SensorState(val color: Color) {
          */
         fun from(name: String): SensorState =
             entries.firstOrNull { it.name.equals(name, ignoreCase = true) } ?: UNKNOWN
+
+        /**
+         * Gets the display name for a sensor state
+         */
+        fun getStateDisplayName(state: String): String = SensorState.from(state).displayName
     }
 }

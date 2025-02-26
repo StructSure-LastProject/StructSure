@@ -56,6 +56,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
         connectivityViewModel.isConnected.distinctUntilChanged().observeForever { isConnected ->
             if (!RetrofitInstance.isInitialized()) return@observeForever // Server URL not configured yet
             if (isConnected) getAllStructures()
+
             if (!isConnected || uploadInProgress.value == true) return@observeForever
 
             tryUploadScans(isConnected, uploadInProgress.value ?: false, null)
@@ -175,6 +176,18 @@ class StructureViewModel(private val structureRepository: StructureRepository,
             } finally {
                 this@StructureViewModel.uploadInProgress.postValue(false)
             }
+        }
+    }
+
+    /**
+     * Clear the local data of the structure with the given id.
+     */
+    private suspend fun cleanupLocalData(structureId: Long) {
+        try {
+            structureRepository.deleteStructure(structureId, context)
+            getAllStructures()
+        } catch (e: Exception) {
+            Log.e("StructureVM", "Error cleaning up local data", e)
         }
     }
 }
