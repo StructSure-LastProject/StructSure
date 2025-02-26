@@ -13,6 +13,7 @@ import fr.uge.structsure.structuresPage.data.StructureData
 import fr.uge.structsure.structuresPage.data.StructureRepository
 import fr.uge.structsure.structuresPage.presentation.components.StructureStates
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -45,6 +46,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
 
     private val connectivityViewModel: ConnectivityViewModel = ConnectivityViewModel(context)
     val getAllStructures = MutableLiveData<List<StructureWithState>?>()
+    val isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
     private val uploadInProgress = MutableLiveData<Boolean>(false)
     
     /**
@@ -65,17 +67,13 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      */
     fun getAllStructures() {
         viewModelScope.launch {
+            val end = System.currentTimeMillis() + 500
+            isRefreshing.postValue(true)
             val structures = structureRepository.getAllStructures().map { StructureWithState(it) }
             getAllStructures.postValue(structures)
-        }
-    }
-
-
-    fun findAll() {
-        viewModelScope.launch {
-            val structures = structureRepository.getAllStructures()
-                .map { StructureWithState(it) }
-            getAllStructures.postValue(structures)
+            val remaining = end - System.currentTimeMillis()
+            if (remaining > 0) delay(remaining)
+            isRefreshing.postValue(false)
         }
     }
 
@@ -98,7 +96,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
     fun delete(structureId: Long){
         viewModelScope.launch {
             structureRepository.deleteStructure(structureId, context)
-            findAll() // forces refresh to adapt to connectivity state
+            getAllStructures() // forces refresh to adapt to connectivity state
         }
     }
 

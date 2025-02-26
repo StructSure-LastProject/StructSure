@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.ui.theme.LightGray
+import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
 
 /**
@@ -45,10 +46,11 @@ fun InputText(
     label: String,
     value: String,
     placeholder: String = "",
+    errorMessage: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit = {}
 ) {
-    Input(modifier, label, value, placeholder, false, onChange, false, keyboardOptions)
+    Input(modifier, label, value, placeholder, errorMessage, false, onChange, false, keyboardOptions)
 }
 
 /**
@@ -70,7 +72,7 @@ fun InputPassword(
     placeholder: String = "",
     onChange: (String) -> Unit = {}
 )  {
-    Input(modifier, label, value, placeholder, true, onChange)
+    Input(modifier, label, value, placeholder, null, true, onChange)
 }
 
 /**
@@ -92,7 +94,7 @@ fun InputTextArea (
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit = {}
 ) {
-    Input(Modifier.defaultMinSize(minHeight = 75.dp).then(modifier), label, value, placeholder, false, onChange, true, keyboardOptions)
+    Input(Modifier.defaultMinSize(minHeight = 75.dp).then(modifier), label, value, placeholder, null, false, onChange, true, keyboardOptions)
 }
 
 /**
@@ -147,6 +149,7 @@ private fun Input(
     label: String,
     value: String,
     placeholder: String,
+    errorMessage: String?,
     password: Boolean,
     onChange: (String) -> Unit,
     multiLines: Boolean = false,
@@ -177,6 +180,14 @@ private fun Input(
                 innerTextField.invoke()
             }
         )
+        errorMessage?.let {
+            Text(
+                text = errorMessage,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Red,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 

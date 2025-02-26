@@ -15,15 +15,14 @@ import kotlinx.coroutines.launch
  * This class ensures that data is stored persistently and can be accessed across application sessions.
  */
 object PreferencesManager {
-    /**
-     * The name of the SharedPreferences file.
-     */
+    /** The name of the SharedPreferences file */
     private const val PREFERENCES_NAME = "app_preferences"
 
-    /**
-     * The key used to store the server URL in SharedPreferences.
-     */
+    /** The key used to store the server URL in SharedPreferences */
     private const val SERVER_URL_KEY = "server_url"
+
+    /** The key used to store the scanner sensitivity in SharedPreferences */
+    private const val SENSITIVITY_KEY = "sensitivity"
 
     /**
      * Retrieves the SharedPreferences instance.
@@ -53,6 +52,25 @@ object PreferencesManager {
     fun getServerUrl(context: Context): String? =
         getPreferences(context).getString(SERVER_URL_KEY, null)
 
+    /**
+     * Saves the given sensitivity range in SharedPreferences.
+     * @param context The context used to access SharedPreferences.
+     * @param min The nearest attenuation allowed
+     * @param max The farthest attenuation allowed
+     */
+    fun saveScannerSensitivity(context: Context, min: Int, max: Int) {
+        getPreferences(context).edit().putString(SENSITIVITY_KEY, "$min:$max").apply()
+    }
+
+    /**
+     * Retrieves the sensitivity range in SharedPreferences.
+     * @param context The context used to access SharedPreferences.
+     */
+    fun getScannerSensitivity(context: Context): List<Int> =
+        getPreferences(context).getString(SENSITIVITY_KEY, "0:100")
+            ?.split(":")
+            ?.map { -it.toInt() }
+            ?: listOf(0, -100)
 
     /**
      * Clears the server URL from SharedPreferences.
@@ -61,9 +79,8 @@ object PreferencesManager {
      * This method is also used when the user changes the server URL.
      *
      * @param context The context used to access SharedPreferences.
-     *
      */
-    fun clearServerUrl(context: Context) {
+    fun deleteUserData(context: Context) {
         val db = AppDatabase.getDatabase(context)
         val structureRepository = StructureRepository()
         CoroutineScope(Dispatchers.IO).launch {

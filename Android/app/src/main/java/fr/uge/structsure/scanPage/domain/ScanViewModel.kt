@@ -8,11 +8,13 @@ import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Scanner
+import fr.uge.structsure.bluetooth.cs108.RfidChip
 import fr.uge.structsure.scanPage.data.ResultSensors
 import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
+import fr.uge.structsure.settingsPage.presentation.PreferencesManager.getScannerSensitivity
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +26,10 @@ import java.sql.Timestamp
  * It interacts with the database, sensor cache, and scanner hardware to handle sensor states and user actions.
  */
 class ScanViewModel(context: Context, private val structureViewModel: StructureViewModel) : ViewModel() {
+
+    companion object {
+        const val TAG = "ScanViewModel"
+    }
 
     /** DAO to interact with the scan database */
     private val scanDao = db.scanDao()
@@ -46,7 +52,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Scanner hardware for reading RFID chips */
     private val cs108Scanner =
         Cs108Scanner { chip ->
-            onTagScanned(chip.id)
+            onTagScanned(context, chip)
         }
 
     /** Current state of the scan process: NOT_STARTED, STARTED, PAUSED, STOPPED */
@@ -141,12 +147,13 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
     /**
      * Adds a scanned RFID chip ID to the buffer for processing.
-     *
-     * @param chipId ID of the scanned RFID chip.
+     * @param chip The details of the scanned chip
      */
-    private fun onTagScanned(chipId: String) {
-        if(chipId == "") return
-        rfidBuffer.add(chipId)
+    private fun onTagScanned(context: Context, chip: RfidChip) {
+        val sensitivity = getScannerSensitivity(context)
+        if (chip.id == "") return
+        if (chip.attenuation > sensitivity[0] || chip.attenuation < sensitivity[1]) return
+        rfidBuffer.add(chip.id)
     }
 
     /**

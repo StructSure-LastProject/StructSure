@@ -20,8 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
-import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.ui.theme.Typography
 import fr.uge.structsure.ui.theme.White
 
