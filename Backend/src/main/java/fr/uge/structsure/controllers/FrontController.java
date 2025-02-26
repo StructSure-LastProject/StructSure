@@ -51,7 +51,7 @@ public class FrontController {
      * @param request currently active request to get the targeted url
      * @return the content of the index.html page
      */
-    @GetMapping("*")
+    @GetMapping("**")
     public ResponseEntity<?> forwardToIndex(HttpServletRequest request, HttpSession session) {
         var savedRequest = (DefaultSavedRequest) session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
         ResponseEntity<?> response;
