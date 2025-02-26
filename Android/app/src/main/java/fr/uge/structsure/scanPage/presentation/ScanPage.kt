@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Button
@@ -38,7 +39,6 @@ import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
-import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.data.findPlanById
 import fr.uge.structsure.scanPage.data.getPlanSectionName
 import fr.uge.structsure.scanPage.domain.ScanState
@@ -76,9 +76,6 @@ fun ScanPage(context: Context,
     var sensorPopup by remember { mutableStateOf<SensorDB?>(null) } // Control the popup visibility and hold popup data
     var showScanNotePopup by remember { mutableStateOf(false) } // Control the scan note popup visibility
 
-    // Observe the active scan
-    val activeScan by scanViewModel.activeScan.observeAsState()
-
     val showToast: (String) -> Unit = { message ->
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
@@ -100,7 +97,7 @@ fun ScanPage(context: Context,
                     navController.navigateNoReturn("HomePage")
                 },
                 onContentClick = {
-                    if (activeScan != null) {
+                    if (scanViewModel.currentScanState.value != ScanState.NOT_STARTED) {
                         showScanNotePopup = true
                     } else {
                         showToast("Veuillez lancer un scan avant d'ajouter une note")
@@ -120,9 +117,8 @@ fun ScanPage(context: Context,
             )
         }
 
-        if (showScanNotePopup && activeScan != null) {
+        if (showScanNotePopup && scanViewModel.currentScanState.value != ScanState.NOT_STARTED) {
             ScanNotePopUp(
-                scan = activeScan!!,
                 scanViewModel = scanViewModel,
                 onSubmit = { showScanNotePopup = false },
                 onCancel = { showScanNotePopup = false }
@@ -234,14 +230,19 @@ private fun SensorPopUp(
 
 @Composable
 private fun ScanNotePopUp(
-    scan: ScanEntity,
     scanViewModel: ScanViewModel,
     onSubmit: () -> Unit,
     onCancel: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
-    var scanNote by remember { mutableStateOf(scan.note ?: "") }
+    var scanNote by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        scanViewModel.activeScanId?.let { scanId ->
+            scanNote = db.scanDao().getNote(scanId) ?: ""
+        }
+    }
 
     PopUp(onCancel) {
         Title("Note du scan", false) {

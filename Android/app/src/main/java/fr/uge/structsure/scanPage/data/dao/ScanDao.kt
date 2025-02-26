@@ -40,5 +40,8 @@ interface ScanDao {
 
     @Query("UPDATE scan SET note = :note WHERE id = :scanId")
     suspend fun updateScanNote(scanId: Long, note: String)
+
+    @Query("SELECT note FROM scan WHERE id = :scanId")
+    suspend fun getNote(scanId: Long): String?
 }
 

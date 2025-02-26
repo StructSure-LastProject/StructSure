@@ -58,7 +58,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     val currentScanState = MutableLiveData(ScanState.NOT_STARTED)
 
     /** ID of the currently active scan */
-    private var activeScanId: Long? = null
+    var activeScanId: Long? = null
 
     /** Sensor cache for managing sensor states in memory */
     private val sensorCache = SensorCache()
@@ -87,7 +87,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     val planViewModel = PlanViewModel(context, this)
 
     /** Displaying error messages when updating notes */
-    private val noteErrorMessage = MutableLiveData<String>()
+    val noteErrorMessage = MutableLiveData<String>()
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -108,21 +108,12 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
     suspend fun updateScanNote(note: String): Boolean {
         return viewModelScope.async(Dispatchers.IO) {
-            try {
-                activeScanId?.let { scanId ->
-                    scanDao.updateScanNote(scanId, note)
-
-                    val updatedScan = scanDao.getScanById(scanId).copy(note = note)
-                    activeScan.postValue(updatedScan)
-
-                    noteErrorMessage.postValue(null)
-                    true
-                } ?: run {
-                    noteErrorMessage.postValue("Aucun scan actif trouvé")
-                    false
-                }
-            } catch (e: Exception) {
-                noteErrorMessage.postValue("Erreur lors de la mise à jour de la note: ${e.message}")
+            activeScanId?.let { scanId ->
+                scanDao.updateScanNote(scanId, note)
+                noteErrorMessage.postValue(null)
+                true
+            } ?: run {
+                noteErrorMessage.postValue("Aucun scan actif trouvé")
                 false
             }
         }.await()
@@ -335,8 +326,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         activeScanId = scanDao.insertScan(newScan)
         this.structureId = structureId
 
-        activeScan.postValue(newScan.copy(id = activeScanId!!))
-
         refreshSensorStates()
         updateSensorStateCounts()
     }
@@ -353,8 +342,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         if (activeScanId != null) return // already created
         activeScanId = scanId
         this.structureId = scanDao.getScanById(scanId).structureId
-
-        activeScan.postValue(scanDao.getScanById(scanId))
 
         refreshSensorStates()
         updateSensorStateCounts()
