@@ -137,7 +137,7 @@ public class StructureService {
         if (addStructureRequestDTO.name() == null || addStructureRequestDTO.name().isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_NAME_IS_EMPTY);
         }
-        if (addStructureRequestDTO.name().length() > 1000) {
+        if (addStructureRequestDTO.note().length() > 1000) {
             throw new TraitementException(Error.STRUCTURE_NOTE_EXCEED_LIMIT);
         }
         if (addStructureRequestDTO.name().length() > 64) {
@@ -179,7 +179,7 @@ public class StructureService {
         if (addStructureRequestDTO.name() == null || addStructureRequestDTO.name().isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_NAME_IS_EMPTY);
         }
-        if (addStructureRequestDTO.name().length() > 1000) {
+        if (addStructureRequestDTO.note().length() > 1000) {
             throw new TraitementException(Error.STRUCTURE_NOTE_EXCEED_LIMIT);
         }
         if (addStructureRequestDTO.name().length() > 64) {
