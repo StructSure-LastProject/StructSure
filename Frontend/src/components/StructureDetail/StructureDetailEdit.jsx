@@ -76,7 +76,7 @@ function StructureDetailEdit(props) {
                 <form class="bg-white p-25px rounded-20px w-388px flex flex-col gap-y-15px" 
                 onSubmit={handleFormSubmit}>
                     <h1 class="title">Modifier l’ouvrage</h1>
-                    <p class="text-sm text-red-500">{errorFronted}</p>
+                    <p class="text-sm text-red">{errorFronted}</p>
                     <div class="flex flex-col justify-start gap-y-15px">
                         <div class="flex flex-col gap-y-5px">
                             <p class="normal opacity-75">Nom*</p>
