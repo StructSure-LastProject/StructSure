@@ -11,5 +11,4 @@ data class AddSensorFormState(
     val controlChipError: String? = null,
     val measureChipError: String? = null,
     val nameError: String? = null,
-    val dateError: String? = null
 )
