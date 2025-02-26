@@ -71,7 +71,7 @@ public record SensorDTO(
                 sensor.getName(),
                 sensor.getNote(),
                 state,
-                sensor.getArchived(),
+                sensor.isArchived(),
                 sensor.getInstallationDate(),
                 sensor.getX(),
                 sensor.getY()

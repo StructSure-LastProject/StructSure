@@ -176,8 +176,8 @@ public class StructureService {
     public StructureResponseDTO getStructureById(Long id) {
         Objects.requireNonNull(id);
         var structureOptional = structureRepository.findById(id);
-        if (structureOptional.isEmpty()){
-        throw new IllegalArgumentException("Structure n'existe pas");
+        if (structureOptional.isEmpty()) {
+            throw new IllegalArgumentException("Structure n'existe pas");
         }
         var structure = structureOptional.get();
         var plans = planRepository.findByStructure(structure);

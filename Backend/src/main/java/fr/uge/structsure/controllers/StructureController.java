@@ -5,7 +5,6 @@ import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.AllStructureRequestDTO;
 import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.TraitementException;
-import fr.uge.structsure.repositories.StructureRepositoryCriteriaQuery;
 import fr.uge.structsure.services.PlanService;
 import fr.uge.structsure.services.StructureService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -197,7 +195,14 @@ public class StructureController {
 
     @GetMapping(value = "/android/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public StructureResponseDTO getStructureById(@PathVariable("id") Long id) {
-        return structureService.getStructureById(id);
+        var structure = structureService.getStructureById(id);
+        return new StructureResponseDTO(
+            structure.id(),
+            structure.name(),
+            structure.note(),
+            structure.plans().stream().filter(plan -> !plan.isArchived()).toList(),
+            structure.sensors().stream().filter(sensor -> !sensor.isArchived()).toList()
+        );
     }
 
 

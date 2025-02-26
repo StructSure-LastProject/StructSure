@@ -162,7 +162,7 @@ public class PlanService {
      */
     private void checkState(Plan plan, Structure structure) throws TraitementException {
         checkState(structure);
-        if (plan.getArchived()) {
+        if (plan.isArchived()) {
             throw new TraitementException(Error.PLAN_IS_ARCHIVED);
         }
     }

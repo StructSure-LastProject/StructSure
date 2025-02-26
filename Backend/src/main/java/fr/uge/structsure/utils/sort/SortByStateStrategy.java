@@ -7,6 +7,6 @@ import java.util.Comparator;
 public class SortByStateStrategy implements SensorSortStrategy {
     @Override
     public Comparator<Sensor> getComparator() {
-        return Comparator.comparing(Sensor::getArchived);
+        return Comparator.comparing(Sensor::isArchived);
     }
 }

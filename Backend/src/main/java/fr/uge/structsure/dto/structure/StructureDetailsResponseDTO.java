@@ -74,7 +74,7 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
         }
 
         public static Plan fromPlanEntity(fr.uge.structsure.entities.Plan plan) {
-            return new Plan(plan.getId(), plan.getName(), plan.getSection(), plan.getArchived());
+            return new Plan(plan.getId(), plan.getName(), plan.getSection(), plan.isArchived());
         }
     }
 
