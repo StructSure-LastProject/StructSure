@@ -84,13 +84,16 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
 function StructureDetailBody(props) {
 
     const [sensors, setSensors] = createSignal({});
-    const [structureDetails, setStructureDetails] = createSignal({"scans": [], "plans": [], "sensors": []});
+    const [structureDetails, setStructureDetails] = createSignal({"id": null, "name": null, "note": null, "scans": [], "plans": [], "sensors": []});
     const [planSensors, setPlanSensors] = createSignal([]);
     const [selectedPlanId, setSelectedPlanId] = createSignal(null);
 
     const [totalItems, setTotalItems] = createSignal(0);
     const navigate = useNavigate();
 
+    const [selectedScan, setSelectedScan] = createSignal(-1);
+
+    createEffect(() => console.log(structureDetails()));
 
     /**
      * Will fetch the structure details
@@ -131,7 +134,7 @@ function StructureDetailBody(props) {
 
     return (
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
-            <StructureDetailHead scans={structureDetails().scans}/>
+            <StructureDetailHead selectedScan={selectedScan} setSelectedScan={setSelectedScan} scans={structureDetails().scans} structureDetails={structureDetails} setStructureDetails={setStructureDetails}/>
             <StructureDetailPlans
                 structureDetails={structureDetails}
                 structureId={props.structureId}
@@ -141,7 +144,7 @@ function StructureDetailBody(props) {
                 setPlanSensors={setPlanSensors}
                 setSensors={setSensorsDetail}
             />
-            <StructureDetailRow structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
+            <StructureDetailRow selectedScan={selectedScan} structureDetails={structureDetails} structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
         </div>
     );
 }

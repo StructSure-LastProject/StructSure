@@ -106,7 +106,7 @@ public class StructureService {
      *         </ul>
      */
     public EditStructureResponseDTO editStructure(Long id, AddStructureRequestDTO editStructureRequestDTO) throws TraitementException {
-        structurePrecondition(editStructureRequestDTO);
+        structureEditPrecondition(id, editStructureRequestDTO);
         Objects.requireNonNull(id);
         var exists = structureRepository.findById(id);
         if (exists.isEmpty()) {
@@ -116,6 +116,22 @@ public class StructureService {
         exists.get().setName(editStructureRequestDTO.name());
         var result = structureRepository.save(exists.get());
         return new EditStructureResponseDTO(result.getId(), new Timestamp(System.currentTimeMillis()).toString());
+    }
+
+    private void structureEditPrecondition(Long id, AddStructureRequestDTO addStructureRequestDTO) throws TraitementException {
+        if (addStructureRequestDTO.name() == null || addStructureRequestDTO.name().isEmpty()) {
+            throw new TraitementException(Error.STRUCTURE_NAME_IS_EMPTY);
+        }
+        if (addStructureRequestDTO.name().length() > 1000) {
+            throw new TraitementException(Error.STRUCTURE_NOTE_EXCEED_LIMIT);
+        }
+        if (addStructureRequestDTO.name().length() > 64) {
+            throw new TraitementException(Error.STRUCTURE_NAME_EXCEED_LIMIT);
+        }
+        var exists = structureRepository.findByName(addStructureRequestDTO.name());
+        if (exists.isPresent() && exists.get().getId() != id) {
+            throw new TraitementException(Error.STRUCTURE_NAME_ALREADY_EXISTS);
+        }
     }
 
     public Optional<Structure> existStructure(Long id) {
