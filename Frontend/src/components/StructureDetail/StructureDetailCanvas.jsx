@@ -623,9 +623,11 @@ function StructureDetailCanvas(props) {
                                         <Check color="black" stroke-width="2.5" width="20px" height="20px"/>
                                     </button>
                                 </Show>
-                                <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                    <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
-                                </button>
+                                <Show when={clickExistingPoint()}>
+                                    <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                                        <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
+                                    </button>
+                                </Show>
                             </div>
                         </div>
                         <Show when={!clickExistingPoint()}>

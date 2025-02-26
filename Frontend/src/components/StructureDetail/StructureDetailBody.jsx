@@ -10,11 +10,13 @@ import useFetch from '../../hooks/useFetch';
 /**
  * Will fetch the sensors for the plan
  */
-export const planSensorsFetchRequest = async (structureId, setPlanSensors, planId = 1) => {
+export const planSensorsFetchRequest = async (structureId, setPlanSensors, planId) => {
+    console.log("Called with plan = ", planId);
     const requestData = {
         method: "GET",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            
         }
     };
 
@@ -78,7 +80,7 @@ function StructureDetailBody(props) {
     const [sensors, setSensors] = createSignal({});
     const [structureDetails, setStructureDetails] = createSignal({"scans": [], "plans": [], "sensors": []});
     const [planSensors, setPlanSensors] = createSignal([]);
-    const [selectedPlanId, setSelectedPlanId] = createSignal(2);
+    const [selectedPlanId, setSelectedPlanId] = createSignal(1);
 
     createEffect(() => console.log("Selected Plan Id : ", selectedPlanId()));
     const [totalItems, setTotalItems] = createSignal(0);
@@ -107,7 +109,7 @@ function StructureDetailBody(props) {
     createEffect(() => {
         structureDetailsFetchRequest(props.structureId);
         sensorsFetchRequest(props.structureId, setSensors, setTotalItems);
-        planSensorsFetchRequest(props.structureId, setPlanSensors);
+        planSensorsFetchRequest(props.structureId, setPlanSensors, selectedPlanId());
     });
 
     /**

@@ -1,10 +1,32 @@
 import { createSignal, Show, createEffect } from "solid-js";
 import { Plus } from 'lucide-solid';
-import plan from '/src/assets/plan.png';
 import ModalAddPlan from '../Plan/ModalAddPlan';
 import ModalEditPlan from '../Plan/ModalEditPlan';
 import DropdownsSection from "../Plan/DropdownsSection.jsx";
 import StructureDetailCanvas from "./StructureDetailCanvas";
+import useFetch from "../../hooks/useFetch.js";
+
+
+/**
+ * Will fetch the plan image
+ */
+/*export const planImageFetchRequest = async (planId, setPlan) => {
+    const requestData = {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    };
+
+    const { fetchImage, image, statusCode } = useFetch();
+    await fetchImage(`/api/structures/plans/${planId()}/image`, requestData);
+    if (statusCode() === 200) {
+        console.log("Img: ", image());
+        setPlan(image());
+    } else if (statusCode() === 404) {
+        console.log(statusCode, ": error");
+    }
+};*/
 
 /**
  * Shows the plans part
@@ -20,6 +42,28 @@ function StructureDetailPlans(props) {
     const [selectedPlan, setSelectedPlan] = createSignal(null);
 
     const [isAuthorized, setIsAuthorized] = createSignal(false);
+    const [plan, setPlan] = createSignal(null);
+
+    const { fetchImage, image, statusCode } = useFetch();
+
+    const planImageFetchRequest = async (planId, setPlan) => {
+        const token = localStorage.getItem("token");
+        const requestData = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        };
+    
+        await fetchImage(`/api/structures/plans/${planId()}/image`, requestData);
+        if (statusCode() === 200) {
+            console.log("Img: ", image());
+            setPlan(image());
+        } else if (statusCode() === 404) {
+            console.log(statusCode, ": error");
+        }
+    };
 
 
     /**
@@ -46,12 +90,16 @@ function StructureDetailPlans(props) {
      * @returns {string} Complete URL for the plan image
      */
     const getImageUrl = (planId) => {
-        // todo remove the part you don't need
-        const API_BASE_URL = window.location.origin || 'http://localhost:8080';
-        return `${API_BASE_URL}/api/structures/plans/${planId}/image`;
+        return `/api/structures/plans/${planId}/image`;
     };
 
-
+    createEffect(() => {
+        console.log("Calling ?");
+        if (props.selectedPlanId()) {
+            console.log("Called");
+            planImageFetchRequest(props.selectedPlanId, setPlan);
+        }
+    });
     
     /**
      * Handles the edit action for a plan
@@ -131,6 +179,8 @@ function StructureDetailPlans(props) {
         }
     });
 
+    createEffect(() => console.log("Plan changed: ", plan()))
+
     return (
         <>
             <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
@@ -183,8 +233,10 @@ function StructureDetailPlans(props) {
                 <div class="lg:w-[75%] rounded-[20px] bg-white">
                     <div class="w-full p-[20px]">
                         <div class="w-full relative">
-                            <StructureDetailCanvas structureId={props.structureId} plan={plan} interactiveMode={true} planSensors={props.planSensors} structureDetails={props.structureDetails} 
-                            setPlanSensors={props.setPlanSensors} setSensors={props.setSensors}/>
+                            <Show when={plan() !== null}>
+                                <StructureDetailCanvas structureId={props.structureId} plan={image()} interactiveMode={true} planSensors={props.planSensors} structureDetails={props.structureDetails} 
+                                setPlanSensors={props.setPlanSensors} setSensors={props.setSensors}/>
+                            </Show>
                         </div>
                     </div>
                 </div>
