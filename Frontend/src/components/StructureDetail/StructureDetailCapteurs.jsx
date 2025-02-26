@@ -9,7 +9,12 @@ import {sensorsFetchRequest} from "./StructureDetailBody.jsx";
 
 /**
  * Show the sensors part of the structure detail page
- * @param {boolean} scanChanged If scan changed
+ * @param {selectedScanId} selectedScanId The selected scan id
+ * @param {function} offset The offset of sensors pagination
+ * @param {function} setOffset Set the offset of sensors pagination
+ * @param {function} limit Get limit of sensors pagination
+ * @param {function} setLimit Set limit of sensors pagination
+ * @param {function} scanChanged If scan changed
  * @param {String} structureId The structure id
  * @param {Function} setSensors The set sonsors function
  * @param {function} selectedPlanId The selected plan id
@@ -18,16 +23,13 @@ import {sensorsFetchRequest} from "./StructureDetailBody.jsx";
  * @param {Function} setTotalItems setter to set the total number of sensor
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({scanChanged, structureId, setSensors, selectedPlanId, sensors, totalItems, setTotalItems}) {
+function StructureDetailCapteurs({selectedScanId, offset, setOffset, limit, setLimit, scanChanged, structureId, setSensors, selectedPlanId, sensors, totalItems, setTotalItems}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
     
     const [isAuthorized, setIsAuthorized] = createSignal(false);
-
-    const [limit, setLimit] = createSignal(30)
-    const [offset, setOffset] = createSignal(0);
     
 
     /**
@@ -104,7 +106,14 @@ function StructureDetailCapteurs({scanChanged, structureId, setSensors, selected
                     </Show>
                 </div>
             </div>
-            <SensorFilter structureId={structureId} setSensors={setSensors} limit={limit} offset={offset} setTotalItems={setTotalItems}/>
+            <SensorFilter
+              selectedScanId={selectedScanId}
+              structureId={structureId}
+              setSensors={setSensors}
+              limit={limit}
+              offset={offset}
+              setTotalItems={setTotalItems}
+            />
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <For each={sensors()}>
                     {(sensor) => (

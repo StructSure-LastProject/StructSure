@@ -10,7 +10,7 @@ import {
  * Show the head part of the structure detail
  * @returns the component for the head part
  */
-function StructureDetailHead({setScanChanged, structureId, selectedPlanId, structureDetails, setPlanSensors, setSensors, setNote, setTotalItems}) {
+function StructureDetailHead({setSelectedScanId, offset, limit, setScanChanged, structureId, selectedPlanId, structureDetails, setPlanSensors, setSensors, setNote, setTotalItems}) {
   const [isAuthorized, setIsAuthorized] = createSignal(false);
   const [name, setName] = createSignal("");
   const [date, setDate] = createSignal("");
@@ -30,23 +30,24 @@ function StructureDetailHead({setScanChanged, structureId, selectedPlanId, struc
   const handleScanChange = (event) => {
     const selectedValue = event.target.value;
     if (selectedValue >= 0) {
-      const selectedScan = structureDetails().scans.find(scan => String.valueOf(scan.id) === String.valueOf(selectedValue));
+      const selectedScan = structureDetails().scans.find(scan => scan.id.toString() === selectedValue.toString());
       if (selectedScan) {
         setName(selectedScan.name || "");
         setDate(selectedScan.date || "");
         setNote(selectedScan.note || "");
         setScanChanged(true);
-        sensorsFetchRequest(structureId, setSensors, setTotalItems, {scanFilter: selectedValue});
+        sensorsFetchRequest(structureId, setSensors, setTotalItems, {offset: offset(), limit: limit(), scanFilter: selectedValue});
         planSensorsScanFetchRequest(structureId, selectedValue, selectedPlanId(), setPlanSensors);
       }
     } else {
       setDate("");
       setName("");
       setScanChanged(false);
-      sensorsFetchRequest(structureId, setSensors, setTotalItems, {});
-      planSensorsFetchRequest(structureId, setPlanSensors, selectedPlanId())
-      setNote(structureDetails().note)
+      sensorsFetchRequest(structureId, setSensors, setTotalItems, {offset: offset(), limit: limit()});
+      planSensorsFetchRequest(structureId, setPlanSensors, selectedPlanId());
+      setNote(structureDetails().note);
     }
+    setSelectedScanId(selectedValue);
   };
 
   return (

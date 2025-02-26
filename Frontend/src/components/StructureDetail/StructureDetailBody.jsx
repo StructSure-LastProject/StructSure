@@ -115,9 +115,13 @@ function StructureDetailBody(props) {
     const [structureDetails, setStructureDetails] = createSignal({"note": "", "scans": [], "plans": [], "sensors": []});
     const [planSensors, setPlanSensors] = createSignal([]);
     const [selectedPlanId, setSelectedPlanId] = createSignal(1);
+    const [selectedScanId, setSelectedScanId] = createSignal("-1");
     const [totalItems, setTotalItems] = createSignal(0);
     const [note, setNote] = createSignal("");
     const [scanChanged, setScanChanged] = createSignal(false);
+
+    const [limit, setLimit] = createSignal(30)
+    const [offset, setOffset] = createSignal(0);
 
     /**
      * Will fetch the structure details
@@ -159,6 +163,9 @@ function StructureDetailBody(props) {
     return (
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
             <StructureDetailHead
+              setSelectedScanId={setSelectedScanId}
+              offset={offset}
+              limit={limit}
               setScanChanged={setScanChanged}
               structureId={props.structureId}
               structureDetails={structureDetails}
@@ -178,6 +185,11 @@ function StructureDetailBody(props) {
               setSensors={setSensorsDetail}
             />
             <StructureDetailRow
+              selectedScanId={selectedScanId}
+              offset={offset}
+              setOffset={setOffset}
+              limit={limit}
+              setLimit={setLimit}
               scanChanged={scanChanged}
               note={note}
               structureId={props.structureId}

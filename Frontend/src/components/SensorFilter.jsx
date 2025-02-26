@@ -1,5 +1,5 @@
 import { ChevronDown, SortAsc, SortDesc, MoveRight } from 'lucide-solid';
-import { createEffect, createSignal } from 'solid-js';
+import {createEffect, createSignal, For} from 'solid-js';
 import SensorFieldComponent from "../components/SensorPanel/SensorFieldComponent";
 import { sensorsFetchRequest } from './StructureDetail/StructureDetailBody';
 
@@ -134,6 +134,7 @@ const CheckBoxComponent = ({description, value, setter}) => {
 
 /**
  * Sensor filter the compoenent
+ * @param {function} selectedScanId The selected scan id
  * @param {Number} structureId The structure id
  * @param {Function} setSensors The setter function for sensors
  * @param {Number} limit The limit
@@ -141,7 +142,7 @@ const CheckBoxComponent = ({description, value, setter}) => {
  * @param {Function} setTotalItems The setter function
  * @returns The component
  */
-const SensorFilter = ({structureId, setSensors, limit, offset, setTotalItems}) => {
+const SensorFilter = ({selectedScanId, structureId, setSensors, limit, offset, setTotalItems}) => {
     const SORT_VALUES = {
         "Tout" : "Tout", "Nom": "NAME", "Etat": "STATE", "Date d'installation": "INSTALLATION_DATE"
     };
@@ -165,6 +166,7 @@ const SensorFilter = ({structureId, setSensors, limit, offset, setTotalItems}) =
             orderType: orderType() ? "ASC" : "DESC",
             limit: limit(),
             offset: offset(),
+            ...(selectedScanId() !== "-1" && {scanFilter: selectedScanId()}),
             ...(statefilter() !== "Tout" && {stateFilter: FILTER_VALUES[statefilter()] }),
             ...(isCheckedArchivedFilter() ? {archivedFilter: isCheckedArchivedFilter()} : false),
             /*...(filters?.planFilter && {planFilter: filters.planFilter}),*/
