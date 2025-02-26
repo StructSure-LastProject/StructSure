@@ -118,6 +118,21 @@ public class StructureService {
         return new EditStructureResponseDTO(result.getId(), new Timestamp(System.currentTimeMillis()).toString());
     }
 
+    /**
+     * Validates the values of the DTO request before editing a structure.
+     * Ensures that the structure name is not empty, does not exceed length limits,
+     * and is unique within the repository.
+     *
+     * @param id the unique identifier of the structure being edited
+     * @param addStructureRequestDTO the DTO containing the structure details
+     * @throws TraitementException if validation fails due to:
+     *         <ul>
+     *           <li>The structure name is empty</li>
+     *           <li>The structure name exceeds the allowed length (64 characters)</li>
+     *           <li>The structure note exceeds the maximum limit (1000 characters)</li>
+     *           <li>The structure name already exists for another entity</li>
+     *         </ul>
+     */
     private void structureEditPrecondition(Long id, AddStructureRequestDTO addStructureRequestDTO) throws TraitementException {
         if (addStructureRequestDTO.name() == null || addStructureRequestDTO.name().isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_NAME_IS_EMPTY);

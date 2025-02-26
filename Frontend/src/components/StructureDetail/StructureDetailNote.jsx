@@ -10,7 +10,7 @@ function StructureDetailNote({selectedScan, structureDetails}) {
             <p class="title">Note</p>
             <div class="rounded-[10px] px-[16px] py-[8px] bg-lightgray">
                 <p class="font-poppins normal font-normal">
-                    <Show when={selectedScan() == -1} fallback={
+                    <Show when={selectedScan() === -1} fallback={
                         "Favoriser des allers-retours du nord vers le sud pour pouvoir scanner tous les capteurs."
                     }>
                         {structureDetails().note}

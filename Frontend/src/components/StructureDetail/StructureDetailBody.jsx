@@ -93,7 +93,6 @@ function StructureDetailBody(props) {
 
     const [selectedScan, setSelectedScan] = createSignal(-1);
 
-    createEffect(() => console.log(structureDetails()));
 
     /**
      * Will fetch the structure details

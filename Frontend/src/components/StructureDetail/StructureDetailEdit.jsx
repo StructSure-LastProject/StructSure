@@ -1,31 +1,13 @@
 import { createEffect, createSignal } from "solid-js";
 import useFetch from "../../hooks/useFetch";
+import { useNavigate } from "@solidjs/router";
 
 /**
  * Show the modal to edit structure
  */
 function StructureDetailEdit(props) {
 
-    /**
-     * Handles the form submit
-     * @param {Event} e The event of form submit 
-     */
-    const handleFormSubmit = (e) => {
-        e.preventDefault();
-        structuresUpdateRequest();
-    };
-
-    const [errorFronted, setErrorFronted] = createSignal("");
-
-
-    const [name, setName] = createSignal("");
-
-    const [note, setNote] = createSignal("");
-
-    createEffect(() => {
-        setName(props.structureDetails().name);
-        setNote(props.structureDetails().note);
-    });
+    const navigate = useNavigate();
 
     /**
      * Will send request to edit the structure details (name, note)
@@ -62,6 +44,29 @@ function StructureDetailEdit(props) {
             setErrorFronted(error().errorData.error);
         }
     };
+
+    /**
+     * Handles the form submit
+     * @param {Event} e The event of form submit 
+     */
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        structuresUpdateRequest();
+    };
+
+    const [errorFronted, setErrorFronted] = createSignal("");
+
+
+    const [name, setName] = createSignal("");
+
+    const [note, setNote] = createSignal("");
+
+    createEffect(() => {
+        setName(props.structureDetails().name);
+        setNote(props.structureDetails().note);
+    });
+
+    
     
 
     

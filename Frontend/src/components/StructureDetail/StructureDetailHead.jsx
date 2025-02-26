@@ -1,5 +1,5 @@
 import { Download, Pencil, Plus } from 'lucide-solid';
-import { createEffect, createSignal, Show } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
 import StructureDetailEdit from './StructureDetailEdit';
 
 /**
@@ -10,7 +10,6 @@ function StructureDetailHead(props) {
     const [isModalVisible, setModalVisible] = createSignal(false);
     
 
-    createEffect(() => console.log("Selected Scan: ", props.selectedScan()))
     
     /**
      * Will Open the modal that edits the strucutre
@@ -22,7 +21,6 @@ function StructureDetailHead(props) {
      */
     const closeModal = () => setModalVisible(false);
 
-    createEffect(() => console.log("isModalVisible: ", isModalVisible()));
     
     return (
         <>
