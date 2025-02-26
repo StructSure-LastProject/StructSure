@@ -110,11 +110,13 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         }
         
         if (Object.keys(a).length !== Object.keys(b).length) return false;
-        
+
         for (const key in a) {
-            if (!a.hasOwnProperty(key)) continue;
+            if (!Object.prototype.hasOwnProperty.call(a, key)) continue;
+
             if (!deepCompare(a[key], b[key])) return false;
         }
+
         
         return true;
     };
@@ -126,7 +128,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     createEffect(() => {
         if (copyOfStructureSelection.length === 0) {
             if (data() !== null) {
-                for (let e of data().structureDetailsList) {
+                for (const e of data().structureDetailsList) {
                     copyOfStructureSelection.push({structureId: e.structureId, structureName: e.structureName, hasAccess: e.hasAccess});
                 }
                 
