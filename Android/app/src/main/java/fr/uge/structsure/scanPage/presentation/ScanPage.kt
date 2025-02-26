@@ -44,6 +44,7 @@ import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.scanPage.data.findPlanById
 import fr.uge.structsure.scanPage.data.getPlanSectionName
+import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather

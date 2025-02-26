@@ -141,6 +141,20 @@ public class Sensor {
         this.structure = structure;
     }
 
+
+    /**
+     * The base constructor for the Sensor entity
+     * @param controlChip the control chip id
+     * @param measureChip the measure chip id
+     * @param name the name of the sensor
+     * @param note the note of the sensor
+     */
+    public Sensor(String controlChip, String measureChip, String name, String note) {
+        this.sensorId = new SensorId(controlChip, measureChip);
+        this.name = name;
+        this.note = note;
+    }
+
     @Override
     public String toString() {
         return sensorId.toString();
