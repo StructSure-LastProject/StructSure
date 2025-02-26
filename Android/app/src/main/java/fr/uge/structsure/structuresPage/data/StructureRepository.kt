@@ -4,7 +4,6 @@ import android.content.Context
 import android.database.sqlite.SQLiteException
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import fr.uge.structsure.MainActivity
 import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.utils.FileUtils
@@ -21,11 +20,11 @@ class StructureRepository : ViewModel() {
         private const val TAG = "StructureRepository"
     }
 
-    private val structureDao = MainActivity.db.structureDao()
-    private val planDao = MainActivity.db.planDao()
-    private val sensorDao = MainActivity.db.sensorDao()
-    private val resultDao = MainActivity.db.resultDao()
-    private val scanDao = MainActivity.db.scanDao()
+    private val structureDao = db.structureDao()
+    private val planDao = db.planDao()
+    private val sensorDao = db.sensorDao()
+    private val resultDao = db.resultDao()
+    private val scanDao = db.scanDao()
 
     private fun getApiInterface() = RetrofitInstance.structureApi
 
@@ -116,13 +115,13 @@ class StructureRepository : ViewModel() {
                 result.sensors.forEach { sensor ->
                     sensorDao.upsertSensor(
                         SensorDB(
-                            "${sensor.sensorId.controlChip}-${sensor.sensorId.measureChip}",
-                            sensor.sensorId.controlChip,
-                            sensor.sensorId.measureChip,
+                            "${sensor.controlChip}-${sensor.measureChip}",
+                            sensor.controlChip,
+                            sensor.measureChip,
                             sensor.name,
                             sensor.note,
                             sensor.installationDate,
-                            "Non scanné",
+                            sensor.state,
                             sensor.plan,
                             sensor.x,
                             sensor.y,

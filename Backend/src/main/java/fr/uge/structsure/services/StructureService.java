@@ -1,5 +1,8 @@
 package fr.uge.structsure.services;
 
+import fr.uge.structsure.dto.plan.PlanDTO;
+import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
+import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.dto.structure.*;
 import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
@@ -20,7 +23,7 @@ public class StructureService {
     private final PlanRepository planRepository;
     private final SensorRepository sensorRepository;
     private final ScanRepository scanRepository;
-    private final ResultRepository resultRepository;
+    private final SensorRepositoryCriteriaQuery sensorCriteriaQuery;
 
     private final StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery;
 
@@ -29,18 +32,18 @@ public class StructureService {
      * @param structureRepository the structure repository
      * @param sensorRepository the sensor repository
      * @param planRepository the plan repository
-     * @param resultRepository the result repository
      */
     @Autowired
     public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository,
-                            PlanRepository planRepository, ResultRepository resultRepository, ScanRepository scanRepository,
-                            StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery) {
+                            PlanRepository planRepository, ScanRepository scanRepository,
+                            StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery,
+                            SensorRepositoryCriteriaQuery sensorCriteriaQuery) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.planRepository = Objects.requireNonNull(planRepository);
-        this.resultRepository = resultRepository;
         this.scanRepository = Objects.requireNonNull(scanRepository);
         this.structureRepositoryCriteriaQuery = structureRepositoryCriteriaQuery;
+        this.sensorCriteriaQuery = sensorCriteriaQuery;
     }
 
     /**
@@ -173,22 +176,26 @@ public class StructureService {
         return structures;
     }
 
-    public StructureResponseDTO getStructureById(Long id) {
+    /**
+     * Get the structure metadata, plans and sensors from the database
+     * and return a response to the Android application to get all the
+     * data needed to run a scan offline.
+     * Only not-archived items are returned, along with the state of
+     * the sensors.
+     * @param id the ID of the structure to download
+     * @return the data of the structure
+     * @throws TraitementException if the structure cannot be found
+     */
+    public StructureResponseDTO downloadStructureAndroid(Long id) throws TraitementException {
         Objects.requireNonNull(id);
-        var structureOptional = structureRepository.findById(id);
-        if (structureOptional.isEmpty()) {
-            throw new IllegalArgumentException("Structure n'existe pas");
-        }
-        var structure = structureOptional.get();
-        var plans = planRepository.findByStructure(structure);
-        var sensors = sensorRepository.findByStructureId(structure.getId());
-        return new StructureResponseDTO(
-          id,
-          structure.getName(),
-          structure.getNote(),
-          plans,
-          sensors
-        );
+        var structure = structureRepository.findById(id).orElseThrow(
+            () -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        var plans = planRepository.findByStructureAndArchivedFalse(structure)
+            .stream().map(PlanDTO::new).toList();
+        var query = new AllSensorsByStructureRequestDTO("NAME", "ASC",
+            null, null, null, null, Integer.MAX_VALUE, 0, false);
+        var sensors = sensorCriteriaQuery.findAllSensorsByStructureId(structure.getId(), query);
+        return new StructureResponseDTO(structure, plans, sensors);
     }
 
     /**

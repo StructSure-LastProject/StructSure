@@ -73,41 +73,6 @@ SensorRepository extends JpaRepository<Sensor, Long> {
     List<Sensor> findByStructure(Structure structure);
 
     /**
-     * Counts the number of sensors in the structure
-     * @param structure the structure
-     * @return the number of sensors
-     */
-    long countByStructure(Structure structure);
-
-    /**
-     * Checks if there is a sensor with NOK state
-     * @param structure the structure
-     * @return true if yes and false if not
-     */
-    @Query("""
-    SELECT COUNT(sensor.sensorId) > 0
-    FROM Sensor sensor
-    JOIN Result result ON result.sensor = sensor
-    WHERE sensor.structure = :structure
-    AND result.state = fr.uge.structsure.entities.State.NOK
-    """)
-    boolean existsSensorWithNokState(Structure structure);
-
-    /**
-     * Checks if there is a sensor with DEFECTIVE state
-     * @param structure the structure
-     * @return true if yes and false if not
-     */
-    @Query("""
-        SELECT COUNT(sensor.sensorId) > 0
-        FROM Sensor sensor
-        JOIN Result result ON result.sensor = sensor
-        WHERE sensor.structure = :structure
-        AND result.state = fr.uge.structsure.entities.State.DEFECTIVE
-    """)
-    boolean existsSensorWithDefectiveState(Structure structure);
-
-    /**
      * Finds the sensor by chip ids
      * @param controlChip the control chip id
      * @param measureChip the measure chip id
@@ -122,6 +87,7 @@ SensorRepository extends JpaRepository<Sensor, Long> {
      * @return List<Sensor> list of the sensors
      */
     List<Sensor> findByPlan(Plan plan);
+
     /**
      * Will find a sensor by its id
      * @param sensorId the id of the sensor

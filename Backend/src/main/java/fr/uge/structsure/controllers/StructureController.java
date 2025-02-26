@@ -185,7 +185,7 @@ public class StructureController {
      * @return List of structures
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllStructure(AllStructureRequestDTO allStructureRequestDTO){
+    public ResponseEntity<?> getAllStructure(AllStructureRequestDTO allStructureRequestDTO) {
         try {
             return ResponseEntity.status(200).body(structureService.getAllStructure(allStructureRequestDTO));
         } catch (TraitementException e) {
@@ -194,17 +194,13 @@ public class StructureController {
     }
 
     @GetMapping(value = "/android/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public StructureResponseDTO getStructureById(@PathVariable("id") Long id) {
-        var structure = structureService.getStructureById(id);
-        return new StructureResponseDTO(
-            structure.id(),
-            structure.name(),
-            structure.note(),
-            structure.plans().stream().filter(plan -> !plan.isArchived()).toList(),
-            structure.sensors().stream().filter(sensor -> !sensor.isArchived()).toList()
-        );
+    public ResponseEntity<?> getStructureById(@PathVariable("id") Long id) {
+        try {
+            return ResponseEntity.status(200).body(structureService.downloadStructureAndroid(id));
+        } catch (TraitementException e) {
+            return e.toResponseEntity();
+        }
     }
-
 
     /**
      * Returns the structure details with the specified id

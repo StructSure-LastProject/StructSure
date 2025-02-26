@@ -7,10 +7,12 @@ import androidx.room.PrimaryKey
 data class SensorId(val controlChip: String, val measureChip: String)
 
 data class Sensor(
-    val sensorId: SensorId,
+    val controlChip: String,
+    val measureChip: String,
     val name: String,
     val note: String,
     val installationDate: String,
+    val state: String,
     val plan: Long?,
     val x: Double,
     val y: Double

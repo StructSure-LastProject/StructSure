@@ -13,7 +13,6 @@ import jakarta.persistence.criteria.*;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -62,6 +61,7 @@ public class SensorRepositoryCriteriaQuery {
                 state,
                 sensor.get("archived"),
                 sensor.get("installationDate"),
+                sensor.get("plan").get("id"),
                 sensor.get("x"),
                 sensor.get("y")
         ));
