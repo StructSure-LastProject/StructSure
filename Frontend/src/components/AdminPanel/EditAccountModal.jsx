@@ -25,9 +25,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     const copyOfStructureSelection = [];
     const login = userDetails.login;
     const navigate = useNavigate();
-
-
-    const login = userDetails.login;
     const { fetchData, data, statusCode, error } = useFetch();
 
 
@@ -153,7 +150,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
             }
         };
 
-        await fetchData(`/api/accounts/${login}/structures`, requestData);
+        await fetchData(navigate, `/api/accounts/${login}/structures`, requestData);
 
         if (statusCode() === 200) {
             setStructureSelection(data().structureAccessDetailsList);
@@ -240,7 +237,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
             }
 
             if (updatedFields.includes("structures")) {
-                await fetchData(`/api/accounts/${userDetails.login}/access`, createRequestData("POST", { access: structureSelection() }));
+                await fetchData(navigate, `/api/accounts/${userDetails.login}/access`, createRequestData("POST", { access: structureSelection() }));
                 if (statusCode() === 200) {
                     updatedFields.pop("structures");
                 }

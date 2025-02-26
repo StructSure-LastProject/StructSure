@@ -65,6 +65,12 @@ const useFetch = () => {
             const imageUrl = URL.createObjectURL(imageBlob);            
             setImage(imageUrl);
         } else {
+            if (response.status === 401) {
+                const currentRoute = window.location.pathname + window.location.search
+                if (!currentRoute.startsWith("/login")) localStorage.setItem("loginForward", currentRoute);
+                navigate("/login");
+                return
+            }
             const errorData = await response.json();
             setError({
                 statusCode: response.status,
