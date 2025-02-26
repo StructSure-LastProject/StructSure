@@ -60,6 +60,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
     /** ID of the currently active scan */
     var activeScanId: Long? = null
+        private set
 
     /** Sensor cache for managing sensor states in memory */
     private val sensorCache = SensorCache()
@@ -89,6 +90,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
     /** Displaying error messages when updating notes */
     val noteErrorMessage = MutableLiveData<String>()
+
+    /** Whether a scan has been started or not yet */
+    fun isScanStarted(): Boolean = currentScanState.value != ScanState.NOT_STARTED
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -318,8 +322,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
         val newScan = ScanEntity(
             structureId = structureId,
-            start_timestamp = now,
-            end_timestamp = "",
+            startTimestamp = now,
+            endTimestamp = "",
             technician = accountDao.getLogin(),
             note = ""
         )

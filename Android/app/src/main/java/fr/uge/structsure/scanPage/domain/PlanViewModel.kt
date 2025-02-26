@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.R
+import fr.uge.structsure.scanPage.data.EditType
+import fr.uge.structsure.scanPage.data.ScanEdits
 import fr.uge.structsure.scanPage.data.TreeNode
 import fr.uge.structsure.scanPage.data.TreePlan
 import fr.uge.structsure.scanPage.data.TreeSection
@@ -154,6 +156,11 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
      */
     fun placeSensor(sensor: SensorDB, plan: Long?, x: Double, y: Double) {
         db.sensorDao().placeSensor(sensor.sensorId, plan, x, y)
+        scanViewModel.activeScanId?.let { scanId ->
+            viewModelScope.launch(Dispatchers.IO) {
+                db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_PLACE, sensor.sensorId))
+            }
+        }
         scanViewModel.refreshSensorStates()
     }
 }

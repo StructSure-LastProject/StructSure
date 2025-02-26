@@ -8,7 +8,10 @@ package fr.uge.structsure.scanPage.data.network.dto
  */
 data class SensorEditDTO(
     val sensorId: String,
-    val note: String?
+    val note: String?,
+    val plan: Long?,
+    val x: Int?,
+    val y: Int?
 ) {
-    constructor(sensorId: String) : this(sensorId, null)
+    constructor(sensorId: String) : this(sensorId, null, null, null, null)
 }

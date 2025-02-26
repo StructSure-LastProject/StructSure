@@ -10,7 +10,7 @@ fun SearchBar(input: MutableState<String>) {
     Row {
         InputSearch(
             value = input.value,
-            placeholder = "Rechercher...",
+            placeholder = "Rechercher",
             onChange = {
                 input.value = it
             }

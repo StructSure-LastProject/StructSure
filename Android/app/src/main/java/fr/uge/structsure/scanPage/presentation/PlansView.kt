@@ -95,7 +95,7 @@ fun PlansView(scanViewModel: ScanViewModel) {
                 image = image.value,
                 points = { points.value },
                 temporaryPoint = addPoint,
-                addPoint = { x, y -> addPoint = SensorDB.point(scanViewModel, x, y) },
+                addPoint = { x, y -> if (scanViewModel.isScanStarted()) addPoint = SensorDB.point(scanViewModel, x, y) },
                 deletePoint = { /* TODO enable to remove points */ }
             )
 
