@@ -1,64 +1,29 @@
-import { createResource, createSignal } from 'solid-js';
 import StructureNameCard from '../StructureNameCard';
-import useFetch from '../../hooks/useFetch';
 
-export const AccountStructureSection = ({copyOfstructureSelection, setStructureSelection, isAccountCreation}) => {
+/**
+ * The structure access section of user account
+ * @param {Array} structures The list of structures
+ * @param {Function} setStructureSelection The setter for structure access change
+ * @returns The Account structure section component
+ */
+export const AccountStructureSection = ({structures, setStructureSelection}) => {
 
-    const [structures, setStructures] = createSignal();
 
-
-    const add = (structureId, hasAccess = false) => {
-        setStructureSelection((prevArray) => {
-            const newItem = {structureId: structureId, hasAcces: hasAccess};
-            if (!prevArray.includes(newItem)) {
-                return [...prevArray, newItem];
+    /**
+     * The toogle function
+     * @param {String} structureId The structure id
+     */
+    const toggle = (structureId) => {
+        setStructureSelection((prevArray = []) => {
+            const newItemIndex = prevArray.findIndex(item => item.structureId === structureId);
+            if (newItemIndex !== -1) {
+                const updatedArray = [...prevArray];
+                updatedArray[newItemIndex].hasAccess = !updatedArray[newItemIndex].hasAccess;
+                return updatedArray;
             }
-            return newArray;
+            return prevArray;
         });
     }
-    
-    const remove = (structureId) => {
-        setStructureSelection((prevArray) => {
-            const newArray = prevArray.filter(item => item.structureId !== structureId);
-            return newArray;
-        });
-    }
-
-
-    const getStructuresForAccount = async () => {
-        const { fetchData, data, statusCode } = useFetch();
-        const token = localStorage.getItem("token");
-        const login = localStorage.getItem("login");
-
-        const requestData = {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            }
-        };
-
-        await fetchData(`/api/accounts/${login}/structures`, requestData);
-
-        if (statusCode() === 200) {
-            setStructures(data().structureDetailsList);
-            
-            structures().forEach(structure => {
-                if (structure.hasAccess === true) {
-                    add(structure.structureId, true);
-                }
-            });
-        }
-
-    }
-
-
-    createResource(() => {
-        if (!isAccountCreation) {
-            getStructuresForAccount()
-        }
-    });
-   
     
 
     return (
@@ -66,7 +31,7 @@ export const AccountStructureSection = ({copyOfstructureSelection, setStructureS
             <Show when={structures() !== undefined}>
                 <For each={structures()}>
                     {(item) => (
-                        <StructureNameCard add={add} remove={remove} structureId={item.structureId} structureName={item.structureName} isSelected={item.hasAccess}/>
+                        <StructureNameCard toggle={toggle} structureId={item.structureId} structureName={item.structureName} isSelected={item.hasAccess}/>
                     )}
                 </For>
             </Show>

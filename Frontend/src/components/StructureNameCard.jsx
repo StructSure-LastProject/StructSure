@@ -2,23 +2,24 @@ import { createSignal } from "solid-js";
 
 /**
  * Structure name card component
+ * @param {Function} toggle Function that will toggle the access
+ * @param {String} structureId The structure id
  * @param {string} structureName The structure name
- * @param {boolean} isChoosed If the structure is choosed or not 
+ * @param {boolean} isSelected If the structure is selected or not 
  * @returns 
  */
-const StructureNameCard = ({add, remove, structureId, structureName, isSelected}) => {
+const StructureNameCard = ({toggle, structureId, structureName, isSelected}) => {
 
     const [isChoosed, setIsChoosed] = createSignal(isSelected);
 
+    /**
+     * The toogle event
+     * @param {Event} e The click event
+     */
     const handleClick = (e) => {
         e.preventDefault();
         setIsChoosed((prevState) => !prevState);
-
-        if (isChoosed()) {
-            add(structureId, true);
-        } else {
-            remove(structureId);
-        }
+        toggle(structureId)
     };
 
     return (

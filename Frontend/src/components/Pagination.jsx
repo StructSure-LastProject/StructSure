@@ -94,7 +94,7 @@ export const Pagination = ({ limit, offset, totalItems, setOffset }) => {
           Suivant
         </button>
       </div>
-      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+      <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-gray-700">
             Affichage des résultats <span className="font-medium">{offset() + 1}</span> à <span className="font-medium">{Math.min(offset() + limit(), totalItems())}</span> sur{' '}

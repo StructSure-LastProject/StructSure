@@ -148,6 +148,11 @@ public class UserAccountController {
         }
     }
 
+    /**
+     * Get structure list for user account
+     * @param login The login of the user
+     * @return GetStructureListForUserAccountsResponseDTO The response DTO
+     */
     @GetMapping("/accounts/{login}/structures")
     public ResponseEntity<?> getStructureListForUserAccounts(@PathVariable String login){
         try {
