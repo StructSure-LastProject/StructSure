@@ -25,7 +25,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
 
     const login = userDetails.login;
-    const { fetchData, data, statusCode } = useFetch();
+    const { fetchData, data, statusCode, error } = useFetch();
 
 
     
@@ -94,11 +94,13 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         }
         
         if (Object.keys(a).length !== Object.keys(b).length) return false;
-        
+
         for (const key in a) {
-            if (!a.hasOwnProperty(key)) continue;
+            if (!Object.prototype.hasOwnProperty.call(a, key)) continue;
+
             if (!deepCompare(a[key], b[key])) return false;
         }
+
         
         return true;
     };
@@ -110,7 +112,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     createEffect(() => {
         if (copyOfStructureSelection.length === 0) {
             if (data() !== null) {
-                for (let e of data().structureDetailsList) {
+                for (const e of data().structureDetailsList) {
                     copyOfStructureSelection.push({structureId: e.structureId, structureName: e.structureName, hasAccess: e.hasAccess});
                 }
                 
@@ -151,7 +153,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
         validateUserAccountForm(firstName(), lastName(), login, role(), password(), addError, removeError, false)
 
-        const { fetchData, error, statusCode } = useFetch();
         const token = localStorage.getItem("token")
 
         
@@ -189,9 +190,9 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
              * @param {String} requestData The request data to send
              * @returns json object
              */
-            const createRequestData = (method, requestData) => {
+            const createRequestData = (requestMethod, requestData) => {
                 return {
-                    method: method,
+                    method: requestMethod,
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`

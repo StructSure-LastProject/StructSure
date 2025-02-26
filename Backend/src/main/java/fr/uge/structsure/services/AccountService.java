@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
 @Service
 public class AccountService {
     private static final String SUPER_ADMIN_LOGIN = "StructSureAdmin";
-    private static final Logger log = LoggerFactory.getLogger(AccountService.class);
     private final AccountRepository accountRepository;
     private final AuthenticationManager authenticationManager;
     private final AccountStructureService accountStructureService;
