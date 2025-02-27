@@ -95,7 +95,7 @@ function StructureDetailCanvas(props) {
         if (clickExistingPoint()) {
 
             planSensorsFetchRequest(props.structureId, props.setPlanSensors, props.selectedPlanId(), navigate);
-            let newDetailSensors = props.structureDetails().sensors.map(sensor => {
+            const newDetailSensors = props.structureDetails().sensors.map(sensor => {
                 return sensor.controlChip === clickExistingPoint().controlChip && sensor.measureChip === clickExistingPoint().measureChip
                     ? { ...sensor, x: null, y: null }
                     : sensor
@@ -142,7 +142,6 @@ function StructureDetailCanvas(props) {
      */
     const positionSensorFetchRequest = async (structureId, controlChip, measureChip, planId, x, y) => {
         const { fetchData, statusCode, error } = useFetch();
-        const navigate = useNavigate();
     
         const requestBody = {
             structureId: structureId,
