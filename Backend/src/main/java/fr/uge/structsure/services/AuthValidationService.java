@@ -27,6 +27,10 @@ public class AuthValidationService {
 
     private final JwtUtils jwtUtils;
 
+    /**
+     * Constructor
+     * @param jwtUtils The jwt utils object
+     */
     @Autowired
     public AuthValidationService(JwtUtils jwtUtils) {
         this.jwtUtils = Objects.requireNonNull(jwtUtils);

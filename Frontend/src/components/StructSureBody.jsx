@@ -10,7 +10,7 @@ import { TriangleAlert, CircleAlert, Check, SquareDashed, FolderSync } from 'luc
  */
 function StructSureBody() {
     const [structures, setStructures] = createSignal([]);
-    const [errorComponent, setErrorComponent] = createSignal("");
+    const [errorStructurePage, setErrorStructurePage] = createSignal("");
 
     const { fetchData, statusCode, data, error } = useFetch();
     
@@ -45,7 +45,7 @@ function StructSureBody() {
         } else if (statusCode() === 401) {
             navigate("/login");
         } else {
-            setErrorComponent(error().errorData);
+            setErrorStructurePage(error().errorData.error);
         }
     };
 
@@ -77,7 +77,7 @@ function StructSureBody() {
         
         <div class="flex flex-col lg:grid 2xl:grid lg:grid-cols-3 2xl:grid-cols-4 rounded-[20px] gap-4">
             <Show when={statusCode() === 200} fallback={
-                <h1 class="normal pl-5">Aucun Ouvrage</h1>
+                <h1 class="normal pl-5">{errorStructurePage()}</h1>
             }>
                 <For each={structures()}>
                     {(item) => (
