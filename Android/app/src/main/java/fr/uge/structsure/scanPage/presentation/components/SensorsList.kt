@@ -1,5 +1,7 @@
 package fr.uge.structsure.scanPage.presentation.components
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -49,11 +51,11 @@ import fr.uge.structsure.components.Select
 import fr.uge.structsure.components.Title
 import fr.uge.structsure.scanPage.data.AddSensorFormState
 import fr.uge.structsure.scanPage.data.TreePlan
+import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.structuresPage.data.FilterOption
 import fr.uge.structsure.structuresPage.data.Sensor
 import fr.uge.structsure.structuresPage.data.SensorDB
-import fr.uge.structsure.structuresPage.data.SensorId
 import fr.uge.structsure.structuresPage.data.SortOption
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.Red
@@ -69,7 +71,7 @@ import java.sql.Timestamp
  * @param onClick action to run once a sensor of the list is clicked
  */
 @Composable
-fun SensorsList(scanViewModel: ScanViewModel, onClick: (sensor: SensorDB) -> Unit) {
+fun SensorsList(scanViewModel: ScanViewModel, onClick: (sensor: SensorDB) -> Unit, context: Context) {
     val planViewModel = scanViewModel.planViewModel
     val selected by planViewModel.selected.observeAsState()
     val sensors by scanViewModel.sensorsNotScanned.observeAsState(emptyList())
@@ -78,6 +80,10 @@ fun SensorsList(scanViewModel: ScanViewModel, onClick: (sensor: SensorDB) -> Uni
     val errorMessage by scanViewModel.addSensorError.observeAsState()
     var showAddSensorPopUp by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
+
+    fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 
     LaunchedEffect(errorMessage) {
         if (errorMessage != null) {
@@ -103,7 +109,11 @@ fun SensorsList(scanViewModel: ScanViewModel, onClick: (sensor: SensorDB) -> Uni
             }
             Button(R.drawable.plus, "Add", Color.White, Color.Black,
                 onClick = {
-                    showAddSensorPopUp = true
+                    if (scanViewModel.currentScanState.value != ScanState.NOT_STARTED) {
+                        showAddSensorPopUp = true
+                    } else {
+                        showToast("Veuillez lancer un scan avant d'ajouter un capteur")
+                    }
                 }
             )
         }
@@ -332,10 +342,12 @@ private fun AddSensorPopUp(onSubmit: (Sensor) -> Unit, onCancel: () -> Unit) {
                     val now = Timestamp(System.currentTimeMillis()).toString()
                     onSubmit(
                         Sensor(
-                            sensorId = SensorId(controlChip, measureChip),
+                            controlChip = controlChip,
+                            measureChip = measureChip,
                             name = name,
                             note = note,
                             installationDate = now,
+                            state = "Non scanné", // TODO
                             plan = selectedPlan,
                             x = 0.0, // TODO
                             y = 0.0  // TODO
