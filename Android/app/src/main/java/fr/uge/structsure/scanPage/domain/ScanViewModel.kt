@@ -179,7 +179,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 name = sensor.name,
                 note = sensor.note,
                 installationDate = sensor.installationDate,
-                state = "Non scanné",
+                _state = sensor.state,
                 plan = sensor.plan,
                 x = sensor.x,
                 y = sensor.y,
