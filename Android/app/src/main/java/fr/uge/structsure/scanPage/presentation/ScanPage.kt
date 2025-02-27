@@ -2,14 +2,9 @@ package fr.uge.structsure.scanPage.presentation
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,8 +17,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.uge.structsure.MainActivity.Companion.db
@@ -32,13 +25,11 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.components.InputTextArea
 import fr.uge.structsure.components.Page
-import fr.uge.structsure.components.Plan
+import fr.uge.structsure.components.PlanForSensor
 import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
-import fr.uge.structsure.scanPage.data.findPlanById
-import fr.uge.structsure.scanPage.data.getPlanSectionName
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
@@ -48,7 +39,6 @@ import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
-import fr.uge.structsure.ui.theme.Typography
 import kotlinx.coroutines.launch
 
 /**
@@ -132,7 +122,7 @@ fun ScanPage(context: Context,
 
         scanViewModel.alertMessages.observeAsState(null).value?.let {
             scanViewModel.alertMessages.value = null
-            navController.navigate("Alerte?state=${it.state}&name=${it.sensorName}&lastState=${it.lastStateSensor}")
+            navController.navigate("Alerte?state=${it.state}&sensorId=${it.sensorId}")
         }
    }
 }
@@ -145,14 +135,7 @@ private fun SensorPopUp(
     onSubmit: (String) -> Unit,
     onCancel: () -> Unit
 ) {
-    val current = LocalContext.current
-
-    LaunchedEffect(sensor.plan) {
-        scanViewModel.planViewModel.loadPlanForPopup(current, sensor.plan)
-    }
-
     var note by remember { mutableStateOf(sensor.note.orEmpty()) }
-    val planImage by scanViewModel.planViewModel.popupImage.observeAsState()
 
     val currentStateDisplay = getStateDisplayName(
         scanViewModel.sensorsScanned.observeAsState(initial = emptyList()).value
@@ -166,31 +149,7 @@ private fun SensorPopUp(
             Button(R.drawable.check, "valider", Black, LightGray) { onSubmit(note) }
         }
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.Start,
-        ) {
-            val planNode = sensor.plan?.let { scanViewModel.planViewModel.plans.value?.findPlanById(it) }
-            val sectionName = planNode?.let { getPlanSectionName(it) } ?: "Section inconnue"
-
-            Text(
-                text = sectionName,
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            planImage?.let { bitmap ->
-                Plan(bitmap, listOf(sensor))
-            } ?: Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(156.dp)
-                    .clip(shape = RoundedCornerShape(size = 15.dp))
-                    .background(LightGray),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Chargement...", style = Typography.titleMedium)
-            }
-        }
+        PlanForSensor(scanViewModel.planViewModel, sensor, Black)
 
         SensorDetails(
             Black,

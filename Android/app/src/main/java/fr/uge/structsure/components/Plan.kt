@@ -5,11 +5,15 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,17 +22,44 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import fr.uge.structsure.scanPage.data.findPlanById
+import fr.uge.structsure.scanPage.data.getPlanSectionName
+import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.SensorDB
 import kotlin.math.sqrt
+
+@Composable
+fun PlanForSensor(
+    planViewModel: PlanViewModel,
+    point: SensorDB?,
+    color: Color
+) {
+    println("PlanSensor for ${point?.name}")
+    val context = LocalContext.current
+    val planImage = remember(point) { planViewModel.getPlanImage(context, point?.plan) }
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        val planNode = point?.plan?.let { planViewModel.plans.value?.findPlanById(it) }
+        planNode?.let {
+            Text(getPlanSectionName(it), color = color, style = typography.headlineMedium)
+        }
+        Plan(planImage, { point?.let { listOf(it) } ?: emptyList() })
+    }
+}
 
 /**
  * Composable that displays a plan image and allows to add points on it.
@@ -39,9 +70,9 @@ import kotlin.math.sqrt
 fun Plan(
     image: Bitmap,
     points: () -> List<SensorDB>,
-    temporaryPoint: SensorDB?,
-    addPoint: (Int, Int) -> Unit,
-    selectPoint: (SensorDB) -> Unit
+    temporaryPoint: SensorDB? = null,
+    addPoint: (Int, Int) -> Unit = { _, _ -> },
+    selectPoint: (SensorDB) -> Unit = { _ -> }
 ) {
     val painter = remember(image) { BitmapPainter(image.asImageBitmap()) }
     val factor = remember(1) { Factor() }
