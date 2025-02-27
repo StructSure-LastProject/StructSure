@@ -11,9 +11,10 @@ import java.util.Objects;
  * @param numberOfSensors Number of sensors
  * @param numberOfPlans Number of plans
  * @param state The state of the structure
+ * @param note the comment on the structure
  * @param archived
  */
-public record AllStructureResponseDTO(long id, String name, long numberOfSensors, long numberOfPlans, State state, boolean archived) {
+public record AllStructureResponseDTO(long id, String name, long numberOfSensors, long numberOfPlans, State state, String note, boolean archived) {
 
     /**
      * Creates a new AllStructureResponseDTO from a state as an ordinal
@@ -24,11 +25,12 @@ public record AllStructureResponseDTO(long id, String name, long numberOfSensors
      * @param name Name of the structure
      * @param numberOfSensors Number of sensors
      * @param numberOfPlans Number of plans
-     * @param state The ordinal of the state of the structure
+     * @param state The ordinal of the structure's state
+     * @param note the comment on the structure
      * @param archived whether the structure is archived or not
      */
-    public AllStructureResponseDTO(long id, String name, long numberOfSensors, long numberOfPlans, Integer state, boolean archived) {
-        this(id, name, numberOfSensors, numberOfPlans, State.values()[state], archived);
+    public AllStructureResponseDTO(long id, String name, long numberOfSensors, long numberOfPlans, Integer state, String note, boolean archived) {
+        this(id, name, numberOfSensors, numberOfPlans, State.values()[state], note, archived);
     }
 
     public AllStructureResponseDTO {

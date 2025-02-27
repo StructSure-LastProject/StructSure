@@ -44,7 +44,8 @@ class StructureRepository : ViewModel() {
                             it.numberOfSensors,
                             it.state,
                             it.archived,
-                            downloaded = false
+                            downloaded = false,
+                            it.note ?: ""
                         )
                     }
                 } else {

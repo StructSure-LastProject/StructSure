@@ -23,6 +23,7 @@ class ScanRepository(context: Context) {
     private val sensorDao = db.sensorDao()
     private val accountDao = db.accountDao()
     private val scanEditsDao = db.scanEditsDao()
+    private val structureDao = db.structureDao()
     private val connectivityViewModel = ConnectivityViewModel(context)
 
     /**
@@ -97,15 +98,17 @@ class ScanRepository(context: Context) {
         val login = accountDao.get()?.login.orEmpty()
         val edits = scanEditsDao.getAllByScanId(scanId)
 
+        val structureNote = structureDao.getStructureNote(scan.structureId) ?: ""
+
         val scanResults = results.map { ScanResultDTO.from(it) }
         val sensorEdits = getSensorEdits(edits)
 
-        return ScanRequestDTO(scan.structureId, scanId, scan.startTimestamp, scan.note, login,
-            scanResults, sensorEdits)
+        return ScanRequestDTO(scan.structureId, scanId, scan.startTimestamp,
+            scan.note, structureNote, login, scanResults, sensorEdits)
     }
 
     /**
-     * Retrieves all the edits that corresponds to a sensor and build
+     * Retrieves all the edits that corresponds to a sensor or structure and build
      * a list of ScanSensorEditDTOs that regroups all edits by sensors.
      * @param edits the list of all edits of the scan
      * @return the edits grouped by sensor

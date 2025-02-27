@@ -9,7 +9,6 @@ import androidx.room.Upsert
  */
 @Dao
 interface StructureDao {
-
     @Upsert
     fun upsertStructure(structureData: StructureData)
 
@@ -21,4 +20,10 @@ interface StructureDao {
 
     @Query("SELECT * FROM structure WHERE id = :id")
     fun getStructureById(id: Long): StructureData?
+
+    @Query("UPDATE structure SET note = :note WHERE id = :structureId")
+    suspend fun updateStructureNote(structureId: Long, note: String)
+
+    @Query("SELECT note FROM structure WHERE id = :structureId")
+    suspend fun getStructureNote(structureId: Long): String?
 }
