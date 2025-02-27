@@ -33,6 +33,7 @@ public class ScanService {
     private final StructureRepository structureRepository;
     private final AccountRepository accountRepository;
     private final SensorRepository sensorRepository;
+    private final PlanRepository planRepository;
 
     /**
      * Constructs a new ScanService with the necessary repositories.
@@ -210,7 +211,7 @@ public class ScanService {
                 newSensor.setSensorId(sensorId);
                 if (edit.name() != null) newSensor.setName(edit.name());
                 if (edit.note() != null) newSensor.setNote(edit.note());
-                if (edit.plan() != null) setPlan(edit, sensor);
+                if (edit.plan() != null) setPlan(edit, newSensor);
                 sensors.add(newSensor);
             }
         }

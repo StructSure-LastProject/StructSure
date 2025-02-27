@@ -156,17 +156,17 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      */
     fun addSensor(sensor: Sensor) {
         viewModelScope.launch(Dispatchers.IO) {
-            val structureId = this@ScanViewModel.structureId ?: run {
+            val structureId = this@ScanViewModel.structure ?: run {
                 addSensorError.postValue("Aucune structure sélectionnée")
                 return@launch
             }
 
-            val existingSensors = sensorDao.getAllSensors(structureId)
-            val alreadyExists = existingSensors.any { existingSensor ->
+            val existingSensors = structure?.id?.let { sensorDao.getAllSensors(it) }
+            val alreadyExists = existingSensors?.any { existingSensor ->
                 existingSensor.controlChip == sensor.controlChip || existingSensor.measureChip == sensor.measureChip
             }
 
-            if (alreadyExists) {
+            if (alreadyExists == true) {
                 addSensorError.postValue("Un capteur avec ces puces existe déjà")
                 return@launch
             }
@@ -183,7 +183,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 plan = sensor.plan,
                 x = sensor.x,
                 y = sensor.y,
-                structureId = structureId
+                structureId = structure!!.id
             )
 
             sensorDao.upsertSensor(sensorDB)
@@ -192,7 +192,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_CREATION, sensorId))
             }
 
-            val updatedSensors = sensorDao.getAllSensors(structureId)
+            val updatedSensors = sensorDao.getAllSensors(structure!!.id)
             sensorsNotScanned.postValue(updatedSensors)
 
             val stateCounts = SensorState.entries.associateWith { state ->
