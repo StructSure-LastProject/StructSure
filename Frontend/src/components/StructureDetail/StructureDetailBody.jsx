@@ -145,11 +145,13 @@ function StructureDetailBody(props) {
 
     /**
      * Sets the sensor in the structure details
-     * @param {list} sensorsList list of the sensors
+     * @param {Array} s list of the sensors
      */
-    const setSensorsDetail = (sensorsList) => {
-        setStructureDetails(prev => ({ ...prev, sensorsList }));
+    const setSensorsDetail = (s) => {
+        setStructureDetails(prev => ({ ...prev, sensors: s }));
     };
+
+
 
     return (
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
@@ -171,7 +173,7 @@ function StructureDetailBody(props) {
                 setSelectedPlanId={setSelectedPlanId}
                 planSensors={planSensors}
                 setPlanSensors={setPlanSensors}
-                setSensors={setSensorsDetail}
+                setSensorsDetail={setSensorsDetail}
             />
             <StructureDetailRow
               note={note}

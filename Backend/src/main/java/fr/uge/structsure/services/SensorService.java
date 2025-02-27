@@ -282,33 +282,39 @@ public class SensorService {
      */
     public SensorPositionResponseDTO positionSensor(SensorPositionRequestDTO request) throws TraitementException {
         request.checkFields();
-        var structure = structureRepository.findById(request.structureId());
-        if (structure.isEmpty()) {
-            throw new TraitementException(Error.SENSOR_STRUCTURE_NOT_FOUND);
-        }
-        var plan = planRepository.findById(request.planId());
-        if (plan.isEmpty()) {
-            throw new TraitementException(Error.PLAN_NOT_FOUND);
-        }
-        if (plan.get().getStructure().getId() != request.structureId()) {
+        structureRepository.findById(request.structureId()).orElseThrow(() -> new TraitementException(Error.SENSOR_STRUCTURE_NOT_FOUND));
+        var plan = planRepository.findById(request.planId()).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
+        if (plan.getStructure().getId() != request.structureId()) {
             throw new TraitementException(Error.PLAN_NOT_BELONG_TO_STRUCTURE);
         }
-        var sensor = sensorRepository.findByChipsId(request.controlChip(), request.measureChip());
+        var sensor = sensorRepository.findByChipsId(request.controlChip(), request.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
+        if (plan.getSensors() == null) {
+            plan.setSensors(new HashSet<>());
+        }
+        sensor.setX(request.x());
+        sensor.setY(request.y());
+        plan.getSensors().add(sensor);
+        sensor.setPlan(plan);
+        planRepository.save(plan);
+        sensorRepository.save(sensor);
+        return new SensorPositionResponseDTO(request.controlChip(), request.measureChip());
+    }
+
+    public DeletePositionSensorResponseDTO deletePositionOfSensor(String controlChip, String measureChip) throws TraitementException {
+        if (Objects.isNull(controlChip) || Objects.isNull(measureChip)
+                || controlChip.isEmpty() || measureChip.isEmpty()) {
+            throw new TraitementException(Error.INVALID_FIELDS);
+        }
+        var sensor = sensorRepository.findByChipsId(controlChip, measureChip);
         if (sensor.isEmpty()) {
             throw new TraitementException(Error.SENSOR_NOT_FOUND);
         }
-        var existingPlan = plan.get();
         var existingSensor = sensor.get();
-        if (existingPlan.getSensors() == null) {
-            existingPlan.setSensors(new HashSet<>());
-        }
-        existingSensor.setX(request.x());
-        existingSensor.setY(request.y());
-        existingPlan.getSensors().add(existingSensor);
-        existingSensor.setPlan(existingPlan);
-        planRepository.save(existingPlan);
+        existingSensor.setX(null);
+        existingSensor.setY(null);
+        existingSensor.setPlan(null);
         sensorRepository.save(existingSensor);
-        return new SensorPositionResponseDTO(request.controlChip(), request.measureChip());
+        return new DeletePositionSensorResponseDTO(controlChip, measureChip);
     }
 
 }
