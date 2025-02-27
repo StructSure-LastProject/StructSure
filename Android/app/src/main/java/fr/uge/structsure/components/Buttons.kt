@@ -22,13 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import fr.uge.structsure.R
 
-@Composable
-@Preview
-fun ButtonsPreview() {
-//    Button(R.drawable.x, "")
-    ButtonText("Connect", R.drawable.x)
-}
-
 /**
  * Component for simple button defined by an icon, a description, color and link
  * @param id the icon to display

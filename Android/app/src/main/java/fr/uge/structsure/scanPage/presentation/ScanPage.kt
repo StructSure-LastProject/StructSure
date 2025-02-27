@@ -2,9 +2,7 @@ package fr.uge.structsure.scanPage.presentation
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -35,6 +32,7 @@ import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.components.InputTextArea
 import fr.uge.structsure.components.Page
+import fr.uge.structsure.components.Plan
 import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.components.Title
@@ -181,15 +179,7 @@ private fun SensorPopUp(
             )
 
             planImage?.let { bitmap ->
-                Image(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(156.dp)
-                        .clip(shape = RoundedCornerShape(size = 15.dp))
-                        .border(width = 3.dp, color = LightGray, shape = RoundedCornerShape(size = 15.dp)),
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Plan",
-                )
+                Plan(bitmap, listOf(sensor))
             } ?: Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -198,7 +188,7 @@ private fun SensorPopUp(
                     .background(LightGray),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Loading...", style = Typography.titleMedium)
+                Text("Chargement...", style = Typography.titleMedium)
             }
         }
 
