@@ -126,7 +126,7 @@ const SensorCommentSection = ({
   isRequired 
 }) => {
   return (
-    <div class="flex flex-col gap-[5px] lg:gap-[10px]">
+    <div class="flex flex-col gap-[5px] lg:gap-[10px] w-full">
       <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">Note</p>
       <textarea required={isRequired} minLength={minLength} maxLength={maxLength} disabled={!editMode()} onChange={(e) => setNote(e.target.value)} class="rounded-[18px] w-full px-[16px] py-[8px] flex gap-[10px] bg-[#F2F2F4] font-poppins font-[400] text-[14px] leading-[21px] text-[#181818]"
         value={note()}
@@ -231,7 +231,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
         <Show when={validationError() !== ""}>
           <p class="text-[#F13327] font-poppins HeadLineMedium">{validationError()}</p>
         </Show>
-        <div class="overflow-auto flex flex-col gap-[25px] rounded-[18px]">
+        <div class="overflow-auto overflow-x-hidden flex flex-col gap-[25px] rounded-[18px]">
           <div class="lg:flex lg:flex-row lg:gap-[25px] flex flex-col gap-[25px]">
             <SensorPlan
               selectedPlanId={selectedPlanId}

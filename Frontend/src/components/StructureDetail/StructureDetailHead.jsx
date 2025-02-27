@@ -25,7 +25,7 @@ function StructureDetailHead(props) {
     return (
         <>
             <div class="flex flex-col gap-y-2.5">
-                <p class="title">Viaduc de Sylans</p>
+                <p class="title">{props.structureDetails().name}</p>
                 <div class="flex gap-x-[10px]">
                     <select class="px-4 py-2 w-full h-10 rounded-[20px] subtitle bg-white">
                         <option value="-1" onclick={() => props.setSelectedScan(-1)}>Aucun Scan Sélectionné</option>
