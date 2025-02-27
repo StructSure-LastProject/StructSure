@@ -178,18 +178,6 @@ class StructureViewModel(private val structureRepository: StructureRepository,
             }
         }
     }
-
-    /**
-     * Clear the local data of the structure with the given id.
-     */
-    private suspend fun cleanupLocalData(structureId: Long) {
-        try {
-            structureRepository.deleteStructure(structureId, context)
-            getAllStructures()
-        } catch (e: Exception) {
-            Log.e("StructureVM", "Error cleaning up local data", e)
-        }
-    }
 }
 
 data class StructureWithState(

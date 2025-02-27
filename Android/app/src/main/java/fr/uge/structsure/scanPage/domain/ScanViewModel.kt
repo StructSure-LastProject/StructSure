@@ -43,8 +43,12 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** DAO to fetch user account information */
     private val accountDao = db.accountDao()
 
+    /** DAO to interact with the structure data */
+    private val structureDao = db.structureDao()
+
     /** ID of the structure being scanned */
-    private var structureId: Long? = null
+    var structureId: Long? = null
+        private set
 
     /** Repository to interact with the scan database */
     private val scanRepository: ScanRepository = ScanRepository(context)
@@ -124,26 +128,26 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     }
 
     /**
-     * Updates the note of a sensor in the modal dialog of the sensor when the scan is in progress.
-     * @param sensorId the id of the sensor to update
-     * @param note the new note to set
+     * Updates the note of the structure currently being scanned.
+     * The note will be saved to the database and sent to the server
+     * when the scan is uploaded.
+     *
+     * @param note The new note to set for the structure
      * @return true if the note was updated, false otherwise
      */
-    fun updateSensorNote(sensorId: String, note: String): Boolean {
-        if (activeScanId == null) {
-            noteErrorMessage.postValue("Aucun scan en cours")
-            return false
-        }
-
-        if (note.length > 1000) return false
-        activeScanId?.let { scanId ->
-            viewModelScope.launch(Dispatchers.IO) {
-                db.sensorDao().updateNote(sensorId, note)
-                db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_NOTE, sensorId))
+    suspend fun updateStructureNote(note: String): Boolean {
+        return viewModelScope.async(Dispatchers.IO) {
+            structureId?.let { id ->
+                structureDao.updateStructureNote(id, note)
+                noteErrorMessage.postValue(null)
+                true
+            } ?: run {
+                noteErrorMessage.postValue("Aucune structure sélectionnée")
+                false
             }
-        }
-        return true
+        }.await()
     }
+
     /**
      * Adds a sensor to the database and updates the list of sensors.
      * @param sensor the sensor to add
@@ -199,8 +203,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             addSensorError.postValue(null)
         }
     }
-
-
 
     /**
      * Changes the structureId of the scanViewModel. This will reload
