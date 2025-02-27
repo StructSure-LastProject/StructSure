@@ -33,6 +33,7 @@ public class ScanService {
     private final StructureRepository structureRepository;
     private final AccountRepository accountRepository;
     private final SensorRepository sensorRepository;
+    private final PlanRepository planRepository;
 
     /**
      * Constructs a new ScanService with the necessary repositories.
@@ -42,6 +43,7 @@ public class ScanService {
      * @param structureRepository Repository for Structure entities
      * @param accountRepository   Repository for Account entities
      * @param sensorRepository    Repository for Sensor entities
+     * @param planRepository      Repository for Plan entities
      */
     @Autowired
     public ScanService(
@@ -49,13 +51,15 @@ public class ScanService {
             ResultRepository resultRepository,
             StructureRepository structureRepository,
             AccountRepository accountRepository,
-            SensorRepository sensorRepository
+            SensorRepository sensorRepository,
+            PlanRepository planRepository
     ) {
         this.resultRepository = Objects.requireNonNull(resultRepository);
         this.scanRepository = Objects.requireNonNull(scanRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
+        this.planRepository = Objects.requireNonNull(planRepository);
     }
 
     /**
@@ -79,7 +83,12 @@ public class ScanService {
         List<Result> results = processResults(scan, scanData);
 
         resultRepository.saveAll(results);
-        LOGGER.info("Saved {} results for scan {}", results.size(), scanData.scanId());
+        LOGGER.info(
+            "Saved {} results and {} edits for scan {}",
+            results.size(),
+            scanData.sensorEdits().size(),
+            scanData.scanId()
+        );
     }
 
     /**
@@ -185,9 +194,31 @@ public class ScanService {
             var sensor = sensorRepository.findBySensorId(SensorId.from(edit.sensorId()))
                 .orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
             if (edit.note() != null) sensor.setNote(edit.note());
+            if (edit.plan() != null) setPlan(edit, sensor);
             sensors.add(sensor);
         }
         sensorRepository.saveAll(sensors);
+    }
+
+    /**
+     * Updates the given sensor with the plan and position found in
+     * the given edit. The plan from the edit is assumed non-null.
+     * @param edit the Android data containing new plan values
+     * @param sensor the sensor to put values in
+     */
+    private void setPlan(AndroidSensorEditDTO edit, Sensor sensor) {
+        if (edit.x() == null || edit.y() == null) {
+            LOGGER.warn("Plan without coordinates received by Android will be ignored");
+            return;
+        }
+        planRepository.findById(edit.plan()).ifPresentOrElse(
+            plan -> {
+                sensor.setPlan(plan);
+                sensor.setX(edit.x());
+                sensor.setY(edit.y());
+            },
+            () -> LOGGER.warn("Unknown plan with ID '{}' received from Android will be ignored", edit.plan())
+        );
     }
 
     /**

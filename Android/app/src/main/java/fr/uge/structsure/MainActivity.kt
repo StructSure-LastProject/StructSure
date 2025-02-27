@@ -228,8 +228,13 @@ fun NavController.navigateNoReturn(route: String) {
  * the current page as the next page to display after login success.
  */
 fun NavController.requestLogin() {
-    var backRoute = currentBackStackEntry?.destination?.route
-    if (backRoute == null || backRoute.startsWith("LoginPage")) backRoute = MainActivity.HOME_PAGE
+    var backRoute = currentBackStackEntry?.destination?.route ?: MainActivity.HOME_PAGE
+    if (backRoute.startsWith("LoginPage")) backRoute = MainActivity.HOME_PAGE
+    currentBackStackEntry?.arguments?.let { bundle ->
+        bundle.keySet().forEach { key ->
+            backRoute = backRoute.replaceFirst("{$key}", bundle.getString(key) ?: "Null")
+        }
+    }
     navigate("LoginPage?backRoute=$backRoute") {
         popUpTo(0) { inclusive = true } // Prevent going back
         launchSingleTop = true

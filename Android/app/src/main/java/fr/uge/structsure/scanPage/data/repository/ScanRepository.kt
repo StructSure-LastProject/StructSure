@@ -100,7 +100,7 @@ class ScanRepository(context: Context) {
         val scanResults = results.map { ScanResultDTO.from(it) }
         val sensorEdits = getSensorEdits(edits)
 
-        return ScanRequestDTO(scan.structureId, scanId, scan.start_timestamp, scan.note, login,
+        return ScanRequestDTO(scan.structureId, scanId, scan.startTimestamp, scan.note, login,
             scanResults, sensorEdits)
     }
 
@@ -119,6 +119,15 @@ class ScanRepository(context: Context) {
                     /* Get the new note of the sensor */
                     val sensor = sensorEdits.getOrPut(it.value) { SensorEditDTO(it.value) }
                     sensorEdits[it.value] = sensor.copy(note = sensorDao.getSensor(it.value)?.note)
+                }
+                EditType.SENSOR_PLACE -> {
+                    /* Get the new position of the sensor */
+                    val sensor = sensorEdits.getOrPut(it.value) { SensorEditDTO(it.value) }
+                    sensorEdits[it.value] = sensor.copy(
+                        plan = sensorDao.getSensor(it.value)?.plan,
+                        x = sensorDao.getSensor(it.value)?.x?.toInt(),
+                        y = sensorDao.getSensor(it.value)?.y?.toInt()
+                    )
                 }
             }
         }

@@ -23,5 +23,5 @@ data class ScanEdits(
  */
 enum class EditType {
     /** Edition of the note of a sensor (creation, edition or deletion) */
-    SENSOR_NOTE
+    SENSOR_NOTE, SENSOR_PLACE
 }

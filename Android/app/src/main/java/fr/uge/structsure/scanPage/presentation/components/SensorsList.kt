@@ -150,7 +150,7 @@ private fun SortFilter(
         InputSearch(
             label = "Rechercher",
             value = search.value,
-            placeholder = "Rechercher...",
+            placeholder = "Rechercher",
             onChange = {
                 search.value = it
             }

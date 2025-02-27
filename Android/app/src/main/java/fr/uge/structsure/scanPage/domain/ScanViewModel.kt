@@ -18,6 +18,7 @@ import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.settingsPage.presentation.PreferencesManager.getScannerSensitivity
 import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.structuresPage.data.StructureData
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -42,8 +43,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** DAO to fetch user account information */
     private val accountDao = db.accountDao()
 
-    /** ID of the structure being scanned */
-    private var structureId: Long? = null
+    /** The structure being scanned */
+    var structure: StructureData? = null
+        private set
 
     /** Repository to interact with the scan database */
     private val scanRepository: ScanRepository = ScanRepository(context)
@@ -59,6 +61,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
     /** ID of the currently active scan */
     var activeScanId: Long? = null
+        private set
 
     /** Sensor cache for managing sensor states in memory */
     private val sensorCache = SensorCache()
@@ -87,7 +90,10 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     val planViewModel = PlanViewModel(context, this)
 
     /** Displaying error messages when updating notes */
-    val noteErrorMessage = MutableLiveData<String>()
+    val noteErrorMessage = MutableLiveData<String?>()
+
+    /** Whether a scan has been started or not yet */
+    fun isScanStarted(): Boolean = currentScanState.value != ScanState.NOT_STARTED
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -150,16 +156,17 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      * @param scanId the id of the uncompleted scan to continue
      */
     fun setStructure(context: Context, structureId: Long, scanId: Long? = null) {
-        if (this.structureId == structureId) return
-        this.structureId = structureId
-        this.activeScanId = null
-        if (structureId == -1L) {
-            planViewModel.reset()
-            return
-        }
+        if (this.structure?.id == structureId) return
         viewModelScope.launch(Dispatchers.IO) {
+            structure = db.structureDao().getStructureById(structureId)
+            activeScanId = null
+            if (structureId == -1L) {
+                planViewModel.reset()
+                currentScanState.postValue(ScanState.NOT_STARTED)
+                return@launch
+            }
             sensorCache.clearCache()
-            val sensors = sensorDao.getAllSensors(structureId)
+            val sensors = sensorDao.getAllSensorsWithResults(structureId)
             sensorsNotScanned.postValue(sensors)
             val stateCounts = SensorState.entries.associateWith { state ->
                 if (state == SensorState.UNKNOWN) sensors.size else 0
@@ -175,16 +182,16 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /**
      * Refreshes the states of the sensors after starting a scan.
      */
-    private fun refreshSensorStates() {
+    fun refreshSensorStates() {
         viewModelScope.launch(Dispatchers.IO) {
-            val sensors = sensorDao.getAllSensors(structureId?: return@launch)
+            val sensors = sensorDao.getAllSensorsWithResults(structure?.id?: return@launch)
             val scannedResults = activeScanId?.let { scanId ->
                 resultDao.getResultsByScan(scanId)
             } ?: emptyList()
 
             val updatedSensors = sensors.map { sensor ->
                 val result = scannedResults.find { it.id == sensor.sensorId }
-                sensor.copy(state = result?.state ?: sensor.state)
+                sensor.copy(_state = result?.state ?: sensor.state)
             }
 
             sensorsNotScanned.postValue(updatedSensors)
@@ -194,7 +201,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /**
      * Gets the previous state for a sensor
      */
-    fun getPreviousState(sensorId: String): String = sensorCache.getPreviousState(sensorId)
+    fun getPreviousState(sensorId: String): String = sensorDao.getSensorState(sensorId)
 
     /**
      * Adds a scanned RFID chip ID to the buffer for processing.
@@ -317,14 +324,14 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
         val newScan = ScanEntity(
             structureId = structureId,
-            start_timestamp = now,
-            end_timestamp = "",
+            startTimestamp = now,
+            endTimestamp = "",
             technician = accountDao.getLogin(),
             note = ""
         )
 
         activeScanId = scanDao.insertScan(newScan)
-        this.structureId = structureId
+        structure = db.structureDao().getStructureById(structureId)
 
         refreshSensorStates()
         updateSensorStateCounts()
@@ -341,7 +348,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
         if (activeScanId != null) return // already created
         activeScanId = scanId
-        this.structureId = scanDao.getScanById(scanId).structureId
+        structure = db.structureDao().getStructureById(scanDao.getScanById(scanId).structureId)
 
         refreshSensorStates()
         updateSensorStateCounts()
@@ -382,7 +389,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                     if (results.isNotEmpty() || db.scanEditsDao().getAllByScanId(scanId).isNotEmpty()) {
                         val now = Timestamp(System.currentTimeMillis()).toString()
                         scanRepository.updateScanEndTime(scanId, now)
-                        structureId?.let { structureViewModel.tryUploadScan(it, scanId) }
+                        structure?.id?.let { structureViewModel.tryUploadScan(it, scanId) }
                     }
                 }
             } catch (e: Exception) {

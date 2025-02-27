@@ -7,5 +7,8 @@ package fr.uge.structsure.dto.scan;
  */
 public record AndroidSensorEditDTO(
     String sensorId,
-    String note
+    String note,
+    Long plan,
+    Integer x,
+    Integer y
 ) {}

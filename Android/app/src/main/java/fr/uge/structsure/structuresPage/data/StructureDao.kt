@@ -20,5 +20,5 @@ interface StructureDao {
     fun getAllStructures(): List<StructureData>
 
     @Query("SELECT * FROM structure WHERE id = :id")
-    suspend fun getStructureById(id: Long): StructureData?
+    fun getStructureById(id: Long): StructureData?
 }

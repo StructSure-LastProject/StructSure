@@ -86,6 +86,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
         viewModelScope.launch {
             structureData.state.value = StructureStates.DOWNLOADING
             val success = structureRepository.downloadStructure(structureData.raw, context)
+            delay(1000) // FIXME For some reason, sensors are not fully download here...
             structureData.state.value = if (success) StructureStates.AVAILABLE else StructureStates.ONLINE
         }
     }
@@ -176,18 +177,6 @@ class StructureViewModel(private val structureRepository: StructureRepository,
             } finally {
                 this@StructureViewModel.uploadInProgress.postValue(false)
             }
-        }
-    }
-
-    /**
-     * Clear the local data of the structure with the given id.
-     */
-    private suspend fun cleanupLocalData(structureId: Long) {
-        try {
-            structureRepository.deleteStructure(structureId, context)
-            getAllStructures()
-        } catch (e: Exception) {
-            Log.e("StructureVM", "Error cleaning up local data", e)
         }
     }
 }

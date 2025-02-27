@@ -62,7 +62,10 @@ fun Title (
     indent: Boolean = true,
     content: @Composable () -> Unit = {}
 ) {
-    Row(Modifier.padding(start = if (indent) 20.dp else 0.dp)) {
+    Row(
+        Modifier.padding(start = if (indent) 20.dp else 0.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
         Text(text,
             style = MaterialTheme.typography.titleLarge,
             modifier= Modifier

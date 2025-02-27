@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.R
+import fr.uge.structsure.scanPage.data.EditType
+import fr.uge.structsure.scanPage.data.ScanEdits
 import fr.uge.structsure.scanPage.data.TreeNode
 import fr.uge.structsure.scanPage.data.TreePlan
 import fr.uge.structsure.scanPage.data.TreeSection
@@ -142,5 +144,23 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
             val path = FileUtils.getLocalPlanImage(context, planId)
             popupImage.postValue(if (path == null) defaultImage else BitmapFactory.decodeFile(path))
         }
+    }
+    
+    /**
+     * Adds a position to a sensor and saves it in the database. The
+     * sensor must have no position defined yet.
+     * @param sensor the sensor to place
+     * @param plan the id of the plan to put the sensor on
+     * @param x the x coordinate of the point in the image
+     * @param y the y coordinate of the point in the image
+     */
+    fun placeSensor(sensor: SensorDB, plan: Long?, x: Double, y: Double) {
+        db.sensorDao().placeSensor(sensor.sensorId, plan, x, y)
+        scanViewModel.activeScanId?.let { scanId ->
+            viewModelScope.launch(Dispatchers.IO) {
+                db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_PLACE, sensor.sensorId))
+            }
+        }
+        scanViewModel.refreshSensorStates()
     }
 }
