@@ -174,6 +174,8 @@ function StructureDetailBody(props) {
                 planSensors={planSensors}
                 setPlanSensors={setPlanSensors}
                 setSensorsDetail={setSensorsDetail}
+                setSensors={setSensors}
+                sensors={sensors}
             />
             <StructureDetailRow
               note={note}

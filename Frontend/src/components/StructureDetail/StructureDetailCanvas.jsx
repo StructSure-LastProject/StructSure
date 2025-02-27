@@ -80,6 +80,12 @@ function StructureDetailCanvas(props) {
                 sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip 
                 ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
             ));
+            props.setSensors(
+                props.sensors().map(sensor =>
+                    sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip 
+                    ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
+                )
+            );
             planSensorsFetchRequest(props.structureId, props.setPlanSensors, props.selectedPlanId(), navigate);
             setSelectedSensor(null);
             setInputValue("");
