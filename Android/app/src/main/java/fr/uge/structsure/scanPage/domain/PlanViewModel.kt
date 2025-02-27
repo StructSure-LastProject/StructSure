@@ -129,21 +129,18 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
     }
 
     /**
-     * Load the image of the plan by its ID specifically for the popup without affecting
-     * the main plan display. The image is loaded in background.
+     * Loads the image corresponding to the plan with the given ID and
+     * return it. If the image or plan cannot be found, the default
+     * image will be returned.
      * @param context needed to read the file from the device
      * @param planId the id of the plan to load the image for
+     * @return the image or the default image
      */
-    fun loadPlanForPopup(context: Context, planId: Long?) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (planId == null) {
-                popupImage.postValue(defaultImage)
-                return@launch
-            }
+    fun getPlanImage(context: Context, planId: Long?): Bitmap {
+        if (planId == null) return defaultImage
 
-            val path = FileUtils.getLocalPlanImage(context, planId)
-            popupImage.postValue(if (path == null) defaultImage else BitmapFactory.decodeFile(path))
-        }
+        val path = FileUtils.getLocalPlanImage(context, planId)
+        return if (path == null) defaultImage else BitmapFactory.decodeFile(path)
     }
     
     /**

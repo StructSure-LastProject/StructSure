@@ -131,7 +131,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      * @param note the new note to set
      * @return true if the note was updated, false otherwise
      */
-    fun updateSensorNote(sensorId: String, note: String): Boolean {
+    fun updateSensorNote(sensorId: String, note: String): Boolean { // TODO unused ?
         if (activeScanId == null) {
             noteErrorMessage.postValue("Aucun scan en cours")
             return false
@@ -278,25 +278,11 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             }
             SensorState.NOK -> {
                 pauseScan()
-                val previousState = SensorState.from(sensor.state).displayName
-                alertMessages.postValue(
-                    AlertInfo(
-                        state = true,
-                        sensorName = "Capteur ${sensor.name}",
-                        lastStateSensor = previousState
-                    )
-                )
+                alertMessages.postValue( AlertInfo(true, sensor.sensorId) )
             }
             SensorState.DEFECTIVE -> {
                 pauseScan()
-                val previousState = SensorState.from(sensor.state).displayName
-                alertMessages.postValue(
-                    AlertInfo(
-                        state = false,
-                        sensorName = "Capteur ${sensor.name}",
-                        lastStateSensor = previousState
-                    )
-                )
+                alertMessages.postValue( AlertInfo(false, sensor.sensorId) )
             }
             else -> Unit
         }

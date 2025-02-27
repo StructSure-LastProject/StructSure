@@ -8,5 +8,5 @@ import retrofit2.http.GET
 interface ServerStatusApi {
 
     @GET("api/serverStatus")
-    fun serverStatus(): Call<ServerStatusResponse>
+    fun serverStatus(): Call<ServerStatusResponse> // TODO Unused ?
 }
