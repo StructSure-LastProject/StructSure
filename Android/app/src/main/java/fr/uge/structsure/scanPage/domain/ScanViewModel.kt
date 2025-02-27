@@ -17,6 +17,7 @@ import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.settingsPage.presentation.PreferencesManager.getScannerSensitivity
+import fr.uge.structsure.structuresPage.data.Sensor
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.data.StructureData
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
@@ -86,6 +87,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Counts how many results are in a given state for the scan weather */
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
 
+    /** LiveData for displaying errors when adding a sensor. */
+    val addSensorError = MutableLiveData<String?>()
+
     /** Sub-ViewModel that handle all plan selection/display logic */
     val planViewModel = PlanViewModel(context, this)
 
@@ -146,6 +150,45 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
         return true
     }
+    /**
+     * Adds a sensor to the database and updates the list of sensors.
+     * @param sensor the sensor to add
+     */
+    fun addSensor(sensor: Sensor) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val existingSensor = sensorDao.findSensor(sensor.controlChip, sensor.measureChip)
+
+            if (existingSensor != null) {
+                addSensorError.postValue("Un capteur avec ces puces existe déjà")
+                return@launch
+            }
+
+            val sensorId = "${sensor.controlChip}-${sensor.measureChip}"
+            val sensorDB = SensorDB(
+                sensorId = sensorId,
+                controlChip = sensor.controlChip,
+                measureChip = sensor.measureChip,
+                name = sensor.name,
+                note = sensor.note,
+                installationDate = sensor.installationDate,
+                _state = sensor.state,
+                plan = sensor.plan,
+                x = sensor.x,
+                y = sensor.y,
+                structureId = structure!!.id
+            )
+
+            sensorDao.upsertSensor(sensorDB)
+
+            activeScanId?.let { scanId ->
+                db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_CREATION, sensorId))
+            }
+
+            refreshSensorStates()
+            addSensorError.postValue(null)
+        }
+    }
+
 
 
     /**

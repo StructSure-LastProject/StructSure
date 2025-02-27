@@ -41,6 +41,7 @@ import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.scanPage.data.findPlanById
 import fr.uge.structsure.scanPage.data.getPlanSectionName
+import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
@@ -49,8 +50,8 @@ import fr.uge.structsure.scanPage.presentation.components.SensorsList
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
-import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.Typography
+import fr.uge.structsure.ui.theme.Red
 import kotlinx.coroutines.launch
 
 /**
@@ -127,7 +128,7 @@ fun ScanPage(context: Context,
 
         ScanWeather(viewModel = scanViewModel, scrollState)
         PlansView(scanViewModel)
-        SensorsList(scanViewModel) { s -> sensorPopup = s }
+        SensorsList(scanViewModel, context) { sensorPopup = it }
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
             showToast(it)
@@ -243,6 +244,61 @@ private fun ScanNotePopUp(
             scanNote = db.scanDao().getNote(scanId) ?: ""
         }
     }
+
+    PopUp(onCancel) {
+        Title("Note du scan", false) {
+            Button(
+                R.drawable.check,
+                "valider",
+                MaterialTheme.colorScheme.onSurface,
+                MaterialTheme.colorScheme.surface,
+                onClick =
+                {
+                    coroutineScope.launch {
+                        if (scanViewModel.updateScanNote(scanNote)) {
+                            onSubmit()
+                        }
+                    }
+                }
+            )
+        }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            InputTextArea(
+                label = "Note",
+                value = scanNote,
+                placeholder = "Aucune note pour le moment",
+            ) { s -> if (s.length <= 1000) scanNote = s }
+        }
+
+
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = Red,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+    }
+}
+
+
+
+@Composable
+private fun ScanNotePopUp(
+    scan: ScanEntity,
+    scanViewModel: ScanViewModel,
+    onSubmit: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
+    var scanNote by remember { mutableStateOf(scan.note ?: "") }
 
     PopUp(onCancel) {
         Title("Note du scan", false) {
