@@ -25,12 +25,37 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
     await fetchData(navigate, `/api/structures/${structureId}/plan/${planId}/sensors`, requestData);
     if (statusCode() === 200) {
         setPlanSensors(data());
-    } else if (statusCode() === 401) {
-        navigate("/login");
     }
 };
 
+/**
+ * Fetch sensors from a scan and plan
+ * @param structureId The structure id
+ * @param scanId The scan id
+ * @param planId The plan id
+ * @param setPlanSensors The setter of plan sensors
+ * @param navigate The navigate object
+ */
+export const planSensorsScanFetchRequest = async (structureId, scanId, planId, setPlanSensors, navigate) => {
+    if (planId === null) {
+        return;
+    }
+    const requestData = {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    };
 
+    const { fetchData, statusCode, data, errorFetch } = useFetch();
+    const requestUrl = `/api/structures/${structureId}/plan/${planId}/sensors${scanId ? `?scanId=${scanId}` : ''}`;
+
+    await fetchData(navigate, requestUrl, requestData);
+
+    if (statusCode() === 200) {
+        setPlanSensors((data()));
+    }
+};
 
 /**
  * Will fetch the list of the sensors of this structure
@@ -38,7 +63,6 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
 export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems, navigate, filters = {}) => {
     const token = localStorage.getItem("token");
     const { fetchData, statusCode, data } = useFetch();
-
 
     // Construire le body avec les filtres
     const requestBody = {
@@ -48,6 +72,7 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
         offset: filters.offset ?? 0,
         ...(filters?.stateFilter && { stateFilter: filters.stateFilter }),
         ...(filters?.archivedFilter && {archivedFilter: filters.archivedFilter}),
+        ...(filters?.scanFilter && {scanFilter: filters.scanFilter}),
         ...(filters?.planFilter && {planFilter: filters.planFilter}),
         ...(filters?.minInstallationDate && {minInstallationDate: filters.minInstallationDate}),
         ...(filters?.maxInstallationDate && {maxInstallationDate: filters.maxInstallationDate})
@@ -70,8 +95,6 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
     if (statusCode() === 200) {
         setTotalItems(data().sizeOfResult);
         setSensors((data().sensors));
-    } else if (statusCode() === 401) {
-        navigate("/login");
     }
 };
 
@@ -80,7 +103,6 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
  * @returns component for the body part
  */
 function StructureDetailBody(props) {
-
     const [sensors, setSensors] = createSignal({});
     const [structureDetails, setStructureDetails] = createSignal({"id": null, "name": null, "note": null, "scans": [], "plans": [], "sensors": []});
     const [planSensors, setPlanSensors] = createSignal([]);
@@ -90,7 +112,7 @@ function StructureDetailBody(props) {
     const [selectedScan, setSelectedScan] = createSignal(-1);
     const navigate = useNavigate();
 
-
+    const [note, setNote] = createSignal("");
 
     /**
      * Will fetch the structure details
@@ -108,11 +130,8 @@ function StructureDetailBody(props) {
         await fetchData(navigate, `/api/structures/${structureId}`, requestData);
         if (statusCode() === 200) {
             setStructureDetails(data());
-        } 
-        else if (statusCode() === 401) {
-            navigate("/login");
-        } 
-        else if (statusCode() === 422) {
+            setNote(data()?.note);
+        } else if (statusCode() === 422) {
             navigate("/")
         }
     };
@@ -132,10 +151,19 @@ function StructureDetailBody(props) {
         setStructureDetails(prev => ({ ...prev, sensorsList }));
     };
 
-
     return (
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
-            <StructureDetailHead selectedScan={selectedScan} setSelectedScan={setSelectedScan} scans={structureDetails().scans} structureDetails={structureDetails} setStructureDetails={setStructureDetails}/>
+            <StructureDetailHead
+              setTotalItems={setTotalItems}
+              setSensors={setSensors}
+              setNote={setNote}
+              selectedPlan={selectedPlanId}
+              setPlanSensors={setPlanSensors}
+              selectedScan={selectedScan}
+              setSelectedScan={setSelectedScan}
+              structureDetails={structureDetails}
+              setStructureDetails={setStructureDetails}
+            />
             <StructureDetailPlans
                 structureDetails={structureDetails}
                 structureId={props.structureId}
@@ -145,7 +173,17 @@ function StructureDetailBody(props) {
                 setPlanSensors={setPlanSensors}
                 setSensors={setSensorsDetail}
             />
-            <StructureDetailRow selectedScan={selectedScan} structureDetails={structureDetails} structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
+            <StructureDetailRow
+              note={note}
+              structureDetails={structureDetails}
+              structureId={props.structureId}
+              setSensors={setSensors}
+              selectedScan={selectedScan}
+              selectedPlanId={selectedPlanId}
+              sensors={sensors}
+              totalItems={totalItems}
+              setTotalItems={setTotalItems}
+            />
         </div>
     );
 }

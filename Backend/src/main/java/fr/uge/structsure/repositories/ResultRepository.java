@@ -1,9 +1,7 @@
 package fr.uge.structsure.repositories;
 
 import fr.uge.structsure.entities.Result;
-import fr.uge.structsure.entities.Scan;
 import fr.uge.structsure.entities.Sensor;
-import fr.uge.structsure.entities.Structure;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -57,4 +55,11 @@ public interface ResultRepository extends JpaRepository<Result, Long> {
             insertResult(result);
         }
     }
+
+    /**
+     * Find all the result associated with a scan
+     * @param scanId The scan id
+     * @return List of results
+     */
+    List<Result> findByScanId(long scanId);
 }

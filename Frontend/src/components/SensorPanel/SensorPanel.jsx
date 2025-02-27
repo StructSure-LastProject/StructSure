@@ -78,6 +78,7 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
   const { fetchImage, image, loading } = useFetch();
   const token = localStorage.getItem("token");
   const endpoint = `/api/structures/plans/${structureId}/${sensorDetails.controlChip}/${sensorDetails.measureChip}/image`;
+  const navigate = useNavigate();
 
   const requestData = {
     method: "GET",
@@ -89,7 +90,7 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
   
   
   createResource(async () => {
-    await fetchImage(endpoint, requestData);    
+    await fetchImage(navigate, endpoint, requestData);
   })
   
   return (
@@ -144,7 +145,7 @@ const SensorCommentSection = ({
  * @param {Array} sensors The sensors array
  * @param {Function} setSensors The set sonsors function
  * @param {String} selectedPlanId The selected plan id
- * @param {Object} sensorDetails contains all the information about the clickded sensor 
+ * @param {Object} sensorDetails contains all the information about the clickded sensor
  * @param {Function} closeSensorPanel Function that close the sensor panel
  * @returns The sensor panel component
  */
@@ -155,7 +156,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
   const [note, setNote] = createSignal(sensorDetails?.note);
   const [editMode, setEditMode] = createSignal(false);
   const navigate = useNavigate();
-  
+
 
   const [validationError, setvalidationError] = createSignal("");
   
@@ -202,7 +203,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
 
     if (statusCode() === 200) {
       setvalidationError("");
-      sensorsFetchRequest(structureId, setSensors, setTotalItems);
+      sensorsFetchRequest(structureId, setSensors, setTotalItems, navigate);
       closeSensorPanel();
       return true;
     }    

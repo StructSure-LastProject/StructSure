@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * This class regroups all the endpoints controllers for the sensor
@@ -71,9 +72,10 @@ public class SensorController {
      */
     @GetMapping("/structures/{structureId}/plan/{planId}/sensors")
     public ResponseEntity<?> getSensorsByPlan(@PathVariable("structureId") long structureId,
-                                              @PathVariable("planId") long planId) {
+                                              @PathVariable("planId") long planId,
+                                              @RequestParam("scanId") Optional<Long> scanId) {
         try {
-            List<SensorDTO> sensorDTOs = sensorService.getSensorsByPlanId(structureId, planId);
+            List<SensorDTO> sensorDTOs = sensorService.getSensorsByPlanId(structureId, planId, scanId);
             return ResponseEntity.ok(sensorDTOs);
         } catch (TraitementException e) {
             return e.toResponseEntity();

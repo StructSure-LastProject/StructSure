@@ -11,8 +11,7 @@ import { useNavigate } from "@solidjs/router";
 /**
  * Will fetch the plan image
  */
-export const planImageFetchRequest = async (planId, setPlan) => {
-    const navigate = useNavigate();
+export const planImageFetchRequest = async (planId, setPlan, navigate) => {
     const requestData = {
         method: "GET",
         headers: {
@@ -21,11 +20,9 @@ export const planImageFetchRequest = async (planId, setPlan) => {
     };
 
     const { fetchImage, image, statusCode } = useFetch();
-    await fetchImage(`/api/structures/plans/${planId()}/image`, requestData);
+    await fetchImage(navigate, `/api/structures/plans/${planId()}/image`, requestData);
     if (statusCode() === 200) {
         setPlan(image());
-    } else if (statusCode() === 401) {
-        navigate("/login");
     }
 };
 
@@ -34,7 +31,7 @@ export const planImageFetchRequest = async (planId, setPlan) => {
  * @returns the component for the plans part
  */
 function StructureDetailPlans(props) {
- 
+    const navigate = useNavigate();
 
     // Plans and modals state management
     const [plans, setPlans] = createSignal([]);
@@ -74,7 +71,7 @@ function StructureDetailPlans(props) {
 
     createEffect(() => {
         if (props.selectedPlanId()) {
-            planImageFetchRequest(props.selectedPlanId, setPlan);
+            planImageFetchRequest(props.selectedPlanId, setPlan, navigate);
         }
     });
     

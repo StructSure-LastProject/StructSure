@@ -1,4 +1,4 @@
-import { createEffect, createSignal } from "solid-js";
+import {createEffect, createSignal, Show} from "solid-js";
 import useFetch from "../../hooks/useFetch";
 import { useNavigate } from "@solidjs/router";
 
@@ -37,6 +37,7 @@ function StructureDetailEdit(props) {
                 name: name(),
                 note: note()
             });
+            props.setNote(note());
         } else {
             setErrorFronted(error().errorData.error);
         }
@@ -68,10 +69,6 @@ function StructureDetailEdit(props) {
         setName(props.structureDetails().name);
         setNote(props.structureDetails().note);
     });
-
-    
-    
-
     
     return (
         <Show when={props.isModalVisible() === true}>

@@ -5,18 +5,21 @@ import getSensorStatusColor from "../SensorStatusColorGen"
 import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
 import SensorFilter from '../SensorFilter';
 import { Pagination } from '../Pagination.jsx';
+import {useNavigate} from "@solidjs/router";
+import {sensorsFetchRequest} from "./StructureDetailBody.jsx";
 
 /**
  * Show the sensors part of the structure detail page
  * @param {String} structureId The structure id
  * @param {Function} setSensors The set sonsors function
+ * @param {function} selectedScan The selected scan id
  * @param {String} selectedPlanId The selected plan id
  * @param {Array} sensors The sensors array
  * @param {Number} totalItems Total number of sensors
- * @param {Function} setTotalItems setter to set the total number of sensor 
+ * @param {Function} setTotalItems setter to set the total number of sensor
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, sensors, totalItems, setTotalItems}) {
+function StructureDetailCapteurs({structureId, setSensors, selectedScan, selectedPlanId, sensors, totalItems, setTotalItems}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
@@ -26,6 +29,8 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
 
     const [limit, setLimit] = createSignal(30)
     const [offset, setOffset] = createSignal(0);
+
+    const navigate = useNavigate();
     
 
     /**
@@ -49,10 +54,10 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
     const closeAddModal = () => setIsAddModalOpen(false);
 
     /**
-     * Handles saving a newly added plan
+     * Handles saving a newly added sensor
      */
-    const handleAddSave = async () => {
-        await sensorsFetchRequest(structureId);
+    const handleAddSave = () => {
+        sensorsFetchRequest(structureId, setSensors, setTotalItems, navigate, {limit: limit(), offset: offset()});
         closeAddModal();
     };
 
@@ -68,14 +73,13 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
      * Effect that updates plans based on props and user role
      */
     createEffect(() => {
-        const userRole = localStorage.getItem("role");
-        setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE" || userRole === "OPERATEUR");
+        setIsAuthorized(selectedScan() <= -1);
     });
 
     return (
         <div class="w-full flex flex-col gap-y-[15px]">
             <div class="flex justify-between">
-                <p class="title">Capteurs</p>
+                <p class="title">{(selectedScan() <= -1) ? "Capteurs" : "Résultats"}</p>
                 <div class="flex justify-between gap-x-[10px]">
                     <Show when={isAuthorized()}>
                         <button
@@ -96,7 +100,14 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
                     </Show>
                 </div>
             </div>
-            <SensorFilter structureId={structureId} setSensors={setSensors} limit={limit} offset={offset} setTotalItems={setTotalItems}/>
+            <SensorFilter
+              selectedScan={selectedScan}
+              structureId={structureId}
+              setSensors={setSensors}
+              limit={limit}
+              offset={offset}
+              setTotalItems={setTotalItems}
+            />
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <For each={sensors()}>
                     {(sensor) => (

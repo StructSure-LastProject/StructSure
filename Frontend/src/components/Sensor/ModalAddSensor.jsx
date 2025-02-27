@@ -69,7 +69,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
     });
 
     if (statusCode() === 201) {
-      await onSave();
+      onSave();
       handleClose();
     } else {
       setError(error()?.errorData?.error || "Une erreur est survenue");
