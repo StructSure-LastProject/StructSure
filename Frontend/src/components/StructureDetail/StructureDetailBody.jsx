@@ -36,31 +36,20 @@ const MAX_INT_VALUE = 2147483647;
  * @param setPlanSensors The setter of plan sensors
  */
 export const planSensorsScanFetchRequest = async (structureId, scanId, planId = 1, setPlanSensors) => {
-    const { fetchData, statusCode, data, errorFetch } = useFetch();
-
-    const requestBody = {
-        orderByColumn: "STATE",
-        orderType: "ASC",
-        limit: MAX_INT_VALUE,
-        offset: 0,
-        scanFilter: scanId,
-        planFilter: planId
-    };
-
-    const requestUrl = `/api/structures/${structureId}/sensors`;
-
     const requestData = {
-        method: "POST",
+        method: "GET",
         headers: {
             "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestBody)
+        }
     };
+
+    const { fetchData, statusCode, data, errorFetch } = useFetch();
+    const requestUrl = `/api/structures/${structureId}/plan/${planId}/sensors${scanId ? `?scanId=${scanId}` : ''}`;
 
     await fetchData(requestUrl, requestData);
 
     if (statusCode() === 200) {
-        setPlanSensors((data().sensors));
+        setPlanSensors((data()));
     }// Uncomment this when error barre is developped
     // else if (statusCode() === 404) {
     // }
