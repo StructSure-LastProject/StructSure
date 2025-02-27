@@ -41,6 +41,7 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
 export const planSensorsScanFetchRequest = async (structureId, scanId, planId, setPlanSensors, navigate) => {
     if (planId === null) {
         setPlanSensors([]);
+        return;
     }
     const requestData = {
         method: "GET",
@@ -67,7 +68,6 @@ export const planSensorsScanFetchRequest = async (structureId, scanId, planId, s
 export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems, navigate, filters = {}) => {
     const token = localStorage.getItem("token");
     const { fetchData, statusCode, data } = useFetch();
-
 
     // Construire le body avec les filtres
     const requestBody = {
@@ -120,7 +120,6 @@ function StructureDetailBody(props) {
     const navigate = useNavigate();
 
     const [note, setNote] = createSignal("");
-    const [scanChanged, setScanChanged] = createSignal([]);
 
     /**
      * Will fetch the structure details
@@ -165,7 +164,17 @@ function StructureDetailBody(props) {
 
     return (
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
-            <StructureDetailHead selectedScan={selectedScan} setSelectedScan={setSelectedScan} scans={structureDetails().scans} structureDetails={structureDetails} setStructureDetails={setStructureDetails}/>
+            <StructureDetailHead
+              setTotalItems={setTotalItems}
+              setSensors={setSensors}
+              setNote={setNote}
+              selectedPlan={selectedPlanId}
+              setPlanSensors={setPlanSensors}
+              selectedScan={selectedScan}
+              setSelectedScan={setSelectedScan}
+              structureDetails={structureDetails}
+              setStructureDetails={setStructureDetails}
+            />
             <StructureDetailPlans
                 structureDetails={structureDetails}
                 structureId={props.structureId}
@@ -175,7 +184,17 @@ function StructureDetailBody(props) {
                 setPlanSensors={setPlanSensors}
                 setSensors={setSensorsDetail}
             />
-            <StructureDetailRow selectedScan={selectedScan} structureDetails={structureDetails} structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
+            <StructureDetailRow
+              note={note}
+              structureDetails={structureDetails}
+              structureId={props.structureId}
+              setSensors={setSensors}
+              selectedScan={selectedScan}
+              selectedPlanId={selectedPlanId}
+              sensors={sensors}
+              totalItems={totalItems}
+              setTotalItems={setTotalItems}
+            />
         </div>
     );
 }
