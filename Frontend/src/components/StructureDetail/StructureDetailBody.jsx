@@ -40,7 +40,6 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
  */
 export const planSensorsScanFetchRequest = async (structureId, scanId, planId, setPlanSensors, navigate) => {
     if (planId === null) {
-        setPlanSensors([]);
         return;
     }
     const requestData = {
@@ -53,7 +52,7 @@ export const planSensorsScanFetchRequest = async (structureId, scanId, planId, s
     const { fetchData, statusCode, data, errorFetch } = useFetch();
     const requestUrl = `/api/structures/${structureId}/plan/${planId}/sensors${scanId ? `?scanId=${scanId}` : ''}`;
 
-    await fetchData(requestUrl, requestData);
+    await fetchData(navigate, requestUrl, requestData);
 
     if (statusCode() === 200) {
         setPlanSensors((data()));

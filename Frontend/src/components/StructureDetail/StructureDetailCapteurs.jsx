@@ -80,7 +80,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
     return (
         <div class="w-full flex flex-col gap-y-[15px]">
             <div class="flex justify-between">
-                <p class="title">Capteurs</p>
+                <p class="title">{(selectedScan() <= -1) ? "Capteurs" : "Résultats"}</p>
                 <div class="flex justify-between gap-x-[10px]">
                     <Show when={isAuthorized()}>
                         <button
