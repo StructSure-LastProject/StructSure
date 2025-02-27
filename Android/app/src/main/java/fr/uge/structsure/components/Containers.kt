@@ -42,14 +42,6 @@ import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.White
 import kotlinx.coroutines.launch
 
-@Composable
-@Preview
-fun ContainersPreview() {
-    Title("Titre") {
-        Button(R.drawable.x, "close")
-    }
-}
-
 /**
  * Title expected to be used at the beginning of a section that
  * contains a title text and buttons.

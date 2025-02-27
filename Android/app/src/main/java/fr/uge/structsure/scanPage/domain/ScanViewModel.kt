@@ -131,7 +131,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      * @param note the new note to set
      * @return true if the note was updated, false otherwise
      */
-    fun updateSensorNote(sensorId: String, note: String): Boolean {
+    fun updateSensorNote(sensorId: String, note: String): Boolean { // TODO unused ?
         if (activeScanId == null) {
             noteErrorMessage.postValue("Aucun scan en cours")
             return false
