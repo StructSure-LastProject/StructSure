@@ -30,7 +30,36 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
     }
 };
 
+/**
+ * Fetch sensors from a scan and plan
+ * @param structureId The structure id
+ * @param scanId The scan id
+ * @param planId The plan id
+ * @param setPlanSensors The setter of plan sensors
+ * @param navigate The navigate object
+ */
+export const planSensorsScanFetchRequest = async (structureId, scanId, planId, setPlanSensors, navigate) => {
+    if (planId === null) {
+        setPlanSensors([]);
+    }
+    const requestData = {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    };
 
+    const { fetchData, statusCode, data, errorFetch } = useFetch();
+    const requestUrl = `/api/structures/${structureId}/plan/${planId}/sensors${scanId ? `?scanId=${scanId}` : ''}`;
+
+    await fetchData(requestUrl, requestData);
+
+    if (statusCode() === 200) {
+        setPlanSensors((data()));
+    } else if (statusCode() === 401) {
+        navigate("/login");
+    }
+};
 
 /**
  * Will fetch the list of the sensors of this structure
@@ -48,6 +77,7 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
         offset: filters.offset ?? 0,
         ...(filters?.stateFilter && { stateFilter: filters.stateFilter }),
         ...(filters?.archivedFilter && {archivedFilter: filters.archivedFilter}),
+        ...(filters?.scanFilter && {scanFilter: filters.scanFilter}),
         ...(filters?.planFilter && {planFilter: filters.planFilter}),
         ...(filters?.minInstallationDate && {minInstallationDate: filters.minInstallationDate}),
         ...(filters?.maxInstallationDate && {maxInstallationDate: filters.maxInstallationDate})
@@ -80,7 +110,6 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
  * @returns component for the body part
  */
 function StructureDetailBody(props) {
-
     const [sensors, setSensors] = createSignal({});
     const [structureDetails, setStructureDetails] = createSignal({"id": null, "name": null, "note": null, "scans": [], "plans": [], "sensors": []});
     const [planSensors, setPlanSensors] = createSignal([]);
@@ -90,7 +119,8 @@ function StructureDetailBody(props) {
     const [selectedScan, setSelectedScan] = createSignal(-1);
     const navigate = useNavigate();
 
-
+    const [note, setNote] = createSignal("");
+    const [scanChanged, setScanChanged] = createSignal([]);
 
     /**
      * Will fetch the structure details
@@ -108,10 +138,11 @@ function StructureDetailBody(props) {
         await fetchData(navigate, `/api/structures/${structureId}`, requestData);
         if (statusCode() === 200) {
             setStructureDetails(data());
-        } 
+            setNote(data()?.note);
+        }
         else if (statusCode() === 401) {
             navigate("/login");
-        } 
+        }
         else if (statusCode() === 422) {
             navigate("/")
         }
@@ -131,7 +162,6 @@ function StructureDetailBody(props) {
     const setSensorsDetail = (sensorsList) => {
         setStructureDetails(prev => ({ ...prev, sensorsList }));
     };
-
 
     return (
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
