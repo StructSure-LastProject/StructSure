@@ -1,6 +1,7 @@
 import StructureDetailHead from './StructureDetailHead';
 import StructureDetailPlans from './StructureDetailPlans';
 import StructureDetailRow from './StructureDetailRow';
+import { useNavigate } from '@solidjs/router';
 
 import { createEffect, createSignal } from "solid-js";
 
@@ -93,6 +94,7 @@ function StructureDetailBody(props) {
     const [selectedScan, setSelectedScan] = createSignal(-1);
 
 
+
     /**
      * Will fetch the structure details
      */
@@ -109,8 +111,12 @@ function StructureDetailBody(props) {
         await fetchData(`/api/structures/${structureId}`, requestData);
         if (statusCode() === 200) {
             setStructureDetails(data());
-        } else if (statusCode() === 401) {
+        } 
+        else if (statusCode() === 401) {
             navigate("/login");
+        } 
+        else if (statusCode() === 422) {
+            navigate("/")
         }
     };
 

@@ -10,9 +10,10 @@ import { TriangleAlert, CircleAlert, Check, SquareDashed, FolderSync } from 'luc
  */
 function StructSureBody() {
     const [structures, setStructures] = createSignal([]);
+    const [errorComponent, setErrorComponent] = createSignal("");
 
-    const [error, setError] = createSignal("");
-
+    const { fetchData, statusCode, data, error } = useFetch();
+    
     const navigate = useNavigate();
 
     /**
@@ -34,7 +35,7 @@ function StructSureBody() {
             }
         };
 
-        const { fetchData, statusCode, data, errorFetch } = useFetch();
+        
         await fetchData(urlWithParams, requestData);
  
 
@@ -44,7 +45,7 @@ function StructSureBody() {
         } else if (statusCode() === 401) {
             navigate("/login");
         } else {
-            setError(errorFetch());
+            setErrorComponent(error().errorData);
         }
     };
 
@@ -75,21 +76,25 @@ function StructSureBody() {
     return (
         
         <div class="flex flex-col lg:grid 2xl:grid lg:grid-cols-3 2xl:grid-cols-4 rounded-[20px] gap-4">
-            <For each={structures()}>
-                {(item) => (
-                    <A href={`/structures/${item.id}`}>
-                        <div class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full">
-                            <div class="w-7 h-7 flex justify-center items-center">
-                                { getIconFromStateAndArchived(item.state, item.archived) }
+            <Show when={statusCode() === 200} fallback={
+                <h1 class="normal pl-5">Aucun Ouvrage</h1>
+            }>
+                <For each={structures()}>
+                    {(item) => (
+                        <A href={`/structures/${item.id}`}>
+                            <div class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full">
+                                <div class="w-7 h-7 flex justify-center items-center">
+                                    { getIconFromStateAndArchived(item.state, item.archived) }
+                                </div>
+                                <div class="flex flex-col">
+                                    <h1 class="subtitle">{item.name}</h1>
+                                    <p class="normal opacity-50">{item.numberOfSensors} capteurs</p>
+                                </div>
                             </div>
-                            <div class="flex flex-col">
-                                <h1 class="subtitle">{item.name}</h1>
-                                <p class="normal opacity-50">{item.numberOfSensors} capteurs</p>
-                            </div>
-                        </div>
-                    </A>
-                )}
-            </For>
+                        </A>
+                    )}
+                </For>
+            </Show>
         </div>
     );
 }

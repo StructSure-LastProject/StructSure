@@ -7,11 +7,9 @@ import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
 import fr.uge.structsure.services.StructureService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -181,13 +179,14 @@ public class StructureController {
 
     /**
      * This method handle the structure endpoint to get all structures
-     *
+     * @param allStructureRequestDTO The request DTO
+     * @param httpRequest The http request to check the permission
      * @return List of structures
      */
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllStructure(AllStructureRequestDTO allStructureRequestDTO) {
+    public ResponseEntity<?> getAllStructure(AllStructureRequestDTO allStructureRequestDTO, HttpServletRequest httpRequest) {
         try {
-            return ResponseEntity.status(200).body(structureService.getAllStructure(allStructureRequestDTO));
+            return ResponseEntity.status(200).body(structureService.getAllStructure(allStructureRequestDTO, httpRequest));
         } catch (TraitementException e) {
             return e.toResponseEntity();
         }
@@ -206,13 +205,14 @@ public class StructureController {
      * Returns the structure details with the specified id
      *
      * @param id the id of the structure
+     * @param httpServletRequest The http request to check the permission
      * @return StructureDetailsResponseDTO the detail of the structure,
      * or Error if structure not found
      */
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> structureDetail(@PathVariable("id") long id) {
+    public ResponseEntity<?> structureDetail(@PathVariable("id") long id, HttpServletRequest httpServletRequest) {
         try {
-            var detail = structureService.structureDetail(id);
+            var detail = structureService.structureDetail(id, httpServletRequest);
             return ResponseEntity.status(200).body(detail);
         } catch (TraitementException e) {
             return e.toResponseEntity();

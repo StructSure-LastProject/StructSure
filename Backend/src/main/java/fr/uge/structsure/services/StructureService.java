@@ -2,17 +2,18 @@ package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.plan.PlanDTO;
 import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
-import fr.uge.structsure.dto.sensors.SensorDTO;
 import fr.uge.structsure.dto.structure.*;
 import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.*;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Will regroup all the services available for structure like the service that will create a structure
@@ -24,6 +25,8 @@ public class StructureService {
     private final SensorRepository sensorRepository;
     private final ScanRepository scanRepository;
     private final SensorRepositoryCriteriaQuery sensorCriteriaQuery;
+    private final AuthValidationService authValidationService;
+    private final AccountRepository accountRepository;
 
     private final StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery;
 
@@ -37,13 +40,15 @@ public class StructureService {
     public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository,
                             PlanRepository planRepository, ScanRepository scanRepository,
                             StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery,
-                            SensorRepositoryCriteriaQuery sensorCriteriaQuery) {
+                            SensorRepositoryCriteriaQuery sensorCriteriaQuery, AuthValidationService authValidationService, AccountRepository accountRepository) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.planRepository = Objects.requireNonNull(planRepository);
         this.scanRepository = Objects.requireNonNull(scanRepository);
         this.structureRepositoryCriteriaQuery = structureRepositoryCriteriaQuery;
         this.sensorCriteriaQuery = sensorCriteriaQuery;
+        this.authValidationService = authValidationService;
+        this.accountRepository = accountRepository;
     }
 
     /**
@@ -195,16 +200,27 @@ public class StructureService {
     /**
      * Returns the structures with state for each structure, if it's archived or not, number of sensors in the structure
      * and also with the number of plans
+     * @param allStructureRequestDTO The request DTO
+     * @param httpRequest The http request to check the permission
      * @return List<AllStructureResponseDTO> the list containing of the structures
      * @throws TraitementException if there is no structure in the database we throw this exception
      */
-    public List<AllStructureResponseDTO> getAllStructure(AllStructureRequestDTO allStructureRequestDTO) throws TraitementException {
+    public List<AllStructureResponseDTO> getAllStructure(AllStructureRequestDTO allStructureRequestDTO, HttpServletRequest httpRequest) throws TraitementException {
+        Objects.requireNonNull(httpRequest);
         allStructureRequestDTO.checkFields();
+        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
         List<AllStructureResponseDTO> structures = structureRepositoryCriteriaQuery.findAllStructuresWithState(allStructureRequestDTO);
-        if (structures.isEmpty()) {
+        var allowedStructures = userSessionAccount.getAllowedStructures();
+
+        List<AllStructureResponseDTO> filteredStructures = structures.stream()
+                .filter(structure -> allowedStructures.stream()
+                        .anyMatch(allowedStructure -> allowedStructure.getId() == structure.id()))
+                .toList();
+
+        if (filteredStructures.isEmpty()) {
             throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);
         }
-        return structures;
+        return filteredStructures;
     }
 
     /**
@@ -232,10 +248,17 @@ public class StructureService {
     /**
      * Will return a detail of the structure with the specified id
      * @param id the id of the structure
+     * @param httpServletRequest The http request to check the permission
      * @return the record containing the detail
-     * @throws TraitementException
+     * @throws TraitementException thrown custom exceptions
      */
-    public StructureDetailsResponseDTO structureDetail(long id) throws TraitementException {
+    public StructureDetailsResponseDTO structureDetail(long id, HttpServletRequest httpServletRequest) throws TraitementException {
+        Objects.requireNonNull(httpServletRequest);
+        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpServletRequest, accountRepository);
+        var allowedStructures = userSessionAccount.getAllowedStructures();
+        if (allowedStructures.stream().noneMatch(structure -> structure.getId() == id)){
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
+        }
         var structureOpt = structureRepository.findById(id);
         if (structureOpt.isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);

@@ -153,7 +153,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         await fetchData(`/api/accounts/${login}/structures`, requestData);
 
         if (statusCode() === 200) {
-            setStructureSelection(data().structureDetailsList);
+            setStructureSelection(data().structureAccessDetailsList);
         }
 
     }

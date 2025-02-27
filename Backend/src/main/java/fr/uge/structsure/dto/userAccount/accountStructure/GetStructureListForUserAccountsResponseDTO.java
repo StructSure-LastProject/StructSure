@@ -5,14 +5,14 @@ import java.util.Objects;
 
 /**
  * Get structure list for user accounts response DTO
- * @param structureAcessDetailsList The list of structure details
+ * @param structureAccessDetailsList The list of structure details
  */
-public record GetStructureListForUserAccountsResponseDTO(List<StructureAcessDetails> structureAcessDetailsList) {
+public record GetStructureListForUserAccountsResponseDTO(List<StructureAccessDetails> structureAccessDetailsList) {
     /**
      * Constructor
-     * @param structureAcessDetailsList The list of structure details
+     * @param structureAccessDetailsList The list of structure details
      */
     public GetStructureListForUserAccountsResponseDTO {
-        Objects.requireNonNull(structureAcessDetailsList);
+        Objects.requireNonNull(structureAccessDetailsList);
     }
 }
