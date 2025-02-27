@@ -87,6 +87,7 @@ function StructureDetailEdit(props) {
                                 value={props.structureDetails().name} 
                                 class="w-full pb-2 pt-2 pl-4 pr-4 normal rounded-10px bg-lightgray h-37px"
                                 onChange={(e) => setName(e.target.value)}
+                                maxlength="64"
                             />
                         </div>
 
@@ -99,6 +100,7 @@ function StructureDetailEdit(props) {
                                 value={props.structureDetails().note}
                                 class="w-full pb-2 pt-2 pl-4 pr-4 normal rounded-10px bg-lightgray h-20"
                                 onChange={(e) => setNote(e.target.value)}
+                                maxlength="1000"
                             />
                         </div>
                     </div>
