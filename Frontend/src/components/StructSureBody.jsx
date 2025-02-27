@@ -35,13 +35,11 @@ function StructSureBody() {
             }
         };
 
-        const { fetchData, statusCode, data } = useFetch();
         await fetchData(navigate, urlWithParams, requestData);
- 
 
         if (statusCode() === 200) {
             const res = data()
-            setStructures(res);
+            setStructures(res);   
         } else {
             setErrorStructurePage(error().errorData.error);
         }
