@@ -122,10 +122,10 @@ function StructureDetailBody(props) {
 
     /**
      * Sets the sensor in the structure details
-     * @param {list} sensors list of the sensors
+     * @param {list} s list of the sensors
      */
-    const setSensorsDetail = (sensors) => {
-        setStructureDetails(prev => ({ ...prev, sensors }));
+    const setSensorsDetail = (s) => {
+        setStructureDetails(prev => ({ ...prev, s }));
     };
 
 

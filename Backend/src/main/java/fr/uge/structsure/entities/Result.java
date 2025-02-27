@@ -36,6 +36,7 @@ public class Result {
     public Result(State state, Sensor sensor, Scan scan) {
         this.state = Objects.requireNonNull(state);
         this.sensor = Objects.requireNonNull(sensor);
+        this.scan = Objects.requireNonNull(scan);
     }
 
     public long getId() {

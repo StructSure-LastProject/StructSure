@@ -33,7 +33,7 @@ const Section = (props) => {
  */
 const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId}) => (
   <div class={`px-[8px] py-[9px] rounded-[10px] cursor-pointer flex items-center gap-x-[10px] justify-between hover:bg-[#F2F2F4] ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`}
-  onClick={(event) => {
+  onClick={() => {
     setSelectedPlanId(planId);
   }}>
     <div class="flex items-center gap-x-[10px]">
@@ -57,7 +57,7 @@ const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId}) => (
  */
 const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId}) => (
   <div class={`py-[8px] px-[9px] rounded-[10px] flex items-center cursor-pointer gap-x-[10px] justify-between hover:bg-gray-100 group ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`} 
-  onClick={(event) => {
+  onClick={() => {
     setSelectedPlanId(planId);
   }}>
     <div class="flex items-center gap-x-[10px]">

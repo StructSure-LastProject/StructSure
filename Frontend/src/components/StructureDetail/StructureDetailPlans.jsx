@@ -83,11 +83,11 @@ function StructureDetailPlans(props) {
      * @param {number|string} planId Identifier of the plan to edit
      */
     const handleEdit = (planId) => {
-        const plan = plans().find(p => p.id === planId);
-        if (plan) {
+        const pl = plans().find(p => p.id === planId);
+        if (pl) {
             setSelectedPlan({
-                ...plan,
-                imageUrl: getImageUrl(plan.id)
+                ...pl,
+                imageUrl: getImageUrl(pl.id)
             });
             setIsEditModalOpen(true);
         }
@@ -101,15 +101,15 @@ function StructureDetailPlans(props) {
         const userRole = localStorage.getItem("role");
         const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
 
-        setPlans(prev => prev.map(plan =>
-          plan.id === formData.id
+        setPlans(prev => prev.map(p =>
+          p.id === formData.id
             ? {
-                ...plan,
+                ...p,
                 name: formData.metadata.name,
                 section: formData.metadata.section,
-                type: plan.archived ? "archived" : (canEdit ? "edit" : "plan")
+                type: p.archived ? "archived" : (canEdit ? "edit" : "plan")
             }
-            : plan
+            : p
         ));
         closeEditModal();
     };
@@ -138,18 +138,18 @@ function StructureDetailPlans(props) {
         const userRole = localStorage.getItem("role");
         setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE")
         if (props.structureDetails().plans) {
-            const newPlans = props.structureDetails().plans.map(plan => {
-                if (plan.archived) {
+            const newPlans = props.structureDetails().plans.map(p => {
+                if (p.archived) {
                     return {
-                        ...plan,
+                        ...p,
                         type: "archived",
-                        section: plan.section || ""
+                        section: p.section || ""
                     };
                 }
                 return {
-                    ...plan,
+                    ...p,
                     type: isAuthorized() ? "edit" : "plan",
-                    section: plan.section || ""
+                    section: p.section || ""
                 };
             });
             setPlans(newPlans);
