@@ -145,6 +145,8 @@ function StructureDetailBody(props) {
                 planSensors={planSensors}
                 setPlanSensors={setPlanSensors}
                 setSensorsDetail={setSensorsDetail}
+                setSensors={setSensors}
+                sensors={sensors}
             />
             <StructureDetailRow selectedScan={selectedScan} structureDetails={structureDetails} structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
         </div>
