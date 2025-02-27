@@ -73,8 +73,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
      * Effect that updates plans based on props and user role
      */
     createEffect(() => {
-        const userRole = localStorage.getItem("role");
-        setIsAuthorized((userRole === "ADMIN" || userRole === "RESPONSABLE" || userRole === "OPERATEUR") && selectedScan() <= -1);
+        setIsAuthorized(selectedScan() <= -1);
     });
 
     return (

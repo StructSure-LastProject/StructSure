@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -91,7 +90,7 @@ public class SensorService {
         var plan = planRepository.findByStructureAndId(structure, planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
         var sensors = sensorRepository.findByPlan(plan);
         if (scanId.isPresent()) {
-            var scanResults = resultRepository.findByScan_Id(scanId.get());
+            var scanResults = resultRepository.findByScanId(scanId.get());
             var statesBySensor = new HashMap<Sensor, State>();
             for (Result result : scanResults) {
                 if (result.getSensor() != null) {

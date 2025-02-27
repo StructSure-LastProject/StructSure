@@ -25,8 +25,6 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
     await fetchData(navigate, `/api/structures/${structureId}/plan/${planId}/sensors`, requestData);
     if (statusCode() === 200) {
         setPlanSensors(data());
-    } else if (statusCode() === 401) {
-        navigate("/login");
     }
 };
 
@@ -56,8 +54,6 @@ export const planSensorsScanFetchRequest = async (structureId, scanId, planId, s
 
     if (statusCode() === 200) {
         setPlanSensors((data()));
-    } else if (statusCode() === 401) {
-        navigate("/login");
     }
 };
 
@@ -99,8 +95,6 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
     if (statusCode() === 200) {
         setTotalItems(data().sizeOfResult);
         setSensors((data().sensors));
-    } else if (statusCode() === 401) {
-        navigate("/login");
     }
 };
 
@@ -137,11 +131,7 @@ function StructureDetailBody(props) {
         if (statusCode() === 200) {
             setStructureDetails(data());
             setNote(data()?.note);
-        }
-        else if (statusCode() === 401) {
-            navigate("/login");
-        }
-        else if (statusCode() === 422) {
+        } else if (statusCode() === 422) {
             navigate("/")
         }
     };

@@ -20,11 +20,9 @@ export const planImageFetchRequest = async (planId, setPlan, navigate) => {
     };
 
     const { fetchImage, image, statusCode } = useFetch();
-    await fetchImage(`/api/structures/plans/${planId()}/image`, requestData);
+    await fetchImage(navigate, `/api/structures/plans/${planId()}/image`, requestData);
     if (statusCode() === 200) {
         setPlan(image());
-    } else if (statusCode() === 401) {
-        navigate("/login");
     }
 };
 

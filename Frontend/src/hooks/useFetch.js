@@ -47,14 +47,15 @@ const useFetch = () => {
         } finally {
             setLoading(false);
         }   
-  };
+    };
 
     /**
      * Will fetch an image from the server
+     * @param {Navigator} navigate the endpoint
      * @param {String} endpoint the endpoint
      * @param {Object} requestData the object containing request informations
      */
-    const fetchImage = async (endpoint, requestData) => {
+    const fetchImage = async (navigate, endpoint, requestData) => {
         setLoading(true);
         try {
         const response = await fetch(endpoint, requestData);

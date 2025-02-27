@@ -78,6 +78,7 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
   const { fetchImage, image, loading } = useFetch();
   const token = localStorage.getItem("token");
   const endpoint = `/api/structures/plans/${structureId}/${sensorDetails.controlChip}/${sensorDetails.measureChip}/image`;
+  const navigate = useNavigate();
 
   const requestData = {
     method: "GET",
@@ -89,7 +90,7 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
   
   
   createResource(async () => {
-    await fetchImage(endpoint, requestData);
+    await fetchImage(navigate, endpoint, requestData);
   })
   
   return (
