@@ -112,7 +112,9 @@ fun ScanPage(context: Context,
             SensorPopUp(
                 sensor = sensor,
                 scanViewModel = scanViewModel,
-                onSubmit = { sensorPopup = null },
+                onSubmit = { note ->
+                    if (scanViewModel.updateSensorNote(sensorPopup!!, note)) sensorPopup = null
+                },
                 onCancel = { sensorPopup = null }
             )
         }
@@ -127,7 +129,7 @@ fun ScanPage(context: Context,
 
         ScanWeather(viewModel = scanViewModel, scrollState)
         PlansView(scanViewModel)
-        SensorsList(scanViewModel) { s -> sensorPopup = s }
+        SensorsList(scanViewModel, context) { sensorPopup = it }
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
             showToast(it)
@@ -146,7 +148,7 @@ fun ScanPage(context: Context,
 private fun SensorPopUp(
     sensor: SensorDB,
     scanViewModel: ScanViewModel,
-    onSubmit: () -> Unit,
+    onSubmit: (String) -> Unit,
     onCancel: () -> Unit
 ) {
     val current = LocalContext.current
@@ -167,13 +169,7 @@ private fun SensorPopUp(
 
     PopUp(onCancel) {
         Title(sensor.name, false) {
-            Button(
-                R.drawable.check,
-                "valider",
-                MaterialTheme.colorScheme.onSurface,
-                MaterialTheme.colorScheme.surface,
-                onSubmit
-            )
+            Button(R.drawable.check, "valider", Black, LightGray) { onSubmit(note) }
         }
 
         Column(
@@ -222,7 +218,7 @@ private fun SensorPopUp(
             label = "Note",
             value = note,
             placeholder = "Aucune note pour le moment"
-        ) { s -> if (s.length <= 1000) note = s }
+        ) { s -> note = s.take(1000) }
     }
 }
 

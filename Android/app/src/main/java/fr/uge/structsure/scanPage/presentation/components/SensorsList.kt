@@ -1,9 +1,17 @@
 package fr.uge.structsure.scanPage.presentation.components
 
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,11 +24,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -34,15 +44,24 @@ import fr.uge.structsure.R
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.components.InputCheck
 import fr.uge.structsure.components.InputSearch
+import fr.uge.structsure.components.InputText
+import fr.uge.structsure.components.InputTextArea
+import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.Select
+import fr.uge.structsure.components.Title
+import fr.uge.structsure.scanPage.data.SensorValidator
 import fr.uge.structsure.scanPage.data.TreePlan
+import fr.uge.structsure.scanPage.data.ValidationResult
+import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.structuresPage.data.FilterOption
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.data.SortOption
 import fr.uge.structsure.ui.theme.Black
-import fr.uge.structsure.ui.theme.Typography
+import fr.uge.structsure.ui.theme.LightGray
+import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
+import kotlinx.coroutines.delay
 
 /**
  * A composable function that displays a list of sensors during a scan.
@@ -51,28 +70,76 @@ import fr.uge.structsure.ui.theme.White
  * @param onClick action to run once a sensor of the list is clicked
  */
 @Composable
-fun SensorsList(scanViewModel: ScanViewModel, onClick: (sensor: SensorDB) -> Unit) {
+fun SensorsList(scanViewModel: ScanViewModel, context: Context, onClick: (sensor: SensorDB) -> Unit) {
     val planViewModel = scanViewModel.planViewModel
     val selected by planViewModel.selected.observeAsState()
     val sensors by scanViewModel.sensorsNotScanned.observeAsState(emptyList())
     val optionsVisible = remember { mutableStateOf(true) }
 
+    val errorMessage by scanViewModel.addSensorError.observeAsState()
+    var showAddSensorPopUp by remember { mutableStateOf(false) }
+    var showError by remember { mutableStateOf(false) }
+
+    fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    LaunchedEffect(errorMessage) {
+        if (errorMessage != null) {
+            showError = true
+            delay(3000)
+            showError = false
+        }
+    }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
         horizontalAlignment = Alignment.Start,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("Capteurs", Modifier.weight(1f), style = Typography.titleLarge)
-            val icon = if (optionsVisible.value) R.drawable.chevron_up else R.drawable.chevron_down
+        val icon = if (optionsVisible.value) R.drawable.chevron_up else R.drawable.chevron_down
+        Title("Capteurs", false) {
             Button(icon, "Filter", Color.Black, Color.White) {
                 optionsVisible.value = !optionsVisible.value
             }
-            Button(R.drawable.plus, "Add", Color.White, Color.Black)
+            Button(R.drawable.plus, "Add", Color.White, Color.Black) {
+                if (scanViewModel.currentScanState.value != ScanState.NOT_STARTED) {
+                    showAddSensorPopUp = true
+                } else {
+                    showToast("Veuillez lancer un scan avant d'ajouter un capteur")
+                }
+            }
         }
+
+        AnimatedVisibility(
+            visible = showError && errorMessage != null,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .background(Red.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = errorMessage ?: "",
+                    color = Red,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+
+        if (showAddSensorPopUp) {
+            AddSensorPopUp(
+                onSubmit = { controlChip, measureChip, name, note ->
+                    scanViewModel.addSensor(controlChip, measureChip, name, note)
+                    if (errorMessage == null) showAddSensorPopUp = false
+                },
+                onCancel = { showAddSensorPopUp = false }
+            )
+        }
+
         Column(
             Modifier
                 .fillMaxWidth()
@@ -215,5 +282,60 @@ private fun SensorsList(sensors: List<SensorDB>, onClick: (sensor: SensorDB) -> 
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center
         )
+    }
+}
+
+/**
+ * Popup that prompt the user to create a new sensor with a name, a
+ * control chip, a measure chip and a note.
+ * @param onSubmit the action to run when the user submit values
+ * @param onCancel the action to run when the user cancel
+ */
+@Composable
+fun AddSensorPopUp(onSubmit: (controlChip: String, measureChip: String, name: String, note: String) -> Unit, onCancel: () -> Unit) {
+    var name by remember { mutableStateOf("") }
+    var controlChip by remember { mutableStateOf("") }
+    var measureChip by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf("") }
+    var errors by remember { mutableStateOf(null as ValidationResult?) }
+
+    PopUp(onCancel) {
+        Title("Ajouter un capteur", false) {
+            Button(R.drawable.x, "Annuler", Black, LightGray, onCancel)
+            Button(R.drawable.check, "Valider", White, Black) {
+                errors = SensorValidator.validate(controlChip, measureChip, name, note)
+                if (errors == null) {
+                    onSubmit(controlChip, measureChip, name, note)
+                    onCancel()
+                }
+            }
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
+            InputText(Modifier, "Nom *", name, "Capteur 42",
+                errorMessage = errors?.nameError,
+            ) {
+                name = it.take(SensorValidator.MAX_NAME_LENGTH)
+            }
+
+
+            InputText(Modifier, "Puce Témoin *", controlChip, "E280 6F12 0000 0002 208F FACE",
+                errorMessage = errors?.controlChipError
+            ) {
+                controlChip = it.take(SensorValidator.MAX_CHIP_LENGTH)
+            }
+
+
+            InputText(Modifier, "Puce Mesure *", measureChip, "E280 6F12 0000 0002 208F FACD",
+                errorMessage = errors?.measureChipError,
+            ) {
+                measureChip = it.take(SensorValidator.MAX_CHIP_LENGTH)
+            }
+
+            InputTextArea(Modifier, "Note", note, "Commentaires (optionnel)",
+                    errorMessage = errors?.noteError
+            ) {
+                note = it.take(SensorValidator.MAX_NOTE_LENGTH)
+            }
+        }
     }
 }

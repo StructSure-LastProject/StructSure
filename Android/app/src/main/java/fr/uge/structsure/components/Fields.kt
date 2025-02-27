@@ -284,17 +284,21 @@ fun InputTextArea (
     label: String,
     value: String,
     placeholder: String = "",
+    errorMessage: String? = null,
     enabled : Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit = {}
 ) {
     Input(
         Modifier.defaultMinSize(minHeight = 75.dp).then(modifier),
-        label, value, placeholder,
-        password = false,
-        onChange = onChange,
-        multiLines = true,
-        enabled = true,
+        label,
+        value,
+        placeholder,
+        errorMessage,
+        false,
+        onChange,
+        true,
+        enabled = enabled,
         keyboardOptions = keyboardOptions
     )
 }
@@ -381,6 +385,7 @@ private fun Input(
                 else decorations(innerTextField)
             }
         )
+
         errorMessage?.let {
             Text(
                 text = errorMessage,

@@ -154,7 +154,7 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
      * @param x the x coordinate of the point in the image
      * @param y the y coordinate of the point in the image
      */
-    fun placeSensor(sensor: SensorDB, plan: Long?, x: Double, y: Double) {
+    fun placeSensor(sensor: SensorDB, plan: Long?, x: Int, y: Int) {
         db.sensorDao().placeSensor(sensor.sensorId, plan, x, y)
         scanViewModel.activeScanId?.let { scanId ->
             viewModelScope.launch(Dispatchers.IO) {

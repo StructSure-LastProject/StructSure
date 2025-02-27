@@ -1,11 +1,8 @@
 package fr.uge.structsure.dto.sensors;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import fr.uge.structsure.entities.State;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
-import fr.uge.structsure.utils.EnumValidatorFromString;
-import fr.uge.structsure.utils.OrderEnum;
 
 import java.util.Objects;
 
