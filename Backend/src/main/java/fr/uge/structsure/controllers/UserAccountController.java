@@ -157,6 +157,7 @@ public class UserAccountController {
     public ResponseEntity<?> getStructureListForUserAccounts(@PathVariable String login){
         try {
             return ResponseEntity.status(200).body(accountService.getStructureListForUserAccounts(login));
+        }
         catch (TraitementException e){
             return e.toResponseEntity();
         }

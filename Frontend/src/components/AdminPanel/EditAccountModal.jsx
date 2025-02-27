@@ -273,17 +273,18 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
      * Delete the user account
      */
     const deleteUserAccount = async () => {
-        const { fetchData, statusCode } = useFetch();
         const token = localStorage.getItem("token");
 
-        await fetchData(`/api/api/accounts/${userDetails.login}/anonymize`, {
+        
+        await fetchData(navigate, `/api/api/accounts/${userDetails.login}/anonymize`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             }
         });
-
+        
+        
         if (statusCode() === 200) {
             fetchUserDetails();
             closeModal();
