@@ -2,6 +2,7 @@ import { ChevronDown, SortAsc, SortDesc, MoveRight } from 'lucide-solid';
 import { createEffect, createSignal } from 'solid-js';
 import SensorFieldComponent from "../components/SensorPanel/SensorFieldComponent";
 import { sensorsFetchRequest } from './StructureDetail/StructureDetailBody';
+import { useNavigate } from '@solidjs/router';
 
 /**
  * Custom drop down menu
@@ -142,6 +143,7 @@ const CheckBoxComponent = ({description, value, setter}) => {
  * @returns The component
  */
 const SensorFilter = ({structureId, setSensors, limit, offset, setTotalItems}) => {
+    const navigate = useNavigate();
     const SORT_VALUES = {
         "Tout" : "Tout", "Nom": "NAME", "Etat": "STATE", "Date d'installation": "INSTALLATION_DATE"
     };
@@ -160,7 +162,7 @@ const SensorFilter = ({structureId, setSensors, limit, offset, setTotalItems}) =
      * Create effect to update sensors when filter added
      */
     createEffect(() => {
-        sensorsFetchRequest(structureId, setSensors, setTotalItems, {
+        sensorsFetchRequest(structureId, setSensors, setTotalItems, navigate, {
             orderByColumn: orderByColumn() !== "Tout" ? SORT_VALUES[orderByColumn()] : "STATE",
             orderType: orderType() ? "ASC" : "DESC",
             limit: limit(),

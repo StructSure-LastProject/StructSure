@@ -2,11 +2,9 @@ import StructureDetailHead from './StructureDetailHead';
 import StructureDetailPlans from './StructureDetailPlans';
 import StructureDetailRow from './StructureDetailRow';
 import { useNavigate } from '@solidjs/router';
-
 import { createEffect, createSignal } from "solid-js";
-
 import useFetch from '../../hooks/useFetch';
-import { useNavigate } from '@solidjs/router';
+
 
 
 /**
