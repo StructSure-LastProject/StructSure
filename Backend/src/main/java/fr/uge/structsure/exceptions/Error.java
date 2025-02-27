@@ -26,7 +26,7 @@ public enum Error {
     STRUCTURE_NAME_IS_EMPTY(422, "Le nom d'un ouvrage ne peut pas être vide"),
     STRUCTURE_ID_NOT_FOUND(404, "Id de l'ouvrage est introuvable"),
     STRUCTURE_NAME_EXCEED_LIMIT(422, "Le nom d'un ouvrage ne peut pas dépasser 64 caractères"),
-    STRUCTURE_NOTE_EXCEED_LIMIT(422, "La note d'un ouvrage ne peut pas dépasser 1000 caractères"),
+        STRUCTURE_NOTE_EXCEED_LIMIT(422, "La note d'un ouvrage ne peut pas dépasser 1000 caractères"),
 
     PLAN_NOT_BELONG_TO_STRUCTURE(422, "Plan n’appartient pas à l’ouvrage"),
     PLAN_STRUCTURE_ID_IS_EMPTY(422, "Le champ structureId est requis"),

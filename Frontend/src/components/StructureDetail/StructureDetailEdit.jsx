@@ -46,7 +46,13 @@ function StructureDetailEdit(props) {
      */
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        structuresUpdateRequest();
+        if (name().length > 64) {
+            setErrorFronted("Le nom d'un ouvrage ne peut pas dépasser 64 caractères");
+        } else if (note().length > 1000) {
+            setErrorFronted("La note d'un ouvrage ne peut pas dépasser 1000 caractères");
+        } else {
+            structuresUpdateRequest();
+        }
     };
 
     const [errorFronted, setErrorFronted] = createSignal("");
@@ -86,12 +92,12 @@ function StructureDetailEdit(props) {
 
                         <div class="flex flex-col gap-y-5px">
                             <p class="normal opacity-75">Note</p>
-                            <input 
+                            <textarea 
                                 id="note" 
                                 type="text" 
                                 placeholder="Ajouter une note"
                                 value={props.structureDetails().note}
-                                class="w-full pb-2 pt-2 pl-4 pr-4 normal rounded-10px bg-lightgray h-37px"
+                                class="w-full pb-2 pt-2 pl-4 pr-4 normal rounded-10px bg-lightgray h-20"
                                 onChange={(e) => setNote(e.target.value)}
                             />
                         </div>
