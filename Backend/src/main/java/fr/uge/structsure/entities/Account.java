@@ -9,11 +9,15 @@ import java.util.Set;
 
 @Entity
 public class Account {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
     @Column(unique = true, nullable = false, length = 128)
     private String login;
 
-    @Column(nullable = false, length = 64)
+    @Column(length = 64)
     private String passwordEncrypted;
 
     @Column(nullable = false, length = 64)
@@ -39,6 +43,14 @@ public class Account {
         this.lastname = Objects.requireNonNull(lastname);
         this.role = Objects.requireNonNull(role);
         this.enabled = enabled;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public void setLogin(String login) {

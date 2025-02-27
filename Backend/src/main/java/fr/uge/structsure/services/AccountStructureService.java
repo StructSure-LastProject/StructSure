@@ -36,7 +36,7 @@ public class AccountStructureService {
      */
     private Account getAccountAndStructure(String login) throws TraitementException {
         Objects.requireNonNull(login);
-        return accountRepository.findById(login).orElseThrow(() -> new TraitementException(Error.USER_ACCOUNT_NOT_FOUND));
+        return accountRepository.findByLogin(login).orElseThrow(() -> new TraitementException(Error.USER_ACCOUNT_NOT_FOUND));
 
     }
 

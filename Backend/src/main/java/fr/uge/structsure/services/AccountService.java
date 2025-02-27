@@ -127,6 +127,7 @@ public class AccountService {
         return accountRepository
             .findAll()
             .stream()
+            .filter(account -> account.getPasswordEncrypted() != null)
             .map(account ->
                 new UserAccountResponseDTO(
                     account.getFirstname(),
@@ -242,7 +243,6 @@ public class AccountService {
 
         updateIfDifferent(userUpdateRequestDTO.firstname(), userAccount.getFirstname(), userAccount::setFirstname);
         updateIfDifferent(userUpdateRequestDTO.lastname(), userAccount.getLastname(), userAccount::setLastname);
-        updateIfDifferent(userUpdateRequestDTO.login(), userAccount.getLogin(), userAccount::setLogin);
 
         if (!userUpdateRequestDTO.password().isEmpty()){
             var passwordHash = new BCryptPasswordEncoder().encode(userUpdateRequestDTO.password());
@@ -413,6 +413,32 @@ public class AccountService {
                 allowedStructures.contains(structure)
         )));
         return new GetStructureListForUserAccountsResponseDTO(resultList);
+    }
+
+    /**
+     * Service that update the user's structure access
+     * @param login The login of the user
+     * @return The Response DTO
+     * @throws TraitementException thrown custom exception
+     */
+    public RegisterResponseDTO anonymizeTheUserAccount(String login) throws TraitementException {
+        Objects.requireNonNull(login);
+        var userAccount = accountRepository.findByLogin(login).orElseThrow(() -> new TraitementException(Error.USER_ACCOUNT_NOT_FOUND));
+        var random = new Random();
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 16;
+        var generatedString = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+        userAccount.setLogin("user_%s&=)}(|[".formatted(generatedString));
+        userAccount.setFirstname("Prénom anonymisé");
+        userAccount.setLastname("Nom anonymisé");
+        userAccount.setPasswordEncrypted(null);
+        accountRepository.save(userAccount);
+        return new RegisterResponseDTO(login);
     }
 
 }
