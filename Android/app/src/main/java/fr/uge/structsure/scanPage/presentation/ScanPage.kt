@@ -97,11 +97,7 @@ fun ScanPage(context: Context,
                     navController.navigateNoReturn("HomePage")
                 },
                 onContentClick = {
-                    if (scanViewModel.currentScanState.value != ScanState.NOT_STARTED) {
-                        showScanNotePopup = true
-                    } else {
-                        showToast("Veuillez lancer un scan avant d'ajouter une note")
-                    }
+                    showScanNotePopup = true
                 },
                 connexionCS108 = connexionCS108,
                 navController = navController
@@ -119,7 +115,7 @@ fun ScanPage(context: Context,
             )
         }
 
-        if (showScanNotePopup && scanViewModel.currentScanState.value != ScanState.NOT_STARTED) {
+        if (showScanNotePopup) {
             ScanNotePopUp(
                 scanViewModel = scanViewModel,
                 onSubmit = { showScanNotePopup = false },
@@ -127,7 +123,7 @@ fun ScanPage(context: Context,
             )
         }
 
-        ScanWeather(scanViewModel = scanViewModel, scrollState, context)
+        ScanWeather(scanViewModel = scanViewModel, scrollState)
         PlansView(scanViewModel)
         SensorsList(scanViewModel, context) { sensorPopup = it }
 
@@ -232,6 +228,7 @@ private fun ScanNotePopUp(
     val coroutineScope = rememberCoroutineScope()
     val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
     var scanNote by remember { mutableStateOf("") }
+    val scanState by scanViewModel.currentScanState.observeAsState()
 
     LaunchedEffect(Unit) {
         scanViewModel.activeScanId?.let { scanId ->
@@ -241,20 +238,17 @@ private fun ScanNotePopUp(
 
     PopUp(onCancel) {
         Title("Note du scan", false) {
-            Button(
-                R.drawable.check,
-                "valider",
-                MaterialTheme.colorScheme.onSurface,
-                MaterialTheme.colorScheme.surface,
-                onClick =
-                {
+            if (scanState != ScanState.NOT_STARTED) {
+                Button(R.drawable.check, "valider", Black, LightGray) {
                     coroutineScope.launch {
-                        if (scanViewModel.updateScanNote(scanNote)) {
-                            onSubmit()
-                        }
+                        if (scanViewModel.updateScanNote(scanNote)) onSubmit()
                     }
                 }
-            )
+            } else {
+                Button(R.drawable.x, "fermer", Black, LightGray) {
+                    onCancel()
+                }
+            }
         }
 
         Column(
@@ -265,6 +259,7 @@ private fun ScanNotePopUp(
                 label = "Note",
                 value = scanNote,
                 placeholder = "Aucune note pour le moment",
+                enabled = scanState != ScanState.NOT_STARTED
             ) { s -> if (s.length <= 1000) scanNote = s }
         }
 

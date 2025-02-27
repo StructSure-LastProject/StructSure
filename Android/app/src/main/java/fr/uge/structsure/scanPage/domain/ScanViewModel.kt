@@ -118,6 +118,14 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
     }
 
+    /**
+     * Updates the note of the ongoing scan.
+     * The note will be saved in the database and sent to the server
+     * when the scan is uploaded.
+     *
+     * @param note The new note to set for the scan
+     * @return true if the note was updated, false otherwise
+     */
     suspend fun updateScanNote(note: String): Boolean {
         return viewModelScope.async(Dispatchers.IO) {
             activeScanId?.let { scanId ->
@@ -125,7 +133,28 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 noteErrorMessage.postValue(null)
                 true
             } ?: run {
-                noteErrorMessage.postValue("Aucun scan actif trouvé")
+                noteErrorMessage.postValue("Veuillez lancer un scan avant d'ajouter une note")
+                false
+            }
+        }.await()
+    }
+
+    /**
+     * Updates the note of the structure currently being scanned.
+     * The note will be saved in the database and sent to the server
+     * when the scan is uploaded.
+     *
+     * @param note The new note to set for the structure
+     * @return true if the note was updated, false otherwise
+     */
+    suspend fun updateStructureNote(note: String): Boolean {
+        return viewModelScope.async(Dispatchers.IO) {
+            structure?.let {
+                structureDao.updateStructureNote(it.id, note)
+                noteErrorMessage.postValue(null)
+                true
+            } ?: run {
+                noteErrorMessage.postValue("Aucune structure sélectionnée")
                 false
             }
         }.await()
@@ -152,27 +181,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             }
         }
         return true
-    }
-     
-    /**
-     * Updates the note of the structure currently being scanned.
-     * The note will be saved to the database and sent to the server
-     * when the scan is uploaded.
-     *
-     * @param note The new note to set for the structure
-     * @return true if the note was updated, false otherwise
-     */
-    suspend fun updateStructureNote(note: String): Boolean {
-        return viewModelScope.async(Dispatchers.IO) {
-            structure?.let {
-                structureDao.updateStructureNote(it.id, note)
-                noteErrorMessage.postValue(null)
-                true
-            } ?: run {
-                noteErrorMessage.postValue("Aucune structure sélectionnée")
-                false
-            }
-        }.await()
     }
 
     /**

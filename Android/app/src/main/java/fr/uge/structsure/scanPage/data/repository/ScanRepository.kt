@@ -103,16 +103,8 @@ class ScanRepository(context: Context) {
         val scanResults = results.map { ScanResultDTO.from(it) }
         val sensorEdits = getSensorEdits(edits)
 
-        return ScanRequestDTO(
-            structureId = scan.structureId,
-            scanId = scanId,
-            launchDate = scan.startTimestamp,
-            scanNote = scan.note,
-            structureNote = structureNote,
-            login = login,
-            results = scanResults,
-            sensorEdits = sensorEdits
-        )
+        return ScanRequestDTO(scan.structureId, scanId, scan.startTimestamp,
+            scan.note, structureNote, login, scanResults, sensorEdits)
     }
 
     /**

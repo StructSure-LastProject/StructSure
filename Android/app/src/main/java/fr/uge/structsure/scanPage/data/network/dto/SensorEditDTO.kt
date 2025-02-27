@@ -18,7 +18,4 @@ data class SensorEditDTO(
     val plan: Long? = null,
     val x: Int? = null,
     val y: Int? = null
-) {
-    constructor(sensorId: String) :
-        this(sensorId, null, null, null, null, null, null, null)
-}
+)

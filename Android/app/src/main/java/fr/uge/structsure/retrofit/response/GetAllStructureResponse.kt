@@ -10,4 +10,5 @@ data class GetAllStructureResponse(
     @SerializedName("numberOfPlans") val numberOfPlans: Long,
     @SerializedName("archived") val archived: Boolean,
     @SerializedName("state") val state: SensorState,
+    @SerializedName("note") val note: String?,
 )

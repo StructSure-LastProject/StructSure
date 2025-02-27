@@ -48,12 +48,13 @@ public class StructureRepositoryCriteriaQuery {
                 .otherwise(State.OK.ordinal());
 
         cq.select(cb.construct(AllStructureResponseDTO.class,
-                structure.get("id"),
-                structure.get("name"),
-                countMeasureChip,
-                countPlans,
-                state,
-                structure.get("archived")
+            structure.get("id"),
+            structure.get("name"),
+            countMeasureChip,
+            countPlans,
+            state,
+            structure.get("note"),
+            structure.get("archived")
         ));
 
         var namePredicate = cb.like(cb.lower(structure.get("name")), "%" + allStructureRequestDTO.searchByName().toLowerCase() + "%");

@@ -2,7 +2,6 @@ package fr.uge.structsure.scanPage.presentation.components
 
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.res.Resources.getSystem
 import android.widget.Toast
 import androidx.compose.foundation.ScrollState
@@ -30,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -41,6 +41,7 @@ import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.Title
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
+import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
@@ -56,7 +57,8 @@ val Int.toPx: Int get() = (this * getSystem().displayMetrics.density).toInt()
  */
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun ScanWeather(scanViewModel: ScanViewModel, scrollState: ScrollState, context: Context) {
+fun ScanWeather(scanViewModel: ScanViewModel, scrollState: ScrollState) {
+    val context = LocalContext.current
     var isSticky by remember { mutableStateOf(false) }
     val offset = (20 + 35 + 50).toPx // Size of the header + margins
 
@@ -74,7 +76,7 @@ fun ScanWeather(scanViewModel: ScanViewModel, scrollState: ScrollState, context:
         isSticky = scrollState.value > offset
     }
 
-    if (showStructureNotePopup && scanViewModel.currentScanState.value != ScanState.NOT_STARTED) {
+    if (showStructureNotePopup) {
         StructureNotePopUp(
             scanViewModel = scanViewModel,
             onSubmit = { showStructureNotePopup = false },
@@ -96,28 +98,10 @@ fun ScanWeather(scanViewModel: ScanViewModel, scrollState: ScrollState, context:
         verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.Top),
         horizontalAlignment = Alignment.Start,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = scanViewModel.structure?.name?:"Ouvrage",
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            Button(
-                R.drawable.notepad_text,
-                "Note de l'ouvrage",
-                background = White,
-                onClick = {
-                    if (scanViewModel.currentScanState.value != ScanState.NOT_STARTED) {
-                        showStructureNotePopup = true
-                    } else {
-                        showToast("Veuillez lancer un scan avant d'ajouter une note")
-                    }
-                }
-            )
+        Title(scanViewModel.structure?.name?:"Ouvrage") {
+            Button(R.drawable.notepad_text, "Note de l'ouvrage", Black, White) {
+                showStructureNotePopup = true
+            }
         }
         Box {
             Row(
@@ -151,6 +135,7 @@ private fun StructureNotePopUp(
     val coroutineScope = rememberCoroutineScope()
     val errorMessage by scanViewModel.noteErrorMessage.observeAsState()
     var structureNote by remember { mutableStateOf("") }
+    val scanState by scanViewModel.currentScanState.observeAsState()
 
     LaunchedEffect(Unit) {
         scanViewModel.structure?.let { structure ->
@@ -160,19 +145,17 @@ private fun StructureNotePopUp(
 
     PopUp(onCancel) {
         Title("Note de l'ouvrage", false) {
-            Button(
-                R.drawable.check,
-                "valider",
-                MaterialTheme.colorScheme.onSurface,
-                MaterialTheme.colorScheme.surface,
-                onClick = {
+            if (scanState != ScanState.NOT_STARTED) {
+                Button(R.drawable.check, "valider", Black, LightGray) {
                     coroutineScope.launch {
-                        if (scanViewModel.updateStructureNote(structureNote)) {
-                            onSubmit()
-                        }
+                        if (scanViewModel.updateStructureNote(structureNote)) onSubmit()
                     }
                 }
-            )
+            } else {
+                Button(R.drawable.x, "fermer", Black, LightGray) {
+                    onCancel()
+                }
+            }
         }
 
         Column(
@@ -183,15 +166,13 @@ private fun StructureNotePopUp(
                 label = "Note",
                 value = structureNote,
                 placeholder = "Aucune note pour le moment",
+                enabled = scanState != ScanState.NOT_STARTED
             ) { s -> if (s.length <= 1000) structureNote = s }
         }
 
         errorMessage?.let {
-            Text(
-                text = it,
-                color = Red,
+            Text(it, Modifier.padding(bottom = 8.dp), Red,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
             )
         }
     }

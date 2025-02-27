@@ -76,14 +76,14 @@ public class ScanService {
         Structure structure = findStructure(scanData.structureId());
         Account account = findAccount(scanData.login());
 
+        Scan scan = createScan(structure, scanData, account);
+        processEdits(scanData.sensorEdits(), scan);
+        List<Result> results = processResults(scan, scanData);
+
         if (scanData.structureNote() != null && !scanData.structureNote().isEmpty()) {
             structure.setNote(scanData.structureNote());
             structureRepository.save(structure);
         }
-
-        Scan scan = createScan(structure, scanData, account);
-        processEdits(scanData.sensorEdits(), scan);
-        List<Result> results = processResults(scan, scanData);
 
         resultRepository.saveAll(results);
         LOGGER.info("Saved {} results and {} edits for scan {}",
