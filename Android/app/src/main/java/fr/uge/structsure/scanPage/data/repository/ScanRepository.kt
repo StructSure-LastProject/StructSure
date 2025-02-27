@@ -131,19 +131,18 @@ class ScanRepository(context: Context) {
                 }
                 EditType.SENSOR_CREATION -> {
                     /* Get the sensor created in the database and include all necessary fields */
-                    val sensorCreated = sensorDao.getSensor(it.value)
-                    if (sensorCreated != null) {
-                        sensorEdits[it.value] = SensorEditDTO(
-                            sensorId = sensorCreated.sensorId,
-                            controlChip = sensorCreated.controlChip,
-                            measureChip = sensorCreated.measureChip,
-                            name = sensorCreated.name,
-                            note = sensorCreated.note,
-                            plan = sensorDao.getSensor(it.value)?.plan,
-                            x = sensorDao.getSensor(it.value)?.x?.toInt(),
-                            y = sensorDao.getSensor(it.value)?.y?.toInt()
-                        )
-                    }
+                    val sensor = sensorEdits.getOrPut(it.value) { SensorEditDTO(it.value) }
+                    sensorEdits[it.value] = sensor.copy(
+                        sensorId = sensorDao.getSensor(it.value)?.sensorId.toString(),
+                        controlChip = sensorDao.getSensor(it.value)?.controlChip,
+                        measureChip = sensorDao.getSensor(it.value)?.measureChip,
+                        name = sensorDao.getSensor(it.value)?.name,
+                        note = sensorDao.getSensor(it.value)?.note,
+                        plan = sensorDao.getSensor(it.value)?.plan,
+                        x = sensorDao.getSensor(it.value)?.x?.toInt(),
+                        y = sensorDao.getSensor(it.value)?.y?.toInt(),
+                        structureId = sensorDao.getSensor(it.value)?.structureId
+                    )
                 }
             }
         }

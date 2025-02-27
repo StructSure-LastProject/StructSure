@@ -38,6 +38,6 @@ interface SensorDao {
     @Query("SELECT _state FROM sensors WHERE sensorId = :sensorId")
     fun getSensorState(sensorId: String): String
 
-    @Query("SELECT * from sensors as s WHERE s.structureId = :id")
-    suspend fun getAllSensors(id: Long): List<SensorDB>
+    @Query("SELECT * from sensors as s WHERE s.measureChip = :a OR s.controlChip = :b LIMIT 1")
+    suspend fun findSensor(a: String, b: String): SensorDB?
 }
