@@ -163,7 +163,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
             val existingSensors = sensorDao.getAllSensors(structureId)
             val alreadyExists = existingSensors.any { existingSensor ->
-                existingSensor.controlChip == sensor.sensorId.controlChip || existingSensor.measureChip == sensor.sensorId.measureChip
+                existingSensor.controlChip == sensor.controlChip || existingSensor.measureChip == sensor.measureChip
             }
 
             if (alreadyExists) {
@@ -171,11 +171,11 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 return@launch
             }
 
-            val sensorId = "${sensor.sensorId.controlChip}-${sensor.sensorId.measureChip}"
+            val sensorId = "${sensor.controlChip}-${sensor.measureChip}"
             val sensorDB = SensorDB(
                 sensorId = sensorId,
-                controlChip = sensor.sensorId.controlChip,
-                measureChip = sensor.sensorId.measureChip,
+                controlChip = sensor.controlChip,
+                measureChip = sensor.measureChip,
                 name = sensor.name,
                 note = sensor.note,
                 installationDate = sensor.installationDate,
