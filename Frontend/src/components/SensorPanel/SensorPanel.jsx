@@ -105,7 +105,7 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
           styles={"w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px]"} 
           plan={image()} 
           interactiveMode={false} 
-          planSensors={Array.of(sensorDetails)} 
+          planSensors={Array.of(sensorDetails)}
         />
       </Show>
     </div>

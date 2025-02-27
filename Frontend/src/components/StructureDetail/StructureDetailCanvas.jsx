@@ -39,6 +39,22 @@ function StructureDetailCanvas(props) {
 
     const [selectedSensor, setSelectedSensor] = createSignal(null);
 
+    /**
+     * Reset the values when a plan changed
+     */
+    const initCanvasWhenPlanChanged = () => {
+        setZoomFactor(0);
+        setOffsetX(0);
+        setOffsetY(0);
+        setBaseOffsetX(0);
+        setBaseOffsetY(0);
+        setIsPopupVisible(false);
+        setClickExistingPoint(null);
+        setIsOpen(false);
+        isMouseDown = false;
+        hasMoved = false;
+    };
+
     const filteredOptions = createMemo(() => {
         if (!props.structureDetails().sensors) return [];
         return props.structureDetails().sensors.filter(detailSensor =>
@@ -208,6 +224,7 @@ function StructureDetailCanvas(props) {
      */
     const drawSensors = (imgStartX, imgStartY, drawWidth, drawHeight, zoomX, zoomY) => {
         const ctx = ctxCanvas();
+        if (ctx === null || ctx === "") return;
         const scaleX = (drawWidth + zoomX) / img.width;
         const scaleY = (drawHeight + zoomY) / img.height;
         props.planSensors().forEach(sensor => {
@@ -233,6 +250,7 @@ function StructureDetailCanvas(props) {
      */
     const drawImage = () => {
         const ctx = ctxCanvas();
+        if (ctx === null || ctx === "") return;
         const imgRatio = img.width / img.height;
         const canvasRatio = canvasRef.width / canvasRef.height;
         let drawWidth = 0, drawHeight = 0, baseOffsetX = 0, baseOffsetY = 0;
@@ -253,7 +271,6 @@ function StructureDetailCanvas(props) {
         setCanvasRatio(canvasRatio);
         setBaseOffsetX(baseOffsetX);
         setBaseOffsetY(baseOffsetY);
-
         ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
         const imgStartX = getImgStartX(baseOffsetX, offsetX(), zoomFactor());
         const imgStartY = getImgStartY(baseOffsetY, offsetY(), zoomFactor());
@@ -323,8 +340,14 @@ function StructureDetailCanvas(props) {
      * Loads the details (images and draw it)
      */
     const loadDetails = () => {
-        loadAndDrawImage(props.plan);
+        loadAndDrawImage(props.plan());
     };
+
+    createEffect(() => {
+        initCanvasWhenPlanChanged();
+        loadDetails();
+        drawSensors();
+    });
 
     /**
      * This function is called in the begning when this component is mounted in the DOM
@@ -335,9 +358,7 @@ function StructureDetailCanvas(props) {
         setCtxCanvas(ctx);
         loadDetails();
         addMouseEvents();
-        createEffect(() => {
-            drawImage();
-        });
+        drawImage();
     })
 
     /**
@@ -617,15 +638,17 @@ function StructureDetailCanvas(props) {
                                 <Show when={!clickExistingPoint()}>
                                     <button class="bg-lightgray rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onClick={() => {
                                         if (selectedSensor() != null) {
-                                            positionSensorFetchRequest(props.structureId, selectedSensor().controlChip, selectedSensor().measureChip, 1, popupX(), popupY());
+                                            positionSensorFetchRequest(props.structureId, selectedSensor().controlChip, selectedSensor().measureChip, props.selectedPlanId(), popupX(), popupY());
                                         }
                                     }}>
                                         <Check color="black" stroke-width="2.5" width="20px" height="20px"/>
                                     </button>
                                 </Show>
-                                <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                                    <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
-                                </button>
+                                <Show when={clickExistingPoint()}>
+                                    <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                                        <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
+                                    </button>
+                                </Show>
                             </div>
                         </div>
                         <Show when={!clickExistingPoint()}>

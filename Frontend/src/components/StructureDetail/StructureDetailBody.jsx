@@ -5,16 +5,21 @@ import StructureDetailRow from './StructureDetailRow';
 import { createEffect, createSignal } from "solid-js";
 
 import useFetch from '../../hooks/useFetch';
+import { useNavigate } from '@solidjs/router';
 
 
 /**
  * Will fetch the sensors for the plan
  */
-export const planSensorsFetchRequest = async (structureId, setPlanSensors, planId = 1) => {
+export const planSensorsFetchRequest = async (structureId, setPlanSensors, planId) => {
+    if (planId === null) return;
+    const token = localStorage.getItem("token");
+    const navigate = useNavigate();
     const requestData = {
         method: "GET",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`   
         }
     };
 
@@ -22,9 +27,9 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
     await fetchData(`/api/structures/${structureId}/plan/${planId}/sensors`, requestData);
     if (statusCode() === 200) {
         setPlanSensors(data());
-    } // Uncomment this when error barre is developped
-    // else if (statusCode() === 404) {
-    // }
+    } else if (statusCode() === 401) {
+        navigate("/login");
+    }
 };
 
 
@@ -33,6 +38,8 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
  * Will fetch the list of the sensors of this structure
  */
 export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems, filters = {}) => {
+    const navigate = useNavigate();
+    const token = localStorage.getItem("token");
     const { fetchData, statusCode, data, errorFetch } = useFetch();
 
     // Construire le body avec les filtres
@@ -54,7 +61,8 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
     const requestData = {
         method: "POST",  // Changer GET en POST
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(requestBody) // Ajouter les paramètres dans le body
     };
@@ -64,9 +72,9 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
     if (statusCode() === 200) {
         setTotalItems(data().sizeOfResult);
         setSensors((data().sensors));
-    }// Uncomment this when error barre is developped
-    // else if (statusCode() === 404) {
-    // }
+    } else if (statusCode() === 401) {
+        navigate("/login");
+    }
 };
 
 /**
@@ -79,41 +87,45 @@ function StructureDetailBody(props) {
     const [structureDetails, setStructureDetails] = createSignal({"scans": [], "plans": [], "sensors": []});
     const [planSensors, setPlanSensors] = createSignal([]);
     const [selectedPlanId, setSelectedPlanId] = createSignal(null);
+
     const [totalItems, setTotalItems] = createSignal(0);
+    const navigate = useNavigate();
+
 
     /**
      * Will fetch the structure details
      */
     const structureDetailsFetchRequest = async (structureId) => {
+        const token = localStorage.getItem("token");
         const requestData = {
             method: "GET",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
             }
         };
         const { fetchData, statusCode, data, errorFetch } = useFetch();
         await fetchData(`/api/structures/${structureId}`, requestData);
         if (statusCode() === 200) {
             setStructureDetails(data());
-        } 
-        // Uncomment this when error barre is developped
-        // else if (statusCode() === 404) {
-        // }
+        } else if (statusCode() === 401) {
+            navigate("/login");
+        }
     };
 
 
     createEffect(() => {
         structureDetailsFetchRequest(props.structureId);
         sensorsFetchRequest(props.structureId, setSensors, setTotalItems);
-        planSensorsFetchRequest(props.structureId, setPlanSensors);
+        planSensorsFetchRequest(props.structureId, setPlanSensors, selectedPlanId());
     });
 
     /**
      * Sets the sensor in the structure details
-     * @param {list} sensors list of the sensors
+     * @param {list} s list of the sensors
      */
-    const setSensorsDetail = (sensors) => {
-        setStructureDetails(prev => ({ ...prev, sensors }));
+    const setSensorsDetail = (s) => {
+        setStructureDetails(prev => ({ ...prev, s }));
     };
 
 
@@ -121,13 +133,13 @@ function StructureDetailBody(props) {
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
             <StructureDetailHead scans={structureDetails().scans}/>
             <StructureDetailPlans
-              structureDetails={structureDetails}
-              structureId={props.structureId}
-              selectedPlanId={selectedPlanId}
-              setSelectedPlanId={setSelectedPlanId}
-              planSensors={planSensors}
-              setPlanSensors={setPlanSensors}
-              setSensors={setSensorsDetail}
+                structureDetails={structureDetails}
+                structureId={props.structureId}
+                selectedPlanId={selectedPlanId}
+                setSelectedPlanId={setSelectedPlanId}
+                planSensors={planSensors}
+                setPlanSensors={setPlanSensors}
+                setSensors={setSensorsDetail}
             />
             <StructureDetailRow structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
         </div>

@@ -1,10 +1,33 @@
 import { createSignal, Show, createEffect } from "solid-js";
 import { Plus } from 'lucide-solid';
-import plan from '/src/assets/plan.png';
 import ModalAddPlan from '../Plan/ModalAddPlan';
 import ModalEditPlan from '../Plan/ModalEditPlan';
 import DropdownsSection from "../Plan/DropdownsSection.jsx";
 import StructureDetailCanvas from "./StructureDetailCanvas";
+import useFetch from "../../hooks/useFetch.js";
+import { useNavigate } from "@solidjs/router";
+
+
+/**
+ * Will fetch the plan image
+ */
+export const planImageFetchRequest = async (planId, setPlan) => {
+    const navigate = useNavigate();
+    const requestData = {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    };
+
+    const { fetchImage, image, statusCode } = useFetch();
+    await fetchImage(`/api/structures/plans/${planId()}/image`, requestData);
+    if (statusCode() === 200) {
+        setPlan(image());
+    } else if (statusCode() === 401) {
+        navigate("/login");
+    }
+};
 
 /**
  * Shows the plans part
@@ -20,7 +43,7 @@ function StructureDetailPlans(props) {
     const [selectedPlan, setSelectedPlan] = createSignal(null);
 
     const [isAuthorized, setIsAuthorized] = createSignal(false);
-
+    const [plan, setPlan] = createSignal(null);
 
     /**
      * Opens the add plan modal
@@ -46,23 +69,25 @@ function StructureDetailPlans(props) {
      * @returns {string} Complete URL for the plan image
      */
     const getImageUrl = (planId) => {
-        // todo remove the part you don't need
-        const API_BASE_URL = window.location.origin || 'http://localhost:8080';
-        return `${API_BASE_URL}/api/structures/plans/${planId}/image`;
+        return `/api/structures/plans/${planId}/image`;
     };
 
-
+    createEffect(() => {
+        if (props.selectedPlanId()) {
+            planImageFetchRequest(props.selectedPlanId, setPlan);
+        }
+    });
     
     /**
      * Handles the edit action for a plan
      * @param {number|string} planId Identifier of the plan to edit
      */
     const handleEdit = (planId) => {
-        const plan = plans().find(p => p.id === planId);
-        if (plan) {
+        const pl = plans().find(p => p.id === planId);
+        if (pl) {
             setSelectedPlan({
-                ...plan,
-                imageUrl: getImageUrl(plan.id)
+                ...pl,
+                imageUrl: getImageUrl(pl.id)
             });
             setIsEditModalOpen(true);
         }
@@ -76,15 +101,15 @@ function StructureDetailPlans(props) {
         const userRole = localStorage.getItem("role");
         const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
 
-        setPlans(prev => prev.map(plan =>
-          plan.id === formData.id
+        setPlans(prev => prev.map(p =>
+          p.id === formData.id
             ? {
-                ...plan,
+                ...p,
                 name: formData.metadata.name,
                 section: formData.metadata.section,
-                type: plan.archived ? "archived" : (canEdit ? "edit" : "plan")
+                type: p.archived ? "archived" : (canEdit ? "edit" : "plan")
             }
-            : plan
+            : p
         ));
         closeEditModal();
     };
@@ -113,23 +138,24 @@ function StructureDetailPlans(props) {
         const userRole = localStorage.getItem("role");
         setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE")
         if (props.structureDetails().plans) {
-            const newPlans = props.structureDetails().plans.map(plan => {
-                if (plan.archived) {
+            const newPlans = props.structureDetails().plans.map(p => {
+                if (p.archived) {
                     return {
-                        ...plan,
+                        ...p,
                         type: "archived",
-                        section: plan.section || ""
+                        section: p.section || ""
                     };
                 }
                 return {
-                    ...plan,
+                    ...p,
                     type: isAuthorized() ? "edit" : "plan",
-                    section: plan.section || ""
+                    section: p.section || ""
                 };
             });
             setPlans(newPlans);
         }
     });
+
 
     return (
         <>
@@ -150,11 +176,12 @@ function StructureDetailPlans(props) {
                     <div
                     class="flex flex-col gap-y-[5px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         <DropdownsSection
-                        data={plans()}
-                        selectedPlanId={props.selectedPlanId()}
-                        onEdit={handleEdit}
-                        onPlanEdit={handleEditSave}
-                        structureId={props.structureId}
+                            data={plans()}
+                            selectedPlanId={props.selectedPlanId}
+                            setSelectedPlanId={props.setSelectedPlanId}
+                            onEdit={handleEdit}
+                            onPlanEdit={handleEditSave}
+                            structureId={props.structureId}
                         />
                     </div>
                     <Show when={isAddModalOpen()}>
@@ -182,8 +209,10 @@ function StructureDetailPlans(props) {
                 <div class="lg:w-[75%] rounded-[20px] bg-white">
                     <div class="w-full p-[20px]">
                         <div class="w-full relative">
-                            <StructureDetailCanvas structureId={props.structureId} plan={plan} interactiveMode={true} planSensors={props.planSensors} structureDetails={props.structureDetails} 
-                            setPlanSensors={props.setPlanSensors} setSensors={props.setSensors}/>
+                            <Show when={plan() !== null}>
+                                <StructureDetailCanvas structureId={props.structureId} plan={plan} interactiveMode={true} planSensors={props.planSensors} structureDetails={props.structureDetails} 
+                                setPlanSensors={props.setPlanSensors} setSensors={props.setSensors} selectedPlanId={props.selectedPlanId}/>
+                            </Show>
                         </div>
                     </div>
                 </div>

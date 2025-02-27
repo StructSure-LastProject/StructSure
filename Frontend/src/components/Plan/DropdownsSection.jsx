@@ -28,11 +28,14 @@ const Section = (props) => {
  * Component that displays a plan without edit options
  * @param {Object} props Component properties
  * @param {string} props.name Plan name
- * @param {boolean} props.isSelected Indicates if the plan is selected
+ * @param {boolean} props.selectedPlanId contains the selected plan id
  * @returns {JSX.Element} Plan component
  */
-const Plan = ({ name, isSelected }) => (
-  <div class={`px-[8px] py-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between hover:bg-[#F2F2F4] ${isSelected ? 'bg-[#F2F2F4]' : ''}`}>
+const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId}) => (
+  <div class={`px-[8px] py-[9px] rounded-[10px] cursor-pointer flex items-center gap-x-[10px] justify-between hover:bg-[#F2F2F4] ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`}
+  onClick={() => {
+    setSelectedPlanId(planId);
+  }}>
     <div class="flex items-center gap-x-[10px]">
       <div class="w-4 h-4 flex items-center justify-center">
         <Dot class="stroke-[5]"/>
@@ -49,10 +52,14 @@ const Plan = ({ name, isSelected }) => (
  * @param {string} props.name Plan name
  * @param {Function} props.onEdit Function called when clicking the edit button
  * @param {number|string} props.planId Plan identifier
+ * @param {boolean} props.selectedPlanId contains the selected plan id
  * @returns {JSX.Element} PlanEdit component
  */
-const PlanEdit = ({name, onEdit, planId}) => (
-  <div class="py-[8px] px-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between hover:bg-gray-100 group">
+const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId}) => (
+  <div class={`py-[8px] px-[9px] rounded-[10px] flex items-center cursor-pointer gap-x-[10px] justify-between hover:bg-gray-100 group ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`} 
+  onClick={() => {
+    setSelectedPlanId(planId);
+  }}>
     <div class="flex items-center gap-x-[10px]">
       <div class="w-4 h-4 flex items-center justify-center">
         <Dot class="stroke-[5]" size={16}/>
@@ -158,7 +165,7 @@ const buildTree = (data) => {
  * @param {string} props.name Node name
  * @param {string} props.type Node type ("section", "edit", "archived", "plan")
  * @param {Object} props.children Child nodes
- * @param {boolean} props.isSelected Indicates if the plan is selected
+ * @param {boolean} props.setSelectedPlanId Setter for plan Id
  * @param {Function} props.onEdit Function to edit a plan
  * @param {number|string} props.planId Plan identifier
  * @param {number|string} props.selectedPlanId Selected plan identifier
@@ -177,6 +184,7 @@ const TreeNode = (props) => {
     setIsOpen(!isOpen());
   };
 
+
   if (props.type === "section") {
     return (
       <div class="mb-2">
@@ -192,7 +200,8 @@ const TreeNode = (props) => {
                 name={child.name}
                 type={child.type}
                 children={child.children}
-                isSelected={props.selectedPlanId === child.id}
+                setSelectedPlanId={props.setSelectedPlanId}
+                selectedPlanId={props.selectedPlanId}
                 onEdit={props.onEdit}
                 planId={child.id}
               />
@@ -219,9 +228,10 @@ const TreeNode = (props) => {
     <div class="mb-2">
       <Component
         name={props.name}
-        isSelected={props.isSelected}
+        selectedPlanId={props.selectedPlanId}
         onEdit={props.onEdit}
         planId={props.planId}
+        setSelectedPlanId={props.setSelectedPlanId}
       />
     </div>
   );
@@ -235,6 +245,7 @@ const TreeNode = (props) => {
  * @param {string} props.plan.name Plan name
  * @param {number|string} props.plan.id Plan identifier
  * @param {number|string} props.selectedPlanId Selected plan identifier
+ * @param {Function} props.onEdit Function to edit a plan
  * @param {Function} props.onEdit Function to edit a plan
  * @returns {JSX.Element} Appropriate component based on plan type
  */
@@ -253,7 +264,8 @@ const RenderPlan = (props) => {
   return (
     <Component
       name={props.plan.name}
-      isSelected={props.selectedPlanId === props.plan.id}
+      selectedPlanId={props.selectedPlanId}
+      setSelectedPlanId={props.setSelectedPlanId}
       onEdit={props.onEdit}
       planId={props.plan.id}
     />
@@ -268,26 +280,26 @@ const RenderPlan = (props) => {
  * @param {Function} props.onEdit Function to edit a plan
  * @param {Function} props.onPlanEdit Function called after plan edit
  * @param {number|string} props.structureId Structure identifier
+ * @param {Function} setSelectedPlanId Function to set the selected plan
  * @returns {JSX.Element} DropdownsSection component
  */
 const DropdownsSection = (props) => {
   const [localPlans, setLocalPlans] = createSignal([]);
-  const [selectedPlanId, setSelectedPlanId] = createSignal(null);
+
   // todo for interaction
   /*const [selectedPlan, setSelectedPlan] = createSignal(null);*/
 
   const safeData = () => {
+    if (Array.isArray(props.data)) {
+      if (props.data.length > 0 && props.selectedPlanId() == null) {
+        props.setSelectedPlanId(props.data[0].id);
+      }
+    }
     return Array.isArray(props.data) ? props.data : [];
   };
 
   createEffect(() => {
     setLocalPlans(safeData());
-  });
-
-  createEffect(() => {
-    if (props.selectedPlanId !== undefined) {
-      setSelectedPlanId(props.selectedPlanId);
-    }
   });
 
   /**
@@ -304,8 +316,9 @@ const DropdownsSection = (props) => {
       {treeData().rootPlans.map(plan => (
         <RenderPlan
           plan={plan}
-          selectedPlanId={selectedPlanId()}
+          selectedPlanId={props.selectedPlanId}
           onEdit={props.onEdit}
+          setSelectedPlanId={props.setSelectedPlanId}
         />
       ))}
 
@@ -314,7 +327,8 @@ const DropdownsSection = (props) => {
           name={section.name}
           type={section.type}
           children={section.children}
-          selectedPlanId={selectedPlanId()}
+          selectedPlanId={props.selectedPlanId}
+          setSelectedPlanId={props.setSelectedPlanId}
           onEdit={props.onEdit}
         />
       ))}
