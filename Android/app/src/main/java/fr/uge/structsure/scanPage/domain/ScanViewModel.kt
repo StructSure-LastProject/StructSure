@@ -42,6 +42,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
     /** DAO to fetch user account information */
     private val accountDao = db.accountDao()
+    
+    /** DAO to interact with the structure data */
+    private val structureDao = db.structureDao()
 
     /** The structure being scanned */
     var structure: StructureData? = null
@@ -150,6 +153,28 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
         return true
     }
+     
+    /**
+     * Updates the note of the structure currently being scanned.
+     * The note will be saved to the database and sent to the server
+     * when the scan is uploaded.
+     *
+     * @param note The new note to set for the structure
+     * @return true if the note was updated, false otherwise
+     */
+    suspend fun updateStructureNote(note: String): Boolean {
+        return viewModelScope.async(Dispatchers.IO) {
+            structure?.let {
+                structureDao.updateStructureNote(it.id, note)
+                noteErrorMessage.postValue(null)
+                true
+            } ?: run {
+                noteErrorMessage.postValue("Aucune structure sélectionnée")
+                false
+            }
+        }.await()
+    }
+
     /**
      * Adds a sensor to the database and updates the list of sensors.
      * @param controlChip the id of the control chip

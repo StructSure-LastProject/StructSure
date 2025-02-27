@@ -76,6 +76,11 @@ public class ScanService {
         Structure structure = findStructure(scanData.structureId());
         Account account = findAccount(scanData.login());
 
+        if (scanData.structureNote() != null && !scanData.structureNote().isEmpty()) {
+            structure.setNote(scanData.structureNote());
+            structureRepository.save(structure);
+        }
+
         Scan scan = createScan(structure, scanData, account);
         processEdits(scanData.sensorEdits(), scan);
         List<Result> results = processResults(scan, scanData);
@@ -150,7 +155,7 @@ public class ScanService {
      */
     private Scan createScan(Structure structure, AndroidScanResultDTO scanData, Account account) throws TraitementException {
         LocalDateTime date = parseDate(scanData.launchDate());
-        Scan scan = new Scan(structure, date, scanData.note(), account);
+        Scan scan = new Scan(structure, date, scanData.scanNote(), account);
         return scanRepository.save(scan);
     }
 

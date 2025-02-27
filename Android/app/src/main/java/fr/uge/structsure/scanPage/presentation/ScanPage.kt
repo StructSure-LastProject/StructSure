@@ -127,7 +127,7 @@ fun ScanPage(context: Context,
             )
         }
 
-        ScanWeather(viewModel = scanViewModel, scrollState)
+        ScanWeather(scanViewModel = scanViewModel, scrollState, context)
         PlansView(scanViewModel)
         SensorsList(scanViewModel, context) { sensorPopup = it }
 
@@ -221,7 +221,6 @@ private fun SensorPopUp(
         ) { s -> note = s.take(1000) }
     }
 }
-
 
 
 @Composable
