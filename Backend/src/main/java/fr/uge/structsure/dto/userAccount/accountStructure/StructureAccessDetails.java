@@ -8,14 +8,14 @@ import java.util.Objects;
  * @param structureName The structure name
  * @param hasAccess true for has access or false
  */
-public record StructureAcessDetails(long structureId, String structureName, boolean hasAccess){
+public record StructureAccessDetails(long structureId, String structureName, boolean hasAccess){
     /**
      * Constructor
      * @param structureId The structure id
      * @param structureName The structure name
      * @param hasAccess true for has access or false
      */
-    public StructureAcessDetails {
+    public StructureAccessDetails {
         Objects.requireNonNull(structureName);
     }
 }

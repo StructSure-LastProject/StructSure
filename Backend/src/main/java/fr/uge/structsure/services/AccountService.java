@@ -7,7 +7,7 @@ import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterResponseDTO;
 import fr.uge.structsure.dto.userAccount.*;
 import fr.uge.structsure.dto.userAccount.accountStructure.GetStructureListForUserAccountsResponseDTO;
-import fr.uge.structsure.dto.userAccount.accountStructure.StructureAcessDetails;
+import fr.uge.structsure.dto.userAccount.accountStructure.StructureAccessDetails;
 import fr.uge.structsure.dto.userAccount.accountStructure.UpdateUserStructureAccessResponseDTO;
 import fr.uge.structsure.dto.userAccount.accountStructure.StructurePermission;
 import fr.uge.structsure.entities.Account;
@@ -17,11 +17,6 @@ import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
 import fr.uge.structsure.repositories.StructureRepository;
 import fr.uge.structsure.utils.userAccountRequestValidation.UserAccountRequestValidation;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.io.DecodingException;
-import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,6 +39,7 @@ public class AccountService {
     private final AccountStructureService accountStructureService;
     private final StructureRepository structureRepository;
     private final JwtUtils jwtUtils;
+    private final AuthValidationService authValidationService;
 
     /**
      * Constructor
@@ -52,15 +48,17 @@ public class AccountService {
      * @param structureRepository The structure repository
      * @param authenticationManager Authentication manager for the authentication
      * @param jwtUtils Jwt utils to perform operations with JWT token
+     * @param authValidationService The auth validation service
      */
     @Autowired
     public AccountService(AccountRepository accountRepository, AccountStructureService accountStructureService, StructureRepository structureRepository, AuthenticationManager authenticationManager,
-                          JwtUtils jwtUtils) {
+                          JwtUtils jwtUtils, AuthValidationService authValidationService) {
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.accountStructureService = accountStructureService;
         this.structureRepository = structureRepository;
         this.authenticationManager = Objects.requireNonNull(authenticationManager);
         this.jwtUtils = Objects.requireNonNull(jwtUtils);
+        this.authValidationService = authValidationService;
     }
 
     /**
@@ -81,7 +79,7 @@ public class AccountService {
         if (accountRepository.findByLogin(registerRequestDTO.login()).isPresent()) {
             throw new TraitementException(Error.USER_ALREADY_EXISTS);
         }
-        Role role = convertRoleStringToRole(registerRequestDTO.role());
+        Role role = authValidationService.convertRoleStringToRole(registerRequestDTO.role());
         var account = new Account(registerRequestDTO.login(), new BCryptPasswordEncoder().encode(registerRequestDTO.password()),
                 registerRequestDTO.firstname(), registerRequestDTO.lastname(),
                 role, true);
@@ -121,10 +119,11 @@ public class AccountService {
      */
     public List<UserAccountResponseDTO> getUserAccounts(HttpServletRequest request) throws TraitementException {
         Objects.requireNonNull(request);
-        var userSessionAccount = checkTokenValidity(request);
-        if (userSessionAccount.getRole() != Role.ADMIN){
+        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(request, accountRepository);
+        if (userSessionAccount.getRole() != Role.ADMIN && !userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN)){
             throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
         }
+
         return accountRepository
             .findAll()
             .stream()
@@ -216,22 +215,7 @@ public class AccountService {
         }
     }
 
-    /**
-     * Convert role in string format to role enum
-     * @param roleString The role in string format
-     * @return The Role enum
-     * @throws TraitementException Thrown if role doesn't exist
-     */
-    private static Role convertRoleStringToRole(String roleString) throws TraitementException {
-        Objects.requireNonNull(roleString);
-        Role role;
-        try {
-            role = Role.fromValue(roleString);
-        } catch (IllegalArgumentException e) {
-            throw new TraitementException(Error.ROLE_NOT_EXISTS);
-        }
-        return role;
-    }
+
 
 
     /**
@@ -244,8 +228,11 @@ public class AccountService {
         Objects.requireNonNull(userUpdateRequestDTO);
         Objects.requireNonNull(request);
 
-        var userSessionAccount = checkTokenValidity(request);
+        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(request, accountRepository);
         var userAccount = userAccountOperationChecker(userUpdateRequestDTO, userSessionAccount);
+        if (userSessionAccount.getRole() != Role.ADMIN && !userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN)){
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
+        }
         if (!userUpdateRequestDTO.password().isEmpty() && (userUpdateRequestDTO.password().length() < 12 || userUpdateRequestDTO.password().length() > 64)){
             throw new TraitementException(Error.PASSWORD_NOT_VALID);
         }
@@ -264,7 +251,7 @@ public class AccountService {
             }
         }
 
-        Role role = convertRoleStringToRole(userUpdateRequestDTO.role());
+        Role role = authValidationService.convertRoleStringToRole(userUpdateRequestDTO.role());
         if (userAccount.getRole() != role){
             userAccount.setRole(role);
         }
@@ -298,7 +285,7 @@ public class AccountService {
 
         if (userSessionAccount.getRole() != Role.ADMIN ||  (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) &&
                 userSessionAccount.getRole() == Role.ADMIN &&
-                convertRoleStringToRole(userUpdateRequestDTO.role()) == Role.ADMIN))
+                authValidationService.convertRoleStringToRole(userUpdateRequestDTO.role()) == Role.ADMIN))
         {
             throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
         }
@@ -314,29 +301,6 @@ public class AccountService {
         }
 
         return userAccount;
-    }
-
-    /**
-     * Check the validity of the JWT TOKEN
-     * @param request The HTTP Request
-     * @return Optional<Account> Return the account if exist
-     * @throws TraitementException thrown JWT token extract exception into custom exception
-     */
-    private Account checkTokenValidity(HttpServletRequest request) throws TraitementException {
-        Objects.requireNonNull(request);
-        Optional<Account> account;
-        try {
-            var token = request.getHeader("authorization");
-            if (token.startsWith("Bearer ")) token = token.substring(7);
-            account = accountRepository.findByLogin(jwtUtils.extractUsername(token));
-        } catch (UnsupportedJwtException | MalformedJwtException | DecodingException | SignatureException | ExpiredJwtException | IllegalArgumentException | NullPointerException e){
-            throw new TraitementException(Error.INVALID_TOKEN);
-        }
-
-        if (account.isEmpty()){
-            throw new TraitementException(Error.INVALID_TOKEN);
-        }
-        return account.get();
     }
 
     /**
@@ -442,14 +406,12 @@ public class AccountService {
         var userAccount = checkIfAccountExist(login);
         var structures = structureRepository.findAll();
         var allowedStructures = userAccount.getAllowedStructures();
-        var resultList = new ArrayList<StructureAcessDetails>();
-        structures.forEach(structure -> {
-            resultList.add(new StructureAcessDetails(
-                    structure.getId(),
-                    structure.getName(),
-                    allowedStructures.contains(structure)
-            ));
-        });
+        var resultList = new ArrayList<StructureAccessDetails>();
+        structures.forEach(structure -> resultList.add(new StructureAccessDetails(
+                structure.getId(),
+                structure.getName(),
+                allowedStructures.contains(structure)
+        )));
         return new GetStructureListForUserAccountsResponseDTO(resultList);
     }
 

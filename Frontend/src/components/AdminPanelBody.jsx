@@ -53,7 +53,10 @@ const AdminPanelBody = () => {
         }
         else if (statusCode() === 401){
             navigate("/login");
-        }   
+        }
+        else if (statusCode() === 422){
+            navigate("/");
+        }      
         
     }
 
