@@ -127,7 +127,7 @@ function StructureDetailCanvas(props) {
             }
         };
 
-        await fetchData(url, requestData);
+        await fetchData(navigate, url, requestData);
 
         if (statusCode() === 200) {
             updateWhenSensorPositionDeleted();
