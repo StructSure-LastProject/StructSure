@@ -20,7 +20,7 @@ interface ScanDao {
     @Insert
     fun insertScan(scan: ScanEntity): Long
 
-    @Query("UPDATE scan SET end_timestamp = :endTime WHERE id = :scanId")
+    @Query("UPDATE scan SET endTimestamp = :endTime WHERE id = :scanId")
     suspend fun updateEndTimestamp(scanId: Long, endTime: String)
 
     @Query("SELECT * FROM scan WHERE id = :scanId")
@@ -29,10 +29,10 @@ interface ScanDao {
     @Query("SELECT * FROM scan WHERE structureId = :structureId LIMIT 1")
     fun getScanByStructure(structureId: Long): ScanEntity?
 
-    @Query("SELECT * FROM scan WHERE end_timestamp != ''")
+    @Query("SELECT * FROM scan WHERE endTimestamp != ''")
     fun getUnsentScan(): List<ScanEntity>
 
-    @Query("SELECT * FROM scan WHERE end_timestamp == '' LIMIT 1")
+    @Query("SELECT * FROM scan WHERE endTimestamp == '' LIMIT 1")
     fun getUnfinishedScan(): ScanEntity?
 
     @Query("DELETE FROM scan WHERE structureId = :id")

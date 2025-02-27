@@ -173,7 +173,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 name = sensor.name,
                 note = sensor.note,
                 installationDate = sensor.installationDate,
-                state = "Non scanné",
+                _state = sensor.state,
                 plan = sensor.plan,
                 x = sensor.x,
                 y = sensor.y,
@@ -219,7 +219,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
         viewModelScope.launch(Dispatchers.IO) {
             sensorCache.clearCache()
-            val sensors = sensorDao.getAllSensors(structureId)
+            val sensors = sensorDao.getAllSensorsWithResults(structureId)
             sensorsNotScanned.postValue(sensors)
             val stateCounts = SensorState.entries.associateWith { state ->
                 if (state == SensorState.UNKNOWN) sensors.size else 0
@@ -237,14 +237,14 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      */
     private fun refreshSensorStates() {
         viewModelScope.launch(Dispatchers.IO) {
-            val sensors = sensorDao.getAllSensors(structureId?: return@launch)
+            val sensors = sensorDao.getAllSensorsWithResults(structureId?: return@launch)
             val scannedResults = activeScanId?.let { scanId ->
                 resultDao.getResultsByScan(scanId)
             } ?: emptyList()
 
             val updatedSensors = sensors.map { sensor ->
                 val result = scannedResults.find { it.id == sensor.sensorId }
-                sensor.copy(state = result?.state ?: sensor.state)
+                sensor.copy(_state = result?.state ?: sensor.state)
             }
 
             sensorsNotScanned.postValue(updatedSensors)
@@ -254,7 +254,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /**
      * Gets the previous state for a sensor
      */
-    fun getPreviousState(sensorId: String): String = sensorCache.getPreviousState(sensorId)
+    fun getPreviousState(sensorId: String): String = sensorDao.getSensorState(sensorId)
 
     /**
      * Adds a scanned RFID chip ID to the buffer for processing.
@@ -377,8 +377,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
         val newScan = ScanEntity(
             structureId = structureId,
-            start_timestamp = now,
-            end_timestamp = "",
+            startTimestamp = now,
+            endTimestamp = "",
             technician = accountDao.getLogin(),
             note = ""
         )
