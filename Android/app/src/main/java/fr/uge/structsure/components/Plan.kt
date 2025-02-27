@@ -45,7 +45,6 @@ fun PlanForSensor(
     point: SensorDB?,
     color: Color
 ) {
-    println("PlanSensor for ${point?.name}")
     val context = LocalContext.current
     val planImage = remember(point) { planViewModel.getPlanImage(context, point?.plan) }
 

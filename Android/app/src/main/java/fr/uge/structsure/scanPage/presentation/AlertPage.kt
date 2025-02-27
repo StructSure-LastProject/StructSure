@@ -112,12 +112,14 @@ private fun AlertDetails(planViewModel: PlanViewModel, state: Boolean, sensor: S
         PlanForSensor(planViewModel, sensor, White)
 
         // Sensor note
-        Text(
-            modifier = Modifier.padding(horizontal = 50.dp).alpha(.5f),
-            text = "Capteur caché derrière la poutre métallique à environ 30cm du point d'ancrage.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            color = White,
-        )
+        sensor?.note?.let {
+            Text(
+                modifier = Modifier.padding(horizontal = 50.dp).alpha(.5f),
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = White,
+            )
+        }
     }
 }
