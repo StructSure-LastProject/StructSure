@@ -4,8 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 
-data class SensorId(val controlChip: String, val measureChip: String)
-
 data class Sensor(
     val controlChip: String,
     val measureChip: String,
