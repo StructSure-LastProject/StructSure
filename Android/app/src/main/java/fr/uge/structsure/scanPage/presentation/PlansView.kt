@@ -69,7 +69,7 @@ fun PlansView(scanViewModel: ScanViewModel) {
     var addPoint by remember { mutableStateOf<SensorDB?>(null) }
 
     LaunchedEffect(addPoint) {
-        unplacedSensors = MainActivity.db.sensorDao().getSensorsUnplacedByStructure(scanViewModel.structureId ?: -1)
+        unplacedSensors = MainActivity.db.sensorDao().getSensorsUnplacedByStructure(scanViewModel.structure?.id ?: -1)
     }
 
     Column(
@@ -96,7 +96,7 @@ fun PlansView(scanViewModel: ScanViewModel) {
                 points = { points.value },
                 temporaryPoint = addPoint,
                 addPoint = { x, y -> if (scanViewModel.isScanStarted()) addPoint = SensorDB.point(scanViewModel, x, y) },
-                deletePoint = { /* TODO enable to remove points */ }
+                selectPoint = { /* TODO enable to remove points */ }
             )
 
             Spacer(

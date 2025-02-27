@@ -41,7 +41,7 @@ fun Plan(
     points: () -> List<SensorDB>,
     temporaryPoint: SensorDB?,
     addPoint: (Double, Double) -> Unit,
-    deletePoint: (SensorDB) -> Unit
+    selectPoint: (SensorDB) -> Unit
 ) {
     val painter = remember(image) { BitmapPainter(image.asImageBitmap()) }
     val factor = remember(1) { Factor() }
@@ -64,8 +64,7 @@ fun Plan(
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(
-                        onTap = { pos -> onTap(factor, size.toSize(), pos, points(), addPoint, deletePoint) },
-                        onLongPress = { pos -> onTap(factor, size.toSize(), pos, points(), addPoint, deletePoint, true) }
+                        onTap = { pos -> onTap(factor, size.toSize(), pos, points(), addPoint, selectPoint) },
                     )
                 }
                 .graphicsLayer(
@@ -91,7 +90,6 @@ fun Plan(
  * @param size the size of the canvas
  * @param pos the position of the click in the canvas
  * @param points all the points contained in the plan
- * @param long true if the press was a long press, false otherwise
  */
 private fun onTap(
     factor: Factor,
@@ -99,27 +97,17 @@ private fun onTap(
     pos: Offset,
     points: List<SensorDB>,
     addPoint: (Double, Double) -> Unit,
-    deletePoint: (SensorDB) -> Unit,
-    long: Boolean = false
+    selectPoint: (SensorDB) -> Unit
 ) {
     val range = (40 / factor.transform / factor.zoom).toInt()
     val imgPos = canvasToImg(factor, size, pos.x, pos.y)
     for (i in points.indices) {
         if (points[i].inRange(imgPos.x.toDouble(), imgPos.y.toDouble(), range)) {
-            if (long) deletePoint(points[i]) else onPointTap(points, i)
+            selectPoint(points[i])
             return
         }
     }
-    if (!long) addPoint(imgPos.x.toDouble(), imgPos.y.toDouble())
-}
-
-/**
- * Action to run when one point is pressed.
- * @param points the list of points that contains the pressed point
- * @param i the index of the point in the list
- */
-private fun onPointTap(points: List<SensorDB>, i: Int) {
-    println("TODO Point pressed: ${points[i]}")
+    addPoint(imgPos.x.toDouble(), imgPos.y.toDouble())
 }
 
 /**

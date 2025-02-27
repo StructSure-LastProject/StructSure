@@ -77,7 +77,7 @@ fun ScanWeather(viewModel: ScanViewModel, scrollState: ScrollState) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Viaduc de Sylans",
+                text = viewModel.structure?.name?:"Ouvrage",
                 style = MaterialTheme.typography.titleLarge
             )
 

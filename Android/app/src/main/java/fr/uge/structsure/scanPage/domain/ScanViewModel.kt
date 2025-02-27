@@ -18,6 +18,7 @@ import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.settingsPage.presentation.PreferencesManager.getScannerSensitivity
 import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.structuresPage.data.StructureData
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -42,8 +43,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** DAO to fetch user account information */
     private val accountDao = db.accountDao()
 
-    /** ID of the structure being scanned */
-    var structureId: Long? = null
+    /** The structure being scanned */
+    var structure: StructureData? = null
         private set
 
     /** Repository to interact with the scan database */
@@ -155,14 +156,15 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      * @param scanId the id of the uncompleted scan to continue
      */
     fun setStructure(context: Context, structureId: Long, scanId: Long? = null) {
-        if (this.structureId == structureId) return
-        this.structureId = structureId
-        this.activeScanId = null
-        if (structureId == -1L) {
-            planViewModel.reset()
-            return
-        }
+        if (this.structure?.id == structureId) return
         viewModelScope.launch(Dispatchers.IO) {
+            structure = db.structureDao().getStructureById(structureId)
+            activeScanId = null
+            if (structureId == -1L) {
+                planViewModel.reset()
+                currentScanState.postValue(ScanState.NOT_STARTED)
+                return@launch
+            }
             sensorCache.clearCache()
             val sensors = sensorDao.getAllSensorsWithResults(structureId)
             sensorsNotScanned.postValue(sensors)
@@ -182,7 +184,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      */
     fun refreshSensorStates() {
         viewModelScope.launch(Dispatchers.IO) {
-            val sensors = sensorDao.getAllSensorsWithResults(structureId?: return@launch)
+            val sensors = sensorDao.getAllSensorsWithResults(structure?.id?: return@launch)
             val scannedResults = activeScanId?.let { scanId ->
                 resultDao.getResultsByScan(scanId)
             } ?: emptyList()
@@ -329,7 +331,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         )
 
         activeScanId = scanDao.insertScan(newScan)
-        this.structureId = structureId
+        structure = db.structureDao().getStructureById(structureId)
 
         refreshSensorStates()
         updateSensorStateCounts()
@@ -346,7 +348,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
         if (activeScanId != null) return // already created
         activeScanId = scanId
-        this.structureId = scanDao.getScanById(scanId).structureId
+        structure = db.structureDao().getStructureById(scanDao.getScanById(scanId).structureId)
 
         refreshSensorStates()
         updateSensorStateCounts()
@@ -387,7 +389,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                     if (results.isNotEmpty() || db.scanEditsDao().getAllByScanId(scanId).isNotEmpty()) {
                         val now = Timestamp(System.currentTimeMillis()).toString()
                         scanRepository.updateScanEndTime(scanId, now)
-                        structureId?.let { structureViewModel.tryUploadScan(it, scanId) }
+                        structure?.id?.let { structureViewModel.tryUploadScan(it, scanId) }
                     }
                 }
             } catch (e: Exception) {
