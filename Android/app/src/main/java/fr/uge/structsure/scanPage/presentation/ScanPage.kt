@@ -41,6 +41,7 @@ import fr.uge.structsure.components.Title
 import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.scanPage.data.findPlanById
 import fr.uge.structsure.scanPage.data.getPlanSectionName
+import fr.uge.structsure.scanPage.data.ScanEntity
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.scanPage.presentation.components.ScanWeather
@@ -49,8 +50,8 @@ import fr.uge.structsure.scanPage.presentation.components.SensorsList
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Black
 import fr.uge.structsure.ui.theme.LightGray
-import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.Typography
+import fr.uge.structsure.ui.theme.Red
 import kotlinx.coroutines.launch
 
 /**
@@ -125,9 +126,9 @@ fun ScanPage(context: Context,
             )
         }
 
-        ScanWeather(viewModel = scanViewModel, scrollState)
+        ScanWeather(scanViewModel = scanViewModel, scrollState, context)
         PlansView(scanViewModel)
-        SensorsList(scanViewModel) { s -> sensorPopup = s }
+        SensorsList(scanViewModel, onClick = { sensorPopup = it }, context)
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {
             showToast(it)
@@ -225,7 +226,6 @@ private fun SensorPopUp(
         ) { s -> if (s.length <= 1000) note = s }
     }
 }
-
 
 
 @Composable

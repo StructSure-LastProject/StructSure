@@ -17,6 +17,7 @@ import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.settingsPage.presentation.PreferencesManager.getScannerSensitivity
+import fr.uge.structsure.structuresPage.data.Sensor
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import kotlinx.coroutines.Dispatchers
@@ -42,8 +43,12 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** DAO to fetch user account information */
     private val accountDao = db.accountDao()
 
+    /** DAO to interact with the structure data */
+    private val structureDao = db.structureDao()
+
     /** ID of the structure being scanned */
-    private var structureId: Long? = null
+    var structureId: Long? = null
+        private set
 
     /** Repository to interact with the scan database */
     private val scanRepository: ScanRepository = ScanRepository(context)
@@ -83,11 +88,14 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Counts how many results are in a given state for the scan weather */
     val sensorStateCounts = MutableLiveData<Map<SensorState, Int>>()
 
+    /** LiveData for displaying errors when adding a sensor. */
+    val addSensorError = MutableLiveData<String?>()
+
     /** Sub-ViewModel that handle all plan selection/display logic */
     val planViewModel = PlanViewModel(context, this)
 
     /** Displaying error messages when updating notes */
-    val noteErrorMessage = MutableLiveData<String>()
+    val noteErrorMessage = MutableLiveData<String?>()
 
     /**
      * Update the state of the sensors dynamically in the header of the scan page.
@@ -120,27 +128,81 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     }
 
     /**
-     * Updates the note of a sensor in the modal dialog of the sensor when the scan is in progress.
-     * @param sensorId the id of the sensor to update
-     * @param note the new note to set
+     * Updates the note of the structure currently being scanned.
+     * The note will be saved to the database and sent to the server
+     * when the scan is uploaded.
+     *
+     * @param note The new note to set for the structure
      * @return true if the note was updated, false otherwise
      */
-    fun updateSensorNote(sensorId: String, note: String): Boolean {
-        if (activeScanId == null) {
-            noteErrorMessage.postValue("Aucun scan en cours")
-            return false
-        }
-
-        if (note.length > 1000) return false
-        activeScanId?.let { scanId ->
-            viewModelScope.launch(Dispatchers.IO) {
-                db.sensorDao().updateNote(sensorId, note)
-                db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_NOTE, sensorId))
+    suspend fun updateStructureNote(note: String): Boolean {
+        return viewModelScope.async(Dispatchers.IO) {
+            structureId?.let { id ->
+                structureDao.updateStructureNote(id, note)
+                noteErrorMessage.postValue(null)
+                true
+            } ?: run {
+                noteErrorMessage.postValue("Aucune structure sélectionnée")
+                false
             }
-        }
-        return true
+        }.await()
     }
 
+    /**
+     * Adds a sensor to the database and updates the list of sensors.
+     * @param sensor the sensor to add
+     */
+    fun addSensor(sensor: Sensor) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val structureId = this@ScanViewModel.structureId ?: run {
+                addSensorError.postValue("Aucune structure sélectionnée")
+                return@launch
+            }
+
+            val existingSensors = sensorDao.getAllSensors(structureId)
+            val alreadyExists = existingSensors.any { existingSensor ->
+                existingSensor.controlChip == sensor.controlChip || existingSensor.measureChip == sensor.measureChip
+            }
+
+            if (alreadyExists) {
+                addSensorError.postValue("Un capteur avec ces puces existe déjà")
+                return@launch
+            }
+
+            val sensorId = "${sensor.controlChip}-${sensor.measureChip}"
+            val sensorDB = SensorDB(
+                sensorId = sensorId,
+                controlChip = sensor.controlChip,
+                measureChip = sensor.measureChip,
+                name = sensor.name,
+                note = sensor.note,
+                installationDate = sensor.installationDate,
+                _state = sensor.state,
+                plan = sensor.plan,
+                x = sensor.x,
+                y = sensor.y,
+                structureId = structureId
+            )
+
+            sensorDao.upsertSensor(sensorDB)
+
+            activeScanId?.let { scanId ->
+                db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_CREATION, sensorId))
+            }
+
+            val updatedSensors = sensorDao.getAllSensors(structureId)
+            sensorsNotScanned.postValue(updatedSensors)
+
+            val stateCounts = SensorState.entries.associateWith { state ->
+                if (state == SensorState.UNKNOWN) updatedSensors.size else 0
+            }
+            sensorStateCounts.postValue(stateCounts)
+
+            sensorCache.insertSensors(updatedSensors)
+
+            addSensorError.postValue(null)
+        }
+    }
 
     /**
      * Changes the structureId of the scanViewModel. This will reload
@@ -159,7 +221,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         }
         viewModelScope.launch(Dispatchers.IO) {
             sensorCache.clearCache()
-            val sensors = sensorDao.getAllSensors(structureId)
+            val sensors = sensorDao.getAllSensorsWithResults(structureId)
             sensorsNotScanned.postValue(sensors)
             val stateCounts = SensorState.entries.associateWith { state ->
                 if (state == SensorState.UNKNOWN) sensors.size else 0
@@ -177,14 +239,14 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      */
     private fun refreshSensorStates() {
         viewModelScope.launch(Dispatchers.IO) {
-            val sensors = sensorDao.getAllSensors(structureId?: return@launch)
+            val sensors = sensorDao.getAllSensorsWithResults(structureId?: return@launch)
             val scannedResults = activeScanId?.let { scanId ->
                 resultDao.getResultsByScan(scanId)
             } ?: emptyList()
 
             val updatedSensors = sensors.map { sensor ->
                 val result = scannedResults.find { it.id == sensor.sensorId }
-                sensor.copy(state = result?.state ?: sensor.state)
+                sensor.copy(_state = result?.state ?: sensor.state)
             }
 
             sensorsNotScanned.postValue(updatedSensors)
@@ -194,7 +256,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /**
      * Gets the previous state for a sensor
      */
-    fun getPreviousState(sensorId: String): String = sensorCache.getPreviousState(sensorId)
+    fun getPreviousState(sensorId: String): String = sensorDao.getSensorState(sensorId)
 
     /**
      * Adds a scanned RFID chip ID to the buffer for processing.
@@ -317,8 +379,8 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
         val newScan = ScanEntity(
             structureId = structureId,
-            start_timestamp = now,
-            end_timestamp = "",
+            startTimestamp = now,
+            endTimestamp = "",
             technician = accountDao.getLogin(),
             note = ""
         )

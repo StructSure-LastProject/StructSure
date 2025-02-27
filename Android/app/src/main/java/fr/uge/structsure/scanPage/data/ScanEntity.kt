@@ -14,8 +14,8 @@ import androidx.room.PrimaryKey
 data class ScanEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0, // ID unique du scan
     val structureId: Long,
-    val start_timestamp: String,
-    val end_timestamp: String,
+    val startTimestamp: String,
+    val endTimestamp: String,
     val technician: String,
     val note: String
 )

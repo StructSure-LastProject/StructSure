@@ -23,6 +23,7 @@ class ScanRepository(context: Context) {
     private val sensorDao = db.sensorDao()
     private val accountDao = db.accountDao()
     private val scanEditsDao = db.scanEditsDao()
+    private val structureDao = db.structureDao()
     private val connectivityViewModel = ConnectivityViewModel(context)
 
     /**
@@ -97,15 +98,25 @@ class ScanRepository(context: Context) {
         val login = accountDao.get()?.login.orEmpty()
         val edits = scanEditsDao.getAllByScanId(scanId)
 
+        val structureNote = structureDao.getStructureNote(scan.structureId) ?: ""
+
         val scanResults = results.map { ScanResultDTO.from(it) }
         val sensorEdits = getSensorEdits(edits)
 
-        return ScanRequestDTO(scan.structureId, scanId, scan.start_timestamp, scan.note, login,
-            scanResults, sensorEdits)
+        return ScanRequestDTO(
+            structureId = scan.structureId,
+            scanId = scanId,
+            launchDate = scan.startTimestamp,
+            scanNote = scan.note,
+            structureNote = structureNote,
+            login = login,
+            results = scanResults,
+            sensorEdits = sensorEdits
+        )
     }
 
     /**
-     * Retrieves all the edits that corresponds to a sensor and build
+     * Retrieves all the edits that corresponds to a sensor or structure and build
      * a list of ScanSensorEditDTOs that regroups all edits by sensors.
      * @param edits the list of all edits of the scan
      * @return the edits grouped by sensor
@@ -119,6 +130,19 @@ class ScanRepository(context: Context) {
                     /* Get the new note of the sensor */
                     val sensor = sensorEdits.getOrPut(it.value) { SensorEditDTO(it.value) }
                     sensorEdits[it.value] = sensor.copy(note = sensorDao.getSensor(it.value)?.note)
+                }
+                EditType.SENSOR_CREATION -> {
+                    /* Get the sensor created in the database and include all necessary fields */
+                    val sensorCreated = sensorDao.getSensor(it.value)
+                    if (sensorCreated != null) {
+                        sensorEdits[it.value] = SensorEditDTO(
+                            sensorId = sensorCreated.sensorId,
+                            controlChip = sensorCreated.controlChip,
+                            measureChip = sensorCreated.measureChip,
+                            name = sensorCreated.name,
+                            note = sensorCreated.note
+                        )
+                    }
                 }
             }
         }

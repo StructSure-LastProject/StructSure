@@ -74,6 +74,11 @@ public class ScanService {
         Structure structure = findStructure(scanData.structureId());
         Account account = findAccount(scanData.login());
 
+        if (scanData.structureNote() != null && !scanData.structureNote().isEmpty()) {
+            structure.setNote(scanData.structureNote());
+            structureRepository.save(structure);
+        }
+
         Scan scan = createScan(structure, scanData, account);
         processEdits(scanData.sensorEdits());
         List<Result> results = processResults(scan, scanData);
@@ -147,7 +152,7 @@ public class ScanService {
      */
     private Scan createScan(Structure structure, AndroidScanResultDTO scanData, Account account) throws TraitementException {
         LocalDateTime date = parseDate(scanData.launchDate());
-        Scan scan = new Scan(structure, date, scanData.note(), account);
+        Scan scan = new Scan(structure, date, scanData.scanNote(), account);
         return scanRepository.save(scan);
     }
 
@@ -174,20 +179,36 @@ public class ScanService {
     }
 
     /**
-     * Updates sensors (and structure eventually) if edited or added
-     * during the scan.
+     * Updates sensors based on the edits from the scan.
      *
      * @param edits All the editions done on sensors during the scan
+     * @throws TraitementException if there's an error during processing
      */
     private void processEdits(List<AndroidSensorEditDTO> edits) throws TraitementException {
         var sensors = new ArrayList<Sensor>();
+
         for (var edit : edits) {
-            var sensor = sensorRepository.findBySensorId(SensorId.from(edit.sensorId()))
-                .orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
-            if (edit.note() != null) sensor.setNote(edit.note());
-            sensors.add(sensor);
+            var sensorId = SensorId.from(edit.sensorId());
+            var existingSensor = sensorRepository.findBySensorId(sensorId);
+
+            if (existingSensor.isPresent()) {
+                Sensor sensor = existingSensor.get();
+                if (edit.note() != null) sensor.setNote(edit.note());
+                sensors.add(sensor);
+            }
+            else if (edit.controlChip() != null && edit.measureChip() != null) {
+                Sensor newSensor = new Sensor();
+                newSensor.setSensorId(sensorId);
+                if (edit.name() != null) newSensor.setName(edit.name());
+                if (edit.note() != null) newSensor.setNote(edit.note());
+
+                sensors.add(newSensor);
+            }
         }
-        sensorRepository.saveAll(sensors);
+
+        if (!sensors.isEmpty()) {
+            sensorRepository.saveAll(sensors);
+        }
     }
 
     /**

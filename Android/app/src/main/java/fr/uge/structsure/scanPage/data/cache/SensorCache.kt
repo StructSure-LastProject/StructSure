@@ -17,9 +17,6 @@ class SensorCache {
     // Map: chipId -> sensorId
     private val chipToSensorIdMap = mutableMapOf<String, String>()
 
-    // Map: sensorId -> previousState
-    private val previousStatesMap = mutableMapOf<String, String>()
-
     /**
      * Inserts a list of sensors into the cache.
      *
@@ -35,16 +32,6 @@ class SensorCache {
         }
     }
 
-    /**
-     * Gets the previous state of a sensor from the cache
-     * @param sensorId the ID of the sensor
-     * @return the previous state
-     */
-    fun getPreviousState(sensorId: String): String {
-        synchronized(lock) {
-            return previousStatesMap[sensorId] ?: sensorMap[sensorId]?.second ?: sensorMap[sensorId]?.first?.state.orEmpty()
-        }
-    }
 
     /**
      * Finds a sensor by its chip ID.
@@ -73,7 +60,7 @@ class SensorCache {
      * @param newState The new state received from the RFID chip.
      */
     private fun mergeStates(lastState: String?, newState: String): String {
-        if (lastState == SensorState.UNKNOWN.displayName){
+        if (lastState == SensorState.UNKNOWN.name){
             return newState
         }
         if (lastState == "NOK" || newState == "NOK") {
@@ -102,10 +89,7 @@ class SensorCache {
             val computedState = mergeStates(currentState, newState)
 
             if (computedState != currentState) {
-                // Sauvegarde l'état actuel comme état précédent
-                previousStatesMap[sensor.sensorId] = currentState
-
-                // Met à jour l'état actuel
+                // UPDATE current state
                 sensorMap[sensor.sensorId] = Pair(sensor, computedState)
 
                 return computedState
@@ -125,10 +109,6 @@ class SensorCache {
     fun setSensorState(chip: String, state: String) {
         synchronized(lock) {
             findSensor(chip)?.let { sensor ->
-                val currentState = sensorMap[sensor.sensorId]?.second
-                if (currentState != null && currentState != state) {
-                    previousStatesMap[sensor.sensorId] = currentState
-                }
                 sensorMap[sensor.sensorId] = Pair(sensor, state)
             }
         }
@@ -151,7 +131,6 @@ class SensorCache {
         synchronized(lock) {
             sensorMap.clear()
             chipToSensorIdMap.clear()
-            previousStatesMap.clear()
         }
     }
 }
