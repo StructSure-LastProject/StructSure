@@ -42,6 +42,9 @@ public class SensorRepositoryCriteriaQuery {
         var plan = sensor.join("plan", JoinType.LEFT);
 
         var predicates = new ArrayList<Predicate>();
+        if (request.scanFilter() != null) {
+            predicates.add(cb.equal(result.get("scan").get("id"), request.scanFilter()));
+        }
         if (request.planFilter() != null) {
             predicates.add(cb.equal(plan.get("id"), request.planFilter()));
         }

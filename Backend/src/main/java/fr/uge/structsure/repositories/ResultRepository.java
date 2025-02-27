@@ -57,4 +57,11 @@ public interface ResultRepository extends JpaRepository<Result, Long> {
             insertResult(result);
         }
     }
+
+    /**
+     * Find all the result associated with a scan
+     * @param scanId The scan id
+     * @return List of results
+     */
+    List<Result> findByScan_Id(long scanId);
 }

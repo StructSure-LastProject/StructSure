@@ -16,9 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class regroups all the services available for the sensor
@@ -85,12 +83,28 @@ public class SensorService {
      * Returns the list of sensors present in a plan
      * @param structureId the structure id
      * @param planId the plan id
+     * @param scanId the optional scan id
      * @return List<SensorDTO> the list of the sensors
      */
-    public List<SensorDTO> getSensorsByPlanId(long structureId, long planId) throws TraitementException {
+    public List<SensorDTO> getSensorsByPlanId(long structureId, long planId, Optional<Long> scanId) throws TraitementException {
         var structure = structureRepository.findById(structureId).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
         var plan = planRepository.findByStructureAndId(structure, planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
         var sensors = sensorRepository.findByPlan(plan);
+        if (scanId.isPresent()) {
+            var scanResults = resultRepository.findByScan_Id(scanId.get());
+            var statesBySensor = new HashMap<Sensor, State>();
+            for (Result result : scanResults) {
+                if (result.getSensor() != null) {
+                    statesBySensor.put(result.getSensor(), result.getState());
+                }
+            }
+            return sensors.stream()
+                    .map(sensor -> {
+                        var state = statesBySensor.getOrDefault(sensor, State.UNKNOWN);
+                        return new SensorDTO(sensor, state);
+                    })
+                    .toList();
+        }
         return sensors.stream().map(sensor -> new SensorDTO(sensor, getSensorState(sensor))).toList();
     }
 
