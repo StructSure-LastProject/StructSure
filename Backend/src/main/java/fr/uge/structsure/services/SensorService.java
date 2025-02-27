@@ -4,21 +4,14 @@ import fr.uge.structsure.dto.sensors.*;
 import fr.uge.structsure.entities.*;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
-import fr.uge.structsure.repositories.PlanRepository;
-import fr.uge.structsure.repositories.ResultRepository;
-import fr.uge.structsure.repositories.SensorRepository;
-import fr.uge.structsure.repositories.SensorRepositoryCriteriaQuery;
-import fr.uge.structsure.repositories.StructureRepository;
+import fr.uge.structsure.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class regroups all the services available for the sensor
@@ -41,7 +34,7 @@ public class SensorService {
      */
     @Autowired
     public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository, PlanRepository planRepository,
-        SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery) {
+                         SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery) {
         this.sensorRepository = sensorRepository;
         this.structureRepository = structureRepository;
         this.resultRepository = resultRepository;
@@ -85,12 +78,28 @@ public class SensorService {
      * Returns the list of sensors present in a plan
      * @param structureId the structure id
      * @param planId the plan id
+     * @param scanId the optional scan id to filter results by
      * @return List<SensorDTO> the list of the sensors
      */
-    public List<SensorDTO> getSensorsByPlanId(long structureId, long planId) throws TraitementException {
+    public List<SensorDTO> getSensorsByPlanId(long structureId, long planId, Optional<Long> scanId) throws TraitementException {
         var structure = structureRepository.findById(structureId).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
         var plan = planRepository.findByStructureAndId(structure, planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
         var sensors = sensorRepository.findByPlan(plan);
+        if (scanId.isPresent()) {
+            var scanResults = resultRepository.findByScan_Id(scanId.get());
+            var statesBySensor = new HashMap<Sensor, State>();
+            for (Result result : scanResults) {
+                if (result.getSensor() != null) {
+                    statesBySensor.put(result.getSensor(), result.getState());
+                }
+            }
+            return sensors.stream()
+                    .map(sensor -> {
+                        var state = statesBySensor.getOrDefault(sensor, State.UNKNOWN);
+                        return SensorDTO.fromEntityAndState(sensor, state);
+                    })
+                    .toList();
+        }
         return sensors.stream().map(sensor -> SensorDTO.fromEntityAndState(sensor, getSensorState(sensor))).toList();
     }
 
