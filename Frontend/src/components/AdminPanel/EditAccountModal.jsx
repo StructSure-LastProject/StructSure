@@ -1,13 +1,15 @@
 import { Trash2, X, ChevronDown } from 'lucide-solid';
-import StructureNameCard from '../StructureNameCard';
-import { createSignal } from 'solid-js';
+import { createEffect, createResource, createSignal } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
 import useFetch from '../../hooks/useFetch';
+import AccountStructureSection from './AccountStructureSection';
 
 /**
  * Edit account modal component
+ * @param {Function} fetchUserDetails The fetch user details function
  * @param {Function} closeModal The function to close the modal
- * @returns The Model compoanent
+ * @param {Object} userDetails The userDetails object
+ * @returns The Model component
  */
 const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
@@ -18,8 +20,15 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     const [accountState, setAccountState] = createSignal(userDetails.accountState);
     const [errorModal, setErrorModal] = createSignal([]);
     const [apiError, setApiError] = createSignal("");
-    const login = userDetails.login;
+    const [structureSelection, setStructureSelection] = createSignal([]);
+    const copyOfStructureSelection = [];
 
+
+    const login = userDetails.login;
+    const { fetchData, data, statusCode, error } = useFetch();
+
+
+    
     /**
      * Roles
      */
@@ -52,20 +61,101 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         });
     };
     
+
+    /**
+     * Function that verify if the two arrays are equal
+     * @param {Array} arr1 First Array 
+     * @param {Array} arr2 Second Array 
+     * @param {Function} compareFn The comparing function 
+     * @returns True if equal or false if not equal
+     */
+    const areArraysEqual = (arr1, arr2, compareFn = (a, b) => a === b) => {
+        if (arr1.length !== arr2.length) return false;
+      
+        for (let i = 0; i < arr1.length; i++) {
+          if (!compareFn(arr1[i], arr2[i])) {
+            return false;
+          }
+        }
+      
+        return true; 
+    }
+      
+
+    /**
+     * Helper function to compare objects inside the array
+     * @param {Object} a First Object 
+     * @param {Object} b Second Object
+     * @returns True if equal or false if not equal
+     */
+    const deepCompare = (a, b) => {
+        if (typeof a !== 'object' || typeof b !== 'object') {
+            return a === b;
+        }
+        
+        if (Object.keys(a).length !== Object.keys(b).length) return false;
+
+        for (const key in a) {
+            if (!Object.prototype.hasOwnProperty.call(a, key)) continue;
+
+            if (!deepCompare(a[key], b[key])) return false;
+        }
+
+        
+        return true;
+    };
+
+
+    /**
+     * Create effect to fill the two arrays
+     */
+    createEffect(() => {
+        if (copyOfStructureSelection.length === 0) {
+            if (data() !== null) {
+                for (const e of data().structureAcessDetailsList) {
+                    copyOfStructureSelection.push({structureId: e.structureId, structureName: e.structureName, hasAccess: e.hasAccess});
+                }
+                
+            }
+        }
+    })
+
+    /**
+     * Get structure for the user account
+     */
+    const getStructuresForAccount = async () => {
+        const token = localStorage.getItem("token");
+        
+        const requestData = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        };
+
+        await fetchData(`/api/accounts/${login}/structures`, requestData);
+
+        if (statusCode() === 200) {
+            setStructureSelection(data().structureAcessDetailsList);
+        }
+
+    }
+      
     
 
     /**
      * Handle the submit buttom
+     * @param {Event} e The click event
      */
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         validateUserAccountForm(firstName(), lastName(), login, role(), password(), addError, removeError, false)
 
-        const { fetchData, error, statusCode } = useFetch();
         const token = localStorage.getItem("token")
 
-
+        
         if (errorModal().length === 0) {
             const updatedFields = [];
 
@@ -74,6 +164,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
             if (role() !== userDetails.role) updatedFields.push("role");
             if (accountState() !== userDetails.accountState) updatedFields.push("accountState");
             if (password() !== "") updatedFields.push("password");
+            if (!areArraysEqual(structureSelection(), copyOfStructureSelection, deepCompare)) updatedFields.push("structures")
 
 
             if (updatedFields.length === 0) {
@@ -95,13 +186,13 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
             /**
              * Create the body of the request
-             * @param {object} requestBody 
-             * @param {string} token 
+             * @param {String} method The HTTP method 
+             * @param {String} requestData The request data to send
              * @returns json object
              */
-            const createRequestData = (requestData) => {
+            const createRequestData = (requestMethod, requestData) => {
                 return {
-                    method: "PUT",
+                    method: requestMethod,
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`
@@ -129,8 +220,15 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
             if(updatedFields.includes("accountState")){
                 requestBody.accountState = accountState();
             }
+
+            if (updatedFields.includes("structures")) {
+                await fetchData(`/api/accounts/${userDetails.login}/access`, createRequestData("POST", { access: structureSelection() }));
+                if (statusCode() === 200) {
+                    updatedFields.pop("structures");
+                }
+            }
             
-            await fetchData("/api/accounts/reset", createRequestData(requestBody));
+            await fetchData("/api/accounts/reset", createRequestData("PUT", requestBody));
 
             
             let editError = "";
@@ -141,6 +239,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                 closeModal();
                 fetchUserDetails();
                 setApiError("");
+                
             }
             else if (statusCode() === 404){
                 setApiError(editError);
@@ -153,6 +252,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         
     };
 
+    createResource(() => getStructuresForAccount())
 
 
     return (
@@ -279,20 +379,14 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                         
                     </div>
 
-                    {<div class="flex flex-col w-[100%] h-auto gap-[5px]">
-                        <p class="normal opacity-50">Ouvrages autorisés</p>
-                        <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">
-                            <StructureNameCard structureName={"Grand-Pont de Nemours"}/>
-                            <StructureNameCard structureName={"Pont de Tournon-sur-Rhône"} isChoosed={true}/>
-                            <StructureNameCard structureName={"Pegasus Bridge"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont Albert-Louppe"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont Boutiron"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont d’Ain"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont levant de La Seyne-sur-Mer"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont d’Èze"} isChoosed={false}/>
-                            <StructureNameCard structureName={"Pont suspendu de Saint-Ilpize"} isChoosed={false}/>
+                    {
+                        <div class="flex flex-col w-[100%] h-auto gap-[5px]">
+                            <p class="normal opacity-50">Ouvrages autorisés</p>
+                            <AccountStructureSection 
+                                structures={structureSelection} 
+                                setStructureSelection={setStructureSelection}
+                            />
                         </div>
-                    </div>
                     }
                     <div class="md:flex md:flex-row-reverse">
                         <button type="submit" onClick={handleSubmit} class="rounded-[50px] px-[16px] py-[8px] bg-lightgray">

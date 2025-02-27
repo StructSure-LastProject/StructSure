@@ -11,10 +11,9 @@ import { useNavigate } from '@solidjs/router';
 /**
  * Will fetch the sensors for the plan
  */
-export const planSensorsFetchRequest = async (structureId, setPlanSensors, planId) => {
+export const planSensorsFetchRequest = async (structureId, setPlanSensors, planId, navigate) => {
     if (planId === null) return;
     const token = localStorage.getItem("token");
-    const navigate = useNavigate();
     const requestData = {
         method: "GET",
         headers: {
@@ -37,10 +36,10 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
 /**
  * Will fetch the list of the sensors of this structure
  */
-export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems, filters = {}) => {
-    const navigate = useNavigate();
+export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems, navigate, filters = {}) => {
     const token = localStorage.getItem("token");
-    const { fetchData, statusCode, data, errorFetch } = useFetch();
+    const { fetchData, statusCode, data } = useFetch();
+
 
     // Construire le body avec les filtres
     const requestBody = {
@@ -118,16 +117,16 @@ function StructureDetailBody(props) {
 
     createEffect(() => {
         structureDetailsFetchRequest(props.structureId);
-        sensorsFetchRequest(props.structureId, setSensors, setTotalItems);
-        planSensorsFetchRequest(props.structureId, setPlanSensors, selectedPlanId());
+        sensorsFetchRequest(props.structureId, setSensors, setTotalItems, navigate);
+        planSensorsFetchRequest(props.structureId, setPlanSensors, selectedPlanId(), navigate);
     });
 
     /**
      * Sets the sensor in the structure details
-     * @param {list} s list of the sensors
+     * @param {list} sensorsList list of the sensors
      */
-    const setSensorsDetail = (s) => {
-        setStructureDetails(prev => ({ ...prev, s }));
+    const setSensorsDetail = (sensorsList) => {
+        setStructureDetails(prev => ({ ...prev, sensorsList }));
     };
 
 

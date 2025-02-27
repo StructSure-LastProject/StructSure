@@ -128,7 +128,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
             </Show> 
             {
                 openSensorPanel() && (
-                    <SensorPanel structureId={structureId} sensors={sensors} setSensors={setSensors} selectedPlanId={selectedPlanId} sensorDetails={clickedSensor()} closeSensorPanel={closeSensorPanelHandler} />
+                    <SensorPanel structureId={structureId} sensors={sensors} setSensors={setSensors} selectedPlanId={selectedPlanId} sensorDetails={clickedSensor()} closeSensorPanel={closeSensorPanelHandler} setTotalItems={setTotalItems}/>
                 )
             }
         </div>

@@ -3,7 +3,7 @@ import getSensorStatusColor from "../SensorStatusColorGen";
 import { createResource, createSignal, Show } from 'solid-js';
 import SensorFieldComponent from './SensorFieldComponent';
 import { loginValidator } from '../../hooks/vaildateUserAccountForm';
-import StructureDetailCanvas from "../StructureDetail/StructureDetailCanvas"
+import Canvas from './Canvas';
 import useFetch from '../../hooks/useFetch';
 import {sensorsFetchRequest} from "../StructureDetail/StructureDetailBody"
 import plan_not_found from '/src/assets/plan_not_found.png';
@@ -74,7 +74,7 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
  */
 const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => {  
   const planId = selectedPlanId() === null ? 1 : selectedPlanId();
-  const { fetchImage, image, statusCode } = useFetch();
+  const { fetchImage, image, loading } = useFetch();
   const token = localStorage.getItem("token");
   const endpoint = `/api/structures/plans/${structureId}/${sensorDetails.controlChip}/${sensorDetails.measureChip}/image`;
 
@@ -88,20 +88,20 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
   
   
   createResource(async () => {
-    await fetchImage(endpoint, requestData);
+    await fetchImage(endpoint, requestData);    
   })
   
   return (
     <div class="lg:flex lg:flex-col lg:gap-[10px]">
       <h1 class="font-poppins font-[600] text-[16px] leading-[24px] tracking-[0%] text-[#181818] pl-1">OA/Zone</h1>
-      <Show when={image() !== null} fallback={
+      <Show when={!loading() && image() !== null} fallback={
         <img
           class={"w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px] object-cover"} 
           src={plan_not_found} 
           alt="plan not found"
         />
       }>
-        <StructureDetailCanvas
+        <Canvas
           styles={"w-full h-[156px] lg:min-w-[549px] lg:min-h-[299px]"} 
           plan={image()} 
           interactiveMode={false} 
@@ -126,7 +126,7 @@ const SensorCommentSection = ({
   isRequired 
 }) => {
   return (
-    <div class="flex flex-col gap-[5px] lg:gap-[10px]">
+    <div class="flex flex-col gap-[5px] lg:gap-[10px] w-full">
       <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">Note</p>
       <textarea required={isRequired} minLength={minLength} maxLength={maxLength} disabled={!editMode()} onChange={(e) => setNote(e.target.value)} class="rounded-[18px] w-full px-[16px] py-[8px] flex gap-[10px] bg-[#F2F2F4] font-poppins font-[400] text-[14px] leading-[21px] text-[#181818]"
         value={note()}
@@ -147,7 +147,7 @@ const SensorCommentSection = ({
  * @param {Function} closeSensorPanel Function that close the sensor panel
  * @returns The sensor panel component
  */
-const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDetails, closeSensorPanel}) => {
+const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDetails, closeSensorPanel, setTotalItems}) => {
 
   const [sensorName, setSensorName] = createSignal(sensorDetails.name);
   const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate === null ? "" : sensorDetails.installationDate.split('T')[0]);
@@ -200,7 +200,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
 
     if (statusCode() === 200) {
       setvalidationError("");
-      sensorsFetchRequest(structureId, setSensors);
+      sensorsFetchRequest(structureId, setSensors, setTotalItems);
       closeSensorPanel();
       return true;
     }    
@@ -231,7 +231,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
         <Show when={validationError() !== ""}>
           <p class="text-[#F13327] font-poppins HeadLineMedium">{validationError()}</p>
         </Show>
-        <div class="overflow-auto flex flex-col gap-[25px] rounded-[18px]">
+        <div class="overflow-auto overflow-x-hidden flex flex-col gap-[25px] rounded-[18px]">
           <div class="lg:flex lg:flex-row lg:gap-[25px] flex flex-col gap-[25px]">
             <SensorPlan
               selectedPlanId={selectedPlanId}
