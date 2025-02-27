@@ -136,7 +136,7 @@ public class UserAccountController {
     /**
      * Update the user's structure access
      * @param userStructureAccessRequestDTO The DTO that represent the update request
-     * @return
+     * @return The response DTO
      */
     @PostMapping("/accounts/{login}/access")
     public ResponseEntity<?> updateUserStructureAccess(@PathVariable String login, @RequestBody UserStructureAccessRequestDTO userStructureAccessRequestDTO){
@@ -157,6 +157,21 @@ public class UserAccountController {
     public ResponseEntity<?> getStructureListForUserAccounts(@PathVariable String login){
         try {
             return ResponseEntity.status(200).body(accountService.getStructureListForUserAccounts(login));
+        catch (TraitementException e){
+            return e.toResponseEntity();
+        }
+    }
+
+
+    /** 
+     * Anonymize the user account
+     * @param login The login of the user
+     * @return The response DTO
+     */
+    @PutMapping("/api/accounts/{login}/anonymize")
+    public ResponseEntity<?> anonymizeTheUserAccount(@PathVariable String login){
+        try {
+            return ResponseEntity.status(200).body(accountService.anonymizeTheUserAccount(login));
         } catch (TraitementException e){
             return e.toResponseEntity();
         }
