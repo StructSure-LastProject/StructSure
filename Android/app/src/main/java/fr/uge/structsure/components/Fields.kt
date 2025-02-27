@@ -240,7 +240,7 @@ fun InputText(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit = {}
 ) {
-    Input(modifier, label, value, placeholder, false, errorMessage, false, onChange,
+    Input(modifier, label, value, placeholder, isError, errorMessage, false, onChange,
         multiLines = false,
         enabled = true,
         keyboardOptions = keyboardOptions
@@ -389,6 +389,8 @@ private fun Input(
                 else decorations(innerTextField)
             }
         )
+
+        if (isError)
         errorMessage?.let {
             Text(
                 text = errorMessage,

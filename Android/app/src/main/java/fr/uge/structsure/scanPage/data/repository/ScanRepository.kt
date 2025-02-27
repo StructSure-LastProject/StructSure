@@ -138,7 +138,10 @@ class ScanRepository(context: Context) {
                             controlChip = sensorCreated.controlChip,
                             measureChip = sensorCreated.measureChip,
                             name = sensorCreated.name,
-                            note = sensorCreated.note
+                            note = sensorCreated.note,
+                            plan = sensorDao.getSensor(it.value)?.plan,
+                            x = sensorDao.getSensor(it.value)?.x?.toInt(),
+                            y = sensorDao.getSensor(it.value)?.y?.toInt()
                         )
                     }
                 }
