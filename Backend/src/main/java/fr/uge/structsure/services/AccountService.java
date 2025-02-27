@@ -7,12 +7,11 @@ import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterResponseDTO;
 import fr.uge.structsure.dto.userAccount.*;
 import fr.uge.structsure.dto.userAccount.accountStructure.GetStructureListForUserAccountsResponseDTO;
-import fr.uge.structsure.dto.userAccount.accountStructure.StructureDetails;
+import fr.uge.structsure.dto.userAccount.accountStructure.StructureAcessDetails;
 import fr.uge.structsure.dto.userAccount.accountStructure.UpdateUserStructureAccessResponseDTO;
 import fr.uge.structsure.dto.userAccount.accountStructure.StructurePermission;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
-import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
@@ -24,8 +23,6 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,7 +32,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Account service class
@@ -286,11 +282,7 @@ public class AccountService {
      * @throws TraitementException thrown custom exception if the login is not related to a valid user account
      */
     private Account checkIfAccountExist(String login) throws TraitementException {
-        var userAccount = accountRepository.findByLogin(Objects.requireNonNull(login));
-        if (userAccount.isEmpty()){
-            throw new TraitementException(Error.USER_ACCOUNT_NOT_FOUND);
-        }
-        return userAccount.get();
+        return accountRepository.findByLogin(Objects.requireNonNull(login)).orElseThrow(() -> new TraitementException(Error.USER_ACCOUNT_NOT_FOUND));
     }
 
     /**
@@ -450,9 +442,9 @@ public class AccountService {
         var userAccount = checkIfAccountExist(login);
         var structures = structureRepository.findAll();
         var allowedStructures = userAccount.getAllowedStructures();
-        var resultList = new ArrayList<StructureDetails>();
+        var resultList = new ArrayList<StructureAcessDetails>();
         structures.forEach(structure -> {
-            resultList.add(new StructureDetails(
+            resultList.add(new StructureAcessDetails(
                     structure.getId(),
                     structure.getName(),
                     allowedStructures.contains(structure)
