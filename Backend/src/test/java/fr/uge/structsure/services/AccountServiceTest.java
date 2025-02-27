@@ -10,75 +10,67 @@ import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class AccountServiceTest {
 
-    @Mock
-    private AccountRepository accountRepository;
-
-    @Mock
-    private AuthenticationManager authenticationManager;
-
-    @Mock
-    private JwtUtils jwtUtils;
-
-    @InjectMocks
+    @Autowired
     private AccountService accountService;
 
-    private Account account;
-    private RegisterRequestDTO registerRequestDTO;
-    private LoginRequestDTO loginRequestDTO;
+    @Autowired
+    private AccountRepository accountRepository;
+
+    private final Account account = new Account("testuser", "encodedPassword", "John", "Doe", Role.ADMIN, true);
+    private final RegisterRequestDTO registerRequestDTO = new RegisterRequestDTO("testuser", "passwordlongenough", "John", "Doe", "Admin");
+    private final LoginRequestDTO loginRequestDTO = new LoginRequestDTO("testuser", "passwordlongenough");
 
     @BeforeEach
     void setUp() {
-        account = new Account("testuser", "encodedPassword", "John", "Doe", Role.ADMIN, true);
-        registerRequestDTO = new RegisterRequestDTO("testuser", "passwordlongenough", "John", "Doe", "Admin");
-        loginRequestDTO = new LoginRequestDTO("testuser", "passwordlongenough");
+        accountRepository.save(account);
+    }
+
+    @AfterEach
+    void clean() {
+        accountRepository.delete(account);
     }
 
     @Test
     void testRegisterUserAlreadyExists() {
-        when(accountRepository.findByLogin(registerRequestDTO.login())).thenReturn(Optional.of(account));
-
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(registerRequestDTO));
-
         assertEquals(Error.USER_ALREADY_EXISTS, exception.error);
-        verify(accountRepository, never()).save(any());
     }
 
     @Test
     void testRegisterInvalidRole() {
-        RegisterRequestDTO invalidRoleRequest = new RegisterRequestDTO("testuser", "passwordlongenough", "John", "Doe", "INVALID_ROLE");
+        RegisterRequestDTO invalidRoleRequest = new RegisterRequestDTO("testuser2", "passwordlongenough", "John", "Doe", "INVALID_ROLE");
 
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(invalidRoleRequest));
 
         assertEquals(Error.ROLE_NOT_EXISTS, exception.error);
-        verify(accountRepository, never()).save(any());
     }
 
     @Test
     void testLoginInvalidCredentials() {
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new AuthenticationException("Invalid credentials") {});
-
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.login(loginRequestDTO));
-
         assertEquals(Error.LOGIN_PASSWORD_NOT_CORRECT, exception.error);
     }
 
@@ -91,9 +83,7 @@ class AccountServiceTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getHeader("authorization")).thenReturn("valid_token");
 
-
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.getUserAccounts(request));
         assertEquals(Error.INVALID_TOKEN, exception.error);
-        verify(accountRepository, never()).save(any());
     }
 }
