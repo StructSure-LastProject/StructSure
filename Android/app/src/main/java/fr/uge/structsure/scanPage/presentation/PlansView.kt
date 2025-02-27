@@ -143,7 +143,7 @@ private fun SensorDB.Companion.point(scanViewModel: ScanViewModel, x: Double, y:
         note =
         "",
         installationDate = null,
-        state = SensorState.UNKNOWN.name,
+        _state = SensorState.UNKNOWN.name,
         plan = selectedPlan.plan.id,
         x = x,
         y = y,
