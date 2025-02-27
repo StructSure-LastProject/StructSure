@@ -300,6 +300,14 @@ public class SensorService {
         return new SensorPositionResponseDTO(request.controlChip(), request.measureChip());
     }
 
+    /**
+     * Deletes the position information of a sensor identified by the given control and measure chips.
+     *
+     * @param controlChip The identifier of the control chip.
+     * @param measureChip The identifier of the measure chip.
+     * @return A {@link DeletePositionSensorResponseDTO} containing the control and measure chip identifiers.
+     * @throws TraitementException If the input fields are invalid or the sensor is not found.
+     */
     public DeletePositionSensorResponseDTO deletePositionOfSensor(String controlChip, String measureChip) throws TraitementException {
         if (Objects.isNull(controlChip) || Objects.isNull(measureChip)
                 || controlChip.isEmpty() || measureChip.isEmpty()) {
