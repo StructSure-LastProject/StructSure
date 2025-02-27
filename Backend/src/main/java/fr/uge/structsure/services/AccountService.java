@@ -434,8 +434,8 @@ public class AccountService {
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
         userAccount.setLogin("user_%s&=)}(|[".formatted(generatedString));
-        userAccount.setFirstname("prenom_%s".formatted(generatedString));
-        userAccount.setLastname("nom_%s".formatted(generatedString));
+        userAccount.setFirstname("Prénom anonymisé");
+        userAccount.setLastname("Nom anonymisé");
         userAccount.setPasswordEncrypted(null);
         accountRepository.save(userAccount);
         return new RegisterResponseDTO(login);
