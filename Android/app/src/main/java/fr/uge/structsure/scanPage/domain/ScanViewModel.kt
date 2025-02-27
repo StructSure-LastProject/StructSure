@@ -130,11 +130,11 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
     /**
      * Updates the note of a sensor in the modal dialog of the sensor when the scan is in progress.
-     * @param sensorId the id of the sensor to update
+     * @param sensor the sensor to update
      * @param note the new note to set
      * @return true if the note was updated, false otherwise
      */
-    fun updateSensorNote(sensorId: String, note: String): Boolean {
+    fun updateSensorNote(sensor: SensorDB, note: String): Boolean {
         if (activeScanId == null) {
             noteErrorMessage.postValue("Aucun scan en cours")
             return false
@@ -143,8 +143,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
         if (note.length > 1000) return false
         activeScanId?.let { scanId ->
             viewModelScope.launch(Dispatchers.IO) {
-                db.sensorDao().updateNote(sensorId, note)
-                db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_NOTE, sensorId))
+                db.sensorDao().updateNote(sensor.sensorId, note)
+                db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_NOTE, sensor.sensorId))
+                refreshSensorStates()
             }
         }
         return true
