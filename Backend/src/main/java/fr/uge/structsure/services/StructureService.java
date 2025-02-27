@@ -3,6 +3,7 @@ package fr.uge.structsure.services;
 import fr.uge.structsure.dto.plan.PlanDTO;
 import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
 import fr.uge.structsure.dto.structure.*;
+import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
@@ -212,15 +213,22 @@ public class StructureService {
         List<AllStructureResponseDTO> structures = structureRepositoryCriteriaQuery.findAllStructuresWithState(allStructureRequestDTO);
         var allowedStructures = userSessionAccount.getAllowedStructures();
 
-        List<AllStructureResponseDTO> filteredStructures = structures.stream()
-                .filter(structure -> allowedStructures.stream()
-                        .anyMatch(allowedStructure -> allowedStructure.getId() == structure.id()))
-                .toList();
+        if (userSessionAccount.getRole() != Role.ADMIN){
+            List<AllStructureResponseDTO> filteredStructures = structures.stream()
+                    .filter(structure -> allowedStructures.stream()
+                            .anyMatch(allowedStructure -> allowedStructure.getId() == structure.id()))
+                    .toList();
 
-        if (filteredStructures.isEmpty()) {
+            if (filteredStructures.isEmpty()) {
+                throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);
+            }
+            return filteredStructures;
+        }
+        if (structures.isEmpty()) {
             throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);
         }
-        return filteredStructures;
+        return structures;
+
     }
 
     /**
@@ -256,7 +264,7 @@ public class StructureService {
         Objects.requireNonNull(httpServletRequest);
         var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpServletRequest, accountRepository);
         var allowedStructures = userSessionAccount.getAllowedStructures();
-        if (allowedStructures.stream().noneMatch(structure -> structure.getId() == id)){
+        if (userSessionAccount.getRole() != Role.ADMIN && allowedStructures.stream().noneMatch(structure -> structure.getId() == id)){
             throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
         }
         var structureOpt = structureRepository.findById(id);

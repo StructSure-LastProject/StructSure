@@ -77,12 +77,6 @@ function StructureDetailCapteurs({structureId, setSensors, selectedPlanId, senso
             <div class="flex justify-between">
                 <p class="title">Capteurs</p>
                 <div class="flex justify-between gap-x-[10px]">
-                    <div class="w-10 h-10 rounded-[50px] bg-white flex justify-center items-center">
-                        <ArrowDownNarrowWide size={20}/>
-                    </div>
-                    <div class="w-10 h-10 rounded-[50px] bg-white flex justify-center items-center">
-                        <Filter size={20}/>
-                    </div>
                     <Show when={isAuthorized()}>
                         <button
                             title="Ajouter un capteur"
