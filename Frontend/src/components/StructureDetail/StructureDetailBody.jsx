@@ -126,11 +126,12 @@ function StructureDetailBody(props) {
 
     /**
      * Sets the sensor in the structure details
-     * @param {list} sensorsList list of the sensors
+     * @param {Array} s list of the sensors
      */
-    const setSensorsDetail = (sensorsList) => {
-        setStructureDetails(prev => ({ ...prev, sensorsList }));
+    const setSensorsDetail = (s) => {
+        setStructureDetails(prev => ({ ...prev, sensors: s }));
     };
+
 
 
     return (
@@ -143,7 +144,7 @@ function StructureDetailBody(props) {
                 setSelectedPlanId={setSelectedPlanId}
                 planSensors={planSensors}
                 setPlanSensors={setPlanSensors}
-                setSensors={setSensorsDetail}
+                setSensorsDetail={setSensorsDetail}
             />
             <StructureDetailRow selectedScan={selectedScan} structureDetails={structureDetails} structureId={props.structureId} setSensors={setSensors} selectedPlanId={selectedPlanId} sensors={sensors} totalItems={totalItems} setTotalItems={setTotalItems} />
         </div>

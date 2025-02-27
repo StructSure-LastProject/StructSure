@@ -66,7 +66,7 @@ public class SensorController {
     }
 
     /**
-     * Endpoint to get the lis of sensors prensent in a plan
+     * Endpoint to get the list of sensors prensent in a plan
      * @return List of the sensors
      */
     @GetMapping("/structures/{structureId}/plan/{planId}/sensors")
@@ -79,6 +79,22 @@ public class SensorController {
             return e.toResponseEntity();
         }
     }
+
+    /**
+     * Endpoint to delete the position of a sensor in a plan
+     */
+    @DeleteMapping("/sensors/{controlChip}/{measureChip}/position/delete")
+    public ResponseEntity<?> deletePositionOfSensor(@PathVariable("controlChip") String controlChip,
+                                                    @PathVariable("measureChip") String measureChip) {
+        try {
+            DeletePositionSensorResponseDTO deteletedSensor = sensorService.deletePositionOfSensor(controlChip, measureChip);
+            return ResponseEntity.ok(deteletedSensor);
+        } catch (TraitementException e) {
+            return e.toResponseEntity();
+        }
+    }
+
+
 
 
     /**
@@ -107,4 +123,6 @@ public class SensorController {
             return e.toResponseEntity();
         }
     }
+
+
 }

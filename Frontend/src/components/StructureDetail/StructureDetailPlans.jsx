@@ -34,7 +34,6 @@ export const planImageFetchRequest = async (planId, setPlan) => {
  * @returns the component for the plans part
  */
 function StructureDetailPlans(props) {
- 
 
     // Plans and modals state management
     const [plans, setPlans] = createSignal([]);
@@ -211,7 +210,7 @@ function StructureDetailPlans(props) {
                         <div class="w-full relative">
                             <Show when={plan() !== null}>
                                 <StructureDetailCanvas structureId={props.structureId} plan={plan} interactiveMode={true} planSensors={props.planSensors} structureDetails={props.structureDetails} 
-                                setPlanSensors={props.setPlanSensors} setSensors={props.setSensors} selectedPlanId={props.selectedPlanId}/>
+                                setPlanSensors={props.setPlanSensors} setSensorsDetail={props.setSensorsDetail} selectedPlanId={props.selectedPlanId}/>
                             </Show>
                         </div>
                     </div>
