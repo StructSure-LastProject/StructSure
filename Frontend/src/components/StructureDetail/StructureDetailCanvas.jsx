@@ -3,6 +3,7 @@ import { Check, ChevronDown, Trash2 } from 'lucide-solid';
 import useFetch from '../../hooks/useFetch';
 import Alert from '../Alert';
 import getSensorStatusColor from "../SensorStatusColorGen";
+import { planSensorsFetchRequest } from "./StructureDetailBody";
 import { useNavigate } from "@solidjs/router";
 
 /**
@@ -39,6 +40,8 @@ function StructureDetailCanvas(props) {
     const [isOpen, setIsOpen] = createSignal(false);
 
     const [selectedSensor, setSelectedSensor] = createSignal(null);
+    const navigate = useNavigate();
+
 
     /**
      * Reset the values when a plan changed
@@ -50,7 +53,6 @@ function StructureDetailCanvas(props) {
         setBaseOffsetX(0);
         setBaseOffsetY(0);
         setIsPopupVisible(false);
-        setClickExistingPoint(null);
         setIsOpen(false);
         isMouseDown = false;
         hasMoved = false;
@@ -62,6 +64,7 @@ function StructureDetailCanvas(props) {
             detailSensor.x == null && detailSensor.y == null & detailSensor.name?.toLowerCase().includes(inputValue().toLowerCase() || "")
         );
     });
+    
 
     /**
      * Updates data when a sensor is placed in the canvas
@@ -73,16 +76,69 @@ function StructureDetailCanvas(props) {
                 x: popupX(),
                 y: popupY()
             };
-            props.setPlanSensors(props.planSensors().map(sensor =>
-                sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
+            props.setSensorsDetail(props.structureDetails().sensors.map(sensor =>
+                sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip 
+                ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
             ));
-            props.setSensors(props.structureDetails().sensors.map(sensor =>
-                sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
-            ));
+            props.setSensors(
+                props.sensors().map(sensor =>
+                    sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip 
+                    ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
+                )
+            );
+            planSensorsFetchRequest(props.structureId, props.setPlanSensors, props.selectedPlanId(), navigate);
             setSelectedSensor(null);
             setInputValue("");
             setIsPopupVisible(false);    
             drawImage();
+        }
+    };
+
+     /**
+     * Updates data when a sensor is deleted from canvas
+     */
+    const updateWhenSensorPositionDeleted = () => {
+        if (clickExistingPoint()) {
+
+            planSensorsFetchRequest(props.structureId, props.setPlanSensors, props.selectedPlanId(), navigate);
+            const newDetailSensors = props.structureDetails().sensors.map(sensor => {
+                return sensor.controlChip === clickExistingPoint().controlChip && sensor.measureChip === clickExistingPoint().measureChip
+                    ? { ...sensor, x: null, y: null }
+                    : sensor
+            }
+            );
+            props.setSensorsDetail(newDetailSensors);
+            setClickExistingPoint(null);
+            setInputValue("");
+            setIsPopupVisible(false);
+            drawImage();
+        }
+    };
+
+
+    /**
+     * Will call the endpoint that deletes a position of sensor in a plan
+     */
+    const deletePositionRequest = async (controlChip, measureChip) => {
+        const { fetchData, statusCode, error } = useFetch();
+        const token = localStorage.getItem("token");
+
+        const url = `/api/sensors/${controlChip}/${measureChip}/position/delete`;
+
+        const requestData = {
+            method: "DELETE",  // Changer GET en POST
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        };
+
+        await fetchData(navigate, url, requestData);
+
+        if (statusCode() === 200) {
+            updateWhenSensorPositionDeleted();
+        } else if (statusCode() === 404 || statusCode() === 422) {
+            setErrorFront(error().errorData.error);
         }
     };
 
@@ -92,7 +148,6 @@ function StructureDetailCanvas(props) {
      */
     const positionSensorFetchRequest = async (structureId, controlChip, measureChip, planId, x, y) => {
         const { fetchData, statusCode, error } = useFetch();
-        const navigate = useNavigate();
     
         const requestBody = {
             structureId: structureId,
@@ -647,7 +702,11 @@ function StructureDetailCanvas(props) {
                                     </button>
                                 </Show>
                                 <Show when={clickExistingPoint()}>
-                                    <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                                    <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onClick={() => {
+                                        if (clickExistingPoint()) {
+                                            deletePositionRequest(clickExistingPoint().controlChip, clickExistingPoint().measureChip);
+                                        }
+                                    }}>
                                         <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
                                     </button>
                                 </Show>

@@ -208,7 +208,7 @@ function StructureDetailPlans(props) {
                         <div class="w-full relative">
                             <Show when={plan() !== null}>
                                 <StructureDetailCanvas structureId={props.structureId} plan={plan} interactiveMode={true} planSensors={props.planSensors} structureDetails={props.structureDetails} 
-                                setPlanSensors={props.setPlanSensors} setSensors={props.setSensors} selectedPlanId={props.selectedPlanId}/>
+                                setPlanSensors={props.setPlanSensors} sensors={props.sensors} setSensors={props.setSensors} setSensorsDetail={props.setSensorsDetail} selectedPlanId={props.selectedPlanId}/>
                             </Show>
                         </div>
                     </div>
