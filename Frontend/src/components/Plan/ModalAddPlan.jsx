@@ -1,9 +1,10 @@
 import {createSignal, Show} from "solid-js";
-import useFetch from "../../hooks/useFetch.js";
+import useFetch from "../../hooks/useFetch";
 import ModalHeader from "../Modal/ModalHeader.jsx";
 import ErrorMessage from "../Modal/ErrorMessage.jsx";
 import ModalField from "../Modal/ModalField.jsx";
 import ModalImage from "../Modal/ModalImage.jsx";
+import { useNavigate } from "@solidjs/router";
 
 /**
  * Modal for adding a plan.
@@ -18,6 +19,7 @@ const ModalAddPlan = ({ isOpen, onClose, onSave, structureId }) => {
   const [imageFile, setImageFile] = createSignal(null);
   const [errorMsg, setError] = createSignal("");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
+  const navigate = useNavigate();
 
   /**
    * Handles image file input change.
@@ -85,7 +87,7 @@ const ModalAddPlan = ({ isOpen, onClose, onSave, structureId }) => {
 
     const { fetchData, data, statusCode, error } = useFetch();
 
-    await fetchData(`/api/structures/${structureId}/plans`, {
+    await fetchData(navigate, `/api/structures/${structureId}/plans`, {
       method: "POST",
       body: formData
     });

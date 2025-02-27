@@ -59,12 +59,10 @@ function LstStructureHead() {
         };
 
         const { fetchData, statusCode, errorFetch } = useFetch();
-        await fetchData(url, requestData);
+        await fetchData(navigate, url, requestData);
         
         if (statusCode() === 201) {
             location.reload();
-        } else if (statusCode() === 401) {
-            navigate("/login");
         } else {
             setError(errorFetch());
         }

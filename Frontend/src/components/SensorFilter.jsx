@@ -143,13 +143,11 @@ const CheckBoxComponent = ({description, value, setter}) => {
  * @returns The component
  */
 const SensorFilter = ({structureId, setSensors, limit, offset, setTotalItems}) => {
-    const navigate = useNavigate();
     const SORT_VALUES = {
         "Tout" : "Tout", "Nom": "NAME", "Etat": "STATE", "Date d'installation": "INSTALLATION_DATE"
     };
     const FILTER_VALUES = {"Tout" : "Tout", "OK" : "OK", "NOK" : "NOK", "Défaillant" : "DEFECTIVE", "Non détecté" : "UNKNOWN"};
 
-    
     const [orderByColumn, setOrderByColumn] = createSignal(SORT_VALUES.Tout);
     const [orderType, setOrderType] = createSignal(true);
     const [isCheckedPlanFilter, setIsCheckedPlanFilter] = createSignal(false);
@@ -157,6 +155,7 @@ const SensorFilter = ({structureId, setSensors, limit, offset, setTotalItems}) =
     const [startDate, setStartDate] = createSignal("");
     const [endDate, setEndDate] = createSignal("");
     const [statefilter, setStateFilter] = createSignal(FILTER_VALUES.Tout);
+    const navigate = useNavigate();
 
     /**
      * Create effect to update sensors when filter added

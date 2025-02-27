@@ -3,6 +3,7 @@ import { Check, ChevronDown, Trash2 } from 'lucide-solid';
 import useFetch from '../../hooks/useFetch';
 import Alert from '../Alert';
 import getSensorStatusColor from "../SensorStatusColorGen";
+import { useNavigate } from "@solidjs/router";
 
 /**
  * Shows the plans part
@@ -91,6 +92,7 @@ function StructureDetailCanvas(props) {
      */
     const positionSensorFetchRequest = async (structureId, controlChip, measureChip, planId, x, y) => {
         const { fetchData, statusCode, error } = useFetch();
+        const navigate = useNavigate();
     
         const requestBody = {
             structureId: structureId,
@@ -111,7 +113,7 @@ function StructureDetailCanvas(props) {
             body: JSON.stringify(requestBody) // Ajouter les paramètres dans le body
         };
     
-        await fetchData(requestUrl, requestData);
+        await fetchData(navigate, requestUrl, requestData);
     
         if (statusCode() === 200) {
             updateWhenSensorPlaced();

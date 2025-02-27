@@ -35,15 +35,11 @@ function StructSureBody() {
             }
         };
 
-        
-        await fetchData(urlWithParams, requestData);
- 
+        await fetchData(navigate, urlWithParams, requestData);
 
         if (statusCode() === 200) {
             const res = data()
-            setStructures(res);
-        } else if (statusCode() === 401) {
-            navigate("/login");
+            setStructures(res);   
         } else {
             setErrorStructurePage(error().errorData.error);
         }

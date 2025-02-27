@@ -45,12 +45,13 @@ function Login() {
         };
 
         const { fetchData, statusCode, data, error } = useFetch();
-        await fetchData(url, requestData);
+        await fetchData(navigate, url, requestData);
 
         if (statusCode() === 200) {
             const response = data();
             fillLocalStorage(response);
-            navigate("/");
+            const forward = localStorage.getItem("loginForward");
+            navigate(forward == null ? "/" : forward);
         } else if (statusCode() === 404) {
             setErrorFront(error().errorData.error);
         }

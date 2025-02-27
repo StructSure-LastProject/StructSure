@@ -3,6 +3,7 @@ import { createEffect, createResource, createSignal } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
 import useFetch from '../../hooks/useFetch';
 import AccountStructureSection from './AccountStructureSection';
+import { useNavigate } from '@solidjs/router';
 
 /**
  * Edit account modal component
@@ -22,9 +23,8 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     const [apiError, setApiError] = createSignal("");
     const [structureSelection, setStructureSelection] = createSignal([]);
     const copyOfStructureSelection = [];
-
-
     const login = userDetails.login;
+    const navigate = useNavigate();
     const { fetchData, data, statusCode, error } = useFetch();
 
 
@@ -150,7 +150,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
             }
         };
 
-        await fetchData(`/api/accounts/${login}/structures`, requestData);
+        await fetchData(navigate, `/api/accounts/${login}/structures`, requestData);
 
         if (statusCode() === 200) {
             setStructureSelection(data().structureAccessDetailsList);
@@ -171,7 +171,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
         const token = localStorage.getItem("token")
 
-        
         if (errorModal().length === 0) {
             const updatedFields = [];
 
@@ -238,13 +237,13 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
             }
 
             if (updatedFields.includes("structures")) {
-                await fetchData(`/api/accounts/${userDetails.login}/access`, createRequestData("POST", { access: structureSelection() }));
+                await fetchData(navigate, `/api/accounts/${userDetails.login}/access`, createRequestData("POST", { access: structureSelection() }));
                 if (statusCode() === 200) {
                     updatedFields.pop("structures");
                 }
             }
             
-            await fetchData("/api/accounts/reset", createRequestData("PUT", requestBody));
+            await fetchData(navigate, "/api/accounts/reset", createRequestData("PUT", requestBody));
 
             
             let editError = "";

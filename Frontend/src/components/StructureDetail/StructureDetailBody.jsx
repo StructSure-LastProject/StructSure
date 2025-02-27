@@ -22,7 +22,7 @@ export const planSensorsFetchRequest = async (structureId, setPlanSensors, planI
     };
 
     const { fetchData, statusCode, data, errorFetch } = useFetch();
-    await fetchData(`/api/structures/${structureId}/plan/${planId}/sensors`, requestData);
+    await fetchData(navigate, `/api/structures/${structureId}/plan/${planId}/sensors`, requestData);
     if (statusCode() === 200) {
         setPlanSensors(data());
     } else if (statusCode() === 401) {
@@ -65,7 +65,7 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
         body: JSON.stringify(requestBody) // Ajouter les paramètres dans le body
     };
 
-    await fetchData(requestUrl, requestData);
+    await fetchData(navigate, requestUrl, requestData);
 
     if (statusCode() === 200) {
         setTotalItems(data().sizeOfResult);
@@ -87,9 +87,8 @@ function StructureDetailBody(props) {
     const [selectedPlanId, setSelectedPlanId] = createSignal(null);
 
     const [totalItems, setTotalItems] = createSignal(0);
-    const navigate = useNavigate();
-
     const [selectedScan, setSelectedScan] = createSignal(-1);
+    const navigate = useNavigate();
 
 
 
@@ -106,7 +105,7 @@ function StructureDetailBody(props) {
             }
         };
         const { fetchData, statusCode, data, errorFetch } = useFetch();
-        await fetchData(`/api/structures/${structureId}`, requestData);
+        await fetchData(navigate, `/api/structures/${structureId}`, requestData);
         if (statusCode() === 200) {
             setStructureDetails(data());
         } 

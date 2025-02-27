@@ -1,4 +1,5 @@
 import { X, ChevronDown } from 'lucide-solid';
+import { useNavigate } from '@solidjs/router';
 import { createSignal } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
 import useFetch from '../../hooks/useFetch';
@@ -19,6 +20,7 @@ const AddAccountModal = ({ closeModal }) => {
     const [accountState, setAccountState] = createSignal(true);
     const [errorModal, setErrorModal] = createSignal([]);
     const [apiError, setApiError] = createSignal("");
+    const navigate = useNavigate();
 
     /**
      * Roles
@@ -85,8 +87,8 @@ const AddAccountModal = ({ closeModal }) => {
                 body: JSON.stringify(requestBody),
             };
     
-            await fetchData("/api/accounts", requestData);
-
+            await fetchData(navigate, "/api/accounts", requestData);
+            
             let creationError = "";
             if(error() !== null){
                 creationError = error().errorData.error;

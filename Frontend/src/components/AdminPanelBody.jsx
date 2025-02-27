@@ -46,13 +46,10 @@ const AdminPanelBody = () => {
         };
         
         const { fetchData, data, statusCode } = useFetch();
-        await fetchData("/api/accounts", requestData);
+        await fetchData(navigate, "/api/accounts", requestData);
         
         if (statusCode() === 200) {
             setUsers(data());            
-        }
-        else if (statusCode() === 401){
-            navigate("/login");
         }
         else if (statusCode() === 422){
             navigate("/");

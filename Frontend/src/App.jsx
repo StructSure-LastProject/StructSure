@@ -5,6 +5,7 @@ import Account from "./pages/Account";
 import Home from "./pages/Home";
 import StructSureDetail from "./pages/StructureDetail";
 import AdminPanel from "./pages/AdminPanel";
+import useFetch from "./hooks/useFetch";
 
 /**
  * Checks if the user have the right to acces the component
@@ -17,6 +18,8 @@ function RequireAuth(Component) {
     createEffect(() => {
       const token = localStorage.getItem("token");
       if (!token) {
+        const currentRoute = window.location.pathname + window.location.search
+        if (!currentRoute.startsWith("/login")) localStorage.setItem("loginForward", currentRoute);
         navigate("/login", { replace: true });
       }
     });
