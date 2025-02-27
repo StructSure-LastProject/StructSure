@@ -188,30 +188,42 @@ public class ScanService {
      * @param edits All the editions done on sensors during the scan
      * @throws TraitementException if there's an error during processing
      */
-    /**
-     * Updates sensors or creates new ones based on the edits from the scan.
-     *
-     * @param edits All the editions done on sensors during the scan
-     * @throws TraitementException if there's an error during processing
-     */
     private void processEdits(List<AndroidSensorEditDTO> edits) throws TraitementException {
         var sensors = new ArrayList<Sensor>();
 
         for (var edit : edits) {
             var sensorId = SensorId.from(edit.sensorId());
             var existingSensor = sensorRepository.findBySensorId(sensorId);
-
+            var structure = findStructure(edit.structureId());
             if (existingSensor.isPresent()) {
                 Sensor sensor = existingSensor.get();
                 if (edit.note() != null) sensor.setNote(edit.note());
                 sensors.add(sensor);
             }
             else if (edit.controlChip() != null && edit.measureChip() != null) {
-                Sensor newSensor = new Sensor();
-                newSensor.setSensorId(sensorId);
-                if (edit.name() != null) newSensor.setName(edit.name());
-                if (edit.note() != null) newSensor.setNote(edit.note());
-                if (edit.plan() != null) setPlan(edit, newSensor);
+                if (edit.name() == null || edit.name().isBlank()) {
+                    throw new TraitementException(Error.SENSOR_NAME_IS_EMPTY);
+                }
+
+                if (sensorRepository.nameAlreadyExists(edit.name())) {
+                    throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
+                }
+
+                if (sensorRepository.chipTagAlreadyExists(edit.controlChip())) {
+                    throw new TraitementException(Error.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
+                }
+
+                Sensor newSensor = new Sensor(
+                        edit.controlChip(),
+                        edit.measureChip(),
+                        edit.name(),
+                        edit.note() != null ? edit.note() : "",
+                        structure
+                );
+
+                if (edit.plan() != null) {
+                    setPlan(edit, newSensor);
+                }
                 sensors.add(newSensor);
             }
         }

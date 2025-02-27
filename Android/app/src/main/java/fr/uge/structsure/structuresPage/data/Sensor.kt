@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 
-
 data class Sensor(
     val controlChip: String,
     val measureChip: String,
