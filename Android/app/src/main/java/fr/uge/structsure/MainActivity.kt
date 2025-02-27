@@ -27,14 +27,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.csl.cslibrary4a.Cs108Library4A
-import fr.uge.structsure.alertes.Alerte
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector.Companion.bluetoothAdapter
 import fr.uge.structsure.connexionPage.ConnexionCard
 import fr.uge.structsure.database.AppDatabase
 import fr.uge.structsure.retrofit.RetrofitInstance
-import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.domain.ScanViewModel
+import fr.uge.structsure.scanPage.presentation.AlertPage
 import fr.uge.structsure.scanPage.presentation.ScanPage
 import fr.uge.structsure.settingsPage.presentation.SettingsPage
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
@@ -108,11 +107,10 @@ class MainActivity : ComponentActivity() {
                     ConnexionCard(navController, route, accountDao, structureViewModel)
                     SetDynamicStatusBar()
                 }
-                composable("Alerte?state={state}&name={name}&lastState={lastState}") { backStackEntry ->
+                composable("Alerte?state={state}&sensorId={sensorId}") { backStackEntry ->
                     val state = backStackEntry.arguments?.getString("state")?.toBoolean() ?: true
-                    val name = backStackEntry.arguments?.getString("name").orEmpty()
-                    val lastState = backStackEntry.arguments?.getString("lastState").orEmpty()
-                    Alerte(navController, state, name, lastState)
+                    val sensorId = backStackEntry.arguments?.getString("sensorId").orEmpty()
+                    AlertPage(navController, scanViewModel.planViewModel, state, sensorId)
                     SetDynamicStatusBar()
                 }
 

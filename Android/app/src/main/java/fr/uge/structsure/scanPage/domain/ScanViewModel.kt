@@ -347,25 +347,11 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             }
             SensorState.NOK -> {
                 pauseScan()
-                val previousState = SensorState.from(sensor.state).displayName
-                alertMessages.postValue(
-                    AlertInfo(
-                        state = true,
-                        sensorName = "Capteur ${sensor.name}",
-                        lastStateSensor = previousState
-                    )
-                )
+                alertMessages.postValue( AlertInfo(true, sensor.sensorId) )
             }
             SensorState.DEFECTIVE -> {
                 pauseScan()
-                val previousState = SensorState.from(sensor.state).displayName
-                alertMessages.postValue(
-                    AlertInfo(
-                        state = false,
-                        sensorName = "Capteur ${sensor.name}",
-                        lastStateSensor = previousState
-                    )
-                )
+                alertMessages.postValue( AlertInfo(false, sensor.sensorId) )
             }
             else -> Unit
         }

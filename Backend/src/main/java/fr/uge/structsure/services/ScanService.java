@@ -35,6 +35,7 @@ public class ScanService {
     private final AccountRepository accountRepository;
     private final SensorRepository sensorRepository;
     private final SensorService sensorService;
+    private final PlanRepository planRepository;
 
     /**
      * Constructs a new ScanService with the necessary repositories.
@@ -47,18 +48,19 @@ public class ScanService {
      */
     @Autowired
     public ScanService(
-            ScanRepository scanRepository,
-            ResultRepository resultRepository,
-            StructureRepository structureRepository,
-            AccountRepository accountRepository,
-            SensorRepository sensorRepository,
-            SensorService sensorService) {
+        ScanRepository scanRepository,
+        ResultRepository resultRepository,
+        StructureRepository structureRepository,
+        AccountRepository accountRepository,
+        SensorRepository sensorRepository,
+        SensorService sensorService, PlanRepository planRepository) {
         this.resultRepository = Objects.requireNonNull(resultRepository);
         this.scanRepository = Objects.requireNonNull(scanRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.sensorService = Objects.requireNonNull(sensorService);
+        this.planRepository = planRepository;
     }
 
     /**
@@ -197,12 +199,35 @@ public class ScanService {
                 .orElseGet(() -> getIfValid(edit, scan.getStructure()));
             if (sensor == null) break; // cannot save this sensor
             if (edit.note() != null) sensor.setNote(edit.note());
+            if (edit.plan() != null) setPlan(edit, sensor);
             sensors.add(sensor);
         }
 
         if (!sensors.isEmpty()) {
             sensorRepository.saveAll(sensors);
         }
+    }
+
+
+    /**
+     * Updates the given sensor with the plan and position found in
+     * the given edit. The plan from the edit is assumed non-null.
+     * @param edit the Android data containing new plan values
+     * @param sensor the sensor to put values in
+     */
+    private void setPlan(AndroidSensorEditDTO edit, Sensor sensor) {
+        if (edit.x() == null || edit.y() == null) {
+            LOGGER.warn("Plan without coordinates received by Android will be ignored");
+            return;
+        }
+        planRepository.findById(edit.plan()).ifPresentOrElse(
+            plan -> {
+                sensor.setPlan(plan);
+                sensor.setX(edit.x());
+                sensor.setY(edit.y());
+            },
+            () -> LOGGER.warn("Unknown plan with ID '{}' received from Android will be ignored", edit.plan())
+        );
     }
 
     /**

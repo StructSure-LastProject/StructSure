@@ -1,4 +1,4 @@
-package fr.uge.structsure.alertes
+package fr.uge.structsure.scanPage.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -23,25 +26,30 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.R
 import fr.uge.structsure.components.ButtonText
 import fr.uge.structsure.components.Page
+import fr.uge.structsure.components.PlanForSensor
 import fr.uge.structsure.components.SensorDetails
+import fr.uge.structsure.scanPage.domain.PlanViewModel
+import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
 
 /**
  * The composable to the alert page in case of a NOK or Défaillant sensor
  * @param navController to navigate around the different pages
+ * @param planViewModel holder of the plans data
  * @param state true if NOK, false if Défaillant
- * @param sensorName the name of the sensor
- * @param lastStateSensor the last state of the sensor
+ * @param sensorId the ID of the sensor
  */
 @Composable
-fun Alerte(navController: NavController, state:Boolean, sensorName:String, lastStateSensor:String) {
+fun AlertPage(navController: NavController, planViewModel: PlanViewModel, state:Boolean, sensorId: String) {
 
     //Parameters of the page according to the state
     val colors = if(state) listOf(Color(0xFFF13327), Color(0xFFF15627)) else listOf(Color(0xFFF18527), Color(0xFFF15627))
+    val sensor by remember(sensorId) { mutableStateOf(db.sensorDao().getSensor(sensorId)) }
 
     Page (
         backgroundColor = colors[0],
@@ -63,7 +71,7 @@ fun Alerte(navController: NavController, state:Boolean, sensorName:String, lastS
             Box(
                 Modifier.weight(1.0f)
             ) {
-                AlertDetails(state, sensorName, lastStateSensor)
+                AlertDetails(planViewModel, state, sensor)
             }
             ButtonText("Poursuivre le scan", null, Red, White) {
                 // Putting "ScanPage" prevent from double clicking and going to the homepage
@@ -76,12 +84,12 @@ fun Alerte(navController: NavController, state:Boolean, sensorName:String, lastS
 /**
  * Block containing all the details about the alert (error message,
  * sensor details, ...)
+ * @param planViewModel holder of plans data
  * @param state whether or not the sensor is NOK or not
- * @param sensorName the name of the failing sensor
- * @param lastStateSensor last known state of sensor
+ * @param sensor the data of the sensor
  */
 @Composable
-private fun AlertDetails(state: Boolean, sensorName: String, lastStateSensor: String) {
+private fun AlertDetails(planViewModel: PlanViewModel, state: Boolean, sensor: SensorDB?) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(25.dp, Alignment.CenterVertically),
@@ -97,17 +105,21 @@ private fun AlertDetails(state: Boolean, sensorName: String, lastStateSensor: St
             style = MaterialTheme.typography.titleLarge
         )
 
-        SensorDetails(White, "Nom du capteur :", sensorName, "Dernier état :", lastStateSensor)
+        SensorDetails(White,
+            "Nom du capteur :", sensor?.name ?: "?",
+            "Dernier état :", sensor?.state ?: "Inconnu")
 
-        Plan()
+        PlanForSensor(planViewModel, sensor, White)
 
         // Sensor note
-        Text(
-            modifier = Modifier.padding(horizontal = 50.dp).alpha(.5f),
-            text = "Capteur caché derrière la poutre métallique à environ 30cm du point d'ancrage.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            color = White,
-        )
+        sensor?.note?.let {
+            Text(
+                modifier = Modifier.padding(horizontal = 50.dp).alpha(.5f),
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = White,
+            )
+        }
     }
 }
