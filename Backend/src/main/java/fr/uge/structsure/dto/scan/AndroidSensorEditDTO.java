@@ -13,6 +13,5 @@ public record AndroidSensorEditDTO(
     String note,
     Long plan,
     Integer x,
-    Integer y,
-    Long structureId
+    Integer y
 ) {}

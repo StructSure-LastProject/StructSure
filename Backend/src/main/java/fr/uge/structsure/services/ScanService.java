@@ -2,6 +2,7 @@ package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.scan.AndroidScanResultDTO;
 import fr.uge.structsure.dto.scan.AndroidSensorEditDTO;
+import fr.uge.structsure.dto.sensors.BaseSensorDTO;
 import fr.uge.structsure.entities.*;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
@@ -26,14 +27,14 @@ import java.util.Objects;
 @Service
 public class ScanService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScanService.class);
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.[SSS][SS][S]");
 
     private final ResultRepository resultRepository;
     private final ScanRepository scanRepository;
     private final StructureRepository structureRepository;
     private final AccountRepository accountRepository;
     private final SensorRepository sensorRepository;
-    private final PlanRepository planRepository;
+    private final SensorService sensorService;
 
     /**
      * Constructs a new ScanService with the necessary repositories.
@@ -43,7 +44,6 @@ public class ScanService {
      * @param structureRepository Repository for Structure entities
      * @param accountRepository   Repository for Account entities
      * @param sensorRepository    Repository for Sensor entities
-     * @param planRepository      Repository for Plan entities
      */
     @Autowired
     public ScanService(
@@ -52,14 +52,13 @@ public class ScanService {
             StructureRepository structureRepository,
             AccountRepository accountRepository,
             SensorRepository sensorRepository,
-            PlanRepository planRepository
-    ) {
+            SensorService sensorService) {
         this.resultRepository = Objects.requireNonNull(resultRepository);
         this.scanRepository = Objects.requireNonNull(scanRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
-        this.planRepository = Objects.requireNonNull(planRepository);
+        this.sensorService = Objects.requireNonNull(sensorService);
     }
 
     /**
@@ -72,36 +71,31 @@ public class ScanService {
      */
     @Transactional
     public void saveScanResults(AndroidScanResultDTO scanData) throws TraitementException {
-        validateScanData(scanData);
-        if (scanAlreadyExists(scanData)) return;
+        if (!isValidScanData(scanData) || scanAlreadyExists(scanData)) return;
 
         Structure structure = findStructure(scanData.structureId());
         Account account = findAccount(scanData.login());
 
         Scan scan = createScan(structure, scanData, account);
-        processEdits(scanData.sensorEdits());
+        processEdits(scanData.sensorEdits(), scan);
         List<Result> results = processResults(scan, scanData);
 
         resultRepository.saveAll(results);
-        LOGGER.info(
-            "Saved {} results and {} edits for scan {}",
-            results.size(),
-            scanData.sensorEdits().size(),
-            scanData.scanId()
-        );
+        LOGGER.info("Saved {} results and {} edits for scan {}",
+            results.size(), scanData.sensorEdits().size(), scanData.scanId());
     }
 
     /**
      * Validates the received scan data.
      *
      * @param scanData The scan data to validate
-     * @throws TraitementException If the scan data is invalid (e.g., empty results)
      */
-    private void validateScanData(AndroidScanResultDTO scanData) throws TraitementException {
+    private boolean isValidScanData(AndroidScanResultDTO scanData)  {
         if (scanData.results().isEmpty() && scanData.sensorEdits().isEmpty()) {
-            LOGGER.warn("Received empty scan results, ignoring");
-            throw new TraitementException(Error.INVALID_FIELDS);
+            LOGGER.warn("Received empty scan, ignoring");
+            return false;
         }
+        return true;
     }
 
     /**
@@ -186,46 +180,19 @@ public class ScanService {
      * Updates sensors or creates new ones based on the edits from the scan.
      *
      * @param edits All the editions done on sensors during the scan
+     * @param scan details of the main scan object
      * @throws TraitementException if there's an error during processing
      */
-    private void processEdits(List<AndroidSensorEditDTO> edits) throws TraitementException {
+    private void processEdits(List<AndroidSensorEditDTO> edits, Scan scan) throws TraitementException {
         var sensors = new ArrayList<Sensor>();
 
         for (var edit : edits) {
             var sensorId = SensorId.from(edit.sensorId());
-            var existingSensor = sensorRepository.findBySensorId(sensorId);
-            var structure = findStructure(edit.structureId());
-            if (existingSensor.isPresent()) {
-                Sensor sensor = existingSensor.get();
-                if (edit.note() != null) sensor.setNote(edit.note());
-                sensors.add(sensor);
-            }
-            else if (edit.controlChip() != null && edit.measureChip() != null) {
-                if (edit.name() == null || edit.name().isBlank()) {
-                    throw new TraitementException(Error.SENSOR_NAME_IS_EMPTY);
-                }
-
-                if (sensorRepository.nameAlreadyExists(edit.name())) {
-                    throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
-                }
-
-                if (sensorRepository.chipTagAlreadyExists(edit.controlChip())) {
-                    throw new TraitementException(Error.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
-                }
-
-                Sensor newSensor = new Sensor(
-                        edit.controlChip(),
-                        edit.measureChip(),
-                        edit.name(),
-                        edit.note() != null ? edit.note() : "",
-                        structure
-                );
-
-                if (edit.plan() != null) {
-                    setPlan(edit, newSensor);
-                }
-                sensors.add(newSensor);
-            }
+            var sensor = sensorRepository.findBySensorId(sensorId)
+                .orElseGet(() -> getIfValid(edit, scan.getStructure()));
+            if (sensor == null) break; // cannot save this sensor
+            if (edit.note() != null) sensor.setNote(edit.note());
+            sensors.add(sensor);
         }
 
         if (!sensors.isEmpty()) {
@@ -234,24 +201,62 @@ public class ScanService {
     }
 
     /**
-     * Updates the given sensor with the plan and position found in
-     * the given edit. The plan from the edit is assumed non-null.
-     * @param edit the Android data containing new plan values
-     * @param sensor the sensor to put values in
+     * Gets a Sensor from the given edit with its chips, name and note
+     * if it can be converted to a valid sensor.
+     * @param edit the data to create a sensor from
+     * @param structure the structure to put the sensor in
+     * @return the sensor or null if invalid
      */
-    private void setPlan(AndroidSensorEditDTO edit, Sensor sensor) {
-        if (edit.x() == null || edit.y() == null) {
-            LOGGER.warn("Plan without coordinates received by Android will be ignored");
-            return;
-        }
-        planRepository.findById(edit.plan()).ifPresentOrElse(
-            plan -> {
-                sensor.setPlan(plan);
-                sensor.setX(edit.x());
-                sensor.setY(edit.y());
-            },
-            () -> LOGGER.warn("Unknown plan with ID '{}' received from Android will be ignored", edit.plan())
+    private Sensor getIfValid(AndroidSensorEditDTO edit, Structure structure) {
+        if (!isValidNewSensor(edit)) return null;
+        var name = checkNewSensorName(edit.name());
+        if (name == null) return null;
+        return new Sensor(
+            edit.controlChip(),
+            edit.measureChip(),
+            name,
+            edit.note() != null ? edit.note() : "",
+            structure
         );
+    }
+
+    /**
+     * Asks the Sensor service to check if the given edit contains
+     * valid sensor data or not.
+     * @param edit the data to check
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidNewSensor(AndroidSensorEditDTO edit) {
+        try {
+            sensorService.addPlanAsserts(new BaseSensorDTO(-1L, edit.controlChip(), edit.measureChip(), edit.name(), edit.note()));
+            if (sensorRepository.chipTagAlreadyExists(edit.controlChip())) {
+                LOGGER.warn("New sensor from scan will be ignored because of already used chips");
+                return false;
+            }
+            return true;
+        } catch (TraitementException e) {
+            LOGGER.warn("New sensor from scan will be ignored: {}", e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the given sensor names already exist or not.
+     * If so, try to add a distinctive letter after it to save it.
+     * @param name the name of the sensor to check
+     * @return the corrected name or null if invalid
+     */
+    private String checkNewSensorName(String name) {
+        if (!sensorRepository.nameAlreadyExists(name)) return name;
+        String editedName;
+        for (var i = 'A' ; i <= 'Z' ; i++) {
+            editedName = name + " " + i;
+            if (!sensorRepository.nameAlreadyExists(editedName)) {
+                return editedName;
+            }
+        }
+        LOGGER.warn("New sensor with already used name will be ignored: {}", name);
+        return null;
     }
 
     /**
@@ -263,7 +268,7 @@ public class ScanService {
     private static LocalDateTime parseDate(String date) throws TraitementException {
         try {
             return LocalDateTime.parse(date, DATETIME_FORMATTER);
-        } catch(DateTimeParseException e) {
+        } catch (DateTimeParseException e) {
             throw new TraitementException(Error.DATE_TIME_FORMAT_ERROR);
         }
     }

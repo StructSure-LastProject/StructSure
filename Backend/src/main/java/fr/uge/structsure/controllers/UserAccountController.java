@@ -62,7 +62,7 @@ public class UserAccountController {
         try {
             return ResponseEntity.status(201).body(accountService.register(registerRequestDTO));
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Account creation failed: {}");
         }
     }
 
@@ -78,7 +78,7 @@ public class UserAccountController {
         try {
             return ResponseEntity.status(200).body(accountService.updateUserAccount(userUpdateRequestDTO, request));
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Account update failed: {}");
         }
     }
 
@@ -144,7 +144,7 @@ public class UserAccountController {
         try {
             return ResponseEntity.status(200).body(accountService.updateUserStructureAccess(login, userStructureAccessRequestDTO));
         } catch (TraitementException e){
-            return e.toResponseEntity();
+            return e.toResponseEntity("Account authorizations update failed: {}");
         }
     }
 
@@ -174,7 +174,7 @@ public class UserAccountController {
         try {
             return ResponseEntity.status(200).body(accountService.anonymizeTheUserAccount(login));
         } catch (TraitementException e){
-            return e.toResponseEntity();
+            return e.toResponseEntity("Account anonymization failed: {}");
         }
     }
 

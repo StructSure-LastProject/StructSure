@@ -49,21 +49,19 @@ import fr.uge.structsure.components.InputTextArea
 import fr.uge.structsure.components.PopUp
 import fr.uge.structsure.components.Select
 import fr.uge.structsure.components.Title
-import fr.uge.structsure.scanPage.data.AddSensorFormState
-import fr.uge.structsure.scanPage.data.SensorValidation
+import fr.uge.structsure.scanPage.data.SensorValidator
 import fr.uge.structsure.scanPage.data.TreePlan
 import fr.uge.structsure.scanPage.data.ValidationResult
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.structuresPage.data.FilterOption
-import fr.uge.structsure.structuresPage.data.Sensor
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.data.SortOption
 import fr.uge.structsure.ui.theme.Black
+import fr.uge.structsure.ui.theme.LightGray
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
 import kotlinx.coroutines.delay
-import java.sql.Timestamp
 
 /**
  * A composable function that displays a list of sensors during a scan.
@@ -134,11 +132,9 @@ fun SensorsList(scanViewModel: ScanViewModel, context: Context, onClick: (sensor
 
         if (showAddSensorPopUp) {
             AddSensorPopUp(
-                onSubmit = { sensor ->
-                    scanViewModel.addSensor(sensor)
-                    if (errorMessage == null) {
-                        showAddSensorPopUp = false
-                    }
+                onSubmit = { controlChip, measureChip, name, note ->
+                    scanViewModel.addSensor(controlChip, measureChip, name, note)
+                    if (errorMessage == null) showAddSensorPopUp = false
                 },
                 onCancel = { showAddSensorPopUp = false }
             )
@@ -289,122 +285,57 @@ private fun SensorsList(sensors: List<SensorDB>, onClick: (sensor: SensorDB) -> 
     }
 }
 
-
-
+/**
+ * Popup that prompt the user to create a new sensor with a name, a
+ * control chip, a measure chip and a note.
+ * @param onSubmit the action to run when the user submit values
+ * @param onCancel the action to run when the user cancel
+ */
 @Composable
-private fun AddSensorPopUp(onSubmit: (Sensor) -> Unit, onCancel: () -> Unit) {
+fun AddSensorPopUp(onSubmit: (controlChip: String, measureChip: String, name: String, note: String) -> Unit, onCancel: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var controlChip by remember { mutableStateOf("") }
     var measureChip by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
-    val selectedPlan by remember { mutableStateOf<Long?>(null) }
-    var formState by remember { mutableStateOf(AddSensorFormState()) }
-
-    fun validateForm(): Boolean {
-        val nameValidation = SensorValidation.validateName(name)
-        val controlChipValidation = SensorValidation.validateChip(
-            controlChip,
-            measureChip
-        )
-        val measureChipValidation = SensorValidation.validateChip(measureChip)
-        val noteValidation = SensorValidation.validateNote(note)
-
-        formState = AddSensorFormState(
-            nameError = (nameValidation as? ValidationResult.Error)?.message,
-            controlChipError = (controlChipValidation as? ValidationResult.Error)?.message,
-            measureChipError = (measureChipValidation as? ValidationResult.Error)?.message
-        )
-
-        return nameValidation is ValidationResult.Success &&
-                controlChipValidation is ValidationResult.Success &&
-                measureChipValidation is ValidationResult.Success
-    }
+    var errors by remember { mutableStateOf(null as ValidationResult?) }
 
     PopUp(onCancel) {
         Title("Ajouter un capteur", false) {
-            Button(
-                R.drawable.x,
-                "Annuler",
-                MaterialTheme.colorScheme.onSurface,
-                MaterialTheme.colorScheme.surface,
-                onClick = onCancel
-            )
-            Button(
-                R.drawable.check,
-                "Valider",
-                MaterialTheme.colorScheme.surface,
-                MaterialTheme.colorScheme.onSurface,
-                onClick = {
-                    if (validateForm()) {
-                        val now = Timestamp(System.currentTimeMillis()).toString()
-                        onSubmit(
-                            Sensor(
-                                controlChip = controlChip,
-                                measureChip = measureChip,
-                                name = name,
-                                note = note,
-                                installationDate = now,
-                                state = "Non scanné",
-                                plan = selectedPlan,
-                                x = 0.0, // TODO
-                                y = 0.0  // TODO
-                            )
-                        )
-                        onCancel()
-                    }
+            Button(R.drawable.x, "Annuler", Black, LightGray, onCancel)
+            Button(R.drawable.check, "Valider", White, Black) {
+                errors = SensorValidator.validate(controlChip, measureChip, name, note)
+                if (errors == null) {
+                    onSubmit(controlChip, measureChip, name, note)
+                    onCancel()
                 }
-            )
+            }
         }
         Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-            InputText(
-                label = "Nom *",
-                value = name,
-                placeholder = "Entrez le nom du capteur",
-                isError = formState.nameError != null,
-                errorMessage = formState.nameError,
-                onChange = {
-                    if (it.length <= SensorValidation.MAX_NAME_LENGTH) {
-                        name = it
-                    }
-                }
-            )
+            InputText(Modifier, "Nom *", name, "Capteur 42",
+                errorMessage = errors?.nameError,
+            ) {
+                name = it.take(SensorValidator.MAX_NAME_LENGTH)
+            }
 
-            InputText(
-                label = "Puce Témoin *",
-                value = controlChip,
-                placeholder = "Entrez l'identifiant de la puce témoin",
-                isError = formState.controlChipError != null,
-                errorMessage = formState.controlChipError,
-                onChange = {
-                    if (it.length <= SensorValidation.MAX_CHIP_LENGTH) {
-                        controlChip = it
-                    }
-                }
-            )
 
-            InputText(
-                label = "Puce Mesure *",
-                value = measureChip,
-                placeholder = "Entrez l'identifiant de la puce de mesure",
-                isError = formState.measureChipError != null,
-                errorMessage = formState.measureChipError,
-                onChange = {
-                    if (it.length <= SensorValidation.MAX_CHIP_LENGTH) {
-                        measureChip = it
-                    }
-                }
-            )
+            InputText(Modifier, "Puce Témoin *", controlChip, "E280 6F12 0000 0002 208F FACE",
+                errorMessage = errors?.controlChipError
+            ) {
+                controlChip = it.take(SensorValidator.MAX_CHIP_LENGTH)
+            }
 
-            InputTextArea(
-                label = "Note",
-                value = note,
-                placeholder = "Entrez une note (optionnel)",
-                onChange = {
-                    if (it.length <= SensorValidation.MAX_NOTE_LENGTH) {
-                        note = it
-                    }
-                }
-            )
+
+            InputText(Modifier, "Puce Mesure *", measureChip, "E280 6F12 0000 0002 208F FACD",
+                errorMessage = errors?.measureChipError,
+            ) {
+                measureChip = it.take(SensorValidator.MAX_CHIP_LENGTH)
+            }
+
+            InputTextArea(Modifier, "Note", note, "Commentaires (optionnel)",
+                    errorMessage = errors?.noteError
+            ) {
+                note = it.take(SensorValidator.MAX_NOTE_LENGTH)
+            }
         }
     }
 }

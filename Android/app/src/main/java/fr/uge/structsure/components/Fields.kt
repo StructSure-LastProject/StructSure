@@ -235,12 +235,11 @@ fun InputText(
     label: String,
     value: String,
     placeholder: String = "",
-    isError: Boolean = false,
     errorMessage: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit = {}
 ) {
-    Input(modifier, label, value, placeholder, isError, errorMessage, false, onChange,
+    Input(modifier, label, value, placeholder, errorMessage, false, onChange,
         multiLines = false,
         enabled = true,
         keyboardOptions = keyboardOptions
@@ -266,7 +265,7 @@ fun InputPassword(
     placeholder: String = "",
     onChange: (String) -> Unit = {}
 )  {
-    Input(modifier, label, value, placeholder,false, null, true, onChange)
+    Input(modifier, label, value, placeholder, null, true, onChange)
 }
 
 /**
@@ -285,7 +284,6 @@ fun InputTextArea (
     label: String,
     value: String,
     placeholder: String = "",
-    isError: Boolean = false,
     errorMessage: String? = null,
     enabled : Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -296,7 +294,6 @@ fun InputTextArea (
         label,
         value,
         placeholder,
-        isError,
         errorMessage,
         false,
         onChange,
@@ -325,7 +322,7 @@ fun InputSearch(
 ) {
     if (label != null) {
         Input(
-            Modifier, label, value, placeholder, false, null, false, onChange, false,
+            Modifier, label, value, placeholder, null, false, onChange, false,
             enabled = true,
             decorations = { innerTextField -> PlaceHolder(value, placeholder, innerTextField, R.drawable.search) },
             backgroundColor = White
@@ -355,7 +352,6 @@ private fun Input(
     label: String,
     value: String,
     placeholder: String,
-    isError: Boolean = false,
     errorMessage: String? = null,
     password: Boolean,
     onChange: (String) -> Unit,
@@ -390,7 +386,6 @@ private fun Input(
             }
         )
 
-        if (isError)
         errorMessage?.let {
             Text(
                 text = errorMessage,

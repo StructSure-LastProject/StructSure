@@ -3,7 +3,6 @@ package fr.uge.structsure.controllers;
 import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.AllStructureRequestDTO;
-import fr.uge.structsure.dto.structure.StructureResponseDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
 import fr.uge.structsure.services.StructureService;
@@ -57,7 +56,7 @@ public class StructureController {
             var structure = structureService.createStructure(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Structure creation rejected: {}");
         }
     }
 
@@ -76,7 +75,7 @@ public class StructureController {
             var structure = planService.editPlan(id, planId, metadataDTO, file);
             return ResponseEntity.status(HttpStatus.OK).body(structure);
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Plan update rejected: {}");
         }
     }
 
@@ -103,7 +102,7 @@ public class StructureController {
             var structure = structureService.editStructure(id, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Structure edition rejected: {}");
         }
     }
 
@@ -123,7 +122,7 @@ public class StructureController {
             var structure = planService.createPlan(id, metadataDTO, file);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Plan creation rejected: {}");
         }
     }
 
@@ -144,7 +143,7 @@ public class StructureController {
                     .contentType(imageResponse.mediaType())
                     .body(imageResponse.resource());
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Failed to get image for plan " + planId + ": {}");
         }
     }
 
@@ -172,7 +171,7 @@ public class StructureController {
                     .contentType(imageResponse.mediaType())
                     .body(imageResponse.resource());
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Failed to get plan image for sensor " + controlChip + "-" + measureChip + ": {}");
         }
     }
 
@@ -188,7 +187,7 @@ public class StructureController {
         try {
             return ResponseEntity.status(200).body(structureService.getAllStructure(allStructureRequestDTO, httpRequest));
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Failed to send structures list: {}");
         }
     }
 
@@ -197,7 +196,7 @@ public class StructureController {
         try {
             return ResponseEntity.status(200).body(structureService.downloadStructureAndroid(id));
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Failed to send structures list to Android: {}");
         }
     }
 
@@ -215,7 +214,7 @@ public class StructureController {
             var detail = structureService.structureDetail(id, httpServletRequest);
             return ResponseEntity.status(200).body(detail);
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Failed to get structure details: {}");
         }
     }
 }

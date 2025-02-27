@@ -169,7 +169,7 @@ public class SensorService {
      * @param request An object containing the sensor information.
      * @throws TraitementException if validation fails
      */
-    private void addPlanAsserts(BaseSensorDTO request) throws TraitementException {
+    void addPlanAsserts(BaseSensorDTO request) throws TraitementException {
         sensorEmptyPrecondition(request);
         sensorMalformedPrecondition(request);
     }

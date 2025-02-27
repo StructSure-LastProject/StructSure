@@ -110,8 +110,10 @@ fun PlansView(scanViewModel: ScanViewModel) {
                     unplacedSensors,
                     { sensor ->
                         addPoint?.let {
-                            planViewModel.placeSensor(sensor, it.plan, it.x, it.y)
-                            addPoint = null
+                            if (it.x != null && it.y != null) {
+                                planViewModel.placeSensor(sensor, it.plan, it.x, it.y)
+                                addPoint = null
+                            }
                         }
                     },
                     { addPoint = null }
@@ -133,7 +135,7 @@ fun PlansView(scanViewModel: ScanViewModel) {
  * @param y the y coordinate of the point in the image
  * @return the sensor or null if no plan is selected
  */
-private fun SensorDB.Companion.point(scanViewModel: ScanViewModel, x: Double, y: Double): SensorDB? {
+private fun SensorDB.Companion.point(scanViewModel: ScanViewModel, x: Int, y: Int): SensorDB? {
     val selectedPlan = scanViewModel.planViewModel.selected.value ?: return null
     return SensorDB(
         sensorId = "",

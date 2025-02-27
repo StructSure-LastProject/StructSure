@@ -40,7 +40,7 @@ fun Plan(
     image: Bitmap,
     points: () -> List<SensorDB>,
     temporaryPoint: SensorDB?,
-    addPoint: (Double, Double) -> Unit,
+    addPoint: (Int, Int) -> Unit,
     selectPoint: (SensorDB) -> Unit
 ) {
     val painter = remember(image) { BitmapPainter(image.asImageBitmap()) }
@@ -75,8 +75,10 @@ fun Plan(
         Canvas(Modifier.fillMaxSize()) {
             val positions = if (temporaryPoint == null) points() else points() + temporaryPoint
             positions.forEach {
-                val panned = imgToCanvas(factor, size, it.x, it.y)
-                point(size, panned.x, panned.y, SensorState.from(it.state))
+                if (it.x != null && it.y != null) {
+                    val panned = imgToCanvas(factor, size, it.x, it.y)
+                    point(size, panned.x, panned.y, SensorState.from(it.state))
+                }
             }
         }
     }
@@ -96,18 +98,18 @@ private fun onTap(
     size: Size,
     pos: Offset,
     points: List<SensorDB>,
-    addPoint: (Double, Double) -> Unit,
+    addPoint: (Int, Int) -> Unit,
     selectPoint: (SensorDB) -> Unit
 ) {
     val range = (40 / factor.transform / factor.zoom).toInt()
     val imgPos = canvasToImg(factor, size, pos.x, pos.y)
     for (i in points.indices) {
-        if (points[i].inRange(imgPos.x.toDouble(), imgPos.y.toDouble(), range)) {
+        if (points[i].inRange(imgPos.x, imgPos.y, range)) {
             selectPoint(points[i])
             return
         }
     }
-    addPoint(imgPos.x.toDouble(), imgPos.y.toDouble())
+    addPoint(imgPos.x, imgPos.y)
 }
 
 /**
@@ -116,7 +118,7 @@ private fun onTap(
  * @param y the y coordinate of the center of the point
  * @param state the state of the sensor to show its color
  */
-private fun DrawScope.point(size: Size, x: Float, y: Float, state: SensorState) {
+private fun DrawScope.point(size: Size, x: Int, y: Int, state: SensorState) {
     val visibleX = x + 30 >= 0 && x - 30 <= size.width
     val visibleY = y + 30 >= 0 && y - 30 <= size.height
     if (!visibleX || !visibleY) return // out of canvas
@@ -140,15 +142,15 @@ private fun DrawScope.point(size: Size, x: Float, y: Float, state: SensorState) 
  * @param x the initial x coordinate in the image
  * @param y the initial y coordinate in the image
  */
-private fun imgToCanvas(factor: Factor, size: Size, x: Double, y: Double): Offset {
+private fun imgToCanvas(factor: Factor, size: Size, x: Int, y: Int): Point {
     val transformPoint = factor.transformPoint(size)
     val centerX = size.width / 2f
     val centerY = size.height / 2f
     val posX = x * transformPoint + size.width * factor.offset.x
     val posY = y * transformPoint + size.height * factor.offset.y
-    return Offset(
-        ((posX - centerX) * factor.zoom + centerX + factor.pan.value.x).toFloat(),
-        ((posY - centerY) * factor.zoom + centerY + factor.pan.value.y).toFloat()
+    return Point(
+        (posX - centerX) * factor.zoom + centerX + factor.pan.value.x,
+        (posY - centerY) * factor.zoom + centerY + factor.pan.value.y
     )
 }
 
@@ -160,15 +162,15 @@ private fun imgToCanvas(factor: Factor, size: Size, x: Double, y: Double): Offse
  * @param x the initial x coordinate in the canvas
  * @param y the initial y coordinate in the canvas
  */
-private fun canvasToImg(factor: Factor, size: Size, x: Float, y: Float): Offset {
+private fun canvasToImg(factor: Factor, size: Size, x: Float, y: Float): Point {
     val transformPoint = factor.transformPoint(size)
     val centerX = size.width / 2f
     val centerY = size.height / 2f
     val posX = (x - centerX - factor.pan.value.x) / factor.zoom + centerX
     val posY = (y - centerY - factor.pan.value.y) / factor.zoom + centerY
-    return Offset(
-        ((posX - size.width * factor.offset.x) / transformPoint).toInt().toFloat(),
-        ((posY - size.height * factor.offset.y) / transformPoint).toInt().toFloat()
+    return Point(
+        (posX - size.width * factor.offset.x) / transformPoint,
+        (posY - size.height * factor.offset.y) / transformPoint
     )
 }
 
@@ -179,7 +181,8 @@ private fun canvasToImg(factor: Factor, size: Size, x: Float, y: Float): Offset 
  * @param range the maximum allowed distance between points
  * @return true if in range, false otherwise
  */
-private fun SensorDB.inRange(x: Double, y: Double, range: Int): Boolean {
+private fun SensorDB.inRange(x: Int, y: Int, range: Int): Boolean {
+    if (this.x == null || this.y == null) return false
     val dx = this.x - x
     val dy = this.y - y
 
@@ -187,7 +190,7 @@ private fun SensorDB.inRange(x: Double, y: Double, range: Int): Boolean {
     if (dx * dx + dy * dy > range * range) return false
 
     // Pythagore for exact values
-    return sqrt(dx * dx + dy * dy) <= range
+    return sqrt(1.0 * dx * dx + dy * dy) <= range
 }
 
 /**
@@ -272,4 +275,7 @@ class Factor {
             offset.y.coerceIn(-height, height)
         )
     }
+}
+private data class Point(val x: Int, val y: Int) {
+    constructor(x: Float, y: Float): this(x.toInt(), y.toInt())
 }

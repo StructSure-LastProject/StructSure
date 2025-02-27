@@ -47,7 +47,7 @@ public class SensorController {
             var sensor = sensorService.createSensor(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(sensor);
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Sensor creation rejected: {}");
         }
     }
 
@@ -108,7 +108,7 @@ public class SensorController {
         try {
             return ResponseEntity.ok(sensorService.editSensor(editSensorRequestDTO));
         } catch (TraitementException e){
-            return e.toResponseEntity();
+            return e.toResponseEntity("Sensor update rejected: {}");
         }
     }
 
@@ -122,7 +122,7 @@ public class SensorController {
             SensorPositionResponseDTO sensorDTOs = sensorService.positionSensor(request);
             return ResponseEntity.ok(sensorDTOs);
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Sensor placement rejected: {}");
         }
     }
 

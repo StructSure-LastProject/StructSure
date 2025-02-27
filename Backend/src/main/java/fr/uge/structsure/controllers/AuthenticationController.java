@@ -27,7 +27,7 @@ public class AuthenticationController {
         try {
             return ResponseEntity.status(200).body(accountService.register(registerRequestDTO));
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Account creation rejected: {}");
         }
     }
 
@@ -36,7 +36,7 @@ public class AuthenticationController {
         try {
             return ResponseEntity.status(200).body(accountService.login(loginRequestDTO));
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("User login rejected: {}");
         }
     }
 

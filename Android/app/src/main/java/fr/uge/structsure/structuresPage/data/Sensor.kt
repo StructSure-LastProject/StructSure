@@ -12,8 +12,8 @@ data class Sensor(
     val installationDate: String,
     val state: String,
     val plan: Long?,
-    val x: Double,
-    val y: Double
+    val x: Int?,
+    val y: Int?
 )
 
 @Entity(tableName = "sensors")
@@ -25,9 +25,9 @@ data class SensorDB(
     val note: String?,
     val installationDate: String?,
     private val _state: String?,
-    val plan: Long?,
-    val x: Double,
-    val y: Double,
+    val plan: Long? = null,
+    val x: Int? = null,
+    val y: Int? = null,
     val structureId: Long
 ) {
     val state: String

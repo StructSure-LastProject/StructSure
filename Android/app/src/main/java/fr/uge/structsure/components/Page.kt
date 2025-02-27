@@ -44,7 +44,9 @@ fun Page(
         ) {
             var mod = Modifier.padding()
             val scrollState = rememberScrollState()
-            if (decorated) mod = mod.systemBarsPadding().padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
+            if (decorated) mod = mod
+                .systemBarsPadding()
+                .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
             mod = mod.clip(RoundedCornerShape(20.dp))
             if (scrollable) mod = mod.verticalScroll(scrollState)
             Column(

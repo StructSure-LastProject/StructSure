@@ -27,7 +27,7 @@ public class AndroidScanController {
             scanService.saveScanResults(scanData);
             return ResponseEntity.ok().build();
         } catch (TraitementException e) {
-            return e.toResponseEntity();
+            return e.toResponseEntity("Android scan rejected: {}");
         }
     }
 }

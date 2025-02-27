@@ -17,7 +17,6 @@ import fr.uge.structsure.scanPage.data.cache.SensorCache
 import fr.uge.structsure.scanPage.data.repository.ScanRepository
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.settingsPage.presentation.PreferencesManager.getScannerSensitivity
-import fr.uge.structsure.structuresPage.data.Sensor
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.structuresPage.data.StructureData
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
@@ -152,31 +151,26 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     }
     /**
      * Adds a sensor to the database and updates the list of sensors.
-     * @param sensor the sensor to add
+     * @param controlChip the id of the control chip
+     * @param measureChip the id of the measure chip
+     * @param name the name of the sensor
+     * @param note the note of the sensor (can be empty)
      */
-    fun addSensor(sensor: Sensor) {
+    fun addSensor(controlChip: String, measureChip: String, name: String, note: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val existingSensor = sensorDao.findSensor(sensor.controlChip, sensor.measureChip)
+            val existingSensor = sensorDao.findSensor(controlChip, measureChip)
 
             if (existingSensor != null) {
                 addSensorError.postValue("Un capteur avec ces puces existe déjà")
                 return@launch
             }
 
-            val sensorId = "${sensor.controlChip}-${sensor.measureChip}"
-            val sensorDB = SensorDB(
-                sensorId = sensorId,
-                controlChip = sensor.controlChip,
-                measureChip = sensor.measureChip,
-                name = sensor.name,
-                note = sensor.note,
-                installationDate = sensor.installationDate,
-                _state = sensor.state,
-                plan = sensor.plan,
-                x = sensor.x,
-                y = sensor.y,
-                structureId = structure!!.id
-            )
+            val control = controlChip.replace(" ", "")
+            val measure = measureChip.replace(" ", "")
+            val sensorId = "${control}-${measure}"
+            val sensorDB = SensorDB(sensorId, control, measure, name,
+                note, Timestamp(System.currentTimeMillis()).toString(),
+                SensorState.UNKNOWN.name, structureId = structure!!.id)
 
             sensorDao.upsertSensor(sensorDB)
 
@@ -188,8 +182,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             addSensorError.postValue(null)
         }
     }
-
-
 
     /**
      * Changes the structureId of the scanViewModel. This will reload
