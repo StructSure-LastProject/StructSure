@@ -12,7 +12,7 @@ public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @Column(unique = true, nullable = false, length = 128)
     private String login;
@@ -43,6 +43,14 @@ public class Account {
         this.lastname = Objects.requireNonNull(lastname);
         this.role = Objects.requireNonNull(role);
         this.enabled = enabled;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public void setLogin(String login) {
