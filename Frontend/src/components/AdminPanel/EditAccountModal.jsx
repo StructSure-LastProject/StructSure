@@ -112,7 +112,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     createEffect(() => {
         if (copyOfStructureSelection.length === 0) {
             if (data() !== null) {
-                for (const e of data().structureDetailsList) {
+                for (const e of data().structureAcessDetailsList) {
                     copyOfStructureSelection.push({structureId: e.structureId, structureName: e.structureName, hasAccess: e.hasAccess});
                 }
                 
@@ -137,7 +137,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         await fetchData(`/api/accounts/${login}/structures`, requestData);
 
         if (statusCode() === 200) {
-            setStructureSelection(data().structureDetailsList);
+            setStructureSelection(data().structureAcessDetailsList);
         }
 
     }
