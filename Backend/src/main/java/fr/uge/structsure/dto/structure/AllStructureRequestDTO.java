@@ -1,20 +1,23 @@
 package fr.uge.structsure.dto.structure;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.uge.structsure.entities.State;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.utils.OrderEnum;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The dto for the all structure request
  * @param searchByName the name to search with
  * @param orderByColumnName the column to order with
+ * @param searchByState the state to filter
  * @param orderType the order type (ASC or DESC)
  */
 @JsonSerialize
-public record AllStructureRequestDTO(String searchByName, String orderByColumnName, String orderType) {
+public record AllStructureRequestDTO(String searchByName, Optional<State> searchByState, String orderByColumnName, String orderType) {
     /**
      * The orderByColumn enum
      */
@@ -39,7 +42,7 @@ public record AllStructureRequestDTO(String searchByName, String orderByColumnNa
     }
 
     public void checkFields() throws TraitementException {
-        if (Objects.isNull(searchByName) || Objects.isNull(orderType) || Objects.isNull(orderByColumnName)) {
+        if (Objects.isNull(orderType) || Objects.isNull(orderByColumnName) || Objects.isNull(searchByName)) {
             throw new TraitementException(Error.MISSING_USER_ACCOUNT_FIELDS);
         }
         if (!orderType.equalsIgnoreCase("asc") && !orderType.equalsIgnoreCase("desc")) {
