@@ -68,7 +68,7 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
     const requestBody = {
         orderByColumn: filters.orderByColumn || "STATE",
         orderType: filters.orderType || "ASC",
-        limit: filters.limit ?? 5,
+        limit: filters.limit ?? 30,
         offset: filters.offset ?? 0,
         ...(filters?.stateFilter && { stateFilter: filters.stateFilter }),
         ...(filters?.archivedFilter && {archivedFilter: filters.archivedFilter}),
