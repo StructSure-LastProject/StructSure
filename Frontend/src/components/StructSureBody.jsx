@@ -1,7 +1,8 @@
-import { For, createResource, createSignal } from "solid-js";
+import {For, createResource, createSignal, Show} from "solid-js";
 import { A, useNavigate } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 import { TriangleAlert, CircleAlert, Check, SquareDashed, FolderSync } from 'lucide-solid';
+import StructuresFilter from "./StructuresFilter.jsx";
 
 
 /**
@@ -70,17 +71,19 @@ function StructSureBody() {
     };
 
     return (
-        
-        <div class="flex flex-col lg:grid 2xl:grid lg:grid-cols-3 2xl:grid-cols-4 rounded-[20px] gap-4">
-            <Show when={statusCode() === 200} fallback={
-                <h1 class="normal pl-5">{errorStructurePage()}</h1>
-            }>
-                <For each={structures()}>
-                    {(item) => (
+      <>
+          <StructuresFilter />
+          <div class="flex flex-col lg:grid 2xl:grid lg:grid-cols-3 2xl:grid-cols-4 rounded-[20px] gap-4">
+              <Show when={statusCode() === 200} fallback={
+                  <h1 class="normal pl-5">{errorStructurePage()}</h1>
+              }>
+                  <For each={structures()}>
+                      {(item) => (
                         <A href={`/structures/${item.id}`}>
-                            <div class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full">
+                            <div
+                              class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full">
                                 <div class="w-7 h-7 flex justify-center items-center">
-                                    { getIconFromStateAndArchived(item.state, item.archived) }
+                                    {getIconFromStateAndArchived(item.state, item.archived)}
                                 </div>
                                 <div class="flex flex-col">
                                     <h1 class="subtitle">{item.name}</h1>
@@ -88,10 +91,11 @@ function StructSureBody() {
                                 </div>
                             </div>
                         </A>
-                    )}
-                </For>
-            </Show>
-        </div>
+                      )}
+                  </For>
+              </Show>
+          </div>
+      </>
     );
 }
 
