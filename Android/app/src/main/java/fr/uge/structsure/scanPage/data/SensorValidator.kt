@@ -7,12 +7,10 @@ object SensorValidator {
     const val MAX_NAME_LENGTH = 32
     const val MAX_NOTE_LENGTH = 1000
     const val MAX_CHIP_LENGTH = 32
-    private const val MIN_NAME_LENGTH = 8
     private const val MIN_CHIP_LENGTH = 8
 
     private fun validateName(name: String): String? = when {
         name.isBlank() -> "Le nom est obligatoire"
-        name.length < MIN_NAME_LENGTH -> "Le nom doit contenir au moins $MIN_NAME_LENGTH caractère"
         name.length > MAX_NAME_LENGTH -> "Le nom doit contenir au maximum $MAX_NAME_LENGTH caractères"
         else -> null
     }
@@ -36,7 +34,7 @@ object SensorValidator {
 
     fun validate(controlChip: String, measureChip: String, name: String, note: String): ValidationResult? {
         val nameErr = validateName(name)
-        val controlErr = validateChip(measureChip)
+        val controlErr = validateChip(controlChip)
         val measureErr = validateChip(measureChip, controlChip)
         val noteErr = validateNote(note)
 
