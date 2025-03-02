@@ -90,7 +90,6 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
         selected.postValue(plan as TreePlan)
         viewModelScope.launch(Dispatchers.IO) {
             val path = plan.let { FileUtils.getLocalPlanImage(context, it.plan.id) }
-            println("ImageUpdate $path")
             image.postValue(if (path == null) defaultImage else BitmapFactory.decodeFile(path))
         }
     }

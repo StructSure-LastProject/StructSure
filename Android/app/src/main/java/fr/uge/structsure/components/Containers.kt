@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -93,6 +94,7 @@ fun PopUp(
             decorFitsSystemWindows = false
         )
     ) {
+        val scroll = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxHeight()
@@ -107,12 +109,15 @@ fun PopUp(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(max = 470.dp)
                     .clip(RoundedCornerShape(20.dp))
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, true) {
                         // Disable the ripple when clicking
                     }
                     .background(White)
-                    .padding(25.dp),
+                    .padding(25.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .verticalScroll(scroll),
                 verticalArrangement = Arrangement.spacedBy(15.dp)
             ) {
                 content.invoke()

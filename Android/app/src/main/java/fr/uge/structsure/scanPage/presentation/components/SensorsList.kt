@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +43,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.RfidChip
@@ -57,6 +60,7 @@ import fr.uge.structsure.components.Title
 import fr.uge.structsure.scanPage.data.SensorValidator
 import fr.uge.structsure.scanPage.data.TreePlan
 import fr.uge.structsure.scanPage.data.ValidationResult
+import fr.uge.structsure.scanPage.domain.ChipFinder
 import fr.uge.structsure.scanPage.domain.ScanState
 import fr.uge.structsure.scanPage.domain.ScanViewModel
 import fr.uge.structsure.structuresPage.data.FilterOption
@@ -79,10 +83,10 @@ fun SensorsList(scanViewModel: ScanViewModel, context: Context, onClick: (sensor
     val planViewModel = scanViewModel.planViewModel
     val selected by planViewModel.selected.observeAsState()
     val sensors by scanViewModel.sensorsNotScanned.observeAsState(emptyList())
-    val optionsVisible = remember { mutableStateOf(true) }
+    val optionsVisible = scanViewModel.sensorsFilterVisible
 
     val errorMessage by scanViewModel.addSensorError.observeAsState()
-    var showAddSensorPopUp by remember { mutableStateOf(true) }
+    var showAddSensorPopUp by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
 
     fun showToast(message: String) {
@@ -137,6 +141,7 @@ fun SensorsList(scanViewModel: ScanViewModel, context: Context, onClick: (sensor
 
         if (showAddSensorPopUp) {
             AddSensorPopUp(
+                scanViewModel,
                 onSubmit = { controlChip, measureChip, name, note ->
                     scanViewModel.addSensor(controlChip, measureChip, name, note)
                     if (errorMessage == null) showAddSensorPopUp = false
@@ -299,15 +304,16 @@ private fun SensorsList(sensors: List<SensorDB>, onClick: (sensor: SensorDB) -> 
  * @param onCancel the action to run when the user cancel
  */
 @Composable
-fun AddSensorPopUp(onSubmit: (controlChip: String, measureChip: String, name: String, note: String) -> Unit, onCancel: () -> Unit) {
+fun AddSensorPopUp(scanViewModel: ScanViewModel, onSubmit: (controlChip: String, measureChip: String, name: String, note: String) -> Unit, onCancel: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var controlChip by remember { mutableStateOf("") }
     var measureChip by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var errors by remember { mutableStateOf(null as ValidationResult?) }
     val scanTagVisible = remember { mutableStateOf(false) }
+    val onScanReadSubmit = remember { mutableStateOf<(String) -> Unit>( { } ) }
 
-    ScanTagPopUp(scanTagVisible, listOf(RfidChip("E2806F1200000002208FFACE", 23), (RfidChip("E2806F1200000002208FFACD", 35))))
+    ScanTagPopUp(scanViewModel, scanTagVisible, onScanReadSubmit)
 
     PopUp(onCancel) {
         Title("Ajouter un capteur", false) {
@@ -329,17 +335,17 @@ fun AddSensorPopUp(onSubmit: (controlChip: String, measureChip: String, name: St
 
             InputText(Modifier, "Puce Témoin *", controlChip, "E280 6F12 0000 0002 208F FACE",
                 errorMessage = errors?.controlChipError,
-                rich = { ScanTagButton(scanTagVisible) }
+                rich = { ScanTagButton(scanViewModel, scanTagVisible) { onScanReadSubmit.value = { controlChip = it } } }
             ) {
-                controlChip = it.take(SensorValidator.MAX_CHIP_LENGTH)
+                controlChip = it.take(SensorValidator.MAX_CHIP_LENGTH).toUpperCase(Locale.current)
             }
 
 
             InputText(Modifier, "Puce Mesure *", measureChip, "E280 6F12 0000 0002 208F FACD",
                 errorMessage = errors?.measureChipError,
-                rich = { ScanTagButton(scanTagVisible) }
+                rich = { ScanTagButton(scanViewModel, scanTagVisible) { onScanReadSubmit.value = { measureChip = it } } }
             ) {
-                measureChip = it.take(SensorValidator.MAX_CHIP_LENGTH)
+                measureChip = it.take(SensorValidator.MAX_CHIP_LENGTH).toUpperCase(Locale.current)
             }
 
             InputTextArea(Modifier, "Note", note, "Commentaires (optionnel)",
@@ -356,10 +362,13 @@ fun AddSensorPopUp(onSubmit: (controlChip: String, measureChip: String, name: St
  * reading popup.
  */
 @Composable
-private fun ScanTagButton(scanTagVisible: MutableState<Boolean>) {
+private fun ScanTagButton(scanViewModel: ScanViewModel, scanTagVisible: MutableState<Boolean>, onClick: () -> Unit) {
     Row (Modifier.padding(end = 5.dp)) {
         Button(R.drawable.scan_barcode, "Scan", Black, LightGray) {
-            scanTagVisible.value = true
+            if (scanViewModel.toggleDirectChipRead(true)) {
+                scanTagVisible.value = true
+                onClick()
+            }
         }
     }
 }
@@ -370,16 +379,22 @@ private fun ScanTagButton(scanTagVisible: MutableState<Boolean>) {
  * @param visible the visibility of the popup
  */
 @Composable
-fun ScanTagPopUp(visible: MutableState<Boolean>, chips: List<RfidChip>) {
+fun ScanTagPopUp(scanViewModel: ScanViewModel, visible: MutableState<Boolean>, onSubmit: MutableState<(String) -> Unit>) {
     if (!visible.value) return
+    val scroll = rememberScrollState()
 
-    PopUp({ visible.value = false }) {
+    PopUp({
+        scanViewModel.toggleDirectChipRead(false)
+        visible.value = false
+    }) {
         Title("Lire un tag", false) {
             Button(R.drawable.x, "Annuler", Black, LightGray) { visible.value = false }
         }
-        Text("Approchez le tag de l'interrogateur et sélectionnez le dans la liste ci-dessous:", style = typography.bodyMedium)
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            if (chips.isEmpty()) {
+        Text("Approchez le tag de l'interrogateur et sélectionnez le dans la liste ci-dessous.\nLes tag trop éloignés sont affichés avec un point d'interrogation.", style = typography.bodyMedium)
+        Column(
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (ChipFinder.chips.isEmpty()) {
                 LinearProgressIndicator(
                     Modifier.height(2.dp).fillMaxWidth(),
                     color = Black,
@@ -391,15 +406,24 @@ fun ScanTagPopUp(visible: MutableState<Boolean>, chips: List<RfidChip>) {
                 TagBeanPlaceHolder(.5f)
                 TagBeanPlaceHolder(.25f)
             } else {
-                chips.sortedBy { it.attenuation }
+                ChipFinder.chips.sortedBy { it.id}
                     .forEach {
-                        TagBean(it) { println("Selected") }
+                        TagBean(it) {
+                            onSubmit.value(it.id.formatChip())
+                            scanViewModel.toggleDirectChipRead(false)
+                            visible.value = false
+                        }
                     }
             }
         }
     }
 }
 
+/**
+ * Single line that contains the chip id and the signal strength.
+ * @param chip the data of the chip to display
+ * @param onClick the action to run when the chip is clicked
+ */
 @Composable
 private fun TagBean(chip: RfidChip, onClick: () -> Unit) {
     Row (
@@ -412,11 +436,17 @@ private fun TagBean(chip: RfidChip, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.Start)
     ) {
-        Text(chip.id, Modifier.weight(1f), style = typography.bodyMedium)
-        Text("${chip.attenuation} dB", Modifier.alpha(0.5f), style = typography.bodyMedium)
+        val signal = if (chip.attenuation != -1) "${chip.attenuation}" else "?"
+        Text(chip.id.formatChip(), Modifier.weight(1f), style = typography.bodyMedium)
+        Text("$signal dB", Modifier.alpha(0.5f), style = typography.bodyMedium)
     }
 }
 
+/**
+ * Equivalent of [TagBean] not clickable and without any value to be
+ * displayed when no tag is available
+ * @param alpha opacity of the placeholder
+ */
 @Composable
 private fun TagBeanPlaceHolder(alpha: Float) {
     Box (
@@ -427,4 +457,16 @@ private fun TagBeanPlaceHolder(alpha: Float) {
             .background(LightGray)
             .height(40.dp),
     )
+}
+
+/**
+ * function that insert spaces each 4 chars
+ * @receiver String the string to transform
+ * @return String the transformed string
+ */
+fun String.formatChip(): String {
+    return this.chunked(4)
+        .joinToString(" ")
+        .trim()
+
 }
