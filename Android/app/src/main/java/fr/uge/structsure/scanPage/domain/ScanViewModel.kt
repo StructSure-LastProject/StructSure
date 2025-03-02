@@ -185,13 +185,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      */
     fun addSensor(controlChip: String, measureChip: String, name: String, note: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val existingSensor = db.sensorDao().findSensor(controlChip, measureChip)
-
-            if (existingSensor != null) {
-                addSensorError.postValue("Un capteur avec ces puces existe déjà")
-                return@launch
-            }
-
             val control = controlChip.replace(" ", "")
             val measure = measureChip.replace(" ", "")
             val sensorId = "${control}-${measure}"

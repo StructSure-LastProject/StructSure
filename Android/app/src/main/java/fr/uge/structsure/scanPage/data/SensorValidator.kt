@@ -1,5 +1,7 @@
 package fr.uge.structsure.scanPage.data
 
+import fr.uge.structsure.MainActivity.Companion.db
+
 /**
  * Object containing validation functions for sensor data.
  */
@@ -22,7 +24,9 @@ object SensorValidator {
             raw.isBlank() -> "La puce est obligatoire"
             raw.length < MIN_CHIP_LENGTH -> "La puce doit contenir au moins $MIN_CHIP_LENGTH caractère"
             raw.length > MAX_CHIP_LENGTH -> "La puce doit contenir au maximum $MAX_CHIP_LENGTH caractères"
+            !raw.matches(Regex("^[0-9A-F]+$")) -> "La puce doit contenir uniquement des chiffres et lettre de A à F"
             otherRaw != null && raw == otherRaw -> "Les puces doivent être différentes"
+            db.sensorDao().findSensor(raw) != null -> "Un capteur avec cette puces existe déjà"
             else -> null
         }
     }
