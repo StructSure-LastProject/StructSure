@@ -16,12 +16,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,10 +40,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
+import fr.uge.structsure.bluetooth.cs108.RfidChip
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.components.InputCheck
 import fr.uge.structsure.components.InputSearch
@@ -77,7 +82,7 @@ fun SensorsList(scanViewModel: ScanViewModel, context: Context, onClick: (sensor
     val optionsVisible = remember { mutableStateOf(true) }
 
     val errorMessage by scanViewModel.addSensorError.observeAsState()
-    var showAddSensorPopUp by remember { mutableStateOf(false) }
+    var showAddSensorPopUp by remember { mutableStateOf(true) }
     var showError by remember { mutableStateOf(false) }
 
     fun showToast(message: String) {
@@ -230,7 +235,8 @@ private fun SortFilter(
             onSelect = { s -> sort.value = SortOption.from(s) }
         ) {
             Row (
-                Modifier.fillMaxHeight()
+                Modifier
+                    .fillMaxHeight()
                     .background(Black)
                     .padding(horizontal = 16.dp, vertical = 9.dp)
                     .clickable { asc.value = !asc.value }
@@ -275,7 +281,8 @@ private fun SensorsList(sensors: List<SensorDB>, onClick: (sensor: SensorDB) -> 
     } else {
         Text(
             "Aucun capteur",
-            Modifier.fillMaxWidth()
+            Modifier
+                .fillMaxWidth()
                 .background(White, RoundedCornerShape(size = 20.dp))
                 .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
                 .alpha(0.5f),
@@ -298,6 +305,9 @@ fun AddSensorPopUp(onSubmit: (controlChip: String, measureChip: String, name: St
     var measureChip by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var errors by remember { mutableStateOf(null as ValidationResult?) }
+    val scanTagVisible = remember { mutableStateOf(false) }
+
+    ScanTagPopUp(scanTagVisible, listOf(RfidChip("E2806F1200000002208FFACE", 23), (RfidChip("E2806F1200000002208FFACD", 35))))
 
     PopUp(onCancel) {
         Title("Ajouter un capteur", false) {
@@ -312,14 +322,14 @@ fun AddSensorPopUp(onSubmit: (controlChip: String, measureChip: String, name: St
         }
         Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
             InputText(Modifier, "Nom *", name, "Capteur 42",
-                errorMessage = errors?.nameError,
+                errorMessage = errors?.nameError
             ) {
                 name = it.take(SensorValidator.MAX_NAME_LENGTH)
             }
 
-
             InputText(Modifier, "Puce Témoin *", controlChip, "E280 6F12 0000 0002 208F FACE",
-                errorMessage = errors?.controlChipError
+                errorMessage = errors?.controlChipError,
+                rich = { ScanTagButton(scanTagVisible) }
             ) {
                 controlChip = it.take(SensorValidator.MAX_CHIP_LENGTH)
             }
@@ -327,6 +337,7 @@ fun AddSensorPopUp(onSubmit: (controlChip: String, measureChip: String, name: St
 
             InputText(Modifier, "Puce Mesure *", measureChip, "E280 6F12 0000 0002 208F FACD",
                 errorMessage = errors?.measureChipError,
+                rich = { ScanTagButton(scanTagVisible) }
             ) {
                 measureChip = it.take(SensorValidator.MAX_CHIP_LENGTH)
             }
@@ -338,4 +349,82 @@ fun AddSensorPopUp(onSubmit: (controlChip: String, measureChip: String, name: St
             }
         }
     }
+}
+
+/**
+ * Button that can be put inside a TextInput to open the RFID chip
+ * reading popup.
+ */
+@Composable
+private fun ScanTagButton(scanTagVisible: MutableState<Boolean>) {
+    Row (Modifier.padding(end = 5.dp)) {
+        Button(R.drawable.scan_barcode, "Scan", Black, LightGray) {
+            scanTagVisible.value = true
+        }
+    }
+}
+
+/**
+ * Popup that prompt the user to read a RFID chip by approaching it
+ * close to the interrogator.
+ * @param visible the visibility of the popup
+ */
+@Composable
+fun ScanTagPopUp(visible: MutableState<Boolean>, chips: List<RfidChip>) {
+    if (!visible.value) return
+
+    PopUp({ visible.value = false }) {
+        Title("Lire un tag", false) {
+            Button(R.drawable.x, "Annuler", Black, LightGray) { visible.value = false }
+        }
+        Text("Approchez le tag de l'interrogateur et sélectionnez le dans la liste ci-dessous:", style = typography.bodyMedium)
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            if (chips.isEmpty()) {
+                LinearProgressIndicator(
+                    Modifier.height(2.dp).fillMaxWidth(),
+                    color = Black,
+                    trackColor = LightGray,
+                    strokeCap = StrokeCap.Round,
+                    gapSize = 20.dp
+                )
+                TagBeanPlaceHolder(.75f)
+                TagBeanPlaceHolder(.5f)
+                TagBeanPlaceHolder(.25f)
+            } else {
+                chips.sortedBy { it.attenuation }
+                    .forEach {
+                        TagBean(it) { println("Selected") }
+                    }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TagBean(chip: RfidChip, onClick: () -> Unit) {
+    Row (
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(25.dp))
+            .clickable{ onClick() }
+            .background(LightGray)
+            .padding(16.dp, 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.Start)
+    ) {
+        Text(chip.id, Modifier.weight(1f), style = typography.bodyMedium)
+        Text("${chip.attenuation} dB", Modifier.alpha(0.5f), style = typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun TagBeanPlaceHolder(alpha: Float) {
+    Box (
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(25.dp))
+            .alpha(alpha)
+            .background(LightGray)
+            .height(40.dp),
+    )
 }
