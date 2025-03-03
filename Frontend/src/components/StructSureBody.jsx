@@ -56,7 +56,19 @@ function StructSureBody() {
      */
     const structuresFetchRequest = async (url, searchByName, filterValue, orderByColumnName, orderType) => {
         const token = localStorage.getItem("token");
-        const urlWithParams = `${url}?searchByName=${encodeURIComponent(searchByName)}&searchByState=${encodeURIComponent(filterValue)}&orderByColumnName=${encodeURIComponent(orderByColumnName)}&orderType=${encodeURIComponent(orderType)}`;
+
+        const params = new URLSearchParams();
+        params.append('searchByName', searchByName);
+        params.append('searchByState', filterValue);
+        params.append('orderByColumnName', orderByColumnName);
+        params.append('orderType', orderType);
+
+        if (filterValue === "ARCHIVED") {
+            params.append('archived', "true");
+            params.set('searchByState', '');
+        }
+
+        const urlWithParams = `${url}?${params.toString()}`;
 
         const requestData = {
             method: "GET",
@@ -125,8 +137,11 @@ function StructSureBody() {
               <Show when={statusCode() === 200} fallback={
                   <h1 class="normal pl-5">{errorStructurePage()}</h1>
               }>
+                  <Show when={structures().length <= 0}>
+                      <h1 class="normal pl-5">Aucun ouvrage enregistré dans le système</h1>
+                  </Show>
                   <For each={structures()}>
-                      {(item) => (
+                  {(item) => (
                         <A href={`/structures/${item.id}`}>
                             <div
                               class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full">

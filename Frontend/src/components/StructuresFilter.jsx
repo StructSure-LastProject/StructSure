@@ -99,7 +99,8 @@ const StructuresFilter = (props) => {
     { value: "OK", label: "OK" },
     { value: "NOK", label: "NOK" },
     { value: "DEFECTIVE", label: "DEFECTIVE" },
-    { value: "UNKNOWN", label: "UNKNOWN" }
+    { value: "UNKNOWN", label: "UNKNOWN" },
+    { value: "ARCHIVED", label: "Archivé" }
   ];
 
   const sortOptions = [
