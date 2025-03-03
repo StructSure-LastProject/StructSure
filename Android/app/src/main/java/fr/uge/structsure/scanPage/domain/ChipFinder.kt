@@ -2,6 +2,7 @@ package fr.uge.structsure.scanPage.domain
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
+import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.bluetooth.cs108.RfidChip
 
 /**
@@ -11,10 +12,10 @@ import fr.uge.structsure.bluetooth.cs108.RfidChip
 object ChipFinder {
 
     /** Chips stored by ID */
-    private val entries = mutableStateMapOf<String, RfidChip>()
+    private val entries = mutableStateMapOf<String, Chip>()
 
     /** Publicly exposed list of scanned chip */
-    val chips = mutableStateListOf<RfidChip>()
+    val chips = mutableStateListOf<Chip>()
 
     /** Clears all scanned chip from the list. */
     fun reset() {
@@ -30,9 +31,13 @@ object ChipFinder {
     fun add(rfidChip: RfidChip) {
         if (rfidChip.id.isBlank()) return
         synchronized(this) {
-            var chip = rfidChip
+            var chip = Chip(rfidChip.id, rfidChip.attenuation)
             val known = entries[chip.id]
-            if (chip.attenuation < -35) chip = chip.copy(attenuation = -1)
+
+            if (known == null) {
+                val existing = db.sensorDao().findSensor(chip.id) != null
+                if (existing) chip = chip.copy(alreadyUsed = true)
+            } else if (known.alreadyUsed) return
 
             /* Update the internal map */
             entries[chip.id] = chip
@@ -42,4 +47,6 @@ object ChipFinder {
             else chips.add(chip)
         }
     }
+
+    data class Chip(val id: String, val attenuation: Int, val alreadyUsed: Boolean = false)
 }

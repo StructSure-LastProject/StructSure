@@ -21,10 +21,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,7 +46,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import fr.uge.structsure.R
-import fr.uge.structsure.bluetooth.cs108.RfidChip
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.components.InputCheck
 import fr.uge.structsure.components.InputSearch
@@ -134,7 +131,7 @@ fun SensorsList(scanViewModel: ScanViewModel, context: Context, onClick: (sensor
                 Text(
                     text = errorMessage ?: "",
                     color = Red,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = typography.bodyMedium
                 )
             }
         }
@@ -291,7 +288,7 @@ private fun SensorsList(sensors: List<SensorDB>, onClick: (sensor: SensorDB) -> 
                 .background(White, RoundedCornerShape(size = 20.dp))
                 .padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 15.dp)
                 .alpha(0.5f),
-            style = MaterialTheme.typography.bodyLarge,
+            style = typography.bodyLarge,
             textAlign = TextAlign.Center
         )
     }
@@ -381,7 +378,6 @@ private fun ScanTagButton(scanViewModel: ScanViewModel, scanTagVisible: MutableS
 @Composable
 fun ScanTagPopUp(scanViewModel: ScanViewModel, visible: MutableState<Boolean>, onSubmit: MutableState<(String) -> Unit>) {
     if (!visible.value) return
-    val scroll = rememberScrollState()
 
     PopUp({
         scanViewModel.toggleDirectChipRead(false)
@@ -394,9 +390,12 @@ fun ScanTagPopUp(scanViewModel: ScanViewModel, visible: MutableState<Boolean>, o
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            if (ChipFinder.chips.isEmpty()) {
+            val chips = ChipFinder.chips.filter { !it.alreadyUsed }
+            if (chips.isEmpty()) {
                 LinearProgressIndicator(
-                    Modifier.height(2.dp).fillMaxWidth(),
+                    Modifier
+                        .height(2.dp)
+                        .fillMaxWidth(),
                     color = Black,
                     trackColor = LightGray,
                     strokeCap = StrokeCap.Round,
@@ -406,7 +405,7 @@ fun ScanTagPopUp(scanViewModel: ScanViewModel, visible: MutableState<Boolean>, o
                 TagBeanPlaceHolder(.5f)
                 TagBeanPlaceHolder(.25f)
             } else {
-                ChipFinder.chips.sortedBy { it.id}
+                chips.sortedBy { it.id}
                     .forEach {
                         TagBean(it) {
                             onSubmit.value(it.id.formatChip())
@@ -425,20 +424,19 @@ fun ScanTagPopUp(scanViewModel: ScanViewModel, visible: MutableState<Boolean>, o
  * @param onClick the action to run when the chip is clicked
  */
 @Composable
-private fun TagBean(chip: RfidChip, onClick: () -> Unit) {
+private fun TagBean(chip: ChipFinder.Chip, onClick: () -> Unit) {
     Row (
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(25.dp))
-            .clickable{ onClick() }
+            .clickable { onClick() }
             .background(LightGray)
             .padding(16.dp, 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.Start)
     ) {
-        val signal = if (chip.attenuation != -1) "${chip.attenuation}" else "?"
         Text(chip.id.formatChip(), Modifier.weight(1f), style = typography.bodyMedium)
-        Text("$signal dB", Modifier.alpha(0.5f), style = typography.bodyMedium)
+        Text("${chip.attenuation} dB", Modifier.alpha(0.5f), style = typography.bodyMedium)
     }
 }
 
