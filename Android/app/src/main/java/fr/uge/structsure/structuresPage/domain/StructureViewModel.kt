@@ -70,14 +70,22 @@ class StructureViewModel(private val structureRepository: StructureRepository,
         viewModelScope.launch {
             val end = System.currentTimeMillis() + 500
             isRefreshing.postValue(true)
+
             val structures = structureRepository.getAllStructures().map { StructureWithState(it) }
+
+            val unsentScans = scanRepository.getUnsentScans()
+            structures.forEach { structure ->
+                if (structure.raw.downloaded && unsentScans.any { it.structureId == structure.id }) {
+                    structure.state.postValue(StructureStates.UPLOADING)
+                }
+            }
+
             getAllStructures.postValue(structures)
             val remaining = end - System.currentTimeMillis()
             if (remaining > 0) delay(remaining)
             isRefreshing.postValue(false)
         }
     }
-
     /**
      * Downloads the structure with the given data.
      * @param structureData the data of the structure to download
@@ -128,6 +136,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      */
     suspend fun tryUploadScan(structureId: Long, scanId: Long) {
         setStructureState(structureId, StructureStates.UPLOADING)
+
         val results = scanRepository.getResultsByScan(scanId)
 
         val scanRequest = scanRepository.convertToScanRequest(scanId, results)
@@ -139,6 +148,7 @@ class StructureViewModel(private val structureRepository: StructureRepository,
                 getAllStructures()
             }.onFailure { e ->
                 Log.w(TAG, "Failed to upload results of scan #${scanId} (structure ${structureId}): ${e.message}")
+                setStructureState(structureId, StructureStates.UPLOADING)
             }
     }
 
