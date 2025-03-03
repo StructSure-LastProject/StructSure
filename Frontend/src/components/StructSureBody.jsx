@@ -1,33 +1,63 @@
-import {For, createResource, createSignal, Show} from "solid-js";
+import {For, createResource, createSignal, createEffect, Show} from "solid-js";
 import { A, useNavigate } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 import { TriangleAlert, CircleAlert, Check, SquareDashed, FolderSync } from 'lucide-solid';
-import StructuresFilter from "./StructuresFilter.jsx";
-
+import StructuresFilter from "./StructuresFilter";
+import LstStructureHead from "./LstStructureHead";
 
 /**
  * Component body part of the structure
  * @returns component for the structure body
  */
 function StructSureBody() {
+    // Shared state
     const [structures, setStructures] = createSignal([]);
+    const [searchByName, setSearchByName] = createSignal("");
+    const [filterValue, setFilterValue] = createSignal("");
+    const [orderByColumnName, setOrderByColumnName] = createSignal("NAME");
+    const [orderType, setOrderType] = createSignal("ASC");
+    const [filterVisible, setFilterVisible] = createSignal(false);
+
     const [errorStructurePage, setErrorStructurePage] = createSignal("");
 
     const { fetchData, statusCode, data, error } = useFetch();
-    
+
     const navigate = useNavigate();
 
     /**
      * Fetch the structures
-     * @param {String} url the url for the server
-     * @param {String} containsName the name of the structure
-     * @param {String} orderBy the sort by string
-     * @param {String} orderBy the order by string
      */
-    const structuresFetchRequest = async (url, searchByName, orderByColumnName, orderType) => {
-        const token = localStorage.getItem("token");       
-        const urlWithParams = `${url}?searchByName=${encodeURIComponent(searchByName)}&orderByColumnName=${encodeURIComponent(orderByColumnName)}&orderType=${encodeURIComponent(orderType)}`;
-        
+    const fetchStructures = async () => {
+        await structuresFetchRequest(
+          "/api/structures",
+          searchByName(),
+          filterValue(),
+          orderByColumnName(),
+          orderType()
+        );
+    };
+
+    // Watch for changes in filter parameters and refetch
+    createEffect(() => {
+        searchByName();
+        filterValue();
+        orderByColumnName();
+        orderType();
+        fetchStructures();
+    });
+
+    /**
+     * Fetch the structures
+     * @param {String} url the url for the server
+     * @param {String} searchByName the name of the structure
+     * @param {String} filterValue the sort by state
+     * @param {String} orderByColumnName the sort by string
+     * @param {String} orderType the order by string
+     */
+    const structuresFetchRequest = async (url, searchByName, filterValue, orderByColumnName, orderType) => {
+        const token = localStorage.getItem("token");
+        const urlWithParams = `${url}?searchByName=${encodeURIComponent(searchByName)}&searchByState=${encodeURIComponent(filterValue)}&orderByColumnName=${encodeURIComponent(orderByColumnName)}&orderType=${encodeURIComponent(orderType)}`;
+
         const requestData = {
             method: "GET",
             headers: {
@@ -40,13 +70,14 @@ function StructSureBody() {
 
         if (statusCode() === 200) {
             const res = data()
-            setStructures(res);   
+            setStructures(res);
         } else {
             setErrorStructurePage(error().errorData.error);
         }
     };
 
-    createResource(() => structuresFetchRequest("/api/structures", "", "STATE", "DESC"));
+    // Initial fetch
+    createResource(() => fetchStructures());
 
     /**
      * Return the corresponding icon based on the state and if the structure is archived or not
@@ -72,7 +103,28 @@ function StructSureBody() {
 
     return (
       <>
-          <StructuresFilter />
+          <LstStructureHead
+            orderType={orderType}
+            setOrderType={setOrderType}
+            orderByColumnName={orderByColumnName}
+            setOrderByColumnName={setOrderByColumnName}
+            filterVisible={filterVisible}
+            setFilterVisible={setFilterVisible}
+          />
+
+          <div class={`bg-white rounded-[20px] w-full ${filterVisible() ? 'block' : 'hidden'}`}>
+              <StructuresFilter
+                searchByName={searchByName}
+                setSearchByName={setSearchByName}
+                filterValue={filterValue}
+                setFilterValue={setFilterValue}
+                orderByColumnName={orderByColumnName}
+                setOrderByColumnName={setOrderByColumnName}
+                orderType={orderType}
+                setOrderType={setOrderType}
+              />
+          </div>
+
           <div class="flex flex-col lg:grid 2xl:grid lg:grid-cols-3 2xl:grid-cols-4 rounded-[20px] gap-4">
               <Show when={statusCode() === 200} fallback={
                   <h1 class="normal pl-5">{errorStructurePage()}</h1>
@@ -99,5 +151,4 @@ function StructSureBody() {
     );
 }
 
-export default StructSureBody
-
+export default StructSureBody;
