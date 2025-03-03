@@ -1,13 +1,13 @@
 import {createSignal} from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import useFetch from '../hooks/useFetch';
-import { ArrowDownNarrowWide, ArrowUpNarrowWide, Filter, Plus } from 'lucide-solid';
+import { ChevronDown, ChevronUp, Plus } from 'lucide-solid';
 
 /**
  * Component for list of structure
  * @returns component for the list of structure
  */
-function LstStructureHead({setOrderByColumnName, setOrderType, orderType, setFilterVisible, filterVisible}) {
+function LstStructureHead({setFilterVisible, filterVisible}) {
     const [isModalVisible, setModalVisible] = createSignal(false);
 
     const openModal = () => setModalVisible(true);
@@ -24,14 +24,6 @@ function LstStructureHead({setOrderByColumnName, setOrderType, orderType, setFil
     const [note, setNote] = createSignal("");
 
     const navigate = useNavigate();
-
-    /**
-     * Toggle sort direction and set orderByColumnName to NAME
-     */
-    const toggleSort = () => {
-        setOrderByColumnName("NAME");
-        setOrderType(orderType() === "ASC" ? "DESC" : "ASC");
-    };
 
     /**
      * Toggle filter visibility
@@ -83,22 +75,11 @@ function LstStructureHead({setOrderByColumnName, setOrderType, orderType, setFil
       <div class="flex justify-between w-full pl-5">
           <h1 class="title">Ouvrages</h1>
           <div class="flex gap-x-[10px]">
-              {!filterVisible() && (
-                <button
-                  class="w-10 h-10 bg-white rounded-[50px] flex items-center justify-center"
-                  onClick={toggleSort}
-                >
-                    {orderType() === "DESC" ?
-                      <ArrowDownNarrowWide/> :
-                      <ArrowUpNarrowWide/>
-                    }
-                </button>
-              )}
               <button
                 class="w-10 h-10 bg-white rounded-[50px] flex items-center justify-center"
                 onClick={toggleFilter}
               >
-                  <Filter/>
+                  {filterVisible() ? <ChevronDown/> : <ChevronUp/>}
               </button>
               <button
                 class="w-10 h-10 bg-black rounded-[50px] flex items-center justify-center"
