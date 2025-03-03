@@ -464,14 +464,14 @@ public class PlanService {
         }
 
         var plan = planRepository.findById(planId)
-                .orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
+            .orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
 
         var imageUrl = plan.getImageUrl();
-        var imagePath = Paths.get(imageUrl).normalize();
+        var imagePath = Path.of(imageUrl.replace("\\", "/")).normalize();
 
         try {
             if (!Files.exists(imagePath)) {
-                LOGGER.warn("Plan image not found at path: {}", imagePath);
+                LOGGER.warn("Plan image not found at path: {}", imagePath.toAbsolutePath());
                 throw new TraitementException(Error.PLAN_FILE_NOT_FOUND);
             }
 
