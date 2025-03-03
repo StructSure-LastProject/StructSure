@@ -178,7 +178,7 @@ function StructSureBody() {
                   </Show>
                 <For each={structures()}>
                   {(item) => (
-                    <div onclick={(e) => item.archived ? handleArchivedClick(item, e) : null}>
+                    <div role="button" onclick={(e) => item.archived ? handleArchivedClick(item, e) : null}>
                       {item.archived ? (
                         <div class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full cursor-pointer">
                           <div class="w-7 h-7 flex justify-center items-center">
