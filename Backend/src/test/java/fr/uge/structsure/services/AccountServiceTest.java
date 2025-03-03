@@ -9,6 +9,7 @@ import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
+import fr.uge.structsure.utils.AuthenticationType;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -70,7 +71,7 @@ class AccountServiceTest {
 
     @Test
     void testLoginInvalidCredentials() {
-        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.login(loginRequestDTO));
+        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.login(loginRequestDTO, AuthenticationType.WEB));
         assertEquals(Error.LOGIN_PASSWORD_NOT_CORRECT, exception.error);
     }
 
