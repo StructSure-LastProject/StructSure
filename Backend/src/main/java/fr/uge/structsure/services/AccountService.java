@@ -101,8 +101,7 @@ public class AccountService {
                             loginRequestDTO.password())
             );
             if (authentication.isAuthenticated()) {
-                var account = accountRepository.findByLogin(loginRequestDTO.login());
-                var accountDetails = account.orElseThrow(() -> new TraitementException(Error.AUTHENTICATION_ERROR));
+                var accountDetails = accountRepository.findByLogin(loginRequestDTO.login()).orElseThrow(() -> new TraitementException(Error.AUTHENTICATION_ERROR));
                 var createToken = (authenticationType.equals(AuthenticationType.WEB))? jwtUtils.generateToken(loginRequestDTO.login()):
                         jwtUtils.generateAndroidToken(loginRequestDTO.login());
                 return new LoginResponseDTO( createToken
