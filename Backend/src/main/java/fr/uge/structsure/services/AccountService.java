@@ -16,6 +16,7 @@ import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
 import fr.uge.structsure.repositories.StructureRepository;
+import fr.uge.structsure.utils.AuthenticationType;
 import fr.uge.structsure.utils.userAccountRequestValidation.UserAccountRequestValidation;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,16 +94,18 @@ public class AccountService {
      * @return LoginResponseDTO the response dto
      * @throws TraitementException thrown if login or password not correct
      */
-    public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) throws TraitementException {
+    public LoginResponseDTO login(LoginRequestDTO loginRequestDTO, AuthenticationType authenticationType) throws TraitementException {
         try {
             var authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequestDTO.login(),
                             loginRequestDTO.password())
             );
             if (authentication.isAuthenticated()) {
-                var account = accountRepository.findByLogin(loginRequestDTO.login());
-                var accountDetails = account.orElseThrow(() -> new IllegalStateException("Account authenticated but not present"));
-                return new LoginResponseDTO(jwtUtils.generateToken(loginRequestDTO.login()), "Bearer",
+                var accountDetails = accountRepository.findByLogin(loginRequestDTO.login()).orElseThrow(() -> new TraitementException(Error.AUTHENTICATION_ERROR));
+                var createToken = (authenticationType.equals(AuthenticationType.WEB))? jwtUtils.generateToken(loginRequestDTO.login()):
+                        jwtUtils.generateAndroidToken(loginRequestDTO.login());
+                return new LoginResponseDTO( createToken
+                        , "Bearer",
                         accountDetails.getLogin(), accountDetails.getFirstname(), accountDetails.getLastname(),
                         accountDetails.getRole().toString());
             }

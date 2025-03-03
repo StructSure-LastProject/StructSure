@@ -4,12 +4,16 @@ import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
+import fr.uge.structsure.utils.AuthenticationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 
+/**
+ * Controller for Authentication endpoints
+ */
 @RestController
 @RequestMapping("/api")
 public class AuthenticationController {
@@ -34,7 +38,21 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO) {
         try {
-            return ResponseEntity.status(200).body(accountService.login(loginRequestDTO));
+            return ResponseEntity.status(200).body(accountService.login(loginRequestDTO, AuthenticationType.WEB));
+        } catch (TraitementException e) {
+            return e.toResponseEntity("User login rejected: {}");
+        }
+    }
+
+    /**
+     * Controller that will generate token for android users
+     * @param loginRequestDTO dto containing login and password
+     * @return the response entity
+     */
+    @PostMapping("/android/login")
+    public ResponseEntity<?> androidLogin(@RequestBody LoginRequestDTO loginRequestDTO) {
+        try {
+            return ResponseEntity.status(200).body(accountService.login(loginRequestDTO, AuthenticationType.ANDROID));
         } catch (TraitementException e) {
             return e.toResponseEntity("User login rejected: {}");
         }
