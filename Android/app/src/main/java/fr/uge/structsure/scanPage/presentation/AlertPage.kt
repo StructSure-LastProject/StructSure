@@ -33,6 +33,7 @@ import fr.uge.structsure.components.Page
 import fr.uge.structsure.components.PlanForSensor
 import fr.uge.structsure.components.SensorDetails
 import fr.uge.structsure.scanPage.domain.PlanViewModel
+import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.SensorDB
 import fr.uge.structsure.ui.theme.Red
 import fr.uge.structsure.ui.theme.White
@@ -107,8 +108,7 @@ private fun AlertDetails(planViewModel: PlanViewModel, state: Boolean, sensor: S
 
         SensorDetails(White,
             "Nom du capteur :", sensor?.name ?: "?",
-            "Dernier état :", sensor?.state ?: "Inconnu")
-
+            "Dernier état :", SensorState.getStateDisplayName(sensor?.state ?: SensorState.UNKNOWN.displayName))
         PlanForSensor(planViewModel, sensor, White)
 
         // Sensor note
