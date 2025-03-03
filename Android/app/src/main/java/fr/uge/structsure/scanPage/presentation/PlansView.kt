@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -62,15 +61,10 @@ import fr.uge.structsure.ui.theme.fonts
  */
 @Composable
 fun PlansView(scanViewModel: ScanViewModel) {
-    var unplacedSensors by remember { mutableStateOf(listOf<SensorDB>()) }
     val planViewModel = scanViewModel.planViewModel
     val plans = planViewModel.plans.observeAsState()
     val points = planViewModel.filteredPoints.distinctUntilChanged().observeAsState(listOf())
     var addPoint by remember { mutableStateOf<SensorDB?>(null) }
-
-    LaunchedEffect(addPoint) {
-        unplacedSensors = MainActivity.db.sensorDao().getSensorsUnplacedByStructure(scanViewModel.structure?.id ?: -1)
-    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -106,6 +100,7 @@ fun PlansView(scanViewModel: ScanViewModel) {
                     .background(LightGray) )
 
             if (addPoint != null) {
+                val unplacedSensors = MainActivity.db.sensorDao().getSensorsUnplacedByStructure(scanViewModel.structure?.id ?: -1)
                 AddPointPane(
                     unplacedSensors,
                     { sensor ->

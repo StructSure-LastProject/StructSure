@@ -295,11 +295,11 @@ class Factor {
      */
     fun updatePanZoom(size: IntSize, centroid: Offset, pan: Offset, zoom: Float) {
         val adjustment = centroid * (1 - zoom)
-        val offset = (offset + pan) * zoom + adjustment
+        val offset = (this.pan.value + pan) * zoom + adjustment
         this.zoom = (this.zoom * zoom).coerceIn(transform, 3 * transform)
 
-        val width = ((size.width * this.zoom - size.width)/2 - (size.width * offset.x * this.zoom)).coerceAtLeast(0f)
-        val height = ((size.height * this.zoom - size.height)/2f - (size.height * offset.y * this.zoom)).coerceAtLeast(0f)
+        val width = ((size.width * this.zoom - size.width)/2).coerceAtLeast(0f)
+        val height = ((size.height * this.zoom - size.height)/2f).coerceAtLeast(0f)
         this.pan.value = Offset(
             offset.x.coerceIn(-width, width),
             offset.y.coerceIn(-height, height)
