@@ -43,6 +43,9 @@ const CustomDropDown = ({label, options, value, onChange}) => {
  * @returns The component of filter custom dropdown with order button
  */
 const SortDropDown = ({label, options, value, onChange, orderType, setOrderType}) => {
+  /**
+   * Change the order type filter
+   */
   const toggleOrder = () => {
     setOrderType(orderType() === "ASC" ? "DESC" : "ASC");
   };
@@ -84,6 +87,9 @@ const SortDropDown = ({label, options, value, onChange, orderType, setOrderType}
  * @returns The structures filter section component
  */
 const StructuresFilter = (props) => {
+  /**
+   * Clear the search input
+   */
   const clearSearch = () => {
     props.setSearchByName("");
   };
