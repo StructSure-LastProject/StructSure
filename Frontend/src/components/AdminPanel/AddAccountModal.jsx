@@ -175,7 +175,7 @@ const AddAccountModal = ({ closeModal }) => {
 
                         <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="password" className="normal opacity-50">Mot de passe*</label>
+                                <label htmlFor="password" className="normal opacity-50">Mot de passe* (12 à 64 caractères)</label>
                                 <input
                                     id="password"
                                     required
