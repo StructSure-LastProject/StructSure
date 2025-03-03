@@ -102,17 +102,9 @@ private fun Device(device: ReaderDevice, onClick: () -> Unit) {
     val connected = device.isConnected
     val connecting = Cs108Connector.timedDevices.isConnecting(device)
 
-    val fg = when {
-        connected -> MaterialTheme.colorScheme.background
-        connecting -> MaterialTheme.colorScheme.onSurface
-        else -> MaterialTheme.colorScheme.onSurface
-    }
+    val fg = if (connected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
+    val bg = if (connected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.surface
 
-    val bg = when {
-        connected -> MaterialTheme.colorScheme.onBackground
-        connecting -> MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
-        else -> MaterialTheme.colorScheme.surface
-    }
     Row(
         Modifier
             .clip(RoundedCornerShape(size = 20.dp))

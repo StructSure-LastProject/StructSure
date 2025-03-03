@@ -22,8 +22,8 @@ class TimedDevicesList(private val timeout: Long) {
     /** Internal list of values with their associated entrance time */
     private val timedDevices = mutableStateMapOf<ReaderDevice, Long>()
 
-    /** Set to track devices currently in the connection process */
-    private val connectingDevices = mutableSetOf<String>()
+    /** Set to track device currently in the connection process */
+    private var connectingDevice: String? = null
 
     /** List of active values */
     val devices: State<List<ReaderDevice>> = derivedStateOf { timedDevices.keys.toList() }
@@ -43,7 +43,9 @@ class TimedDevicesList(private val timeout: Long) {
      */
     fun remove(element: ReaderDevice) {
         timedDevices.remove(element)
-        connectingDevices.remove(element.address)
+        if (connectingDevice == element.address) {
+            connectingDevice = null
+        }
     }
 
 
@@ -53,7 +55,7 @@ class TimedDevicesList(private val timeout: Long) {
      * @param deviceAddress the address of the device to mark as connecting
      */
     fun markAsConnecting(deviceAddress: String) {
-        connectingDevices.add(deviceAddress)
+        connectingDevice = deviceAddress
     }
 
     /**
@@ -62,7 +64,7 @@ class TimedDevicesList(private val timeout: Long) {
      * @return true if the device is connecting, false otherwise
      */
     fun isConnecting(device: ReaderDevice): Boolean {
-        return connectingDevices.contains(device.address)
+        return device.address == connectingDevice
     }
 
     /**
@@ -81,7 +83,7 @@ class TimedDevicesList(private val timeout: Long) {
         val now = SystemClock.uptimeMillis()
         val toRemove = timedDevices.entries.filter {
             !it.key.isConnected &&
-            !connectingDevices.contains(it.key.address) &&
+            it.key.address != connectingDevice &&
             now - it.value > timeout
         }
         toRemove.forEach {
