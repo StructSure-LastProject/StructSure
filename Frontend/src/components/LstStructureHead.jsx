@@ -79,7 +79,7 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
                 class="w-10 h-10 bg-white rounded-[50px] flex items-center justify-center"
                 onClick={toggleFilter}
               >
-                  {filterVisible() ? <ChevronDown/> : <ChevronUp/>}
+                  {filterVisible() ? <ChevronUp/> : <ChevronDown/>}
               </button>
               <button
                 class="w-10 h-10 bg-black rounded-[50px] flex items-center justify-center"
