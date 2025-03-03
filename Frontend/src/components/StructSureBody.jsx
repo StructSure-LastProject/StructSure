@@ -65,7 +65,7 @@ function StructSureBody() {
 
         if (filterValue === "ARCHIVED") {
             params.append('archived', "true");
-            params.set('searchByState', '');
+            params.delete('searchByState');
         }
 
         const urlWithParams = `${url}?${params.toString()}`;
