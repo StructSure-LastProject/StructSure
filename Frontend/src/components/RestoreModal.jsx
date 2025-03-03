@@ -1,4 +1,3 @@
-import {createSignal, Show} from "solid-js";
 import useFetch from '../hooks/useFetch';
 import {useNavigate} from "@solidjs/router";
 import {FolderSync, Shield} from "lucide-solid";
