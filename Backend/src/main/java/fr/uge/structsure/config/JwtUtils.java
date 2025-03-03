@@ -15,6 +15,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Class containing all the necessary method that will handle tokens
+ */
 @Component("jwtUtils")
 public class JwtUtils {
 
@@ -32,11 +35,23 @@ public class JwtUtils {
         return createToken(claims, username, expirationTime);
     }
 
+    /**
+     * Will generate token for android users
+     * @param username the username
+     * @return the generated token
+     */
     public String generateAndroidToken(String username) {
         Map<String, Object> claims = new HashMap<>();
         return createToken(claims, username, Duration.ofDays(androidExpirationTime).toMillis());
     }
 
+    /**
+     * Will generate token
+     * @param claims the claims
+     * @param username the username
+     * @param duration the duration in milliseconds
+     * @return String the generated token
+     */
     private String createToken(Map<String, Object> claims, String username, long duration) {
         var currentTime = System.currentTimeMillis();
         return Jwts.builder()
