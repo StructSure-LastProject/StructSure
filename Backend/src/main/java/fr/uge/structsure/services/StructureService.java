@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -271,5 +272,45 @@ public class StructureService {
                 scans.stream().map(StructureDetailsResponseDTO.Scan::fromScanEntity).toList(),
                 plans.stream().map(StructureDetailsResponseDTO.Plan::fromPlanEntity).toList(),
                 sensors.stream().map(StructureDetailsResponseDTO.Sensor::fromSensorEntity).toList());
+    }
+
+    /**
+     * Restore archived structure
+     * @param id The structure id
+     * @return the record containing the response
+     * @throws TraitementException in case of incorrect behaviour
+     */
+    public ArchiveRestoreStructureResponseDto restoreStructure(Long id) throws TraitementException {
+        if (Objects.isNull(id)) {
+            throw new TraitementException(Error.STRUCTURE_ID_INVALID);
+        }
+        var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        if (!structure.getArchived()) {
+            throw new TraitementException(Error.STRUCTURE_ALREADY_ACTIVE);
+        }
+        structure.setArchived(false);
+        var saved = structureRepository.save(structure);
+        var archived = saved.getArchived() ? "archivé" : "actif";
+        return new ArchiveRestoreStructureResponseDto(saved.getId(), saved.getName(), archived, LocalDateTime.now().toString());
+    }
+
+    /**
+     * Archive a structure
+     * @param id The structure id
+     * @return the record containing the response
+     * @throws TraitementException in case of incorrect behaviour
+     */
+    public ArchiveRestoreStructureResponseDto archiveStructure(Long id) throws TraitementException {
+        if (Objects.isNull(id)) {
+            throw new TraitementException(Error.STRUCTURE_ID_INVALID);
+        }
+        var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        if (structure.getArchived()) {
+            throw new TraitementException(Error.STRUCTURE_ALREADY_ARCHIVED);
+        }
+        structure.setArchived(true);
+        var saved = structureRepository.save(structure);
+        var archived = saved.getArchived() ? "archivé" : "actif";
+        return new ArchiveRestoreStructureResponseDto(saved.getId(), saved.getName(), archived, LocalDateTime.now().toString());
     }
 }
