@@ -2,6 +2,8 @@ import {For, createResource, createSignal, createEffect, Show} from "solid-js";
 import { A, useNavigate } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 import { TriangleAlert, CircleAlert, Check, SquareDashed, FolderSync } from 'lucide-solid';
+import RestoreModal from "./RestoreModal.jsx";
+
 import StructuresFilter from "./StructuresFilter";
 import LstStructureHead from "./LstStructureHead";
 
@@ -19,6 +21,9 @@ function StructSureBody() {
     const [filterVisible, setFilterVisible] = createSignal(false);
 
     const [errorStructurePage, setErrorStructurePage] = createSignal("");
+
+    const [showRestoreModal, setShowRestoreModal] = createSignal(false);
+    const [selectedStructure, setSelectedStructure] = createSignal(null);
 
     const { fetchData, statusCode, data, error } = useFetch();
 
@@ -113,6 +118,34 @@ function StructSureBody() {
         }
     };
 
+    /**
+     * Handle click on an archived structure
+     * @param {Object} structure the structure data
+     * @param {Event} e the event object
+     */
+    const handleArchivedClick = (structure, e) => {
+        e.preventDefault();
+        setSelectedStructure(structure);
+        setShowRestoreModal(true);
+    };
+
+    /**
+     * Close the restore modal
+     */
+    const closeRestoreModal = () => {
+        setShowRestoreModal(false);
+        setSelectedStructure(null);
+    };
+
+    /**
+     * Handle successful structure restoration
+     * @param {Object} restoredStructure The restored structure data from the API
+     */
+    const handleRestoreSuccess = (restoredStructure) => {
+        closeRestoreModal();
+        structuresFetchRequest("/api/structures", "", "STATE", "DESC");
+    };
+
     return (
       <>
           <LstStructureHead
@@ -140,24 +173,43 @@ function StructSureBody() {
                   <Show when={structures().length <= 0}>
                       <h1 class="normal pl-5">Aucun ouvrage enregistré dans le système</h1>
                   </Show>
-                  <For each={structures()}>
+                <For each={structures()}>
                   {(item) => (
+                    <div onclick={(e) => item.archived ? handleArchivedClick(item, e) : null}>
+                      {item.archived ? (
+                        <div class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full cursor-pointer">
+                          <div class="w-7 h-7 flex justify-center items-center">
+                            {getIconFromStateAndArchived(item.state, item.archived)}
+                          </div>
+                          <div class="flex flex-col">
+                            <h1 class="subtitle opacity-50">{item.name}</h1>
+                            <p class="normal opacity-50">{item.numberOfSensors} capteurs</p>
+                          </div>
+                        </div>
+                      ) : (
                         <A href={`/structures/${item.id}`}>
-                            <div
-                              class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full">
-                                <div class="w-7 h-7 flex justify-center items-center">
-                                    {getIconFromStateAndArchived(item.state, item.archived)}
-                                </div>
-                                <div class="flex flex-col">
-                                    <h1 class="subtitle">{item.name}</h1>
-                                    <p class="normal opacity-50">{item.numberOfSensors} capteurs</p>
-                                </div>
+                          <div class="flex items-center bg-white 2xl:w-300px px-[20px] py-[15px] rounded-[20px] gap-x-[20px] w-full cursor-pointer">
+                            <div class="w-7 h-7 flex justify-center items-center">
+                              {getIconFromStateAndArchived(item.state, item.archived)}
                             </div>
+                            <div class="flex flex-col">
+                              <h1 class="subtitle">{item.name}</h1>
+                              <p class="normal opacity-50">{item.numberOfSensors} capteurs</p>
+                            </div>
+                          </div>
                         </A>
                       )}
-                  </For>
+                    </div>
+                  )}
+                </For>
               </Show>
           </div>
+        <RestoreModal
+          show={showRestoreModal()}
+          structure={selectedStructure()}
+          onClose={closeRestoreModal}
+          onRestore={handleRestoreSuccess}
+        />
       </>
     );
 }
