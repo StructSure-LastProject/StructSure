@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 
+/**
+ * Controller for Authentication endpoints
+ */
 @RestController
 @RequestMapping("/api")
 public class AuthenticationController {
@@ -41,6 +44,11 @@ public class AuthenticationController {
         }
     }
 
+    /**
+     * Controller that will generate token for android users
+     * @param loginRequestDTO dto containing login and password
+     * @return the response entity
+     */
     @PostMapping("/android/login")
     public ResponseEntity<?> androidLogin(@RequestBody LoginRequestDTO loginRequestDTO) {
         try {
