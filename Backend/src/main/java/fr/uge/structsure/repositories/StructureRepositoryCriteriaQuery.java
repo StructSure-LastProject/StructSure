@@ -9,6 +9,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,7 +43,7 @@ public class StructureRepositoryCriteriaQuery {
                 .when(cb.equal(result.get("state"), State.NOK), 1L)
                 .otherwise(0L));
         var state = cb.<Integer>selectCase()
-                .when(cb.equal(cb.countDistinct(sensor.get("sensorId")), 0L), State.UNKNOWN.ordinal())
+                .when(cb.equal(countMeasureChip, 0L), State.UNKNOWN.ordinal())
                 .when(cb.greaterThan(countDefective, 0L), State.DEFECTIVE.ordinal())
                 .when(cb.greaterThan(countNok, 0L), State.NOK.ordinal())
                 .otherwise(State.OK.ordinal());
@@ -57,19 +58,47 @@ public class StructureRepositoryCriteriaQuery {
             structure.get("archived")
         ));
 
-        var namePredicate = cb.like(cb.lower(structure.get("name")), "%" + allStructureRequestDTO.searchByName().toLowerCase() + "%");
-        cq.where(namePredicate);
+        var predicates = new ArrayList<Predicate>();
+        predicates.add(cb.like(cb.lower(structure.get("name")), "%" + allStructureRequestDTO.searchByName().toLowerCase() + "%"));
+
+        if (allStructureRequestDTO.archived().isPresent()) {
+            predicates.add(cb.equal(structure.get("archived"), true));
+        }
+        cq.where(predicates.toArray(new Predicate[0]));
         cq.groupBy(structure.get("id"));
+
+        if (allStructureRequestDTO.searchByState().isPresent()) {
+            var requestedState = allStructureRequestDTO.searchByState().get();
+            Predicate statePredicate;
+            if (requestedState == State.UNKNOWN) {
+                statePredicate = cb.equal(countMeasureChip, 0L);
+            } else if (requestedState == State.DEFECTIVE) {
+                statePredicate = cb.greaterThan(countDefective, 0L);
+            } else if (requestedState == State.NOK) {
+                statePredicate = cb.and(
+                        cb.equal(countDefective, 0L),
+                        cb.greaterThan(countNok, 0L)
+                );
+            } else { // State.OK
+                statePredicate = cb.and(
+                        cb.equal(countDefective, 0L),
+                        cb.equal(countNok, 0L),
+                        cb.greaterThan(countMeasureChip, 0L)
+                );
+            }
+
+            cq.having(statePredicate);
+        }
 
         Expression<?> orderExpression;
         switch (AllStructureRequestDTO.OrderByColumn.valueOf(allStructureRequestDTO.orderByColumnName())) {
             case NUMBER_OF_SENSORS -> orderExpression = countMeasureChip;
             case NAME -> orderExpression = structure.get("name");
             case STATE -> orderExpression = cb.selectCase()
-                    .when(cb.equal(structure.get("archived"), true), State.UNKNOWN.ordinal())
                     .when(cb.equal(state, State.NOK.ordinal()), 1)
                     .when(cb.equal(state, State.DEFECTIVE.ordinal()), 2)
-                    .when(cb.equal(state, State.OK.ordinal()), 3);
+                    .when(cb.equal(state, State.UNKNOWN.ordinal()), 3)
+                    .when(cb.equal(state, State.OK.ordinal()), 4);
             default -> orderExpression = structure.get("id");
         }
         switch (OrderEnum.valueOf(allStructureRequestDTO.orderType())) {

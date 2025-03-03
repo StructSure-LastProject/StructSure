@@ -15,9 +15,10 @@ import java.util.Optional;
  * @param orderByColumnName the column to order with
  * @param searchByState the state to filter
  * @param orderType the order type (ASC or DESC)
+ * @param archived whether fetch only archived structure
  */
 @JsonSerialize
-public record AllStructureRequestDTO(String searchByName, Optional<State> searchByState, String orderByColumnName, String orderType) {
+public record AllStructureRequestDTO(String searchByName, Optional<State> searchByState, Optional<Boolean> archived, String orderByColumnName, String orderType) {
     /**
      * The orderByColumn enum
      */
