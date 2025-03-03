@@ -117,16 +117,17 @@ private fun Device(device: ReaderDevice, onClick: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy((-5).dp, Alignment.Top),
             horizontalAlignment = Alignment.Start,
         ) {
-            Text(device.name, color=fg, style = typography.headlineMedium)
-            Text(device.address, Modifier.alpha(.5f), color=fg, style = typography.bodyMedium)
+            Text(device.name, color = fg, style = typography.headlineMedium)
+            Text(device.address, Modifier.alpha(.5f), color = fg, style = typography.bodyMedium)
         }
         if (connected) {
             IconButton(
                 onClick,
-                Modifier.size(40.dp).background(color = fg, shape = RoundedCornerShape(size = 50.dp)),
+                Modifier.size(40.dp)
+                    .background(color = fg, shape = RoundedCornerShape(size = 50.dp)),
                 false
             ) {
-                Icon(painterResource(R.drawable.check), "close", Modifier.size(20.dp),bg)
+                Icon(painterResource(R.drawable.check), "close", Modifier.size(20.dp), bg)
             }
         } else if (connecting) {
             LoadingButton()
