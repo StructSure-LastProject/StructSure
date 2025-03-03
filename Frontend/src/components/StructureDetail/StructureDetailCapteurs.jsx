@@ -94,11 +94,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
         await fetchData(navigate, "/api/sensors/archive", requestData);
 
         if (statusCode() === 200) {
-            setSensors(
-                sensors().filter(sensor =>
-                    sensor.controlChip !== sensorDetails.controlChip && sensor.measureChip !== sensorDetails.measureChip
-                )
-            );
+            sensorsFetchRequest(structureId, setSensors, setTotalItems, navigate, {limit: limit(), offset: offset()});
         }
     }   
 

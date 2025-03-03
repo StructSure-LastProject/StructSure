@@ -63,15 +63,7 @@ public class SensorService {
         if (structure.isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
-
-        if (request.archivedFilter() != null && request.archivedFilter()){
-            return sensorRepositoryCriteriaQuery.findAllSensorsByStructureId(structureId, request)
-                    .stream()
-                    .filter(SensorDTO::archived).toList();
-        }
-        return sensorRepositoryCriteriaQuery.findAllSensorsByStructureId(structureId, request)
-                .stream()
-                .filter(sensorDTO -> !sensorDTO.archived()).toList();
+        return sensorRepositoryCriteriaQuery.findAllSensorsByStructureId(structureId, request);
     }
 
     /**
