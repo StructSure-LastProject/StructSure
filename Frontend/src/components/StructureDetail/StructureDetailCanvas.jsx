@@ -684,20 +684,14 @@ function StructureDetailCanvas(props) {
                 ref={canvasRef}
                 class={props.styles === undefined ? `w-full bg-white` : props.styles }
             ></canvas>
-            <div 
-                class="absolute z-9 w-[40px] h-[81px] rounded-[50px] flex flex-col items-center bg-white shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
-                style={{
-                    top: `${canvasHeight() - 71}px`,
-                    left: `${canvasWidth() - 30}px`,
-                }}
-            >
-                <button onClick={() => zoom(ZOOM * -1)} class="bg-white rounded-[50px] h-full flex-1 w-[20px] flex items-center justify-center">
+            <div class="absolute z-9 right-0 bottom-0 w-fit rounded-full flex flex-col items-center bg-white shadow-[0_0_50px_0_rgba(151,151,167,0.5)]">
+                <button onClick={() => zoom(ZOOM * -1)} class="p-[10px] flex items-center justify-center">
                     <Plus class="w-5 h-5" color="black" />
                 </button>
 
                 <div class="w-full h-[1px] bg-lightgray my-auto"></div>
 
-                <button onClick={() => zoom(ZOOM)} class="bg-white rounded-[50px] h-full flex-1 w-[20px] flex items-center justify-center">
+                <button onClick={() => zoom(ZOOM)} class="p-[10px] flex items-center justify-center">
                     <Minus class="w-5 h-5" color="black" />
                 </button>
             </div>
