@@ -19,6 +19,8 @@ function Account() {
         localStorage.removeItem("firstName");
         localStorage.removeItem("lastName");
         localStorage.removeItem("login");
+        localStorage.removeItem("controlChip");
+        localStorage.removeItem("measureChip");
     };
 
     /**
