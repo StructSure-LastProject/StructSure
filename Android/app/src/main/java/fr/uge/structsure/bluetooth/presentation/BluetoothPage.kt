@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +38,7 @@ import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.components.Title
+import fr.uge.structsure.structuresPage.presentation.components.LoadingButton
 import fr.uge.structsure.ui.theme.White
 
 @Composable
@@ -129,11 +129,7 @@ private fun Device(device: ReaderDevice, onClick: () -> Unit) {
                 Icon(painterResource(R.drawable.check), "close", Modifier.size(20.dp),bg)
             }
         } else if (connecting) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
-                color = fg,
-                strokeWidth = 2.dp
-            )
+            LoadingButton()
         }
     }
 }
