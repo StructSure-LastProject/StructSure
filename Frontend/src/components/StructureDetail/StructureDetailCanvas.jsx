@@ -1,5 +1,5 @@
 import { createSignal, onMount, onCleanup, Show, createEffect, createMemo } from "solid-js";
-import { Check, ChevronDown, Trash2 } from 'lucide-solid';
+import { Check, ChevronDown, Minus, Plus, Trash2 } from 'lucide-solid';
 import useFetch from '../../hooks/useFetch';
 import Alert from '../Alert';
 import getSensorStatusColor from "../SensorStatusColorGen";
@@ -11,9 +11,12 @@ import { useNavigate } from "@solidjs/router";
  * @returns the component for the plans part
  */
 function StructureDetailCanvas(props) {
+    const ZOOM = 114;
     const IMAGE_MOVE_LIMIT = 10;
     const SENSOR_POINT_SIZE = 10;
     const ZOOM_LIMIT = 5;
+    const [canvasWidth, setCanvasWidth] = createSignal(null);
+    const [canvasHeight, setCanvasHeight] = createSignal(null);
     const [ctxCanvas, setCtxCanvas] = createSignal("");
     const [zoomFactor, setZoomFactor] = createSignal(0);
     const [offsetX, setOffsetX] = createSignal(0);
@@ -360,6 +363,8 @@ function StructureDetailCanvas(props) {
         canvasRef.height = height;
         canvasRef.style.width = `${canvasRef.width}px`;
         canvasRef.style.height = `${canvasRef.height}px`;
+        setCanvasWidth(width);
+        setCanvasHeight(height);
     };
 
     /**
@@ -580,6 +585,28 @@ function StructureDetailCanvas(props) {
 
 
     /**
+     * Applies the zoom if we can
+     * @param {number} zoomChange the zoom number
+     */
+    const zoom = (zoomChange) => {
+        setIsPopupVisible(false);
+        const newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
+        const imgStartX = getImgStartX(baseOffsetX(), offsetX(), newZoom);
+        const imgStartY = getImgStartY(baseOffsetY(), offsetY(), newZoom);
+        const [zoomX, zoomY] = getZoomRationFromZoomNumber(newZoom);
+        const imgWidth = drawWidth() + zoomX;
+        const imgHeight = drawHeight() + zoomY;
+        if ((imgStartX + imgWidth) < IMAGE_MOVE_LIMIT || imgStartX > canvasRef.width - IMAGE_MOVE_LIMIT
+            || (imgStartY + imgHeight) < IMAGE_MOVE_LIMIT || imgStartY > canvasRef.height - IMAGE_MOVE_LIMIT
+            || zoomLimitReached(imgWidth, imgHeight)) {
+            return;
+        }
+        setZoomFactor(newZoom);
+        drawImage();
+    }
+
+
+    /**
      * Handles the mouse wheel event
      * @param {MouseEvent} event the mouse event
      */
@@ -588,19 +615,7 @@ function StructureDetailCanvas(props) {
         if (event.ctrlKey) {
             setIsPopupVisible(false);
             const zoomChange = event.deltaY;
-            const newZoom = Math.max(0, zoomFactor() + (-1 * zoomChange));
-            const imgStartX = getImgStartX(baseOffsetX(), offsetX(), newZoom);
-            const imgStartY = getImgStartY(baseOffsetY(), offsetY(), newZoom);
-            const [zoomX, zoomY] = getZoomRationFromZoomNumber(newZoom);
-            const imgWidth = drawWidth() + zoomX;
-            const imgHeight = drawHeight() + zoomY;
-            if ((imgStartX + imgWidth) < IMAGE_MOVE_LIMIT || imgStartX > canvasRef.width - IMAGE_MOVE_LIMIT
-             || (imgStartY + imgHeight) < IMAGE_MOVE_LIMIT || imgStartY > canvasRef.height - IMAGE_MOVE_LIMIT
-             || zoomLimitReached(imgWidth, imgHeight)) {
-                return;
-            }
-            setZoomFactor(newZoom);
-            drawImage();
+            zoom(zoomChange);
         }
     };
 
@@ -669,6 +684,24 @@ function StructureDetailCanvas(props) {
                 ref={canvasRef}
                 class={props.styles === undefined ? `w-full bg-white` : props.styles }
             ></canvas>
+            <div 
+                class="absolute z-9 w-[40px] h-[81px] rounded-[50px] flex flex-col items-center bg-white shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
+                style={{
+                    top: `${canvasHeight() - 71}px`,
+                    left: `${canvasWidth() - 30}px`,
+                }}
+            >
+                <button onClick={() => zoom(ZOOM * -1)} class="bg-white rounded-[50px] h-full flex-1 w-[20px] flex items-center justify-center">
+                    <Plus class="w-5 h-5" color="black" />
+                </button>
+
+                <div class="w-full h-[1px] bg-lightgray my-auto"></div>
+
+                <button onClick={() => zoom(ZOOM)} class="bg-white rounded-[50px] h-full flex-1 w-[20px] flex items-center justify-center">
+                    <Minus class="w-5 h-5" color="black" />
+                </button>
+            </div>
+
             <Show when={isPopupVisible() && !popupOutOfCanvas() && props.interactiveMode === true}>
                 <div ref={popupRef}>
                     <Show when={!clickExistingPoint()}>
