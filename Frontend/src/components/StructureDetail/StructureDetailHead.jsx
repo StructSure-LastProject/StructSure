@@ -85,6 +85,7 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
         if (statusCode() === 200) {
             navigate('/');
         } else {
+            // handle error
         }
     };
 
