@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -98,9 +99,20 @@ private fun PaneHeader(onClick: () -> Unit) {
  */
 @Composable
 private fun Device(device: ReaderDevice, onClick: () -> Unit) {
-    val connected = device.isConnected // TODO change to device.connected
-    val fg = if (connected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
-    val bg = if (connected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.surface
+    val connected = device.isConnected
+    val connecting = Cs108Connector.timedDevices.isConnecting(device)
+
+    val fg = when {
+        connected -> MaterialTheme.colorScheme.background
+        connecting -> MaterialTheme.colorScheme.onSurface
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
+    val bg = when {
+        connected -> MaterialTheme.colorScheme.onBackground
+        connecting -> MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+        else -> MaterialTheme.colorScheme.surface
+    }
     Row(
         Modifier
             .clip(RoundedCornerShape(size = 20.dp))
@@ -124,6 +136,12 @@ private fun Device(device: ReaderDevice, onClick: () -> Unit) {
             ) {
                 Icon(painterResource(R.drawable.check), "close", Modifier.size(20.dp),bg)
             }
+        } else if (connecting) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = fg,
+                strokeWidth = 2.dp
+            )
         }
     }
 }

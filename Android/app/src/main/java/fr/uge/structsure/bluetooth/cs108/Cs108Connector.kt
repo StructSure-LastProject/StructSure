@@ -37,7 +37,7 @@ class Cs108Connector(private val context: Context) {
         private const val LOG_TAG = "TinyRFID-Connector"
 
         /** List with timeout to smooth real world data */
-        private val timedDevices = TimedDevicesList(3000)
+        val timedDevices = TimedDevicesList(3000)
 
         /** Saves the background task that scan for nearby devices */
         private var scanTask: Job? = null
@@ -140,12 +140,18 @@ class Cs108Connector(private val context: Context) {
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun connect(device: ReaderDevice) {
+        // Mark the device as connecting to avoid deleting it from the list
+        timedDevices.markAsConnecting(device.address)
         pairTask = GlobalScope.launch {
             var bleConnected: Boolean? = null
             try {
                 csLibrary4A.connect(device)
                 bleConnected = waitForBleConnection(device)
-                if (!bleConnected) return@launch
+                if (!bleConnected){
+                    // Remove the device from the list if the connection failed
+                    timedDevices.remove(device)
+                    return@launch
+                }
                 isBleConnected.postValue(true)
                 waitForDeviceReady()
                 if (Cs108Connector.device == null) return@launch
