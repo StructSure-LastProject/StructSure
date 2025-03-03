@@ -43,8 +43,8 @@ public class StructureRepositoryCriteriaQuery {
                 .otherwise(0L));
         var state = cb.<Integer>selectCase()
                 .when(cb.equal(cb.countDistinct(result.get("id")), 0L), State.UNKNOWN.ordinal())
-                .when(cb.greaterThan(countDefective, 0L), State.DEFECTIVE.ordinal())
                 .when(cb.greaterThan(countNok, 0L), State.NOK.ordinal())
+                .when(cb.greaterThan(countDefective, 0L), State.DEFECTIVE.ordinal())
                 .otherwise(State.OK.ordinal());
 
         cq.select(cb.construct(AllStructureResponseDTO.class,
