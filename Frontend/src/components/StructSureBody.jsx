@@ -135,7 +135,10 @@ function StructSureBody() {
     const closeRestoreModal = () => {
         setShowRestoreModal(false);
         setSelectedStructure(null);
+        setErrorMsgActiveStructure("");
     };
+
+    const [errorMsgActiveStructure, setErrorMsgActiveStructure] = createSignal("");
 
     /**
      * Handle successful structure restoration
@@ -204,12 +207,15 @@ function StructSureBody() {
                 </For>
               </Show>
           </div>
-        <RestoreModal
-          show={showRestoreModal()}
-          structure={selectedStructure()}
-          onClose={closeRestoreModal}
-          onRestore={handleRestoreSuccess}
-        />
+          <Show when={showRestoreModal()}>
+              <RestoreModal
+                structure={selectedStructure()}
+                onClose={closeRestoreModal}
+                onRestore={handleRestoreSuccess}
+                errorMsgActiveStructure={errorMsgActiveStructure}
+                setErrorMsgActiveStructure={setErrorMsgActiveStructure}
+              />
+          </Show>
       </>
     );
 }
