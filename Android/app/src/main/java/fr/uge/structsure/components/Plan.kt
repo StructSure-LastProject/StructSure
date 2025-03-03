@@ -43,8 +43,7 @@ import kotlin.math.sqrt
 fun PlanForSensor(
     planViewModel: PlanViewModel,
     point: SensorDB?,
-    color: Color,
-    newState : SensorState ?= null
+    color: Color
 ) {
     val context = LocalContext.current
     val planImage = remember(point) { planViewModel.getPlanImage(context, point?.plan) }
@@ -57,7 +56,7 @@ fun PlanForSensor(
         planNode?.let {
             Text(getPlanSectionName(it), color = color, style = typography.headlineMedium)
         }
-        Plan(planImage, { point?.let { listOf(it) } ?: emptyList()}, newState = newState )
+        Plan(planImage, { point?.let { listOf(it) } ?: emptyList()})
     }
 }
 
@@ -68,7 +67,6 @@ fun PlanForSensor(
  * @param temporaryPoint the point to add on the image
  * @param addPoint the function to call when a point is added
  * @param selectPoint the function to call when a point is selected
- * @param newState the new state of the point to add
  */
 @Composable
 fun Plan(
@@ -76,8 +74,7 @@ fun Plan(
     points: () -> List<SensorDB>,
     temporaryPoint: SensorDB? = null,
     addPoint: (Int, Int) -> Unit = { _, _ -> },
-    selectPoint: (SensorDB) -> Unit = { _ -> },
-    newState: SensorState? = null
+    selectPoint: (SensorDB) -> Unit = { _ -> }
 ) {
     val painter = remember(image) { BitmapPainter(image.asImageBitmap()) }
     val factor = remember(1) { Factor() }
@@ -113,8 +110,7 @@ fun Plan(
             positions.forEach {
                 if (it.x != null && it.y != null) {
                     val panned = imgToCanvas(factor, size, it.x, it.y)
-                    val state = newState ?: SensorState.from(it.state)
-                    point(size, panned.x, panned.y, state)
+                    point(size, panned.x, panned.y, SensorState.from(it.state))
                 }
             }
         }

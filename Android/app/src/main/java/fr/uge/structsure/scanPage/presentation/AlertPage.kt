@@ -109,9 +109,8 @@ private fun AlertDetails(planViewModel: PlanViewModel, state: Boolean, sensor: S
         SensorDetails(White,
             "Nom du capteur :", sensor?.name ?: "?",
             "Dernier état :", SensorState.getStateDisplayName(sensor?.state ?: SensorState.UNKNOWN.displayName))
-        val newSensorState = if(state) SensorState.NOK else SensorState.DEFECTIVE
-
-        PlanForSensor(planViewModel, sensor, White, newSensorState)
+        val displaySensor = sensor?.copy(_state = (if(state) SensorState.NOK else SensorState.DEFECTIVE).name)
+        PlanForSensor(planViewModel, displaySensor, White)
 
         // Sensor note
         sensor?.note?.let {
