@@ -3,6 +3,7 @@ import {createEffect, createSignal, For, Show} from 'solid-js';
 import StructureDetailEdit from './StructureDetailEdit';
 import {planSensorsFetchRequest, planSensorsScanFetchRequest, sensorsFetchRequest} from "./StructureDetailBody.jsx";
 import {useNavigate} from "@solidjs/router";
+import useFetch from "../../hooks/useFetch.js";
 
 /**
  * Show the head part of the structure detail
@@ -60,6 +61,33 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
         }
     };
 
+    /**
+     * Handle archiving the current structure
+     */
+    const handleArchiveStructure = async () => {
+        const token = localStorage.getItem("token");
+        const requestData = {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        };
+
+        const { fetchData, statusCode, data, error } = useFetch();
+
+        await fetchData(
+          navigate,
+          `/api/structures/${structureDetails().id}/archive`,
+          requestData
+        );
+
+        if (statusCode() === 200) {
+            navigate('/');
+        } else {
+        }
+    };
+
     return (
         <>
             <div class="flex flex-col gap-y-2.5">
@@ -84,7 +112,9 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
                                 <Pencil size={20} />
                             </button>
                             <button
-                              class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
+                              class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+                              onclick={handleArchiveStructure}
+                            >
                                 <Trash2 color="red" size={20} />
                             </button>
                         </Show>
