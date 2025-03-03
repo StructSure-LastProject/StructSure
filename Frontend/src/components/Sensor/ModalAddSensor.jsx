@@ -1,4 +1,4 @@
-import {createSignal, Show} from "solid-js";
+import {createEffect, createSignal, Show} from "solid-js";
 import useFetch from "../../hooks/useFetch";
 import ModalHeader from "../Modal/ModalHeader";
 import ErrorMessage from "../Modal/ErrorMessage";
@@ -20,6 +20,56 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const [errorMsg, setError] = createSignal("");
   const navigate = useNavigate();
+
+
+  /**
+   * Helper function to convert hex to base 10 value
+   * @param {String} hexString 
+   * @returns The base 10 value
+   */
+  const hexToBase10 = (hexString) => BigInt('0x' + hexString);
+
+
+  /**
+   * Helper function to insert a space every 4 character in tag chips
+   * @param {String} inputString 
+   * @returns The chip value with spaces betwwen 4 caracters
+   */
+  const addSpaces = (inputString) => {
+    return inputString.replace(/(.{4})(?=.)/g, '$1 ');
+  }
+
+  /**
+   * Helper function to convert Base 10 to hexa value
+   * @param {String} base10Number 
+   * @returns The hex value
+   */
+  const base10ToHex = (base10Number) => {
+    const hex = base10Number.toString(16).toUpperCase();
+    return hex.length % 2 === 0 ? hex : '0' + hex;
+  };
+
+  /**
+   * Add +1 to the hexa value
+   * @param {String} hexString The hexa value
+   * @returns The new hexa value suggestion
+   */
+  const hexAddOne = (hexString) => {
+    const base10Value = hexToBase10(hexString);
+    const newBase10Value = base10Value + 1n;
+    return addSpaces(base10ToHex(newBase10Value));
+  }
+ 
+
+  /**
+   * Save the chips in local storage
+   * @param {String} controlChip The control chip
+   * @param {String} measureChip The measure chip
+   */
+  const saveTagOnLocalStorage = (controlChip, measureChip) => {
+    localStorage.setItem("controlChip", controlChip);
+    localStorage.setItem("measureChip", measureChip);
+  }
 
   /**
    * Handles the form submission for adding a new sensor.
@@ -70,6 +120,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
 
     if (statusCode() === 201) {
       onSave();
+      saveTagOnLocalStorage(controlChip().trim().replace(/\s+/g, ''), measureChip().trim().replace(/\s+/g, ''));
       handleClose();
     } else {
       setError(error()?.errorData?.error || "Une erreur est survenue");
@@ -77,6 +128,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
 
     setIsSubmitting(false);
   };
+
 
   /**
    * Resets the modal state and closes it.
@@ -91,6 +143,19 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
     onClose();
   };
 
+
+  /**
+   * Create effect to init and the get the suggestion chip values
+   */
+  createEffect(() => {
+    const controlChipValue  = localStorage.getItem("controlChip");
+    const measureChipValue  = localStorage.getItem("measureChip");
+    if (controlChipValue !== null && measureChipValue !== null) {
+      setControlChip(hexAddOne(controlChipValue));
+      setMeasureChip(hexAddOne(measureChipValue));
+    }    
+  })
+
   return (
     <Show when={isOpen}>
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
@@ -100,10 +165,19 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
             <ErrorMessage message={errorMsg()} />
           </Show>
           <div class="space-y-4">
-            <ModalField label="Nom*" value={name()} maxLength={32} onInput={(e) => setName(e.target.value)} placeholder="Capteur 42" />
-            <ModalField label="Puce Témoin*" value={controlChip()} maxLength={32}  onInput={(e) => setControlChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACE" />
-            <ModalField label="Puce Mesure*" value={measureChip()} maxLength={32}  onInput={(e) => setMeasureChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACD" />
-            <ModalComment note={note()} onInput={(e) => setNote(e.target.value)}/>
+            <Show when={controlChip() !== "" && measureChip() !== ""} 
+              fallback={
+                <>
+                  <ModalField label="Nom*" value={name()} maxLength={32} onInput={(e) => setName(e.target.value)} placeholder="Capteur 42" />
+                  <ModalField label="Puce Témoin*" value={controlChip()} maxLength={32} onInput={(e) => setControlChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACE" /><ModalField label="Puce Mesure*" value={measureChip()} maxLength={32} onInput={(e) => setMeasureChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACD" />
+                  <ModalComment note={note()} onInput={(e) => setNote(e.target.value)} />
+                </>
+              }
+            >
+                <ModalField label="Nom*" value={name()} maxLength={32} onInput={(e) => setName(e.target.value)} placeholder="Capteur 42" />
+                <ModalField label="Puce Témoin*" value={controlChip()} maxLength={32} onInput={(e) => setControlChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACE" /><ModalField label="Puce Mesure*" value={measureChip()} maxLength={32} onInput={(e) => setMeasureChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACD" />
+                <ModalComment note={note()} onInput={(e) => setNote(e.target.value)} />
+            </Show>
           </div>
         </div>
       </div>
