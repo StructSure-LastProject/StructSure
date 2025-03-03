@@ -4,6 +4,7 @@ import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
+import fr.uge.structsure.utils.AuthenticationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,16 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO) {
         try {
-            return ResponseEntity.status(200).body(accountService.login(loginRequestDTO));
+            return ResponseEntity.status(200).body(accountService.login(loginRequestDTO, AuthenticationType.WEB));
+        } catch (TraitementException e) {
+            return e.toResponseEntity("User login rejected: {}");
+        }
+    }
+
+    @PostMapping("/android/login")
+    public ResponseEntity<?> androidLogin(@RequestBody LoginRequestDTO loginRequestDTO) {
+        try {
+            return ResponseEntity.status(200).body(accountService.login(loginRequestDTO, AuthenticationType.ANDROID));
         } catch (TraitementException e) {
             return e.toResponseEntity("User login rejected: {}");
         }

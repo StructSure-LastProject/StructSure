@@ -7,7 +7,7 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface LoginApi {
-    @POST("/api/login")
+    @POST("/api/android/login")
     fun userAuth(
         @Body
         datamodel: Datamodel
