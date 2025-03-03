@@ -2,6 +2,7 @@ package fr.uge.structsure.scanPage.domain
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -31,21 +32,6 @@ import java.sql.Timestamp
  */
 class ScanViewModel(context: Context, private val structureViewModel: StructureViewModel) : ViewModel() {
 
-    /** DAO to interact with the scan database */
-    private val scanDao = db.scanDao()
-
-    /** DAO to store scan results */
-    private val resultDao = db.resultDao()
-
-    /** DAO to interact with sensor data */
-    private val sensorDao = db.sensorDao()
-
-    /** DAO to fetch user account information */
-    private val accountDao = db.accountDao()
-    
-    /** DAO to interact with the structure data */
-    private val structureDao = db.structureDao()
-
     /** The structure being scanned */
     var structure: StructureData? = null
         private set
@@ -56,8 +42,12 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Scanner hardware for reading RFID chips */
     private val cs108Scanner =
         Cs108Scanner { chip ->
-            onTagScanned(context, chip)
+            if (directChipRead) ChipFinder.add(chip)
+            else onTagScanned(context, chip)
         }
+
+    /** Whether the chip are send to the ChipFinder or process for a scan */
+    private var directChipRead = false
 
     /** Current state of the scan process: NOT_STARTED, STARTED, PAUSED, STOPPED */
     val currentScanState = MutableLiveData(ScanState.NOT_STARTED)
@@ -98,6 +88,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /** Displaying error messages when updating notes */
     val noteErrorMessage = MutableLiveData<String?>()
 
+    /** Remember if the filters are collapsed or not */
+    val sensorsFilterVisible = mutableStateOf(true)
+
     /** Whether a scan has been started or not yet */
     fun isScanStarted(): Boolean = currentScanState.value != ScanState.NOT_STARTED
 
@@ -107,7 +100,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     private fun updateSensorStateCounts() {
         viewModelScope.launch(Dispatchers.IO) {
             val scannedSensors = activeScanId?.let { scanId ->
-                resultDao.getResultsByScan(scanId)
+                db.resultDao().getResultsByScan(scanId)
             } ?: emptyList()
 
             val stateCounts = SensorState.entries.associateWith { state ->
@@ -129,7 +122,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     suspend fun updateScanNote(note: String): Boolean {
         return viewModelScope.async(Dispatchers.IO) {
             activeScanId?.let { scanId ->
-                scanDao.updateScanNote(scanId, note)
+                db.scanDao().updateScanNote(scanId, note)
                 noteErrorMessage.postValue(null)
                 true
             } ?: run {
@@ -150,7 +143,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     suspend fun updateStructureNote(note: String): Boolean {
         return viewModelScope.async(Dispatchers.IO) {
             structure?.let {
-                structureDao.updateStructureNote(it.id, note)
+                db.structureDao().updateStructureNote(it.id, note)
                 noteErrorMessage.postValue(null)
                 true
             } ?: run {
@@ -192,13 +185,6 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      */
     fun addSensor(controlChip: String, measureChip: String, name: String, note: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val existingSensor = sensorDao.findSensor(controlChip, measureChip)
-
-            if (existingSensor != null) {
-                addSensorError.postValue("Un capteur avec ces puces existe déjà")
-                return@launch
-            }
-
             val control = controlChip.replace(" ", "")
             val measure = measureChip.replace(" ", "")
             val sensorId = "${control}-${measure}"
@@ -206,7 +192,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 note, Timestamp(System.currentTimeMillis()).toString(),
                 SensorState.UNKNOWN.name, structureId = structure!!.id)
 
-            sensorDao.upsertSensor(sensorDB)
+            db.sensorDao().upsertSensor(sensorDB)
 
             activeScanId?.let { scanId ->
                 db.scanEditsDao().upsert(ScanEdits(scanId, EditType.SENSOR_CREATION, sensorId))
@@ -235,7 +221,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 return@launch
             }
             sensorCache.clearCache()
-            val sensors = sensorDao.getAllSensorsWithResults(structureId)
+            val sensors = db.sensorDao().getAllSensorsWithResults(structureId)
             sensorsNotScanned.postValue(sensors)
             val stateCounts = SensorState.entries.associateWith { state ->
                 if (state == SensorState.UNKNOWN) sensors.size else 0
@@ -244,7 +230,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             sensorCache.insertSensors(sensors)
             planViewModel.loadPlans(context, structureId)
             if (scanId != null) continueExistingScan(scanId)
-            else scanDao.getScanByStructure(structureId)?.let { continueExistingScan(it.id) }
+            else db.scanDao().getScanByStructure(structureId)?.let { continueExistingScan(it.id) }
         }
     }
 
@@ -253,9 +239,9 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
      */
     fun refreshSensorStates() {
         viewModelScope.launch(Dispatchers.IO) {
-            val sensors = sensorDao.getAllSensorsWithResults(structure?.id?: return@launch)
+            val sensors = db.sensorDao().getAllSensorsWithResults(structure?.id?: return@launch)
             val scannedResults = activeScanId?.let { scanId ->
-                resultDao.getResultsByScan(scanId)
+                db.resultDao().getResultsByScan(scanId)
             } ?: emptyList()
 
             val updatedSensors = sensors.map { sensor ->
@@ -270,7 +256,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
     /**
      * Gets the previous state for a sensor
      */
-    fun getPreviousState(sensorId: String): String = sensorDao.getSensorState(sensorId)
+    fun getPreviousState(sensorId: String): String = db.sensorDao().getSensorState(sensorId)
 
     /**
      * Adds a scanned RFID chip ID to the buffer for processing.
@@ -333,7 +319,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 measureChip = sensor.measureChip,
                 state = stateChanged
             )
-            resultDao.insertResult(result)
+            db.resultDao().insertResult(result)
 
             val currentList = sensorsScanned.value?.toMutableList() ?: mutableListOf()
             currentList.removeAll { it.id == sensor.sensorId }
@@ -381,11 +367,11 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
             structureId = structureId,
             startTimestamp = now,
             endTimestamp = "",
-            technician = accountDao.getLogin(),
+            technician = db.accountDao().getLogin(),
             note = ""
         )
 
-        activeScanId = scanDao.insertScan(newScan)
+        activeScanId = db.scanDao().insertScan(newScan)
         structure = db.structureDao().getStructureById(structureId)
 
         refreshSensorStates()
@@ -403,11 +389,11 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
 
         if (activeScanId != null) return // already created
         activeScanId = scanId
-        structure = db.structureDao().getStructureById(scanDao.getScanById(scanId).structureId)
+        structure = db.structureDao().getStructureById(db.scanDao().getScanById(scanId).structureId)
 
         refreshSensorStates()
         updateSensorStateCounts()
-        resultDao.getResultsByScan(scanId).forEach {
+        db.resultDao().getResultsByScan(scanId).forEach {
             sensorCache.setSensorState(it.controlChip, it.state)
         }
 
@@ -440,7 +426,7 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 currentScanState.postValue(ScanState.STOPPED)
 
                 activeScanId?.let { scanId ->
-                    val results = resultDao.getAllResults()
+                    val results = db.resultDao().getAllResults()
                     if (results.isNotEmpty() || db.scanEditsDao().getAllByScanId(scanId).isNotEmpty()) {
                         val now = Timestamp(System.currentTimeMillis()).toString()
                         scanRepository.updateScanEndTime(scanId, now)
@@ -454,5 +440,33 @@ class ScanViewModel(context: Context, private val structureViewModel: StructureV
                 sensorCache.clearCache()
             }
         }
+    }
+
+    /**
+     * Enable or disable the DirectChipRead. This features disable the
+     * chip reading for the current scan and redirect results to the
+     * ChipFinder. This enables to read chips ID directly from the
+     * interrogator without scanning them.
+     * @param toggle Whether to enable or disable the DirectChipRead
+     * @return true for success, false otherwise
+     */
+    fun toggleDirectChipRead(toggle: Boolean): Boolean {
+        if (toggle == directChipRead) return true
+        ChipFinder.reset()
+        if (toggle) {
+            /* Enable DirectChipRead */
+            if (!Cs108Connector.isReady) {
+                sensorMessages.postValue("Interrogateur non connecté")
+                return false
+            }
+            pauseScan()
+            directChipRead = true
+            cs108Scanner.start()
+        } else {
+            /* Disable DirectChipRead */
+            cs108Scanner.stop()
+            directChipRead = false
+        }
+        return true
     }
 }

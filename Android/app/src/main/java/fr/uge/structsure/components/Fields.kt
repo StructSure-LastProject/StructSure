@@ -236,14 +236,30 @@ fun InputText(
     value: String,
     placeholder: String = "",
     errorMessage: String? = null,
+    rich: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit = {}
 ) {
     Input(modifier, label, value, placeholder, errorMessage, false, onChange,
         multiLines = false,
         enabled = true,
+        decorations = { InputDecoration(rich, it) },
         keyboardOptions = keyboardOptions
     )
+}
+
+@Composable
+private fun InputDecoration(
+    rich: (@Composable () -> Unit)? = null,
+    innerTextField: @Composable () -> Unit
+) {
+    Row (
+        horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.Start),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box (Modifier.weight(1f).padding( 16.dp, 9.dp)) { innerTextField.invoke() }
+        rich?.let { rich() }
+    }
 }
 
 /**
