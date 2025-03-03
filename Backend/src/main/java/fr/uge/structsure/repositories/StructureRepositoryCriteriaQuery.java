@@ -42,7 +42,7 @@ public class StructureRepositoryCriteriaQuery {
                 .when(cb.equal(result.get("state"), State.NOK), 1L)
                 .otherwise(0L));
         var state = cb.<Integer>selectCase()
-                .when(cb.equal(cb.countDistinct(sensor.get("sensorId")), 0L), State.UNKNOWN.ordinal())
+                .when(cb.equal(cb.countDistinct(result.get("id")), 0L), State.UNKNOWN.ordinal())
                 .when(cb.greaterThan(countDefective, 0L), State.DEFECTIVE.ordinal())
                 .when(cb.greaterThan(countNok, 0L), State.NOK.ordinal())
                 .otherwise(State.OK.ordinal());
