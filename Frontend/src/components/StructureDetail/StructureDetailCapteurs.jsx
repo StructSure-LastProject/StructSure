@@ -1,4 +1,4 @@
-import { ArrowDownNarrowWide, Filter, Plus, Trash2 } from 'lucide-solid';
+import { FolderSync, Plus, Trash2 } from 'lucide-solid';
 import {createEffect, createSignal, For, Show} from 'solid-js';
 import SensorPanel from '../SensorPanel/SensorPanel';
 import getSensorStatusColor from "../SensorStatusColorGen"
@@ -7,6 +7,7 @@ import SensorFilter from '../SensorFilter';
 import { Pagination } from '../Pagination.jsx';
 import {useNavigate} from "@solidjs/router";
 import {sensorsFetchRequest} from "./StructureDetailBody.jsx";
+import useFetch from '../../hooks/useFetch.js';
 
 /**
  * Show the sensors part of the structure detail page
@@ -31,6 +32,8 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
     const [offset, setOffset] = createSignal(0);
 
     const navigate = useNavigate();
+    const { fetchData, statusCode } = useFetch();
+    const token = localStorage.getItem("token");
     
 
     /**
@@ -69,6 +72,37 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
         setOpenSensorPanel(false);
         document.body.style.overflow = "auto";
     }
+
+
+    /**
+     * Archive a sensor
+     */
+    const toggleArchiveSensor = async (sensorDetails) => {
+        const requestData = {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                controlChip: sensorDetails.controlChip,
+                measureChip: sensorDetails.measureChip
+              }
+            )
+        };
+
+        await fetchData(navigate, "/api/sensors/archive", requestData);
+
+        if (statusCode() === 200) {
+            setSensors(
+                sensors().filter(sensor =>
+                    sensor.controlChip !== sensorDetails.controlChip && sensor.measureChip !== sensorDetails.measureChip
+                )
+            );
+        }
+    }   
+
+
     /**
      * Effect that updates plans based on props and user role
      */
@@ -107,19 +141,39 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
               limit={limit}
               offset={offset}
               setTotalItems={setTotalItems}
+              selectedPlanId={selectedPlanId}
             />
             <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-[20px] gap-4">
                 <For each={sensors()}>
                     {(sensor) => (
-                        <div class="flex justify-between rounded-[50px] px-[25px] py-[10px] bg-white">    
-                            <button class="flex gap-x-[15px] items-center" onClick={() => openSensorPanelHandler(sensor)} >
-                                <div class={`w-[16px] min-w-[16px] h-[16px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
-                                <p class="subtitle text-left w-full">{sensor.name}</p>
-                            </button>
-                            <button class="w-5 h-5 rounded-[50px] flex justify-center items-center">
-                                <Trash2 size={20} />
-                            </button>
-                        </div>
+                        <Show 
+                            when={!sensor.archived} 
+                            fallback={
+                                <div class="flex justify-between rounded-[50px] px-[25px] py-[10px] bg-white">    
+                                    <button class="flex gap-x-[15px] items-center" onClick={() => openSensorPanelHandler(sensor)} >
+                                        <div class={`w-[16px] min-w-[16px] h-[16px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
+                                        <p class="subtitle text-left w-full text-[#6A6A6A]">{sensor.name}</p>
+                                    </button>
+                                    <Show when={localStorage.getItem("role") === "RESPONSABLE" || localStorage.getItem("role") === "ADMIN" }>
+                                        <button onClick={() => toggleArchiveSensor(sensor)} class="w-5 h-5 rounded-[50px] flex justify-center items-center">
+                                            <FolderSync color='#6A6A6A' class="w-full" />
+                                        </button>
+                                    </Show>
+                                </div>
+                            }
+                        >
+                            <div class="flex justify-between rounded-[50px] px-[25px] py-[10px] bg-white">    
+                                <button class="flex gap-x-[15px] items-center" onClick={() => openSensorPanelHandler(sensor)} >
+                                    <div class={`w-[16px] min-w-[16px] h-[16px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
+                                    <p class="subtitle text-left w-full">{sensor.name}</p>
+                                </button>
+                                <Show when={localStorage.getItem("role") === "RESPONSABLE" || localStorage.getItem("role") === "ADMIN" }>
+                                    <button onClick={() => toggleArchiveSensor(sensor)} class="w-5 h-5 rounded-[50px] flex justify-center items-center">
+                                        <Trash2 size={20} />
+                                    </button>
+                                </Show>
+                            </div>
+                        </Show>
                     )}
                 </For>
             </div>

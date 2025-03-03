@@ -4,11 +4,8 @@ import fr.uge.structsure.dto.sensors.*;
 import fr.uge.structsure.entities.*;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
-import fr.uge.structsure.repositories.PlanRepository;
-import fr.uge.structsure.repositories.ResultRepository;
-import fr.uge.structsure.repositories.SensorRepository;
-import fr.uge.structsure.repositories.SensorRepositoryCriteriaQuery;
-import fr.uge.structsure.repositories.StructureRepository;
+import fr.uge.structsure.repositories.*;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +23,10 @@ public class SensorService {
     private final StructureRepository structureRepository;
     private final ResultRepository resultRepository;
     private final PlanRepository planRepository;
+    private final AccountRepository accountRepository;
     private final SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery;
+
+    private final AuthValidationService authValidationService;
 
     /**
      * Initialise the sensor service
@@ -34,16 +34,20 @@ public class SensorService {
      * @param structureRepository the structure repository
      * @param resultRepository the result repository
      * @param planRepository the plan repository
+     * @param accountRepository The account repository
      * @param sensorRepositoryCriteriaQuery the sensor repository using criteria query api
+     * @param authValidationService The auth validation service
      */
     @Autowired
     public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository, PlanRepository planRepository,
-        SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery) {
+        AccountRepository accountRepository,SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery, AuthValidationService authValidationService) {
         this.sensorRepository = sensorRepository;
         this.structureRepository = structureRepository;
         this.resultRepository = resultRepository;
         this.planRepository = planRepository;
+        this.accountRepository = accountRepository;
         this.sensorRepositoryCriteriaQuery = sensorRepositoryCriteriaQuery;
+        this.authValidationService = authValidationService;
     }
 
 
@@ -59,7 +63,15 @@ public class SensorService {
         if (structure.isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
         }
-        return sensorRepositoryCriteriaQuery.findAllSensorsByStructureId(structureId, request);
+
+        if (request.archivedFilter() != null && request.archivedFilter()){
+            return sensorRepositoryCriteriaQuery.findAllSensorsByStructureId(structureId, request)
+                    .stream()
+                    .filter(SensorDTO::archived).toList();
+        }
+        return sensorRepositoryCriteriaQuery.findAllSensorsByStructureId(structureId, request)
+                .stream()
+                .filter(sensorDTO -> !sensorDTO.archived()).toList();
     }
 
     /**
@@ -331,6 +343,27 @@ public class SensorService {
         existingSensor.setPlan(null);
         sensorRepository.save(existingSensor);
         return new DeletePositionSensorResponseDTO(controlChip, measureChip);
+    }
+
+
+    /**
+     * Service that will archive or restore a sensor
+     * @param archiveSensorRequestDTO The archive sensor request DTO
+     * @param httpServletRequest The http servlet request
+     * @return The response DTO
+     * @throws TraitementException thrown custom exceptions
+     */
+    public EditSensorResponseDTO archiveASensor(ArchiveSensorRequestDTO archiveSensorRequestDTO, HttpServletRequest httpServletRequest) throws TraitementException {
+        archiveSensorRequestDTO.checkFields();
+        Objects.requireNonNull(httpServletRequest);
+        var accountSession = authValidationService.checkTokenValidityAndUserAccessVerifier(httpServletRequest, accountRepository);
+        if (accountSession.getRole() == Role.OPERATEUR || (accountSession.getRole() != Role.RESPONSABLE && accountSession.getRole() != Role.ADMIN)) {
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
+        }
+        var sensor = sensorRepository.findByChipsId(archiveSensorRequestDTO.controlChip(), archiveSensorRequestDTO.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
+        sensor.setArchived(!sensor.isArchived());
+        sensorRepository.save(sensor);
+        return new EditSensorResponseDTO(sensor.getSensorId().getControlChip(), sensor.getSensorId().getMeasureChip(), LocalDateTime.now().toString());
     }
 
 }

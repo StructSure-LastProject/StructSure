@@ -1,11 +1,14 @@
 package fr.uge.structsure.controllers;
 
 import fr.uge.structsure.dto.sensors.*;
+import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.SensorService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -123,6 +126,38 @@ public class SensorController {
             return ResponseEntity.ok(sensorDTOs);
         } catch (TraitementException e) {
             return e.toResponseEntity("Sensor placement rejected: {}");
+        }
+    }
+
+
+    /**
+     * Handles exceptions when the HTTP message (e.g., JSON, XML) is not readable.
+     * <p>
+     * This method is invoked when a {@link HttpMessageNotReadableException} is thrown,
+     * which occurs when the incoming HTTP message cannot be deserialized (e.g., malformed JSON).
+     * A generic error message is returned to inform the client that the input was invalid.
+     * </p>
+     *
+     * @return A {@link ResponseEntity} containing a fixed error message in a JSON format and
+     *         a {@link HttpStatus#BAD_REQUEST} status.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleHttpMessageNotReadableException(){
+        return new TraitementException(Error.INVALID_FIELDS).toResponseEntity();
+    }
+
+    /**
+     * Archive or restore a sensor
+     * @param archiveSensorRequestDTO The archive sensor request DTO
+     * @param httpServletRequest The http servlet request
+     * @return The response DTO
+     */
+    @PutMapping("/sensors/archive")
+    public ResponseEntity<?> archiveASensor(@RequestBody ArchiveSensorRequestDTO archiveSensorRequestDTO, HttpServletRequest httpServletRequest){
+        try {
+            return ResponseEntity.ok(sensorService.archiveASensor(archiveSensorRequestDTO, httpServletRequest));
+        } catch (TraitementException e){
+            return e.toResponseEntity();
         }
     }
 

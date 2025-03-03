@@ -143,7 +143,7 @@ const CheckBoxComponent = ({description, value, setter}) => {
  * @param {Function} setTotalItems The setter function
  * @returns The component
  */
-const SensorFilter = ({selectedScan, structureId, setSensors, limit, offset, setTotalItems}) => {
+const SensorFilter = ({selectedScan, structureId, setSensors, limit, offset, setTotalItems, selectedPlanId}) => {
     const SORT_VALUES = {
         "Tout" : "Tout", "Nom": "NAME", "Etat": "STATE", "Date d'installation": "INSTALLATION_DATE"
     };
@@ -170,7 +170,7 @@ const SensorFilter = ({selectedScan, structureId, setSensors, limit, offset, set
             ...(selectedScan() > -1 && {scanFilter: selectedScan()}),
             ...(statefilter() !== "Tout" && {stateFilter: FILTER_VALUES[statefilter()] }),
             ...(isCheckedArchivedFilter() ? {archivedFilter: isCheckedArchivedFilter()} : false),
-            /*...(filters?.planFilter && {planFilter: filters.planFilter}),*/
+            ...(isCheckedPlanFilter() && selectedPlanId() !== undefined && {planFilter: selectedPlanId()}),
             ...(startDate() !== "" && {minInstallationDate: startDate()}),
             ...(endDate() !== "" && {maxInstallationDate: endDate()})
         })
