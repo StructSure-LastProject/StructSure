@@ -83,7 +83,8 @@ public class StructureRepositoryCriteriaQuery {
                 statePredicate = cb.and(
                         cb.equal(countDefective, 0L),
                         cb.equal(countNok, 0L),
-                        cb.greaterThan(countMeasureChip, 0L)
+                        cb.greaterThan(countMeasureChip, 0L),
+                        cb.equal(structure.get("archived"), false)
                 );
             }
 
@@ -98,7 +99,8 @@ public class StructureRepositoryCriteriaQuery {
                     .when(cb.equal(state, State.NOK.ordinal()), 1)
                     .when(cb.equal(state, State.DEFECTIVE.ordinal()), 2)
                     .when(cb.equal(state, State.UNKNOWN.ordinal()), 3)
-                    .when(cb.equal(state, State.OK.ordinal()), 4);
+                    .when(cb.equal(state, State.OK.ordinal()), 4)
+                    .otherwise(5);
             default -> orderExpression = structure.get("id");
         }
         switch (OrderEnum.valueOf(allStructureRequestDTO.orderType())) {
