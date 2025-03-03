@@ -224,11 +224,11 @@ public class StructureService {
             }
             return filteredStructures;
         }
+        if (allStructureRequestDTO.searchByState().isPresent()) {
+            structures = structures.stream().filter(str -> str.state().equals(allStructureRequestDTO.searchByState().get())).toList();
+        }
         if (structures.isEmpty()) {
             throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);
-        }
-        if (allStructureRequestDTO.searchByState().isPresent()) {
-            return structures.stream().filter(str -> str.state().equals(allStructureRequestDTO.searchByState().get())).toList();
         }
         return structures;
 
