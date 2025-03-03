@@ -1,6 +1,4 @@
 import { createSignal } from 'solid-js';
-import LstStructureHead from './LstStructureHead';
-import StructureBody from './StructSureBody';
 import useFetch from '../hooks/useFetch';
 import { useNavigate } from '@solidjs/router';
 
@@ -39,7 +37,7 @@ function AccountChangePassword() {
         };
 
         const { fetchData, statusCode, data, error } = useFetch();
-        await fetchData(navigate, `/api/change-password`, requestData);
+        await fetchData(navigate, "/api/change-password", requestData);
 
         if (statusCode() === 200) {
             navigate("/login");
@@ -48,6 +46,10 @@ function AccountChangePassword() {
         }
     };
 
+    /**
+     * Handles the submit of the form that changes the password
+     * @param {Event} event the submit event
+     */
     const handlSubmit = (event) => {
         event.preventDefault();
         if (oldPassword() === null || newPassword() === null || passwordConfirmation() === null) {

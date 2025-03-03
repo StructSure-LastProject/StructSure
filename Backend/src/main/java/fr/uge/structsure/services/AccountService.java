@@ -441,6 +441,18 @@ public class AccountService {
         return new RegisterResponseDTO(login);
     }
 
+    /**
+     * Changes the password of a user.
+     *
+     * This method validates the user's current password, ensures the new password is different,
+     * and updates the stored password securely. It also performs validation on the new password.
+     *
+     * @param changePasswordRequestDTO The DTO containing user ID, current password, and new password.
+     * @return A DTO containing the user ID after the password update.
+     * @throws TraitementException If the user is not found, the current password is incorrect,
+     *                             the new password is the same as the old one,
+     *                             or the new password fails validation.
+     */
     public ChangePasswordResponseDTO changePassword(ChangePasswordRequestDTO changePasswordRequestDTO) throws TraitementException {
         changePasswordRequestDTO.checkFields();
         var user = accountRepository.findById(changePasswordRequestDTO.userId())

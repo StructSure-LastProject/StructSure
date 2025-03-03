@@ -59,6 +59,16 @@ public class AuthenticationController {
         }
     }
 
+    /**
+     * Handles the request to change a user's password.
+     *
+     * This endpoint processes a password change request by validating the provided credentials
+     * and updating the user's password if all conditions are met.
+     *
+     * @param changePasswordRequestDTO The DTO containing user ID, current password, new password, and confirmation.
+     * @return A {@link ResponseEntity} containing the response DTO if successful,
+     *         or an error response in case of failure.
+     */
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequestDTO changePasswordRequestDTO) {
         try {
