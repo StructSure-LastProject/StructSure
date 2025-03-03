@@ -13,7 +13,7 @@ import fr.uge.structsure.ui.theme.Unknown
  */
 enum class SensorState(val displayName: String, val color: Color) {
     OK("OK", Ok),
-    NOK("NOk", Red),
+    NOK("NOK", Red),
     DEFECTIVE("Défaillant", Gray),
     UNKNOWN("Non scanné", Unknown);
 
