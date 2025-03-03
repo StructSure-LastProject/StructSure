@@ -71,13 +71,18 @@ public class StructureRepositoryCriteriaQuery {
             var requestedState = allStructureRequestDTO.searchByState().get();
             Predicate statePredicate;
             if (requestedState == State.UNKNOWN) {
-                statePredicate = cb.equal(countMeasureChip, 0L);
+                statePredicate = cb.and(
+                        cb.equal(countMeasureChip, 0L),
+                        cb.equal(structure.get("archived"), false));
             } else if (requestedState == State.DEFECTIVE) {
-                statePredicate = cb.greaterThan(countDefective, 0L);
+                statePredicate = cb.and(
+                        cb.greaterThan(countDefective, 0L),
+                        cb.equal(structure.get("archived"), false));
             } else if (requestedState == State.NOK) {
                 statePredicate = cb.and(
                         cb.equal(countDefective, 0L),
-                        cb.greaterThan(countNok, 0L)
+                        cb.greaterThan(countNok, 0L),
+                        cb.equal(structure.get("archived"), false)
                 );
             } else { // State.OK
                 statePredicate = cb.and(
@@ -87,7 +92,6 @@ public class StructureRepositoryCriteriaQuery {
                         cb.equal(structure.get("archived"), false)
                 );
             }
-
             cq.having(statePredicate);
         }
 
