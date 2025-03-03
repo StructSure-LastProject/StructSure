@@ -1,10 +1,7 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.config.JwtUtils;
-import fr.uge.structsure.dto.auth.LoginRequestDTO;
-import fr.uge.structsure.dto.auth.LoginResponseDTO;
-import fr.uge.structsure.dto.auth.RegisterRequestDTO;
-import fr.uge.structsure.dto.auth.RegisterResponseDTO;
+import fr.uge.structsure.dto.auth.*;
 import fr.uge.structsure.dto.userAccount.*;
 import fr.uge.structsure.dto.userAccount.accountStructure.GetStructureListForUserAccountsResponseDTO;
 import fr.uge.structsure.dto.userAccount.accountStructure.StructureAccessDetails;
@@ -26,6 +23,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -76,7 +74,6 @@ public class AccountService {
         if(validateCreateNewUserAccountRequest(registerRequestDTO)){
             throw new TraitementException(Error.INVALID_USER_ACCOUNT_FIELDS);
         }
-
         if (accountRepository.findByLogin(registerRequestDTO.login()).isPresent()) {
             throw new TraitementException(Error.USER_ALREADY_EXISTS);
         }
@@ -107,7 +104,7 @@ public class AccountService {
                 return new LoginResponseDTO( createToken
                         , "Bearer",
                         accountDetails.getLogin(), accountDetails.getFirstname(), accountDetails.getLastname(),
-                        accountDetails.getRole().toString());
+                        accountDetails.getRole().toString(), accountDetails.getId());
             }
             throw new TraitementException(Error.LOGIN_PASSWORD_NOT_CORRECT);
         } catch (AuthenticationException e) {
@@ -444,4 +441,23 @@ public class AccountService {
         return new RegisterResponseDTO(login);
     }
 
+    public ChangePasswordResponseDTO changePassword(ChangePasswordRequestDTO changePasswordRequestDTO) throws TraitementException {
+        changePasswordRequestDTO.checkFields();
+        var user = accountRepository.findById(changePasswordRequestDTO.userId())
+                .orElseThrow(() -> new TraitementException(Error.USER_ACCOUNT_NOT_FOUND));
+        var passwordEncoder = new BCryptPasswordEncoder();
+        if (!passwordEncoder.matches(changePasswordRequestDTO.currentPassword(), user.getPasswordEncrypted())) {
+            throw new TraitementException(Error.PASSWORD_NOT_CORRECT);
+        }
+        if (passwordEncoder.matches(changePasswordRequestDTO.newPassword(), user.getPasswordEncrypted())) {
+            throw new TraitementException(Error.NEW_PASSWORD_SHOULD_BE_DIFFERENT_THAN_THE_OLD_ONE);
+        }
+        if(validateCreateNewUserAccountRequest(new RegisterRequestDTO(user.getLogin(), changePasswordRequestDTO.newPassword(),
+                user.getFirstname(), user.getLastname(), user.getRole().toString()))){
+            throw new TraitementException(Error.INVALID_USER_ACCOUNT_FIELDS);
+        }
+        user.setPasswordEncrypted(passwordEncoder.encode(changePasswordRequestDTO.newPassword()));
+        accountRepository.save(user);
+        return new ChangePasswordResponseDTO(changePasswordRequestDTO.userId());
+    }
 }

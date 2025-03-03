@@ -24,6 +24,7 @@ function Login() {
         localStorage.setItem("firstName", response.firstName);
         localStorage.setItem("lastName", response.lastName);
         localStorage.setItem("login", response.login);
+        localStorage.setItem("userId", response.userId);
     };
 
     /**

@@ -1,5 +1,6 @@
 package fr.uge.structsure.controllers;
 
+import fr.uge.structsure.dto.auth.ChangePasswordRequestDTO;
 import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.exceptions.TraitementException;
@@ -53,6 +54,15 @@ public class AuthenticationController {
     public ResponseEntity<?> androidLogin(@RequestBody LoginRequestDTO loginRequestDTO) {
         try {
             return ResponseEntity.status(200).body(accountService.login(loginRequestDTO, AuthenticationType.ANDROID));
+        } catch (TraitementException e) {
+            return e.toResponseEntity("User login rejected: {}");
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequestDTO changePasswordRequestDTO) {
+        try {
+            return ResponseEntity.status(200).body(accountService.changePassword(changePasswordRequestDTO));
         } catch (TraitementException e) {
             return e.toResponseEntity("User login rejected: {}");
         }

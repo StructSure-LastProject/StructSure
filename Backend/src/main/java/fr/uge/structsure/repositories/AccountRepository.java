@@ -17,4 +17,11 @@ public interface AccountRepository extends JpaRepository<Account, String> {
      */
     Optional<Account> findByLogin(String login);
 
+    /**
+     * Find the account by user id
+     * @param id the user id
+     * @return optional with the account if there is and optional empty if there is no user
+     */
+    Optional<Account> findById(Long id);
+
 }
