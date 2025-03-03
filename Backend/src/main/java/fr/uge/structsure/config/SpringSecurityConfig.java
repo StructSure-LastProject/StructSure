@@ -51,6 +51,7 @@ public class SpringSecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> {
                 authorize.requestMatchers("/api/login").permitAll();
+                authorize.requestMatchers("/api/android/login").permitAll();
                 authorize.requestMatchers("/api/register").permitAll();
                 authorize.requestMatchers("/swagger-ui/index.html").permitAll();
                 authorize.requestMatchers("/api/*").authenticated();

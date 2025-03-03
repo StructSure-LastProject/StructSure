@@ -38,6 +38,7 @@ import fr.uge.structsure.R
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.Button
 import fr.uge.structsure.components.Title
+import fr.uge.structsure.structuresPage.presentation.components.LoadingButton
 import fr.uge.structsure.ui.theme.White
 
 @Composable
@@ -98,9 +99,12 @@ private fun PaneHeader(onClick: () -> Unit) {
  */
 @Composable
 private fun Device(device: ReaderDevice, onClick: () -> Unit) {
-    val connected = device.isConnected // TODO change to device.connected
+    val connected = device.isConnected
+    val connecting = Cs108Connector.timedDevices.isConnecting(device)
+
     val fg = if (connected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
     val bg = if (connected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.surface
+
     Row(
         Modifier
             .clip(RoundedCornerShape(size = 20.dp))
@@ -113,17 +117,20 @@ private fun Device(device: ReaderDevice, onClick: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy((-5).dp, Alignment.Top),
             horizontalAlignment = Alignment.Start,
         ) {
-            Text(device.name, color=fg, style = typography.headlineMedium)
-            Text(device.address, Modifier.alpha(.5f), color=fg, style = typography.bodyMedium)
+            Text(device.name, color = fg, style = typography.headlineMedium)
+            Text(device.address, Modifier.alpha(.5f), color = fg, style = typography.bodyMedium)
         }
         if (connected) {
             IconButton(
                 onClick,
-                Modifier.size(40.dp).background(color = fg, shape = RoundedCornerShape(size = 50.dp)),
+                Modifier.size(40.dp)
+                    .background(color = fg, shape = RoundedCornerShape(size = 50.dp)),
                 false
             ) {
-                Icon(painterResource(R.drawable.check), "close", Modifier.size(20.dp),bg)
+                Icon(painterResource(R.drawable.check), "close", Modifier.size(20.dp), bg)
             }
+        } else if (connecting) {
+            LoadingButton()
         }
     }
 }

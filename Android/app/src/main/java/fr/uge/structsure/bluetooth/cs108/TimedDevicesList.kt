@@ -4,6 +4,7 @@ import android.os.SystemClock
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import com.csl.cslibrary4a.ReaderDevice
 import fr.uge.structsure.components.TaskLoopRunner
 
@@ -21,6 +22,9 @@ class TimedDevicesList(private val timeout: Long) {
 
     /** Internal list of values with their associated entrance time */
     private val timedDevices = mutableStateMapOf<ReaderDevice, Long>()
+
+    /** Set to track device currently in the connection process */
+    private val connectingDevice = mutableStateOf<String?>(null)
 
     /** List of active values */
     val devices: State<List<ReaderDevice>> = derivedStateOf { timedDevices.keys.toList() }
@@ -40,7 +44,27 @@ class TimedDevicesList(private val timeout: Long) {
      */
     fun remove(element: ReaderDevice) {
         timedDevices.remove(element)
+        if (connectingDevice.value == element.address) {
+            connectingDevice.value = null
+        }
     }
+
+
+    /**
+     * Marks the given device as connecting. Useful to avoid
+     * connecting to the same device multiple times.
+     * @param deviceAddress the address of the device to mark as connecting
+     */
+    fun markAsConnecting(deviceAddress: String) {
+        connectingDevice.value = deviceAddress
+    }
+
+    /**
+     * Indicates if the given device is currently connecting.
+     * @param device the device to check
+     * @return true if the device is connecting, false otherwise
+     */
+    fun isConnecting(device: ReaderDevice) = device.address == connectingDevice.value
 
     /**
      * Stops the timer. Useful to economise resources while the buffer
@@ -56,7 +80,11 @@ class TimedDevicesList(private val timeout: Long) {
      */
     private fun flush() {
         val now = SystemClock.uptimeMillis()
-        val toRemove = timedDevices.entries.filter { !it.key.isConnected && now - it.value > timeout }
+        val toRemove = timedDevices.entries.filter {
+            !it.key.isConnected &&
+            it.key.address != connectingDevice.value &&
+            now - it.value > timeout
+        }
         toRemove.forEach {
             timedDevices.remove(it.key)
         }
