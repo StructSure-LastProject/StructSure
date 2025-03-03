@@ -1,5 +1,5 @@
 import { Trash2, X, ChevronDown } from 'lucide-solid';
-import { createEffect, createResource, createSignal } from 'solid-js';
+import { createEffect, createResource, createSignal, createMemo } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
 import useFetch from '../../hooks/useFetch';
 import AccountStructureSection from './AccountStructureSection';
@@ -22,6 +22,10 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     const [errorModal, setErrorModal] = createSignal([]);
     const [apiError, setApiError] = createSignal("");
     const [structureSelection, setStructureSelection] = createSignal([]);
+    const [searchValue, setSearchValue] = createSignal("");
+
+
+
     const copyOfStructureSelection = [];
     const login = userDetails.login;
     const navigate = useNavigate();
@@ -291,6 +295,21 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         }
     }
 
+
+    /**
+     * Filter the structure list
+     */
+    const filteredStructures = createMemo(() => {
+        const filtered = searchValue() !== "" 
+            ? structureSelection().filter(structure => 
+                structure.structureName.toLowerCase().includes(searchValue().toLowerCase())
+            )
+            : structureSelection();
+
+        return filtered;
+    });
+
+
     return (
         <div class="min-h-[100vh] items-center bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] absolute top-0 left-0 p-[25px]">
             <div class="max-h-[100%]  overflow-y-auto  sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
@@ -362,7 +381,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
                         <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="password" className="normal opacity-50">Mot de passe</label>
+                                <label htmlFor="password" className="normal opacity-50">Mot de passe* (12 à 64 caractères)</label>
                                 <input
                                     id="password"
                                     required
@@ -414,16 +433,34 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                         </div>
                         
                     </div>
-
-                    {
-                        <div class="flex flex-col w-[100%] h-auto gap-[5px]">
-                            <p class="normal opacity-50">Ouvrages autorisés</p>
-                            <AccountStructureSection 
-                                structures={structureSelection} 
-                                setStructureSelection={setStructureSelection}
-                            />
+                    <div class="flex flex-col w-[100%] h-auto gap-[15px]">
+                        <div class="flex flex-col gap-[5px]">
+                            <p class="subtitle">Ouvrages autorisés</p>
+                            <div class="flex justify-between bg-[#F2F2F4] min-w-[350px] gap-[10px] py-[8px] px-[16px] rounded-[10px]">
+                                <input
+                                    class="text-[#181818] bg-[#F2F2F4] w-full" 
+                                    type="text"
+                                    placeholder="Rechercher"
+                                    minLength="1"
+                                    maxLength="2000"
+                                    value={searchValue()}
+                                    onInput={(e) => setSearchValue(e.target.value)} 
+                                />
+                                <button onClick={(e) => {
+                                        e.preventDefault();
+                                        setSearchValue("")
+                                    }
+                                } class="flex justify-end items-center w-[24px] h-[24px] sm:w-[24px] sm:h-[24px]">
+                                    <X />
+                                </button>
+                            </div>
+                            
                         </div>
-                    }
+                        <AccountStructureSection 
+                            structures={filteredStructures} 
+                            setStructureSelection={setStructureSelection}
+                        />
+                    </div>
                     <div class="md:flex md:flex-row-reverse">
                         <button type="submit" onClick={handleSubmit} class="rounded-[50px] px-[16px] py-[8px] bg-lightgray">
                             <p class="accent">Mettre à jour</p>
