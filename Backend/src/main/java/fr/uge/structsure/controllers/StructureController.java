@@ -106,6 +106,34 @@ public class StructureController {
         }
     }
 
+    /**
+     * Restore archived structure
+     * @param id The structure id
+     * @return ResponseEntity containing either the restore details or an error message
+     */
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<?> restoreStructure(@PathVariable("id") Long id) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(structureService.restoreStructure(id));
+        } catch (TraitementException e) {
+            return e.toResponseEntity("Structure restore rejected: {}");
+        }
+    }
+
+    /**
+     * Archive a structure
+     * @param id The structure id
+     * @return ResponseEntity containing either the archive details or an error message
+     */
+    @PutMapping("/{id}/archive")
+    public ResponseEntity<?> archiveStructure(@PathVariable("id") Long id) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(structureService.archiveStructure(id));
+        } catch (TraitementException e) {
+            return e.toResponseEntity("Structure archive rejected: {}");
+        }
+    }
+
 
     /**
      * Handles the addition of a new plan to an existing structure.
