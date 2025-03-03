@@ -56,7 +56,7 @@ fun PlanForSensor(
         planNode?.let {
             Text(getPlanSectionName(it), color = color, style = typography.headlineMedium)
         }
-        Plan(planImage, { point?.let { listOf(it) } ?: emptyList() })
+        Plan(planImage, { point?.let { listOf(it) } ?: emptyList()})
     }
 }
 
@@ -64,6 +64,9 @@ fun PlanForSensor(
  * Composable that displays a plan image and allows to add points on it.
  * @param image the image to display
  * @param points the list of points to display on the image
+ * @param temporaryPoint the point to add on the image
+ * @param addPoint the function to call when a point is added
+ * @param selectPoint the function to call when a point is selected
  */
 @Composable
 fun Plan(
