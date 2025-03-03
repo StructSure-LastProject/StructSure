@@ -104,10 +104,6 @@ function StructSureBody() {
     return (
       <>
           <LstStructureHead
-            orderType={orderType}
-            setOrderType={setOrderType}
-            orderByColumnName={orderByColumnName}
-            setOrderByColumnName={setOrderByColumnName}
             filterVisible={filterVisible}
             setFilterVisible={setFilterVisible}
           />
