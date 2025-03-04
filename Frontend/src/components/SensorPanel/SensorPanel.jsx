@@ -165,7 +165,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
    * @param {string} sensorNameValue
    * @returns
    */
-  const sensorNameValidator = (sensorNameValue) => /^[A-Za-z0-9_@. -]*$/.test(sensorNameValue);
+  const sensorNameValidator = (sensorNameValue) => /^[\w@-][\w @-]+$/.test(sensorNameValue);
 
   /**
    * Handle the submit

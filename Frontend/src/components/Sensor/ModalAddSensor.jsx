@@ -93,6 +93,13 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
       setError("Le nom est requis");
       return;
     }
+
+    const regex = /^[\w@-][\w @-]+$/;
+    if(!regex.test(name())) {
+      setError("Le nom doit contenir uniquement des lettres, des chiffres, des espaces, des underscores et des @");
+      return;
+    }
+
     const cleanControlChip = controlChip().replace(/\s+/g, '');
     const cleanMeasureChip = measureChip().replace(/\s+/g, '');
 
