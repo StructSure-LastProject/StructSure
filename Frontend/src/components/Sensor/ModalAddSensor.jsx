@@ -10,9 +10,11 @@ import { useNavigate } from "@solidjs/router";
  * Modal for adding a sensor.
  * Displaus a form to enter a name, a section and an image.
  * @param {isOpen, onClose, onSave, structureId} param Props passed to the component
+ * @param {Function} setSensorsDetail setter to set the sensors in structureDetails state
+ * @param {Function} structureDetails The structure detail
  * @returns The modal component for adding a plan
  */
-const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
+const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail, structureDetails }) => {
   const [name, setName] = createSignal("");
   const [controlChip, setControlChip] = createSignal("");
   const [measureChip, setMeasureChip] = createSignal("");
@@ -147,6 +149,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
     });
 
     if (statusCode() === 201) {
+      updateDataWhenNewSensor();
       onSave();
       saveTagOnLocalStorage(cleanControlChip, cleanMeasureChip);
       handleClose();
@@ -156,6 +159,35 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
 
     setIsSubmitting(false);
   };
+
+  /**
+   * Updates the sensor details by adding a new sensor to the existing list.
+   *
+   * This function retrieves the current list of sensors from `structureDetails()` 
+   * and appends a new sensor object with trimmed values from input functions.
+   *
+   * @function
+   * @returns {void} Updates the sensor details state.
+   */
+  const updateDataWhenNewSensor = () => {
+    console.log("new Sensor: ", {
+      name: name().trim(),
+      controlChip: controlChip().trim(),
+      measureChip: measureChip().trim(),
+      x: null,
+      y: null
+    });
+    setSensorsDetail([...structureDetails().sensors, {
+      name: name().trim(),
+      controlChip: controlChip().trim(),
+      measureChip: measureChip().trim(),
+      x: null,
+      y: null
+    }]);
+  }
+
+  console.log(() => console.log("structureDetails().sensors: ", structureDetails().sensors));
+
 
   /**
    * Resets the modal state and closes it.

@@ -1,5 +1,5 @@
 import { createSignal, onMount, onCleanup, Show, createEffect, createMemo } from "solid-js";
-import { Check, ChevronDown, Minus, Plus, Trash2 } from 'lucide-solid';
+import { Check, ChevronDown, Minus, Plus, Trash2, X } from 'lucide-solid';
 import useFetch from '../../hooks/useFetch';
 import Alert from '../Alert';
 import getSensorStatusColor from "../SensorStatusColorGen";
@@ -406,9 +406,14 @@ function StructureDetailCanvas(props) {
     };
 
     createEffect(() => {
-        initCanvasWhenPlanChanged();
         loadDetails();
         drawSensors();
+    });
+
+    createEffect(() => {
+        if (props.plan() != null) {
+            initCanvasWhenPlanChanged();
+        }
     });
 
     /**
@@ -737,6 +742,11 @@ function StructureDetailCanvas(props) {
                                         <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
                                     </button>
                                 </Show>
+                                <button class="bg-lightgray rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onClick={() => {
+                                    setIsPopupVisible(false);
+                                }}>
+                                    <X color="black" stroke-width="2.5" width="20px" height="20px"/>
+                                </button>
                             </div>
                         </div>
                         <Show when={!clickExistingPoint()}>

@@ -12,9 +12,10 @@ import StructureDetailCapteurs from './StructureDetailCapteurs';
  * @param {Function} setTotalItems The setter function
  * @param {function} selectedScan The selected scan
  * @param {Function} structureDetails The structure detail
+ * @param {Function} setSensorsDetail setter to set the sensors in structureDetails state
  * @returns the component for the strucutre detail row
  */
-function StructureDetailRow({note, structureId, setSensors, selectedScan, selectedPlanId, sensors, totalItems, setTotalItems, structureDetails, setPlanSensors}) {
+function StructureDetailRow({note, structureId, setSensors, selectedScan, selectedPlanId, sensors, totalItems, setTotalItems, structureDetails, setPlanSensors, setSensorsDetail}) {
     return (
         <div class="flex lg:flex-row flex-col gap-y-[50px] lg:gap-x-[50px] w-full">
             <StructureDetailNote
@@ -31,6 +32,8 @@ function StructureDetailRow({note, structureId, setSensors, selectedScan, select
               totalItems={totalItems}
               setTotalItems={setTotalItems}
               setPlanSensors={setPlanSensors}
+              setSensorsDetail={setSensorsDetail}
+              structureDetails={structureDetails}
             />
         </div>
     );
