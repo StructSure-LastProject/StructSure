@@ -36,9 +36,9 @@ function ArchiveModal(props) {
     if (statusCode() === 200) {
       props.onArchive && props.onArchive(data());
     } else if (statusCode() === 422) {
-      props.setErrorMsgActiveStructure(error().errorData.error);
+      props.setErrorMsgArchiveStructure(error()?.errorData.error);
     } else {
-      props.setErrorMsgActiveStructure("Une erreur est survenue");
+      props.setErrorMsgArchiveStructure("Une erreur est survenue");
     }
   };
 
