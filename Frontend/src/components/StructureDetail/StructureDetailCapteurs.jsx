@@ -18,9 +18,11 @@ import useFetch from '../../hooks/useFetch.js';
  * @param {Array} sensors The sensors array
  * @param {Number} totalItems Total number of sensors
  * @param {Function} setTotalItems setter to set the total number of sensor
+ * @param {Function} setSensorsDetail setter to set the sensors in structureDetails state
+ * @param {Function} structureDetails The structure detail
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({structureId, setSensors, selectedScan, selectedPlanId, sensors, totalItems, setTotalItems, setPlanSensors}) {
+function StructureDetailCapteurs({structureId, setSensors, selectedScan, selectedPlanId, sensors, totalItems, setTotalItems, setPlanSensors, setSensorsDetail, structureDetails}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
@@ -28,7 +30,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
     
     const [isAuthorized, setIsAuthorized] = createSignal(false);
 
-    const [limit, setLimit] = createSignal(30)
+    const [limit, setLimit] = createSignal(30);
     const [offset, setOffset] = createSignal(0);
 
 
@@ -156,6 +158,8 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
                           onClose={closeAddModal}
                           structureId={structureId}
                           onSave={handleAddSave}
+                          setSensorsDetail={setSensorsDetail}
+                          structureDetails={structureDetails}
                         />
                     </Show>
                 </div>
