@@ -112,9 +112,9 @@ public class StructureController {
      * @return ResponseEntity containing either the restore details or an error message
      */
     @PutMapping("/{id}/restore")
-    public ResponseEntity<?> restoreStructure(@PathVariable("id") Long id) {
+    public ResponseEntity<?> restoreStructure(@PathVariable("id") Long id, HttpServletRequest httpRequest) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(structureService.restoreStructure(id));
+            return ResponseEntity.status(HttpStatus.OK).body(structureService.restoreStructure(id, httpRequest));
         } catch (TraitementException e) {
             return e.toResponseEntity("Structure restore rejected: {}");
         }
@@ -126,9 +126,9 @@ public class StructureController {
      * @return ResponseEntity containing either the archive details or an error message
      */
     @PutMapping("/{id}/archive")
-    public ResponseEntity<?> archiveStructure(@PathVariable("id") Long id) {
+    public ResponseEntity<?> archiveStructure(@PathVariable("id") Long id, HttpServletRequest httpRequest) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(structureService.archiveStructure(id));
+            return ResponseEntity.status(HttpStatus.OK).body(structureService.archiveStructure(id, httpRequest));
         } catch (TraitementException e) {
             return e.toResponseEntity("Structure archive rejected: {}");
         }
