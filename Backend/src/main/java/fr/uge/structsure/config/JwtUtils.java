@@ -21,14 +21,27 @@ import java.util.function.Function;
 @Component("jwtUtils")
 public class JwtUtils {
 
-    @Value("${app.secret-key}")
-    private String secretKey;
+    private final String secretKey;
 
-    @Value("${app.android.expiration-time.days}")
-    private long androidExpirationTime;
+    final long androidExpirationTime;
 
-    @Value("${app.expiration-time}")
-    private long expirationTime;
+    final long expirationTime;
+
+    /**
+     * Default internal constructor FOR SPRINGBOOT to inject values
+     * @param secretKey the secret key to encrypt tokens
+     * @param androidExpirationTime the expiration delay for android
+     * @param expirationTime the expiration delay for the web app
+     */
+    JwtUtils(
+        @Value("${app.secret-key}") String secretKey,
+        @Value("${app.android.expiration-time.days}") long androidExpirationTime,
+        @Value("${app.expiration-time}") long expirationTime
+    ) {
+        this.secretKey = secretKey;
+        this.androidExpirationTime = androidExpirationTime;
+        this.expirationTime = expirationTime;
+    }
 
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
@@ -81,7 +94,7 @@ public class JwtUtils {
         return extractClaim(token, Claims::getSubject);
     }
 
-    private Date extractExpirationDate(String token) {
+    public Date extractExpirationDate(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 

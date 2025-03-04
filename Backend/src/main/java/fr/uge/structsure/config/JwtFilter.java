@@ -3,6 +3,7 @@ package fr.uge.structsure.config;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * This is a filter that will be called before any request. Its role is to check
@@ -63,10 +65,30 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             }
+            tryRenewToken(request, response, jwt, username);
         } catch (ExpiredJwtException | UsernameNotFoundException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Puts an updated token with a longer expiration date in the
+     * response header if the given one is about to expire.
+     * @param request to make sure the call is an API endpoint
+     * @param response to put the new token in
+     * @param jwt the current token to check
+     * @param username the login of the user
+     */
+    private void tryRenewToken(HttpServletRequest request, HttpServletResponse response, String jwt, String username) {
+        if (!request.getRequestURI().startsWith("/api")) return;
+        var tokenAlreadyRenewed = response.getHeader("Authorization") != null;
+        if (tokenAlreadyRenewed) return;
+        var remainingTime = jwtUtils.extractExpirationDate(jwt).getTime() - new Date().getTime();
+        if (remainingTime > 0 && remainingTime < jwtUtils.expirationTime / 2) {
+            var newToken = jwtUtils.generateToken(username);
+            response.setHeader("Authorization", newToken);
+        }
     }
 
     /**

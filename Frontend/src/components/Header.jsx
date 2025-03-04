@@ -17,11 +17,11 @@ function Header() {
             <div class="flex gap-x-25px items-center">
                 {localStorage.getItem("role") === "ADMIN" &&
                     <A href="/admin-panel">
-                        <img src={leftAccount} class="w-10 h-10" alt="Vite logo" />
+                        <img src={leftAccount} class="w-10 h-10" alt="Crown icon" />
                     </A>
                 }
                 <A href="/account">
-                    <img src={accountButton} class="w-10 h-10" alt="Vite logo"/>
+                    <img src={accountButton} class="w-10 h-10" alt="Account icon"/>
                 </A>
             </div>
         </div>
