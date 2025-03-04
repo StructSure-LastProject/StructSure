@@ -1,4 +1,4 @@
-import {createSignal} from "solid-js";
+import {createSignal, Show} from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import useFetch from '../hooks/useFetch';
 import { ChevronDown, ChevronUp, Plus } from 'lucide-solid';
@@ -81,12 +81,14 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
               >
                   {filterVisible() ? <ChevronUp/> : <ChevronDown/>}
               </button>
-              <button
-                class="w-10 h-10 bg-black rounded-[50px] flex items-center justify-center"
-                onClick={openModal}
-              >
-                  <Plus color="white" />
-              </button>
+              <Show when={localStorage.getItem("role") === ("RESPONSABLE" || "ADMIN")}>
+                  <button
+                    class="w-10 h-10 bg-black rounded-[50px] flex items-center justify-center"
+                    onClick={openModal}
+                  >
+                      <Plus color="white"/>
+                  </button>
+              </Show>
           </div>
 
           {isModalVisible() && (

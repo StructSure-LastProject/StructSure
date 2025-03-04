@@ -4,6 +4,7 @@ import StructureDetailEdit from './StructureDetailEdit';
 import {planSensorsFetchRequest, planSensorsScanFetchRequest, sensorsFetchRequest} from "./StructureDetailBody.jsx";
 import {useNavigate} from "@solidjs/router";
 import useFetch from "../../hooks/useFetch.js";
+import ArchiveModal from "../ArchiveModal.jsx";
 
 /**
  * Show the head part of the structure detail
@@ -61,32 +62,32 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
         }
     };
 
+    const [showArchiveModal, setShowArchiveModal] = createSignal(false);
+
     /**
-     * Handle archiving the current structure
+     * Handle click on an active structure
      */
-    const handleArchiveStructure = async () => {
-        const token = localStorage.getItem("token");
-        const requestData = {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            }
-        };
+    const handleArchiveClick = () => {
+        setShowArchiveModal(true);
+    };
 
-        const { fetchData, statusCode, data, error } = useFetch();
+    /**
+     * Close the archive modal
+     */
+    const closeArchiveModal = () => {
+        setShowArchiveModal(false);
+        setErrorMsgArchiveStructure("");
+    };
 
-        await fetchData(
-          navigate,
-          `/api/structures/${structureDetails().id}/archive`,
-          requestData
-        );
+    const [errorMsgArchiveStructure, setErrorMsgArchiveStructure] = createSignal("");
 
-        if (statusCode() === 200) {
-            navigate('/');
-        } else {
-            // handle error
-        }
+    /**
+     * Handle successful structure archiving
+     * @param {Object} archivedStructure The archived structure data from the API
+     */
+    const handleArchiveSuccess = (archivedStructure) => {
+        closeArchiveModal();
+        navigate("/");
     };
 
     return (
@@ -114,7 +115,7 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
                             </button>
                             <button
                               class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
-                              onclick={handleArchiveStructure}
+                              onclick={handleArchiveClick}
                             >
                                 <Trash2 color="red" size={20} />
                             </button>
@@ -140,6 +141,15 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
                   structureDetails={structureDetails}
                 />
             </div>
+            <Show when={showArchiveModal()}>
+                <ArchiveModal
+                  structure={structureDetails()}
+                  onClose={closeArchiveModal}
+                  onArchive={handleArchiveSuccess}
+                  errorMsgArchiveStructure={errorMsgArchiveStructure}
+                  setErrorMsgArchiveStructure={setErrorMsgArchiveStructure}
+                />
+            </Show>
         </>
     );
 }

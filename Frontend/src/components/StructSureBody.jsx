@@ -16,8 +16,8 @@ function StructSureBody() {
     const [structures, setStructures] = createSignal([]);
     const [searchByName, setSearchByName] = createSignal("");
     const [filterValue, setFilterValue] = createSignal("");
-    const [orderByColumnName, setOrderByColumnName] = createSignal("NAME");
-    const [orderType, setOrderType] = createSignal("ASC");
+    const [orderByColumnName, setOrderByColumnName] = createSignal("STATE");
+    const [orderType, setOrderType] = createSignal("DESC");
     const [filterVisible, setFilterVisible] = createSignal(false);
 
     const [errorStructurePage, setErrorStructurePage] = createSignal("");
@@ -207,7 +207,7 @@ function StructSureBody() {
                 </For>
               </Show>
           </div>
-          <Show when={showRestoreModal()}>
+          <Show when={showRestoreModal() && localStorage.getItem("role") === ("ADMIN" || "RESPONSABLE")}>
               <RestoreModal
                 structure={selectedStructure()}
                 onClose={closeRestoreModal}
