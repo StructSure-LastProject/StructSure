@@ -45,8 +45,7 @@ function AccountChangePassword() {
             body: JSON.stringify({
                 userId: userId,
                 currentPassword: oldPassword(),
-                newPassword: newPassword(),
-                confirmNewPassword: passwordConfirmation()
+                newPassword: newPassword()
             })
         };
 
