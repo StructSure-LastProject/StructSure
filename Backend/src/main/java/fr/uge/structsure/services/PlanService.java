@@ -20,18 +20,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Plan service class
@@ -69,6 +64,19 @@ public class PlanService {
     }
 
     /**
+     * Generates a unique filename for the plan file using the plan name and original filename
+     *
+     * @param planName The name of the plan entered by the user
+     * @param originalFilename The original filename with extension
+     * @return A unique filename based on the plan name
+     */
+    private String createPlanFilename(String planName, String originalFilename) {
+        var name = planName.replaceAll("[^a-zA-Z0-9-_]", "_");
+        var extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        return name + "_" + UUID.randomUUID().toString().substring(0, 8) + extension;
+    }
+
+    /**
      * Creates a new plan for a given structure with the provided details and file.
      *
      * @param structureId The ID of the structure to which the plan will be attached
@@ -84,12 +92,10 @@ public class PlanService {
         var structure = structureService.existStructure(structureId).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
         checkState(structure);
         var directory = computeDirectory(noSection, structureId, metadata.section());
-        var filePath = directory + File.separator + file.getOriginalFilename();
-        if (planRepository.planFileAlreadyExists(filePath)) {
-            throw new TraitementException(Error.PLAN_ALREADY_EXISTS);
-        }
+        var filename = createPlanFilename(metadata.name(), Objects.requireNonNull(file.getOriginalFilename()));
+        var filePath = directory + File.separator + filename;
         managedFilesDirectory(directory);
-        var savedPlan = handleAddPlan(directory, file, new Plan(filePath, metadata.name(), metadata.section(), structure));
+        var savedPlan = handleAddPlan(directory, file, filename, new Plan(filePath, metadata.name(), metadata.section(), structure));
         return new AddPlanResponseDTO(savedPlan.getId(), new Timestamp(System.currentTimeMillis()).toString());
     }
 
@@ -130,19 +136,24 @@ public class PlanService {
         var name = plan.getName().equals(metadata.name()) ? plan.getName() : metadata.name();
         var section = plan.getSection().equals(metadata.section()) ? plan.getSection() : metadata.section();
         var directory = computeDirectory(noSection, structure.getId(), metadata.section());
-        var fileName = multipartFile.map(MultipartFile::getOriginalFilename).orElse(planFile.getFileName().toString());
-        var filePath = Path.of(directory.toString(), fileName);
+
+        String filePath;
+        if (multipartFile.isPresent()) {
+            var uniqueFilename = createPlanFilename(metadata.name(), Objects.requireNonNull(multipartFile.get().getOriginalFilename()));
+            filePath = Path.of(directory.toString(), uniqueFilename).toString();
+        } else {
+            filePath = planFile.toString();
+        }
 
         plan.setName(name);
         plan.setSection(section);
-        plan.setImageUrl(filePath.toString());
+        plan.setImageUrl(filePath);
 
         if (!noSection) {
             managedFilesDirectory(directory);
         }
-        Optional<MultipartFile> file = planFile.equals(filePath) ? Optional.empty() : multipartFile;
 
-        var savedPlan = handleEditPlan(planFile, filePath, file, plan);
+        var savedPlan = handleEditPlan(planFile, Path.of(filePath), multipartFile, plan);
         return new EditPlanResponseDTO(savedPlan.getId());
     }
 
@@ -299,7 +310,6 @@ public class PlanService {
 
     /**
      * Handles the plan editing process, including file upload, movement, and database updates.
-     * If any step fails, the operation is rolled back.
      *
      * @param sourceFilePath the original file path
      * @param targetFilePath the new file path
@@ -310,21 +320,21 @@ public class PlanService {
      */
     private Plan handleEditPlan(Path sourceFilePath, Path targetFilePath, Optional<MultipartFile> file, Plan plan) throws TraitementException {
         if (file.isPresent()) {
-            if (planRepository.planFileAlreadyExists(targetFilePath.toString())) {
-                throw new TraitementException(Error.PLAN_ALREADY_EXISTS);
-            }
-            uploadFile(file.get(), sourceFilePath);
+            uploadFile(file.get(), targetFilePath);
+        } else if (!sourceFilePath.equals(targetFilePath)) {
+            moveFile(sourceFilePath, targetFilePath);
         }
-        moveFile(sourceFilePath, targetFilePath);
+
         Plan savedPlan = null;
         try {
             savedPlan = planRepository.save(plan);
         } catch (Exception e) {
             LOGGER.error("Exception when editing plan to db", e);
-            managedFilesDirectory(sourceFilePath.getParent());
-            moveFile(targetFilePath, sourceFilePath);
+            managedFilesDirectory(targetFilePath.getParent());
             if (file.isPresent()) {
                 deleteFile(targetFilePath);
+            } else if (!sourceFilePath.equals(targetFilePath)) {
+                moveFile(targetFilePath, sourceFilePath);
             }
         }
         return savedPlan;
@@ -340,8 +350,8 @@ public class PlanService {
      * @return the saved Plan entity
      * @throws TraitementException if any step of the process fails
      */
-    private Plan handleAddPlan(Path targetDirPath, MultipartFile file, Plan plan) throws TraitementException {
-        var filePath = Path.of(targetDirPath.toString(), Objects.requireNonNull(file.getOriginalFilename()));
+    private Plan handleAddPlan(Path targetDirPath, MultipartFile file, String filename, Plan plan) throws TraitementException {
+        var filePath = Path.of(targetDirPath.toString(), filename);
         uploadFile(file, filePath);
         Plan savedPlan;
         try {
