@@ -59,7 +59,17 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
     const newBase10Value = base10Value + 1n;
     return addSpaces(base10ToHex(newBase10Value));
   }
- 
+
+  /**
+   * Validates that the input contains only hexadecimal characters (ignoring spaces)
+   * @param {String} input The input to validate
+   * @returns {Boolean} True if the input is valid, false otherwise
+   */
+  const validateHexInput = (input) => {
+    const cleanInput = input.replace(/\s+/g, '');
+    return /^[0-9A-F]+$/.test(cleanInput);
+  };
+
 
   /**
    * Save the chips in local storage
@@ -84,18 +94,30 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
       setError("Le nom est requis");
       return;
     }
-    if (!controlChip().trim()) {
+    const cleanControlChip = controlChip().replace(/\s+/g, '');
+    const cleanMeasureChip = measureChip().replace(/\s+/g, '');
+
+    if (!cleanControlChip) {
       setError("La puce témoin est requise");
       return;
     }
-    if (!measureChip().trim()) {
+    if (!cleanMeasureChip) {
       setError("La puce de mesure est requise");
       return;
     }
-    if (measureChip().trim() === controlChip().trim()) {
+    if (!validateHexInput(cleanControlChip)) {
+      setError("La puce témoin doit contenir uniquement des caractères hexadécimaux (0-9, A-F)");
+      return;
+    }
+    if (!validateHexInput(cleanMeasureChip)) {
+      setError("La puce de mesure doit contenir uniquement des caractères hexadécimaux (0-9, A-F)");
+      return;
+    }
+    if (cleanControlChip === cleanMeasureChip) {
       setError("Les deux puces ne peuvent pas avoir la même valeur");
       return;
     }
+
     setIsSubmitting(true);
     setError("");
 
@@ -103,8 +125,8 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
       structureId: structureId,
       name: name().trim(),
       note: note().trim(),
-      measureChip: measureChip().trim(),
-      controlChip: controlChip().trim()
+      measureChip: cleanMeasureChip,
+      controlChip: cleanControlChip
     };
 
     const { fetchData, statusCode, error } = useFetch();
@@ -120,7 +142,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
 
     if (statusCode() === 201) {
       onSave();
-      saveTagOnLocalStorage(controlChip().trim().replace(/\s+/g, ''), measureChip().trim().replace(/\s+/g, ''));
+      saveTagOnLocalStorage(cleanControlChip, cleanMeasureChip);
       handleClose();
     } else {
       setError(error()?.errorData?.error || "Une erreur est survenue");
@@ -128,7 +150,6 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
 
     setIsSubmitting(false);
   };
-
 
   /**
    * Resets the modal state and closes it.
