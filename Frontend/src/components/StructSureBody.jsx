@@ -146,7 +146,7 @@ function StructSureBody() {
      */
     const handleRestoreSuccess = (restoredStructure) => {
         closeRestoreModal();
-        structuresFetchRequest("/api/structures", "", "STATE", "DESC");
+        fetchStructures();
     };
 
     return (
