@@ -189,7 +189,7 @@ public class SensorService {
      */
     private void checkState(Structure structure) throws TraitementException {
         if (Boolean.TRUE.equals(structure.getArchived())) {
-            throw new TraitementException(Error.PLAN_IS_ARCHIVED);
+            throw new TraitementException(Error.STRUCTURE_IS_ARCHIVED);
         }
     }
 
