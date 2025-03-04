@@ -19,7 +19,6 @@ const SensorFieldComponent = ({
   type, 
   minLength, 
   maxLength, 
-  isRequired, 
   setter,
   styles,
   parentStyles
@@ -38,15 +37,14 @@ if(setter === undefined && type === undefined && maxLength === undefined && minL
   )
 }
 return (
-    <div class={parentStyles === undefined ? `flex flex-col gap-[5px] min-w-[270px]` : parentStyles}>
-        <p class="opacity-[75%] font-poppins HeadLineMedium text-[#181818]">{title}</p>
-        <input class={styles === undefined ? `rounded-[50px] px-[16px] py-[8px] flex gap-[10px]  font-poppins font-[600] text-[14px] leading-[21px] bg-[#F2F2F4] text-[#181818]` : styles} 
+    <div class={parentStyles === undefined ? "flex flex-col gap-[5px] w-full" : parentStyles}>
+        <p class="normal opacity-75">{title}</p>
+        <input class={styles === undefined ? "rounded-[50px] px-[16px] py-[8px] w-full bg-lightgray accent" : styles} 
           type={type}
           onChange={(e) => setter(e.target.value)}
           value={value()}
           minLength={minLength}
           maxLength={maxLength}
-          required={isRequired}
           disabled={!editMode()}
           lang={type === "date" ? "fr-FR" : undefined}
         />

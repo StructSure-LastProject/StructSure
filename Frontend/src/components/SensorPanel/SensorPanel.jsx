@@ -2,7 +2,6 @@ import { Pencil, X, Check } from 'lucide-solid';
 import getSensorStatusColor from "../SensorStatusColorGen";
 import { createResource, createSignal, Show } from 'solid-js';
 import SensorFieldComponent from './SensorFieldComponent';
-import { loginValidator } from '../../hooks/vaildateUserAccountForm';
 import Canvas from './Canvas';
 import useFetch from '../../hooks/useFetch';
 import {sensorsFetchRequest} from "../StructureDetail/StructureDetailBody"
@@ -159,6 +158,13 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
 
 
   const [validationError, setvalidationError] = createSignal("");
+
+  /**
+   * Validate the login value A-Z, a-z, 0-9, _, @, " "
+   * @param {string} sensorNameValue 
+   * @returns 
+   */
+  const sensorNameValidator = (sensorNameValue) => /^[A-Za-z0-9_@. -]*$/.test(sensorNameValue);
   
   /**
    * Handle the submit
@@ -169,15 +175,11 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
       setvalidationError("Le nom du capteur est obligatoire");
       return false;
     }
-    if(!loginValidator(sensorName())){
-      setvalidationError("Le nom doit contenir uniquement des lettres, des chiffres, des underscores et des @");
+    if(!sensorNameValidator(sensorName())){
+      setvalidationError("Le nom doit contenir uniquement des lettres, des chiffres, des underscores, des @ et des espaces");
       return false;
     }
     
-    if (installationDate() === "") {
-      setvalidationError("La date d'installation du capteur est obligatoire");
-      return false;
-    }
 
     const { fetchData, error, statusCode } = useFetch();
     const token = localStorage.getItem("token");
@@ -265,7 +267,6 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
               value={installationDate}
               editMode={editMode} 
               type={"date"}
-              isRequired={true} 
               setter={setInstallationDate}
             />
           </div>
