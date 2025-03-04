@@ -35,7 +35,4 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
      * @return all the not archived structure's plan
      */
     List<Plan> findByStructureAndArchivedFalse(Structure structure);
-
-    @Query("SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM Plan p WHERE p.imageUrl = :url")
-    boolean planFileAlreadyExists(String url);
 }
