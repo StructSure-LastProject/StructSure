@@ -72,7 +72,7 @@ function Login() {
         <div class="bg-lightgray min-h-screen">
             <div class="p-25px mb-35px">
                 <div class="flex justify-center">
-                    <img src={logo} class="w-236px" alt="Vite logo" />
+                    <img src={logo} class="w-236px" alt="StructSure logo" />
                 </div>
             </div>
             <div class="px-25px flex justify-center">

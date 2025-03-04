@@ -24,6 +24,7 @@ const useFetch = () => {
             setStatusCode(response.status);
             if (response.ok) {    
                 const jsonData = await response.json();
+                renewToken(response)
                 setData(jsonData);
             } else {
                 if (response.status === 401) {
@@ -48,6 +49,16 @@ const useFetch = () => {
             setLoading(false);
         }   
     };
+
+  /**
+   * Check if a new token has been given by the server and updates the
+   * local one.
+   * @param {Response} response the object containing response informations
+   */
+    const renewToken = (response) => {
+        const token = response.headers.get("Authorization");
+        if (token != null) localStorage.setItem("token", token)
+    }
 
     /**
      * Will fetch an image from the server
