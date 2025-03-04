@@ -96,9 +96,9 @@ const StructuresFilter = (props) => {
 
   const filterOptions = [
     { value: "", label: "Tout" },
-    { value: "OK", label: "OK" },
     { value: "NOK", label: "NOK" },
     { value: "DEFECTIVE", label: "Défaillant" },
+    { value: "OK", label: "OK" },
     { value: "UNKNOWN", label: "Non scanné" },
     { value: "ARCHIVED", label: "Archivé" }
   ];
