@@ -184,7 +184,6 @@ const TreeNode = (props) => {
     setIsOpen(!isOpen());
   };
 
-
   if (props.type === "section") {
     return (
       <div class="mb-2">
@@ -285,9 +284,6 @@ const RenderPlan = (props) => {
  */
 const DropdownsSection = (props) => {
   const [localPlans, setLocalPlans] = createSignal([]);
-
-  // todo for interaction
-  /*const [selectedPlan, setSelectedPlan] = createSignal(null);*/
 
   const safeData = () => {
     if (Array.isArray(props.data)) {

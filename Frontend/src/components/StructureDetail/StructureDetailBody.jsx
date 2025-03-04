@@ -169,6 +169,7 @@ function StructureDetailBody(props) {
             <StructureDetailPlans
                 structureDetails={structureDetails}
                 structureId={props.structureId}
+                selectedScan={selectedScan}
                 selectedPlanId={selectedPlanId}
                 setSelectedPlanId={setSelectedPlanId}
                 planSensors={planSensors}

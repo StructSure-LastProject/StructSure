@@ -96,8 +96,9 @@ function StructureDetailPlans(props) {
      */
     const handleEditSave = (formData) => {
         const userRole = localStorage.getItem("role");
-        const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
+        const canEdit = props.selectedScan() !== -1 && (userRole === "ADMIN" || userRole === "RESPONSABLE");
 
+        console.log("canEdit", canEdit);
         setPlans(prev => prev.map(p =>
           p.id === formData.id
             ? {
@@ -153,14 +154,13 @@ function StructureDetailPlans(props) {
         }
     });
 
-
     return (
         <>
             <div class="flex flex-col lg:flex-row rounded-[20px] bg-E9E9EB">
                 <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5 max-h-[350px] lg:max-h-[436px]">
                     <div class="flex items-center justify-between">
                         <p class="title">Plans</p>
-                        <Show when={isAuthorized()}>
+                        <Show when={isAuthorized() && props.selectedScan().toString() === "-1"}>
                             <button
                             title="Ajouter un plan"
                             onClick={openAddModal}
@@ -189,7 +189,7 @@ function StructureDetailPlans(props) {
                         structureId={props.structureId}
                         />
                     </Show>
-                    <Show when={isEditModalOpen() && selectedPlan()}>
+                    <Show when={isEditModalOpen()}>
                         <ModalEditPlan
                         isOpen={isEditModalOpen()}
                         onSave={handleEditSave}
