@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +13,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Controller that serves the frontend as a SinglePageApplication, no
@@ -25,6 +26,12 @@ public class FrontController {
 
     /** Load the index.html content in memory to reduce reading time */
     private static final String HTML = load();
+
+    /** Reuse not found response */
+    private static final ResponseEntity<InputStreamResource> NOT_FOUND = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+    /** Detects the version from the android app file name */
+    private static final Pattern APP_FILE = Pattern.compile("StructSure-(\\d+)\\.(\\d+)\\.(\\d+)\\.[a-z]+", Pattern.CASE_INSENSITIVE);
 
     /** Correspondance table to find MIME type from a file extension */
     private static final Map<String, MediaType> MIME;
@@ -72,6 +79,51 @@ public class FrontController {
     }
 
     /**
+     * Enable users to download the Android application package (apk)
+     * from the server.
+     * Searches such a file on the server static files and picks the
+     * latest version if many are present.
+     * @return the latest application file if found
+     */
+    @GetMapping("/download")
+    public ResponseEntity<InputStreamResource> downloadApplication() {
+        try {
+            var resources = new PathMatchingResourcePatternResolver().getResources("static/application/*");
+            var file = Arrays.stream(resources)
+                .flatMap(r -> Optional.ofNullable(r.getFilename()).stream())
+                .max(Comparator.comparing(FrontController::getVersion));
+            return file.flatMap(s -> tryLoad("/application/" + s))
+                .orElse(NOT_FOUND);
+        } catch (IOException e) {
+            return NOT_FOUND;
+        }
+    }
+
+    /**
+     * Format the version from the filename with multiple zeros to be
+     * able to sort correctly versions in filename.
+     * @param fileName the name of the file to sort
+     * @return the sort-proof name
+     */
+    private static String getVersion(String fileName) {
+        Matcher matcher = APP_FILE.matcher(fileName);
+
+        if (matcher.find()) {
+            try {
+                return String.format(
+                    "StructSure-%03d.%03d.%03d.apk",
+                    Integer.parseInt(matcher.group(1)),
+                    Integer.parseInt(matcher.group(2)),
+                    Integer.parseInt(matcher.group(3))
+                );
+            } catch (NumberFormatException e) {
+                // Not a big deal, simply return the filename
+            }
+        }
+        return fileName;
+    }
+
+    /**
      * Tries to load and returns the bytes from the static file at the
      * given location. If not found, will return an empty response.
      * The path must be checked before calling the method to avoid
@@ -87,6 +139,8 @@ public class FrontController {
             return Optional.of(
                 ResponseEntity.ok()
                     .contentType(getMimeType(path))
+                    .contentLength(resource.contentLength())
+                    .header("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"")
                     .body(inputStream)
             );
         } catch (IOException e) {
@@ -103,7 +157,7 @@ public class FrontController {
     private static MediaType getMimeType(String path) {
         var point = path.lastIndexOf(".");
         var ext = point == -1 ? "" : path.substring(point + 1);
-        return MIME.getOrDefault(ext, MediaType.ALL);
+        return MIME.getOrDefault(ext, MediaType.valueOf("application/octet-stream"));
     }
 
     /**
