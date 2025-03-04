@@ -1,5 +1,6 @@
 package fr.uge.structsure.controllers;
 
+import fr.uge.structsure.dto.auth.ChangePasswordRequestDTO;
 import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.exceptions.TraitementException;
@@ -55,6 +56,25 @@ public class AuthenticationController {
             return ResponseEntity.status(200).body(accountService.login(loginRequestDTO, AuthenticationType.ANDROID));
         } catch (TraitementException e) {
             return e.toResponseEntity("User login rejected: {}");
+        }
+    }
+
+    /**
+     * Handles the request to change a user's password.
+     *
+     * This endpoint processes a password change request by validating the provided credentials
+     * and updating the user's password if all conditions are met.
+     *
+     * @param changePasswordRequestDTO The DTO containing user ID, current password, new password, and confirmation.
+     * @return A {@link ResponseEntity} containing the response DTO if successful,
+     *         or an error response in case of failure.
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequestDTO changePasswordRequestDTO) {
+        try {
+            return ResponseEntity.status(200).body(accountService.changePassword(changePasswordRequestDTO));
+        } catch (TraitementException e) {
+            return e.toResponseEntity("User change password rejected: {}");
         }
     }
 

@@ -6,7 +6,9 @@ import java.util.Objects;
  * This class will centralize and define all the errors that will be used
  */
 public enum Error {
-    AUTHENTICATION_ERROR(422, "Account authenticated but not present"),
+    AUTHENTICATION_ERROR(422, "Compte authentifié mais non présent."),
+    OLD_PASSWORD_NOT_CORRECT(422, "L'ancien mot de passe est incorrect."),
+    NEW_PASSWORD_SHOULD_BE_DIFFERENT_THAN_THE_OLD_ONE(422, "Le nouveau mot de passe doit être différent de l'ancien."),
 
     INVALID_FIELDS(422, "Les champs sont invalides"),
     INCORRECT_FIELD_VALUE(422, "Une ou plusieurs valeur(s) invalide(s)"),

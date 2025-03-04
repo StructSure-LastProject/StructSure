@@ -113,5 +113,17 @@ public class Account {
         structures.remove(Objects.requireNonNull(structure));
     }
 
-
+    @Override
+    public String toString() {
+        return "Account{" +
+                "id=" + id +
+                ", login='" + login + '\'' +
+                ", passwordEncrypted='" + passwordEncrypted + '\'' +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", role=" + role +
+                ", enabled=" + enabled +
+                ", structures=" + structures +
+                '}';
+    }
 }

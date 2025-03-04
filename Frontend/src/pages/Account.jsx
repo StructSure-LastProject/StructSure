@@ -1,6 +1,7 @@
 import loginIconBlack from '/src/assets/loginIconBlack.svg';
 import Header from '../components/Header';
 import { useNavigate } from '@solidjs/router';
+import AccountChangePassword from '../components/AccountChangePassword';
 
 /**
  * Component for the account page
@@ -21,6 +22,7 @@ function Account() {
         localStorage.removeItem("login");
         localStorage.removeItem("controlChip");
         localStorage.removeItem("measureChip");
+        localStorage.removeItem("userId");
     };
 
     /**
@@ -34,7 +36,7 @@ function Account() {
     };
 
     return (
-        <div class="p-25px">
+        <div class="bg-lightgray min-h-screen p-25px">
             <Header />
             <div class="flex justify-center">
                 <form class="bg-black w-500px rounded-20px flex flex-col gap-y-25px px-5 px-15px" onSubmit={handlSubmit}>
@@ -50,6 +52,7 @@ function Account() {
                     </div>
                 </form>
             </div>
+            <AccountChangePassword />
         </div>
     );
 }
