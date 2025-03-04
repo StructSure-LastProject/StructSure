@@ -137,7 +137,6 @@ const CheckBoxComponent = ({description, value, setter, searchParamName}) => {
     const handleOnClick = () => {
         const val = !value();
         setter(val);
-        console.log("searchParamName here: ", searchParamName);
         setSearchParams({ [searchParamName]: val });
     };
 
