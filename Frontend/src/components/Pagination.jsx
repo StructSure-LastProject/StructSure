@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-solid';
-import { createSignal } from 'solid-js';
+import { createEffect, createSignal } from 'solid-js';
 
 /**
  * Pagination
@@ -9,10 +9,10 @@ import { createSignal } from 'solid-js';
  * @param {Function} setOffset The setter for the offset
  * @returns The pagination component
  */
-export const Pagination = ({ limit, offset, totalItems, setOffset }) => {
-  const totalPages = Math.ceil(totalItems() / limit());
-
+export const Pagination = ({ limit, offset, totalItems, setOffset}) => {
   const [currentPage, setCurrentPage] = createSignal(Math.floor(offset() / limit()) + 1);
+  const [pages, setPages] = createSignal([]);
+  const [totalPages, setTotalPages] = createSignal(0);
 
   /**
    * Setter to update the pahe change
@@ -51,32 +51,43 @@ export const Pagination = ({ limit, offset, totalItems, setOffset }) => {
   };
 
 
-  /**
-   * Calculate the page numbers
-   * @returns The pages numbers
-   */
-  const getPageNumbers = () => {
-    const pages = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages.push(1);
+/**
+ * Calculate the page numbers
+ * @returns The pages numbers
+ */
+const getPageNumbers = () => {
+  const pagesArray = [];
+  if (totalPages() <= 7) {
+    for (let i = 1; i <= totalPages(); i++) {
+      pagesArray.push(i);
+    }
+  } else {
+    pagesArray.push(1);
 
-      if (currentPage() > 3) pages.push('...');
+    if (currentPage() > 3) pages.push('...');
 
-      for (let i = Math.max(currentPage() - 1, 2); i <= Math.min(currentPage() + 1, totalPages - 1); i++) {
-        pages.push(i);
-      }
-
-      if (currentPage() < totalPages - 2) pages.push('...');
-
-      if (totalPages > 1) pages.push(totalPages);
+    for (let i = Math.max(currentPage() - 1, 2); i <= Math.min(currentPage() + 1, totalPages - 1); i++) {
+      pagesArray.push(i);
     }
 
-    return pages;
-  };
+    if (currentPage() < totalPages - 2) pagesArray.push('...');
+
+    if (totalPages > 1) pagesArray.push(totalPages);
+  }    
+  return pagesArray;
+};
+
+
+/**
+ * Create effect to update
+ */
+createEffect(() => {
+  setTotalPages(Math.ceil(totalItems() / limit()));
+  setPages(getPageNumbers());
+  setCurrentPage(pages().includes(currentPage()) ? currentPage() : 1);
+  handlePageChange(currentPage());
+});
+
 
   return (
     <div className="flex items-center justify-between py-5">
@@ -111,7 +122,7 @@ export const Pagination = ({ limit, offset, totalItems, setOffset }) => {
               <ChevronLeft aria-hidden="true" className="size-5" color="gray" />
             </button>
 
-            {getPageNumbers().map((page, index) => {
+            {pages().map((page, index) => {
               if (page === '...') {
                 return (
                   <span key={index} className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900">
@@ -119,12 +130,10 @@ export const Pagination = ({ limit, offset, totalItems, setOffset }) => {
                   </span>
                 );
               }
-
-              const isActivePage = page === currentPage();
               return (
                 <button
                   onClick={() => handlePageChange(page)}
-                  className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${isActivePage ? 'bg-[#181818] text-white' : 'text-gray-900 ring-1 ring-[#F2F2F4] ring-inset hover:bg-gray-50'} focus:z-20 focus:outline-offset-0`}
+                  className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${page === currentPage() ? 'bg-[#181818] text-white' : 'text-gray-900 ring-1 ring-[#F2F2F4] ring-inset hover:bg-gray-50'} focus:z-20 focus:outline-offset-0`}
                   key={page}
                 >
                   {page}

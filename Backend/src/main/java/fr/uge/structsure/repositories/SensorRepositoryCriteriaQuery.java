@@ -118,6 +118,9 @@ public class SensorRepositoryCriteriaQuery {
         var plan = sensor.join("plan", JoinType.LEFT);
 
         var predicates = new ArrayList<Predicate>();
+        if (request.scanFilter() != null) {
+            predicates.add(cb.equal(result.get("scan").get("id"), request.scanFilter()));
+        }
         if (request.planFilter() != null) {
             predicates.add(cb.equal(plan.get("id"), request.planFilter()));
         }
@@ -128,21 +131,29 @@ public class SensorRepositoryCriteriaQuery {
         Expression<Boolean> isDefectivePresent = checkIsDefectivePresent(cb, result);
 
         Expression<Integer> state = getState(cb, resultCount, isNokPresent, isDefectivePresent);
+
         cq.select(cb.count(sensor));
+
 
         if (request.archivedFilter() != null) {
             predicates.add(cb.equal(sensor.get("archived"), request.archivedFilter()));
         }
+        else {
+            predicates.add(cb.isFalse(sensor.get("archived")));
+        }
+
         addMinAndMaxInstallationDatePredicate(request, predicates, cb, sensor);
+
         cq.where(predicates.toArray(new Predicate[0]));
+        cq.groupBy(sensor.get("sensorId"));
+
         if (request.stateFilter() != null) {
             var stateFilterEnum = State.valueOf(request.stateFilter());
             cq.having(cb.equal(state, stateFilterEnum.ordinal()));
         }
 
         var query = em.createQuery(cq);
-        var results = query.getResultList();
-        return results.isEmpty() ? 0 : results.getFirst();
+        return query.getResultList().size();
     }
 
 
