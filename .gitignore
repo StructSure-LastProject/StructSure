@@ -98,3 +98,4 @@ Backend/files
 **/structsure.db
 **/coverage
 Android/.kotlin
+Android/app/release/**
