@@ -53,4 +53,14 @@ public record AllStructureRequestDTO(String searchByName, Optional<State> search
             throw new TraitementException(Error.ORDER_BY_COLUMN_NAME_NOT_EXISTS);
         }
     }
+
+    public AllStructureRequestDTO setArchived(AllStructureRequestDTO request, boolean archived) {
+        return new AllStructureRequestDTO(
+                request.searchByName,
+                request.searchByState,
+                Optional.of(archived),
+                request.orderByColumnName(),
+                request.orderType
+        );
+    }
 }

@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
  * @param id The structure id
  * @param name The structure name
  * @param archived Whether is archived or not
- * @param updatedAt When the structure was changed
  */
-public record ArchiveRestoreStructureResponseDto(long id, String name, String archived, String updatedAt) {
+public record ArchiveRestoreStructureResponseDto(long id, String name, String archived) {
 }
