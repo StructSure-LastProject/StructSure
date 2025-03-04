@@ -90,7 +90,7 @@ fun BluetoothButton(connexion: Cs108Connector, inverted: Boolean = false) {
                     style = TextStyle(
                         fontSize = 14.sp,
                         lineHeight = 10.5.sp,
-                        fontFamily = FontFamily(Font(R.font.poppins_regulat)),
+                        fontFamily = FontFamily(Font(R.font.poppins_regular)),
                         fontWeight = FontWeight(600),
                         color = color,
                     ),
