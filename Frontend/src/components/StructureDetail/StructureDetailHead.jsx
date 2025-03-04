@@ -37,7 +37,6 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
      */
     const closeModal = () => setModalVisible(false);
 
-    createEffect(() => console.log("selectedScan: ", selectedScan()));
 
 
     /**

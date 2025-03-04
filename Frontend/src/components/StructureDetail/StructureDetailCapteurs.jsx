@@ -37,6 +37,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
 
     const [limit, setLimit] = createSignal(30);
     const [offset, setOffset] = createSignal(0);
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [errorFront, setErrorFront] = createSignal("");
 
@@ -59,10 +60,6 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
             : "Tout"
     );
 
-    createEffect(() => {
-        console.log("stateFilter changed: ", stateFilter());
-    });
-    
     const [orderType, setOrderType] = createSignal(
         searchParams.orderType ? searchParams.orderType === "true" : true
     );
