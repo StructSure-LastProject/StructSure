@@ -61,10 +61,9 @@ public class StructureRepositoryCriteriaQuery {
 
         var predicates = new ArrayList<Predicate>();
         predicates.add(cb.like(cb.lower(structure.get("name")), "%" + allStructureRequestDTO.searchByName().toLowerCase() + "%"));
-
-        if (allStructureRequestDTO.archived().isPresent()) {
-            predicates.add(cb.equal(structure.get("archived"), true));
-        }
+        allStructureRequestDTO.archived().ifPresent(v ->
+            predicates.add(cb.equal(structure.get("archived"), v))
+        );
         cq.where(predicates.toArray(new Predicate[0]));
         cq.groupBy(structure.get("id"));
 
@@ -100,8 +99,8 @@ public class StructureRepositoryCriteriaQuery {
             case STATE -> orderExpression = cb.selectCase()
                     .when(cb.equal(state, State.NOK.ordinal()), 1)
                     .when(cb.equal(state, State.DEFECTIVE.ordinal()), 2)
-                    .when(cb.equal(state, State.UNKNOWN.ordinal()), 3)
-                    .when(cb.equal(state, State.OK.ordinal()), 4)
+                    .when(cb.equal(state, State.OK.ordinal()), 3)
+                    .when(cb.equal(state, State.UNKNOWN.ordinal()), 4)
                     .otherwise(5);
             default -> orderExpression = structure.get("id");
         }

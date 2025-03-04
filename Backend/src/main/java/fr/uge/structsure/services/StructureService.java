@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Will regroup all the services available for structure like the service that will create a structure
@@ -210,9 +209,11 @@ public class StructureService {
         Objects.requireNonNull(httpRequest);
         allStructureRequestDTO.checkFields();
         var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
-        List<AllStructureResponseDTO> structures = structureRepositoryCriteriaQuery.findAllStructuresWithState(allStructureRequestDTO);
+        if (userSessionAccount.getRole() == Role.OPERATEUR) {
+            allStructureRequestDTO = allStructureRequestDTO.setArchived(false);
+        }
+        var structures = structureRepositoryCriteriaQuery.findAllStructuresWithState(allStructureRequestDTO);
         var allowedStructures = userSessionAccount.getAllowedStructures();
-
         if (userSessionAccount.getRole() != Role.ADMIN){
             return structures.stream()
                     .filter(structure -> allowedStructures.stream()
@@ -271,5 +272,49 @@ public class StructureService {
                 scans.stream().map(StructureDetailsResponseDTO.Scan::fromScanEntity).toList(),
                 plans.stream().map(StructureDetailsResponseDTO.Plan::fromPlanEntity).toList(),
                 sensors.stream().map(StructureDetailsResponseDTO.Sensor::fromSensorEntity).toList());
+    }
+
+    /**
+     * Restore archived structure
+     * @param id The structure id
+     * @return the record containing the response
+     * @throws TraitementException in case of incorrect behaviour
+     */
+    public ArchiveRestoreStructureResponseDto restoreStructure(Long id, HttpServletRequest httpRequest) throws TraitementException {
+        Objects.requireNonNull(httpRequest);
+        if (Objects.isNull(id)) {
+            throw new TraitementException(Error.STRUCTURE_ID_INVALID);
+        }
+        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
+        if (userSessionAccount.getRole() == Role.OPERATEUR) {
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
+        }
+        var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        structure.setArchived(false);
+        var saved = structureRepository.save(structure);
+        var archived = saved.getArchived() ? "archivé" : "actif";
+        return new ArchiveRestoreStructureResponseDto(saved.getId(), saved.getName(), archived);
+    }
+
+    /**
+     * Archive a structure
+     * @param id The structure id
+     * @return the record containing the response
+     * @throws TraitementException in case of incorrect behaviour
+     */
+    public ArchiveRestoreStructureResponseDto archiveStructure(Long id, HttpServletRequest httpRequest) throws TraitementException {
+        Objects.requireNonNull(httpRequest);
+        if (Objects.isNull(id)) {
+            throw new TraitementException(Error.STRUCTURE_ID_INVALID);
+        }
+        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
+        if (userSessionAccount.getRole() == Role.OPERATEUR) {
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
+        }
+        var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        structure.setArchived(true);
+        var saved = structureRepository.save(structure);
+        var archived = saved.getArchived() ? "archivé" : "actif";
+        return new ArchiveRestoreStructureResponseDto(saved.getId(), saved.getName(), archived);
     }
 }
