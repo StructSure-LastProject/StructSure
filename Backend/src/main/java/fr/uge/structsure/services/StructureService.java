@@ -204,7 +204,7 @@ public class StructureService {
      * @param allStructureRequestDTO The request DTO
      * @param httpRequest The http request to check the permission
      * @return List<AllStructureResponseDTO> the list containing of the structures
-     * @throws TraitementException if there is no structure in the database we throw this exception
+     * @throws TraitementException in case of wrong behaviour
      */
     public List<AllStructureResponseDTO> getAllStructure(AllStructureRequestDTO allStructureRequestDTO, HttpServletRequest httpRequest) throws TraitementException {
         Objects.requireNonNull(httpRequest);
@@ -214,21 +214,12 @@ public class StructureService {
         var allowedStructures = userSessionAccount.getAllowedStructures();
 
         if (userSessionAccount.getRole() != Role.ADMIN){
-            List<AllStructureResponseDTO> filteredStructures = structures.stream()
+            return structures.stream()
                     .filter(structure -> allowedStructures.stream()
                             .anyMatch(allowedStructure -> allowedStructure.getId() == structure.id()))
                     .toList();
-
-            if (filteredStructures.isEmpty()) {
-                throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);
-            }
-            return filteredStructures;
-        }
-        if (structures.isEmpty()) {
-            throw new TraitementException(Error.LIST_STRUCTURES_EMPTY);
         }
         return structures;
-
     }
 
     /**
