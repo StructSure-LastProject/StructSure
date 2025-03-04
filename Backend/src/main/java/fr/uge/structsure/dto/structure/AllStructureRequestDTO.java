@@ -54,6 +54,12 @@ public record AllStructureRequestDTO(String searchByName, Optional<State> search
         }
     }
 
+    /**
+     * Change archive field request
+     * @param request The record with filter fields
+     * @param archived Whether archived or not
+     * @return The new request record
+     */
     public AllStructureRequestDTO setArchived(AllStructureRequestDTO request, boolean archived) {
         return new AllStructureRequestDTO(
                 request.searchByName,
