@@ -56,25 +56,25 @@ export const Pagination = ({ limit, offset, totalItems, setOffset}) => {
  * @returns The pages numbers
  */
 const getPageNumbers = () => {
-  const pages = [];
+  const pagesArray = [];
   if (totalPages() <= 7) {
     for (let i = 1; i <= totalPages(); i++) {
-      pages.push(i);
+      pagesArray.push(i);
     }
   } else {
-    pages.push(1);
+    pagesArray.push(1);
 
     if (currentPage() > 3) pages.push('...');
 
     for (let i = Math.max(currentPage() - 1, 2); i <= Math.min(currentPage() + 1, totalPages - 1); i++) {
-      pages.push(i);
+      pagesArray.push(i);
     }
 
-    if (currentPage() < totalPages - 2) pages.push('...');
+    if (currentPage() < totalPages - 2) pagesArray.push('...');
 
-    if (totalPages > 1) pages.push(totalPages);
+    if (totalPages > 1) pagesArray.push(totalPages);
   }    
-  return pages;
+  return pagesArray;
 };
 
 
