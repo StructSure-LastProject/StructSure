@@ -38,10 +38,7 @@ public class EditSensorRequestDTO {
       throw new TraitementException(Error.SENSOR_NAME_EXCEED_LIMIT);
     }
     this.name = name;
-    if (installationDate == null || installationDate.isEmpty()){
-      throw new TraitementException(Error.SENSOR_INSTALLATION_DATE_IS_EMPTY);
-    }
-    this.installationDate = installationDate;
+    this.installationDate = Objects.requireNonNullElse(installationDate, "");
     if (note != null && note.length() > 1000) {
       throw new TraitementException(Error.SENSOR_COMMENT_EXCEED_LIMIT);
     }

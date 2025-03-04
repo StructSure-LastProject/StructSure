@@ -247,8 +247,16 @@ public class SensorService {
             sensor.setName(editSensorRequestDTO.name());
         }
         sensor.setNote(editSensorRequestDTO.note());
-        var formatter = DateTimeFormatter.ISO_LOCAL_DATE;
-        sensor.setInstallationDate(LocalDate.parse(editSensorRequestDTO.installationDate(), formatter));
+        if (editSensorRequestDTO.installationDate() != null && !editSensorRequestDTO.installationDate().isEmpty()){
+            var formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+            sensor.setInstallationDate(LocalDate.parse(editSensorRequestDTO.installationDate(), formatter));
+        }
+        if (editSensorRequestDTO.installationDate() != null &&
+                sensor.getInstallationDate() != null &&
+                !sensor.getInstallationDate().format(DateTimeFormatter.ISO_LOCAL_DATE).isEmpty() &&
+                editSensorRequestDTO.installationDate().isEmpty()){
+            sensor.setInstallationDate(null);
+        }
         var sensorSaved = sensorRepository.save(sensor);
         return new EditSensorResponseDTO(sensorSaved.getSensorId().getControlChip(), sensorSaved.getSensorId().getMeasureChip(), LocalDateTime.now().toString());
     }
