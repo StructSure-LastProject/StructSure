@@ -207,7 +207,7 @@ function StructSureBody() {
                 </For>
               </Show>
           </div>
-          <Show when={showRestoreModal() && localStorage.getItem("role") === ("ADMIN" || "RESPONSABLE")}>
+          <Show when={showRestoreModal() && (localStorage.getItem("role") === "RESPONSABLE" || localStorage.getItem("role") === "ADMIN")}>
               <RestoreModal
                 structure={selectedStructure()}
                 onClose={closeRestoreModal}
