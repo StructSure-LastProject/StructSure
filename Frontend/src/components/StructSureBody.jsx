@@ -17,7 +17,7 @@ function StructSureBody() {
     const [searchByName, setSearchByName] = createSignal("");
     const [filterValue, setFilterValue] = createSignal("");
     const [orderByColumnName, setOrderByColumnName] = createSignal("STATE");
-    const [orderType, setOrderType] = createSignal("DESC");
+    const [orderType, setOrderType] = createSignal("ASC");
     const [filterVisible, setFilterVisible] = createSignal(false);
 
     const [errorStructurePage, setErrorStructurePage] = createSignal("");
