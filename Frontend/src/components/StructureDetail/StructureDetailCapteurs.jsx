@@ -6,7 +6,7 @@ import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
 import SensorFilter from '../SensorFilter';
 import { Pagination } from '../Pagination.jsx';
 import {useNavigate} from "@solidjs/router";
-import {sensorsFetchRequest} from "./StructureDetailBody.jsx";
+import {planSensorsFetchRequest, sensorsFetchRequest} from "./StructureDetailBody.jsx";
 import useFetch from '../../hooks/useFetch.js';
 
 /**
@@ -20,7 +20,7 @@ import useFetch from '../../hooks/useFetch.js';
  * @param {Function} setTotalItems setter to set the total number of sensor
  * @returns the component for the sensors part
  */
-function StructureDetailCapteurs({structureId, setSensors, selectedScan, selectedPlanId, sensors, totalItems, setTotalItems}) {
+function StructureDetailCapteurs({structureId, setSensors, selectedScan, selectedPlanId, sensors, totalItems, setTotalItems, setPlanSensors}) {
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
@@ -124,6 +124,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
                 ...(startDate() !== "" && {minInstallationDate: startDate()}),
                 ...(endDate() !== "" && {maxInstallationDate: endDate()})
             })
+            planSensorsFetchRequest(structureId, setPlanSensors, selectedPlanId(), navigate);
         }
     }   
 

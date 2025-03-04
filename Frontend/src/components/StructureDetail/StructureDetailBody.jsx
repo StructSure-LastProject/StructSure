@@ -187,6 +187,7 @@ function StructureDetailBody(props) {
               sensors={sensors}
               totalItems={totalItems}
               setTotalItems={setTotalItems}
+              setPlanSensors={setPlanSensors}
             />
         </div>
     );

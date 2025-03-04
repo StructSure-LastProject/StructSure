@@ -108,7 +108,7 @@ public class SensorService {
                     })
                     .toList();
         }
-        return sensors.stream().map(sensor -> new SensorDTO(sensor, getSensorState(sensor))).toList();
+        return sensors.stream().filter(sensor -> !sensor.isArchived()).map(sensor -> new SensorDTO(sensor, getSensorState(sensor))).toList();
     }
 
     /**
