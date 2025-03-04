@@ -81,7 +81,7 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
               >
                   {filterVisible() ? <ChevronUp/> : <ChevronDown/>}
               </button>
-              <Show when={localStorage.getItem("role") === ("RESPONSABLE" || "ADMIN")}>
+              <Show when={localStorage.getItem("role") === "RESPONSABLE" || localStorage.getItem("role") === "ADMIN"}>
                   <button
                     class="w-10 h-10 bg-black rounded-[50px] flex items-center justify-center"
                     onClick={openModal}
