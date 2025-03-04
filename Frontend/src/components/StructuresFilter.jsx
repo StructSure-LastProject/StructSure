@@ -103,10 +103,18 @@ const StructuresFilter = (props) => {
     { value: "ARCHIVED", label: "Archivé" }
   ];
 
+  const filterOptionsOperator = [
+    { value: "", label: "Tout" },
+    { value: "OK", label: "OK" },
+    { value: "NOK", label: "NOK" },
+    { value: "DEFECTIVE", label: "Défaillant" },
+    { value: "UNKNOWN", label: "Non scanné" }
+  ];
+
   const sortOptions = [
+    { value: "STATE", label: "État" },
     { value: "NAME", label: "Nom" },
-    { value: "NUMBER_OF_SENSORS", label: "Capteurs" },
-    { value: "STATE", label: "État" }
+    { value: "NUMBER_OF_SENSORS", label: "Capteurs" }
   ];
 
   return (
@@ -132,7 +140,7 @@ const StructuresFilter = (props) => {
 
       <CustomDropDown
         label="Filtrer"
-        options={filterOptions}
+        options={localStorage.getItem("role").includes("OPERATEUR") ? filterOptionsOperator : filterOptions}
         value={props.filterValue()}
         onChange={props.setFilterValue}
       />
