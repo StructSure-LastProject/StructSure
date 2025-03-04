@@ -37,9 +37,9 @@ if(setter === undefined && type === undefined && maxLength === undefined && minL
   )
 }
 return (
-    <div class={parentStyles === undefined ? `flex flex-col gap-[5px] w-full` : parentStyles}>
+    <div class={parentStyles === undefined ? "flex flex-col gap-[5px] w-full" : parentStyles}>
         <p class="normal opacity-75">{title}</p>
-        <input class={styles === undefined ? `rounded-[50px] px-[16px] py-[8px] w-full bg-lightgray accent` : styles} 
+        <input class={styles === undefined ? "rounded-[50px] px-[16px] py-[8px] w-full bg-lightgray accent" : styles} 
           type={type}
           onChange={(e) => setter(e.target.value)}
           value={value()}
