@@ -1,8 +1,5 @@
 package fr.uge.structsure.dto.structure;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 /**
  * The response to archive or restore a structure
  * @param id The structure id
