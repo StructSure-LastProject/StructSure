@@ -1,5 +1,6 @@
 import {createEffect, createSignal} from "solid-js";
 import {ChevronDown, ChevronRight, Dot, FolderSync, Pencil} from "lucide-solid";
+import { useSearchParams } from "@solidjs/router";
 
 /**
  * Component that displays a section with a toggle button
@@ -31,10 +32,11 @@ const Section = (props) => {
  * @param {boolean} props.selectedPlanId contains the selected plan id
  * @returns {JSX.Element} Plan component
  */
-const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId}) => (
+const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId, setSearchParams}) => (
   <div class={`px-[8px] py-[9px] rounded-[10px] cursor-pointer flex items-center gap-x-[10px] justify-between hover:bg-[#F2F2F4] ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`}
   onClick={() => {
     setSelectedPlanId(planId);
+    setSearchParams({ selectedPlanId: planId });
   }}>
     <div class="flex items-center gap-x-[10px]">
       <div class="w-4 h-4 flex items-center justify-center">
@@ -55,10 +57,11 @@ const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId}) => (
  * @param {boolean} props.selectedPlanId contains the selected plan id
  * @returns {JSX.Element} PlanEdit component
  */
-const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId}) => (
+const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId, setSearchParams}) => (
   <div class={`py-[8px] px-[9px] rounded-[10px] flex items-center cursor-pointer gap-x-[10px] justify-between hover:bg-gray-100 group ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`} 
   onClick={() => {
     setSelectedPlanId(planId);
+    setSearchParams({ selectedPlanId: planId });
   }}>
     <div class="flex items-center gap-x-[10px]">
       <div class="w-4 h-4 flex items-center justify-center">
@@ -204,6 +207,7 @@ const TreeNode = (props) => {
                 selectedPlanId={props.selectedPlanId}
                 onEdit={props.onEdit}
                 planId={child.id}
+                setSearchParams={props.setSearchParams}
               />
             ))}
           </div>
@@ -232,6 +236,7 @@ const TreeNode = (props) => {
         onEdit={props.onEdit}
         planId={props.planId}
         setSelectedPlanId={props.setSelectedPlanId}
+        setSearchParams={props.setSearchParams}
       />
     </div>
   );
@@ -267,6 +272,7 @@ const RenderPlan = (props) => {
       setSelectedPlanId={props.setSelectedPlanId}
       onEdit={props.onEdit}
       planId={props.plan.id}
+      setSearchParams={props.setSearchParams}
     />
   );
 };
@@ -285,6 +291,8 @@ const RenderPlan = (props) => {
 const DropdownsSection = (props) => {
   const [localPlans, setLocalPlans] = createSignal([]);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // todo for interaction
   /*const [selectedPlan, setSelectedPlan] = createSignal(null);*/
 
@@ -292,6 +300,7 @@ const DropdownsSection = (props) => {
     if (Array.isArray(props.data)) {
       if (props.data.length > 0 && props.selectedPlanId() == null) {
         props.setSelectedPlanId(props.data[0].id);
+        setSearchParams({ selectedPlanId: props.selectedPlanId() });
       }
     }
     return Array.isArray(props.data) ? props.data : [];
@@ -318,6 +327,7 @@ const DropdownsSection = (props) => {
           selectedPlanId={props.selectedPlanId}
           onEdit={props.onEdit}
           setSelectedPlanId={props.setSelectedPlanId}
+          setSearchParams={setSearchParams}
         />
       ))}
 
@@ -329,6 +339,7 @@ const DropdownsSection = (props) => {
           selectedPlanId={props.selectedPlanId}
           setSelectedPlanId={props.setSelectedPlanId}
           onEdit={props.onEdit}
+          setSearchParams={setSearchParams}
         />
       ))}
     </div>

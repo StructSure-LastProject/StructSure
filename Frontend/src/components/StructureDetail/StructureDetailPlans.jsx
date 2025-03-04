@@ -32,7 +32,6 @@ export const planImageFetchRequest = async (planId, setPlan, navigate) => {
  */
 function StructureDetailPlans(props) {
     const navigate = useNavigate();
-
     // Plans and modals state management
     const [plans, setPlans] = createSignal([]);
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
