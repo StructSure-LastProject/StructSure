@@ -73,6 +73,9 @@ public class SensorRepositoryCriteriaQuery {
         if (request.archivedFilter() != null) {
             predicates.add(cb.equal(sensor.get("archived"), request.archivedFilter()));
         }
+        else {
+            predicates.add(cb.isFalse(sensor.get("archived")));
+        }
 
         addMinAndMaxInstallationDatePredicate(request, predicates, cb, sensor);
 

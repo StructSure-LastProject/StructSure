@@ -39,7 +39,7 @@ public class AuthValidationService {
     /**
      * Check the validity of the JWT TOKEN
      * @param request The HTTP Request
-     * @return Optional<Account> Return the account if exist
+     * @return Account Return the account if exist
      * @throws TraitementException thrown JWT token extract exception into custom exception
      */
     public Account checkTokenValidityAndUserAccessVerifier(HttpServletRequest request, AccountRepository accountRepository) throws TraitementException {
