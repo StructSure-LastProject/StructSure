@@ -94,7 +94,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
      * @param {Object} sensorDetails The sensor details
      * @param {Boolean} isArchive want to archive or not
      */
-    const toggleArchiveSensor = async (sensorDetails, isArchive) => {
+    const toggleArchiveSensor = async (sensorDetails, isArchiveValue) => {
         const requestData = {
             method: "PUT",
             headers: {
@@ -104,7 +104,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
             body: JSON.stringify({
                 controlChip: sensorDetails.controlChip,
                 measureChip: sensorDetails.measureChip,
-                isArchive: isArchive
+                isArchive: isArchiveValue
               }
             )
         };
