@@ -83,6 +83,25 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail
   }
 
   /**
+   * Updates the sensor details by adding a new sensor to the existing list.
+   *
+   * This function retrieves the current list of sensors from `structureDetails()` 
+   * and appends a new sensor object with trimmed values from input functions.
+   *
+   * @function
+   * @returns {void} Updates the sensor details state.
+   */
+  const updateDataWhenNewSensor = () => {
+    setSensorsDetail([...structureDetails().sensors, {
+      name: name().trim(),
+      controlChip: controlChip().trim(),
+      measureChip: measureChip().trim(),
+      x: null,
+      y: null
+    }]);
+  }
+
+  /**
    * Handles the form submission for adding a new sensor.
    * Validates the form data, creates a json object and sends it to the server.
    *
@@ -159,25 +178,6 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail
 
     setIsSubmitting(false);
   };
-
-  /**
-   * Updates the sensor details by adding a new sensor to the existing list.
-   *
-   * This function retrieves the current list of sensors from `structureDetails()` 
-   * and appends a new sensor object with trimmed values from input functions.
-   *
-   * @function
-   * @returns {void} Updates the sensor details state.
-   */
-  const updateDataWhenNewSensor = () => {
-    setSensorsDetail([...structureDetails().sensors, {
-      name: name().trim(),
-      controlChip: controlChip().trim(),
-      measureChip: measureChip().trim(),
-      x: null,
-      y: null
-    }]);
-  }
 
   /**
    * Resets the modal state and closes it.
