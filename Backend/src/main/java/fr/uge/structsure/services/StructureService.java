@@ -211,9 +211,11 @@ public class StructureService {
         Objects.requireNonNull(httpRequest);
         allStructureRequestDTO.checkFields();
         var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
-        List<AllStructureResponseDTO> structures = structureRepositoryCriteriaQuery.findAllStructuresWithState(allStructureRequestDTO);
+        if (userSessionAccount.getRole() == Role.OPERATEUR) {
+            allStructureRequestDTO = allStructureRequestDTO.setArchived(allStructureRequestDTO, false);
+        }
+        var structures = structureRepositoryCriteriaQuery.findAllStructuresWithState(allStructureRequestDTO);
         var allowedStructures = userSessionAccount.getAllowedStructures();
-
         if (userSessionAccount.getRole() != Role.ADMIN){
             return structures.stream()
                     .filter(structure -> allowedStructures.stream()
@@ -285,13 +287,10 @@ public class StructureService {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
         }
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
-        if (!structure.getArchived()) {
-            throw new TraitementException(Error.STRUCTURE_ALREADY_ACTIVE);
-        }
         structure.setArchived(false);
         var saved = structureRepository.save(structure);
         var archived = saved.getArchived() ? "archivé" : "actif";
-        return new ArchiveRestoreStructureResponseDto(saved.getId(), saved.getName(), archived, LocalDateTime.now().toString());
+        return new ArchiveRestoreStructureResponseDto(saved.getId(), saved.getName(), archived);
     }
 
     /**
@@ -305,12 +304,9 @@ public class StructureService {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
         }
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
-        if (structure.getArchived()) {
-            throw new TraitementException(Error.STRUCTURE_ALREADY_ARCHIVED);
-        }
         structure.setArchived(true);
         var saved = structureRepository.save(structure);
         var archived = saved.getArchived() ? "archivé" : "actif";
-        return new ArchiveRestoreStructureResponseDto(saved.getId(), saved.getName(), archived, LocalDateTime.now().toString());
+        return new ArchiveRestoreStructureResponseDto(saved.getId(), saved.getName(), archived);
     }
 }

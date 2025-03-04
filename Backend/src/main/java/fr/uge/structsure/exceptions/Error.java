@@ -33,8 +33,6 @@ public enum Error {
     STRUCTURE_NAME_EXCEED_LIMIT(422, "Le nom d'un ouvrage ne peut pas dépasser 64 caractères"),
     STRUCTURE_NOTE_EXCEED_LIMIT(422, "La note d'un ouvrage ne peut pas dépasser 1000 caractères"),
     STRUCTURE_ID_INVALID(422, "L'id de l'ouvrage est invalide"),
-    STRUCTURE_ALREADY_ACTIVE(422, "Ouvrage déjà actif"),
-    STRUCTURE_ALREADY_ARCHIVED(422, "Ouvrage déjà archivé"),
 
     PLAN_NOT_BELONG_TO_STRUCTURE(422, "Plan n’appartient pas à l’ouvrage"),
     PLAN_STRUCTURE_ID_IS_EMPTY(422, "Le champ structureId est requis"),
