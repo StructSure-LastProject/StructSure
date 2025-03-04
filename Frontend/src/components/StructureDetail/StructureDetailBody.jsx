@@ -1,7 +1,7 @@
 import StructureDetailHead from './StructureDetailHead';
 import StructureDetailPlans from './StructureDetailPlans';
 import StructureDetailRow from './StructureDetailRow';
-import { useNavigate } from '@solidjs/router';
+import { useNavigate, useSearchParams } from '@solidjs/router';
 import { createEffect, createSignal } from "solid-js";
 import useFetch from '../../hooks/useFetch';
 
@@ -103,13 +103,18 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
  * @returns component for the body part
  */
 function StructureDetailBody(props) {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [sensors, setSensors] = createSignal({});
     const [structureDetails, setStructureDetails] = createSignal({"id": null, "name": null, "note": null, "scans": [], "plans": [], "sensors": []});
     const [planSensors, setPlanSensors] = createSignal([]);
-    const [selectedPlanId, setSelectedPlanId] = createSignal(null);
-
+    const [selectedPlanId, setSelectedPlanId] = createSignal(
+        searchParams.selectedPlanId ? parseInt(searchParams.selectedPlanId, 10) : null
+    );
     const [totalItems, setTotalItems] = createSignal(0);
-    const [selectedScan, setSelectedScan] = createSignal(-1);
+    const [selectedScan, setSelectedScan] = createSignal(
+        searchParams.selectedScan ? parseInt(searchParams.selectedScan, 10) : -1
+    );
+
     const navigate = useNavigate();
 
     const [note, setNote] = createSignal("");
@@ -137,11 +142,12 @@ function StructureDetailBody(props) {
     };
 
 
-    createEffect(() => {
-        structureDetailsFetchRequest(props.structureId);
-        sensorsFetchRequest(props.structureId, setSensors, setTotalItems, navigate);
-        planSensorsFetchRequest(props.structureId, setPlanSensors, selectedPlanId(), navigate);
-    });
+    createEffect(() => structureDetailsFetchRequest(props.structureId));
+
+    createEffect(() => sensorsFetchRequest(props.structureId, setSensors, setTotalItems, navigate));
+
+
+    createEffect(() => planSensorsFetchRequest(props.structureId, setPlanSensors, selectedPlanId(), navigate));
 
     /**
      * Sets the sensor in the structure details

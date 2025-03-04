@@ -2,7 +2,7 @@ import {Download, Pencil, Plus, Trash2} from 'lucide-solid';
 import {createEffect, createSignal, For, Show} from 'solid-js';
 import StructureDetailEdit from './StructureDetailEdit';
 import {planSensorsFetchRequest, planSensorsScanFetchRequest, sensorsFetchRequest} from "./StructureDetailBody.jsx";
-import {useNavigate} from "@solidjs/router";
+import {useNavigate, useSearchParams} from "@solidjs/router";
 
 /**
  * Show the head part of the structure detail
@@ -10,6 +10,7 @@ import {useNavigate} from "@solidjs/router";
  */
 function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, setPlanSensors, selectedScan, setSelectedScan, structureDetails, setStructureDetails}) {
     const [isModalVisible, setModalVisible] = createSignal(false);
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [isAuthorized, setIsAuthorized] = createSignal(false);
     const [name, setName] = createSignal("");
@@ -34,6 +35,8 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
      */
     const closeModal = () => setModalVisible(false);
 
+
+
     /**
      * Handle scan selection change
      * @param {Event} event - The change event
@@ -47,6 +50,7 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
                 setDate(selectedScan.date || "");
                 setNote(selectedScan.note || "");
                 setSelectedScan(selectedValue);
+                setSearchParams({ selectedScan: selectedValue });
                 planSensorsScanFetchRequest(structureDetails().id, selectedValue, selectedPlan(), setPlanSensors, navigate);
                 sensorsFetchRequest(structureDetails().id, setSensors, setTotalItems, navigate, {scanFilter: selectedValue});
             }
@@ -55,6 +59,7 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
             setDate("");
             setNote(structureDetails().note);
             setSelectedScan(selectedValue);
+            setSearchParams({ selectedScan: selectedValue });
             planSensorsFetchRequest(structureDetails().id, setPlanSensors, selectedPlan(), setPlanSensors, navigate);
             sensorsFetchRequest(structureDetails().id, setSensors, setTotalItems, navigate);
         }
@@ -71,7 +76,7 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
                         <option value="-1">Aucun Scan Sélectionné</option>
                         <For each={structureDetails().scans}>
                             {(scan) => (
-                              <option value={scan.id}>{scan.dataRow}</option>
+                              <option value={scan.id} {...(selectedScan() === scan.id ? { selected: true } : {})} >{scan.dataRow}</option>
                             )}
                         </For>
                     </select>
