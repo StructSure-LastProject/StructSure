@@ -7,8 +7,9 @@ import fr.uge.structsure.exceptions.TraitementException;
  * Archive sensor request DTO
  * @param controlChip The control chip
  * @param measureChip The measure chip
+ * @param isArchive Want to archive or not
  */
-public record ArchiveSensorRequestDTO(String controlChip, String measureChip) {
+public record ArchiveSensorRequestDTO(String controlChip, String measureChip, boolean isArchive) {
     /**
      * Check fields
      * @throws TraitementException Thrown custom exceptions

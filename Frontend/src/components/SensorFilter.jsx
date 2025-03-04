@@ -143,19 +143,31 @@ const CheckBoxComponent = ({description, value, setter}) => {
  * @param {Function} setTotalItems The setter function
  * @returns The component
  */
-const SensorFilter = ({selectedScan, structureId, setSensors, limit, offset, setTotalItems, selectedPlanId}) => {
-    const SORT_VALUES = {
-        "Tout" : "Tout", "Nom": "NAME", "Etat": "STATE", "Date d'installation": "INSTALLATION_DATE"
-    };
-    const FILTER_VALUES = {"Tout" : "Tout", "OK" : "OK", "NOK" : "NOK", "Défaillant" : "DEFECTIVE", "Non détecté" : "UNKNOWN"};
-
-    const [orderByColumn, setOrderByColumn] = createSignal(SORT_VALUES.Tout);
-    const [orderType, setOrderType] = createSignal(true);
-    const [isCheckedPlanFilter, setIsCheckedPlanFilter] = createSignal(false);
-    const [isCheckedArchivedFilter, setIsCheckedArchivedFilter] = createSignal(false);
-    const [startDate, setStartDate] = createSignal("");
-    const [endDate, setEndDate] = createSignal("");
-    const [statefilter, setStateFilter] = createSignal(FILTER_VALUES.Tout);
+const SensorFilter = ({
+        selectedScan, 
+        structureId, 
+        setSensors, 
+        limit, 
+        offset, 
+        setTotalItems, 
+        selectedPlanId, 
+        orderByColumn, 
+        setOrderByColumn,
+        orderType,
+        setOrderType,
+        isCheckedPlanFilter,
+        setIsCheckedPlanFilter,
+        isCheckedArchivedFilter,
+        setIsCheckedArchivedFilter,
+        startDate,
+        setStartDate,
+        endDate,
+        setEndDate,
+        stateFilter,
+        setStateFilter,
+        SORT_VALUES,
+        FILTER_VALUES
+    }) => {
     const navigate = useNavigate();
 
     /**
@@ -168,7 +180,7 @@ const SensorFilter = ({selectedScan, structureId, setSensors, limit, offset, set
             limit: limit(),
             offset: offset(),
             ...(selectedScan() > -1 && {scanFilter: selectedScan()}),
-            ...(statefilter() !== "Tout" && {stateFilter: FILTER_VALUES[statefilter()] }),
+            ...(stateFilter() !== "Tout" && {stateFilter: FILTER_VALUES[stateFilter()] }),
             ...(isCheckedArchivedFilter() ? {archivedFilter: isCheckedArchivedFilter()} : false),
             ...(isCheckedPlanFilter() && selectedPlanId() !== undefined && {planFilter: selectedPlanId()}),
             ...(startDate() !== "" && {minInstallationDate: startDate()}),
@@ -176,6 +188,7 @@ const SensorFilter = ({selectedScan, structureId, setSensors, limit, offset, set
         })
         
     });
+
 
 
     return (

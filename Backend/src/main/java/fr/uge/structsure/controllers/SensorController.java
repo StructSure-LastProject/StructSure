@@ -155,7 +155,7 @@ public class SensorController {
     @PutMapping("/sensors/archive")
     public ResponseEntity<?> archiveASensor(@RequestBody ArchiveSensorRequestDTO archiveSensorRequestDTO, HttpServletRequest httpServletRequest){
         try {
-            return ResponseEntity.ok(sensorService.archiveASensor(archiveSensorRequestDTO, httpServletRequest));
+            return ResponseEntity.ok(sensorService.archiveASensor(archiveSensorRequestDTO, httpServletRequest, archiveSensorRequestDTO.isArchive()));
         } catch (TraitementException e){
             return e.toResponseEntity();
         }

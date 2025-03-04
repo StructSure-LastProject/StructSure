@@ -345,7 +345,7 @@ public class SensorService {
      * @return The response DTO
      * @throws TraitementException thrown custom exceptions
      */
-    public EditSensorResponseDTO archiveASensor(ArchiveSensorRequestDTO archiveSensorRequestDTO, HttpServletRequest httpServletRequest) throws TraitementException {
+    public EditSensorResponseDTO archiveASensor(ArchiveSensorRequestDTO archiveSensorRequestDTO, HttpServletRequest httpServletRequest, boolean isArchived) throws TraitementException {
         archiveSensorRequestDTO.checkFields();
         Objects.requireNonNull(httpServletRequest);
         var accountSession = authValidationService.checkTokenValidityAndUserAccessVerifier(httpServletRequest, accountRepository);
@@ -353,7 +353,7 @@ public class SensorService {
             throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
         }
         var sensor = sensorRepository.findByChipsId(archiveSensorRequestDTO.controlChip(), archiveSensorRequestDTO.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
-        sensor.setArchived(!sensor.isArchived());
+        sensor.setArchived(isArchived);
         sensorRepository.save(sensor);
         return new EditSensorResponseDTO(sensor.getSensorId().getControlChip(), sensor.getSensorId().getMeasureChip(), LocalDateTime.now().toString());
     }
