@@ -70,7 +70,6 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
     return /^[0-9A-F]+$/.test(cleanInput);
   };
 
-
   /**
    * Save the chips in local storage
    * @param {String} controlChip The control chip
@@ -125,8 +124,8 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId }) => {
       structureId: structureId,
       name: name().trim(),
       note: note().trim(),
-      measureChip: cleanMeasureChip,
-      controlChip: cleanControlChip
+      measureChip: measureChip().trim(),
+      controlChip: controlChip().trim()
     };
 
     const { fetchData, statusCode, error } = useFetch();
