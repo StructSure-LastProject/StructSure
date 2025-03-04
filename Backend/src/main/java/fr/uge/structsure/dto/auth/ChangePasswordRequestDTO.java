@@ -18,6 +18,19 @@ import java.util.Objects;
  */
 public record ChangePasswordRequestDTO(Long userId, String currentPassword, String newPassword, String confirmNewPassword) {
 
+    /**
+     * Checks the validity of the fields related to password update.
+     * <p>
+     * This method ensures that all required fields (`userId`, `currentPassword`,
+     * `newPassword`, and `confirmNewPassword`) are not null. It also verifies that
+     * the new password and its confirmation match.
+     * </p>
+     *
+     * @throws TraitementException if any of the required fields are missing
+     *                             (throws {@code Error.MISSING_FIELDS}), or if the
+     *                             new password and confirmation do not match
+     *                             (throws {@code Error.PASSWORD_AND_CONFIRMATION_NOT_MATCH}).
+     */
     public void checkFields() throws TraitementException {
         if (Objects.isNull(userId) || Objects.isNull(currentPassword) || Objects.isNull(confirmNewPassword) || Objects.isNull(newPassword)) {
             throw new TraitementException(Error.MISSING_FIELDS);
