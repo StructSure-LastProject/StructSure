@@ -459,14 +459,13 @@ public class AccountService {
                 .orElseThrow(() -> new TraitementException(Error.USER_ACCOUNT_NOT_FOUND));
         var passwordEncoder = new BCryptPasswordEncoder();
         if (!passwordEncoder.matches(changePasswordRequestDTO.currentPassword(), user.getPasswordEncrypted())) {
-            throw new TraitementException(Error.PASSWORD_NOT_CORRECT);
+            throw new TraitementException(Error.OLD_PASSWORD_NOT_CORRECT);
         }
         if (passwordEncoder.matches(changePasswordRequestDTO.newPassword(), user.getPasswordEncrypted())) {
             throw new TraitementException(Error.NEW_PASSWORD_SHOULD_BE_DIFFERENT_THAN_THE_OLD_ONE);
         }
-        if(validateCreateNewUserAccountRequest(new RegisterRequestDTO(user.getLogin(), changePasswordRequestDTO.newPassword(),
-                user.getFirstname(), user.getLastname(), user.getRole().toString()))){
-            throw new TraitementException(Error.INVALID_USER_ACCOUNT_FIELDS);
+        if (changePasswordRequestDTO.newPassword().length() < 12 || changePasswordRequestDTO.newPassword().length() > 64){
+            throw new TraitementException(Error.PASSWORD_NOT_VALID);
         }
         user.setPasswordEncrypted(passwordEncoder.encode(changePasswordRequestDTO.newPassword()));
         accountRepository.save(user);

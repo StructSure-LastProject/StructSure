@@ -16,6 +16,20 @@ function AccountChangePassword() {
     const [passwordConfirmation, setPasswordConfirmation] = createSignal(null);
 
     /**
+     * Clears the data about the user in the local storage
+     */
+    const clearLocalStorage = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("firstName");
+        localStorage.removeItem("lastName");
+        localStorage.removeItem("login");
+        localStorage.removeItem("controlChip");
+        localStorage.removeItem("measureChip");
+        localStorage.removeItem("userId");
+    };
+
+    /**
      * Will call the api to change password
      */
     const changePasswordFetchRequest = async () => {
@@ -40,6 +54,7 @@ function AccountChangePassword() {
         await fetchData(navigate, "/api/change-password", requestData);
 
         if (statusCode() === 200) {
+            clearLocalStorage();
             navigate("/login");
         } else if (statusCode() === 422 || statusCode() === 404) {
             setErrorFront(error().errorData.error);
@@ -56,6 +71,8 @@ function AccountChangePassword() {
             setErrorFront("Un ou plusieurs champ(s) vide(s)");
         } else if (newPassword() !== passwordConfirmation()) {
             setErrorFront("Le mot de passe et sa confirmation ne correspondent pas. Veuillez réessayer.");
+        } else if (newPassword().length < 12 || newPassword().length > 64) {
+            setErrorFront("Le mot de passe doit comporter entre 12 et 64 caractères");
         } else {
             changePasswordFetchRequest();
         }

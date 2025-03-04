@@ -74,7 +74,7 @@ public class AuthenticationController {
         try {
             return ResponseEntity.status(200).body(accountService.changePassword(changePasswordRequestDTO));
         } catch (TraitementException e) {
-            return e.toResponseEntity("User login rejected: {}");
+            return e.toResponseEntity("User change password rejected: {}");
         }
     }
 
