@@ -170,13 +170,6 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail
    * @returns {void} Updates the sensor details state.
    */
   const updateDataWhenNewSensor = () => {
-    console.log("new Sensor: ", {
-      name: name().trim(),
-      controlChip: controlChip().trim(),
-      measureChip: measureChip().trim(),
-      x: null,
-      y: null
-    });
     setSensorsDetail([...structureDetails().sensors, {
       name: name().trim(),
       controlChip: controlChip().trim(),
@@ -185,9 +178,6 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail
       y: null
     }]);
   }
-
-  console.log(() => console.log("structureDetails().sensors: ", structureDetails().sensors));
-
 
   /**
    * Resets the modal state and closes it.
