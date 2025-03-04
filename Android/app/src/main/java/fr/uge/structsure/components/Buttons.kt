@@ -17,10 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import fr.uge.structsure.R
 
 /**
  * Component for simple button defined by an icon, a description, color and link
@@ -64,11 +62,12 @@ fun ButtonText (
     @DrawableRes id: Int?,
     color: Color = MaterialTheme.colorScheme.onSurface,
     background: Color = MaterialTheme.colorScheme.surface,
+    modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
     val enabled = onClick != null
-    androidx. compose. material3.Button(
-        modifier = Modifier.height(40.dp),
+    androidx.compose.material3.Button(
+        modifier = Modifier.height(40.dp).then(modifier),
         colors = ButtonColors(background, color, background, color),
         onClick = if (onClick == null) { {} } else onClick,
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
