@@ -82,6 +82,7 @@ public class StructureRepositoryCriteriaQuery {
                         notArchivedPredicate);
                 case DEFECTIVE -> statePredicate = cb.and(
                         cb.greaterThan(countDefective, 0L),
+                        cb.equal(countNok, 0L),
                         notArchivedPredicate);
                 default -> statePredicate = cb.and( // State.OK
                         cb.equal(countDefective, 0L),
