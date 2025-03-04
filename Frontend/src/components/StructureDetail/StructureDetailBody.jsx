@@ -108,11 +108,12 @@ function StructureDetailBody(props) {
     const [planSensors, setPlanSensors] = createSignal([]);
     const [selectedPlanId, setSelectedPlanId] = createSignal(null);
 
-    const [totalItems, setTotalItems] = createSignal(0);
+    const [totalItems, setTotalItems] = createSignal(null);
     const [selectedScan, setSelectedScan] = createSignal(-1);
     const navigate = useNavigate();
 
     const [note, setNote] = createSignal("");
+    
 
     /**
      * Will fetch the structure details

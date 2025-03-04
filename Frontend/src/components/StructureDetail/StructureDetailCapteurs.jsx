@@ -223,7 +223,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
                     )}
                 </For>
             </div>
-            <Show when={totalItems() !== 0}>
+            <Show when={totalItems() !== null}>
                 <Pagination
                     limit={limit}
                     offset={offset}
