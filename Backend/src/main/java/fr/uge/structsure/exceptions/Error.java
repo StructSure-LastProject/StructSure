@@ -75,7 +75,6 @@ public enum Error {
     DATE_TIME_ISO_FORMAT_ERROR(422, "Le format de la date n'est pas correct AAAA-MM-JJTHH:MM:SS"),
     DATE_TIME_FORMAT_ERROR(422, "Le format de la date n'est pas correct AAAA-MM-JJ HH:MM:SS.SSS");
 
-
     public final int code;
     public final String message;
 

@@ -13,9 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Will regroup all the services available for structure like the service that will create a structure
@@ -212,7 +210,7 @@ public class StructureService {
         allStructureRequestDTO.checkFields();
         var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
         if (userSessionAccount.getRole() == Role.OPERATEUR) {
-            allStructureRequestDTO = allStructureRequestDTO.setArchived(allStructureRequestDTO, false);
+            allStructureRequestDTO = allStructureRequestDTO.setArchived(false);
         }
         var structures = structureRepositoryCriteriaQuery.findAllStructuresWithState(allStructureRequestDTO);
         var allowedStructures = userSessionAccount.getAllowedStructures();
@@ -282,9 +280,14 @@ public class StructureService {
      * @return the record containing the response
      * @throws TraitementException in case of incorrect behaviour
      */
-    public ArchiveRestoreStructureResponseDto restoreStructure(Long id) throws TraitementException {
+    public ArchiveRestoreStructureResponseDto restoreStructure(Long id, HttpServletRequest httpRequest) throws TraitementException {
+        Objects.requireNonNull(httpRequest);
         if (Objects.isNull(id)) {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
+        }
+        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
+        if (userSessionAccount.getRole() == Role.OPERATEUR) {
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
         }
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
         structure.setArchived(false);
@@ -299,9 +302,14 @@ public class StructureService {
      * @return the record containing the response
      * @throws TraitementException in case of incorrect behaviour
      */
-    public ArchiveRestoreStructureResponseDto archiveStructure(Long id) throws TraitementException {
+    public ArchiveRestoreStructureResponseDto archiveStructure(Long id, HttpServletRequest httpRequest) throws TraitementException {
+        Objects.requireNonNull(httpRequest);
         if (Objects.isNull(id)) {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
+        }
+        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
+        if (userSessionAccount.getRole() == Role.OPERATEUR) {
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
         }
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
         structure.setArchived(true);
