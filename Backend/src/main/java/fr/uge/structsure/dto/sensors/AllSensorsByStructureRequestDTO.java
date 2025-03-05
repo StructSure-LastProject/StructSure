@@ -55,7 +55,7 @@ public record AllSensorsByStructureRequestDTO(String orderByColumn, String order
      * if there is some incorrect fields
      */
     public void checkFields() throws TraitementException {
-        if (Objects.isNull(orderByColumn) || Objects.isNull(orderType) || Objects.isNull(offset) || Objects.isNull(limit)) {
+        if (Objects.isNull(orderByColumn) || Objects.isNull(orderType)) {
             throw new TraitementException(Error.MISSING_FIELDS);
         }
         if (!EnumValidatorFromString.validateEnumValue(OrderByColumn.class, orderByColumn) ||

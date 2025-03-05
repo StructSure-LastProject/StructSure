@@ -1,4 +1,4 @@
-import {Download, Pencil, Plus, Trash2} from 'lucide-solid';
+import { Pencil, Plus, Trash2} from 'lucide-solid';
 import {createEffect, createSignal, For, Show} from 'solid-js';
 import StructureDetailEdit from './StructureDetailEdit';
 import {planSensorsFetchRequest, planSensorsScanFetchRequest, sensorsFetchRequest} from "./StructureDetailBody.jsx";
@@ -120,9 +120,6 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
                                 <Trash2 color="red" size={20} />
                             </button>
                         </Show>
-                        <button class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                            <Download size={20} />
-                        </button>
                         <button class="bg-black rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
                             <Plus color="white" size={20} />
                         </button>

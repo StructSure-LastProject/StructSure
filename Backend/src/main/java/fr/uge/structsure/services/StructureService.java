@@ -240,7 +240,7 @@ public class StructureService {
         var plans = planRepository.findByStructureAndArchivedFalse(structure)
             .stream().map(PlanDTO::new).toList();
         var query = new AllSensorsByStructureRequestDTO("NAME", "ASC",
-            null, null, null, null, Integer.MAX_VALUE, 0, false, null);
+            null, null, null, null, null, null, false, null);
         var sensors = sensorCriteriaQuery.findAllSensorsByStructureId(structure.getId(), query);
         return new StructureResponseDTO(structure, plans, sensors);
     }
