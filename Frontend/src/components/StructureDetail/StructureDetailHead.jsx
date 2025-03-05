@@ -54,7 +54,6 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
                 setSelectedScan(selectedValue);
                 setSearchParams({ selectedScan: selectedValue });
                 planSensorsScanFetchRequest(structureDetails().id, selectedValue, selectedPlan(), setPlanSensors, navigate);
-                sensorsFetchRequest(structureDetails().id, setSensors, setTotalItems, navigate, {scanFilter: selectedValue});
             }
         } else {
             setName("");
@@ -63,7 +62,6 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
             setSelectedScan(selectedValue);
             setSearchParams({ selectedScan: selectedValue });
             planSensorsFetchRequest(structureDetails().id, setPlanSensors, selectedPlan(), setPlanSensors, navigate);
-            sensorsFetchRequest(structureDetails().id, setSensors, setTotalItems, navigate);
         }
     };
 

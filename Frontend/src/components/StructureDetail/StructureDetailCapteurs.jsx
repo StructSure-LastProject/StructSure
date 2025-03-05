@@ -53,7 +53,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
             ? searchParams.orderByColumn
             : "Tout"
     );
-    
+
     const [stateFilter, setStateFilter] = createSignal(
         searchParams.stateFilter && FILTER_VALUES[searchParams.stateFilter] 
             ? searchParams.stateFilter 

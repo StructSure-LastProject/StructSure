@@ -184,8 +184,6 @@ function StructureDetailBody(props) {
 
     createEffect(() => structureDetailsFetchRequest(props.structureId));
 
-    createEffect(() => sensorsFetchRequest(props.structureId, setSensors, setTotalItems, navigate));
-
 
     createEffect(() => planSensorsFetchRequest(props.structureId, setPlanSensors, selectedPlanId(), navigate));
 
