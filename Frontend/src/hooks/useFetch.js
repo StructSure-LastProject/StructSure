@@ -29,7 +29,9 @@ const useFetch = () => {
             } else {
                 if (response.status === 401) {
                     const currentRoute = window.location.pathname + window.location.search
-                    if (!currentRoute.startsWith("/login")) localStorage.setItem("loginForward", currentRoute);
+                    if (!currentRoute.startsWith("/login") && !currentRoute.startsWith("/account")) {
+                        localStorage.setItem("loginForward", currentRoute);
+                    }
                     navigate("/login");
                     return
                 }
@@ -79,7 +81,9 @@ const useFetch = () => {
         } else {
             if (response.status === 401) {
                 const currentRoute = window.location.pathname + window.location.search
-                if (!currentRoute.startsWith("/login")) localStorage.setItem("loginForward", currentRoute);
+                if (!currentRoute.startsWith("/login") && !currentRoute.startsWith("/account")) {
+                    localStorage.setItem("loginForward", currentRoute);
+                }
                 navigate("/login");
                 return
             }
