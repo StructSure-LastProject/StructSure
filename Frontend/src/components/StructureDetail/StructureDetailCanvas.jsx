@@ -433,8 +433,9 @@ function StructureDetailCanvas(props) {
      * @param {Event} event the click in the page
      */
     const handleOutsideClick = (event) => {
+        const refLst = refLstOfSensors && !refLstOfSensors.contains(event.target);
         if ((canvasRef && !canvasRef.contains(event.target)) && (popupRef && !popupRef.contains(event.target))
-        && (refLstOfSensors && !refLstOfSensors.contains(event.target))) {
+        && (refLst === undefined || refLst === true)) {
             setIsPopupVisible(false);
         }
     };

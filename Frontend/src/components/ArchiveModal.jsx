@@ -2,6 +2,7 @@ import useFetch from '../hooks/useFetch';
 import {useNavigate} from "@solidjs/router";
 import {FolderSync, Shield, Trash2} from "lucide-solid";
 import ErrorMessage from "./Modal/ErrorMessage.jsx";
+import { onCleanup, onMount } from 'solid-js';
 
 /**
  * Modal component for archiving structures
@@ -11,6 +12,26 @@ import ErrorMessage from "./Modal/ErrorMessage.jsx";
 function ArchiveModal(props) {
   const { fetchData, statusCode, data, error } = useFetch();
   const navigate = useNavigate();
+
+  let modalRef;
+
+  /**
+   * Handles the close of the modal when click outside
+   * @param {Event} event 
+   */
+  const handleClickOutside = (event) => {
+      if (modalRef && !modalRef.contains(event.target)) {
+          props.onClose();
+      }
+  };
+
+  onMount(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+  });
+
+  onCleanup(() => {
+      document.removeEventListener("mousedown", handleClickOutside);
+  });
 
   /**
    * Handles the archive of a structure
@@ -44,7 +65,7 @@ function ArchiveModal(props) {
 
   return (
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
-      <div class="bg-white p-6 rounded-[20px] shadow-lg w-[370px]">
+      <div ref={modalRef} class="bg-white p-6 rounded-[20px] shadow-lg w-[370px]">
         <h2 class="title mb-4">Archivage</h2>
         <ErrorMessage message={props.errorMsgArchiveStructure}></ErrorMessage>
         <p class="mb-6 normal">
