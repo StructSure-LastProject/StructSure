@@ -36,6 +36,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
      */
     const openConfirmationModal = () => {
         setIsConfirmationModalOpen(true);
+        document.body.style.overflow = 'hidden';
     };
 
 
@@ -44,6 +45,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
      */
     const closeConfirmationModal = () => {
         setIsConfirmationModalOpen(false);
+        document.body.style.overflow = "auto";
     };
 
 

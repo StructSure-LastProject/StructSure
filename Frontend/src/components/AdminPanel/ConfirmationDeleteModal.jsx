@@ -45,12 +45,12 @@ const ConfirmationDeleteModal = ({
 
     return (
     <div class="flex justify-center items-center min-w-full min-h-screen">
-        <div class="min-w-[130px] max-w-[377px] min-h-[197px] rounded-[20px] p-[25px] flex flex-col gap-[15px] bg-[#FFFFFF] shadow-[0px 0px 50px 0px #33333340]">
-            <h1 class="title">Archiver le compte utilisateur</h1>
-            <p class="normal">Souhaitez-vous archiver le compte utilisateur <span class="font-bold">{userLogin}</span> ?</p>
-            <div class="flex flex-wrap justify-center gap-[10px]">
-                <button onClick={closeConfirmationModal} class="bg-[#F2F2F4] min-w-[150px] min-h-[37px] rounded-[50px] px-[16px] py-[8px] font-[600]">Annuler</button>
-                <button onClick={deleteUserAccount} class="flex gap-[10px] justify-between items-center bg-[#F13327] min-w-[150px] min-h-[37px] rounded-[50px] px-[16px] py-[8px] text-[#FFFFFF] font-[600]">
+        <div class="min-w-[130px] max-w-[377px] rounded-[20px] p-[25px] flex flex-col gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
+            <h1 class="title">Supprimer le compte utilisateur</h1>
+            <p class="normal">Souhaitez-vous supprimer le compte utilisateur <span class="font-bold">{userLogin}</span> ?</p>
+            <div class="flex justify-between gap-[10px]">
+                <button onClick={closeConfirmationModal} class="w-full bg-lightgray rounded-full px-[16px] py-[8px] accent">Annuler</button>
+                <button onClick={deleteUserAccount} class="w-full flex gap-[10px] justify-between items-center bg-red rounded-full px-[16px] py-[8px] text-white accent">
                     Archiver
                     <Trash2 color="#FFFFFF" size={20} width={20} top={10} left={10}/>
                 </button>
