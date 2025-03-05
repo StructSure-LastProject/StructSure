@@ -26,6 +26,14 @@ function RequireAuth(Component) {
     return <Component />;
   };
 }
+/**
+ * Redirect to the server's 404 error page if the route is not known
+ * by the frontend.
+ */
+function RedirectToError() {
+  window.location.href = "/error404";
+  return null;
+}
 
 /**
  * Defines the routes of our application
@@ -42,6 +50,7 @@ function App() {
         <Route path="/admin-panel" component={RequireAuth(AdminPanel)} />
         <Route path="/structures/:structureId" component={RequireAuth(StructSureDetail)} />
         <Route path="/admin-panel" component={RequireAuth(AdminPanel)} />
+        <Route path="*" component={RedirectToError} />
       </Router>
     </>
   )
