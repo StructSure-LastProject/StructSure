@@ -56,15 +56,19 @@ public class UserAccountController {
 
     /**
      * Create new user account
+     * @param request the full request data to get current user account
      * @param registerRequestDTO The request DTO
      * @return RegisterResponseDTO The login of the user account
      */
     @RequiresRole(Role.ADMIN)
     @PostMapping("/accounts")
-    public ResponseEntity<?> createNewUserAccount(@RequestBody RegisterRequestDTO registerRequestDTO){
+    public ResponseEntity<?> createNewUserAccount(
+        HttpServletRequest request,
+        @RequestBody RegisterRequestDTO registerRequestDTO
+    ){
         Objects.requireNonNull(registerRequestDTO);
         try {
-            return ResponseEntity.status(201).body(accountService.register(registerRequestDTO));
+            return ResponseEntity.status(201).body(accountService.register(request, registerRequestDTO));
         } catch (TraitementException e) {
             return e.toResponseEntity("Account creation failed: {}");
         }
@@ -145,10 +149,14 @@ public class UserAccountController {
      */
     @RequiresRole(Role.ADMIN)
     @PostMapping("/accounts/{login}/access")
-    public ResponseEntity<?> updateUserStructureAccess(@PathVariable String login, @RequestBody UserStructureAccessRequestDTO userStructureAccessRequestDTO){
+    public ResponseEntity<?> updateUserStructureAccess(
+        @PathVariable String login,
+        @RequestBody UserStructureAccessRequestDTO userStructureAccessRequestDTO
+    ) {
         Objects.requireNonNull(userStructureAccessRequestDTO);
         try {
-            return ResponseEntity.status(200).body(accountService.updateUserStructureAccess(login, userStructureAccessRequestDTO));
+            return ResponseEntity.status(200).body(accountService.updateUserStructureAccess(
+                login, userStructureAccessRequestDTO));
         } catch (TraitementException e){
             return e.toResponseEntity("Account authorizations update failed: {}");
         }
@@ -173,14 +181,18 @@ public class UserAccountController {
 
     /** 
      * Anonymize the user account
+     * @param request the full request data to get current user account
      * @param login The login of the user
      * @return The response DTO
      */
     @RequiresRole(Role.ADMIN)
     @PutMapping("/api/accounts/{login}/anonymize")
-    public ResponseEntity<?> anonymizeTheUserAccount(@PathVariable String login){
+    public ResponseEntity<?> anonymizeTheUserAccount(
+        HttpServletRequest request,
+        @PathVariable String login
+    ) {
         try {
-            return ResponseEntity.status(200).body(accountService.anonymizeTheUserAccount(login));
+            return ResponseEntity.status(200).body(accountService.anonymizeTheUserAccount(request, login));
         } catch (TraitementException e){
             return e.toResponseEntity("Account anonymization failed: {}");
         }

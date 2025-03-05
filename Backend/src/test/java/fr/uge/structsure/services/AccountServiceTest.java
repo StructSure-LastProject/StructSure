@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,6 +45,7 @@ class AccountServiceTest extends DataBaseTests {
     private final Account account = new Account("testuser", "encodedPassword", "John", "Doe", Role.ADMIN, true);
     private final RegisterRequestDTO registerRequestDTO = new RegisterRequestDTO("testuser", "passwordlongenough", "John", "Doe", "Admin");
     private final LoginRequestDTO loginRequestDTO = new LoginRequestDTO("testuser", "passwordlongenough");
+    private final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 
     @BeforeEach
     void setUp() {
@@ -57,7 +59,7 @@ class AccountServiceTest extends DataBaseTests {
 
     @Test
     void testRegisterUserAlreadyExists() {
-        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(registerRequestDTO));
+        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(request, registerRequestDTO));
         assertEquals(Error.USER_ALREADY_EXISTS, exception.error);
     }
 
@@ -65,7 +67,7 @@ class AccountServiceTest extends DataBaseTests {
     void testRegisterInvalidRole() {
         RegisterRequestDTO invalidRoleRequest = new RegisterRequestDTO("testuser2", "passwordlongenough", "John", "Doe", "INVALID_ROLE");
 
-        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(invalidRoleRequest));
+        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(request, invalidRoleRequest));
 
         assertEquals(Error.ROLE_NOT_EXISTS, exception.error);
     }

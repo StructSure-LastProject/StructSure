@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static fr.uge.structsure.StructSureBackendApplication.SUPER_ADMIN_LOGIN;
+
 /**
  * Account service class
  */
@@ -37,6 +39,7 @@ public class AccountService {
     private final StructureRepository structureRepository;
     private final JwtUtils jwtUtils;
     private final AuthValidationService authValidationService;
+    private final AppLogService appLogs;
 
     /**
      * Constructor
@@ -48,23 +51,28 @@ public class AccountService {
      * @param authValidationService The auth validation service
      */
     @Autowired
-    public AccountService(AccountRepository accountRepository, AccountStructureService accountStructureService, StructureRepository structureRepository, AuthenticationManager authenticationManager,
-                          JwtUtils jwtUtils, AuthValidationService authValidationService) {
+    public AccountService(
+        AccountRepository accountRepository, AccountStructureService accountStructureService,
+        StructureRepository structureRepository, AuthenticationManager authenticationManager,
+        JwtUtils jwtUtils, AuthValidationService authValidationService, AppLogService appLogs
+    ) {
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.accountStructureService = accountStructureService;
         this.structureRepository = structureRepository;
         this.authenticationManager = Objects.requireNonNull(authenticationManager);
         this.jwtUtils = Objects.requireNonNull(jwtUtils);
         this.authValidationService = authValidationService;
+        this.appLogs = appLogs;
     }
 
     /**
      * Service that will do the register of new client
+     * @param request the complete request to get the register author
      * @param registerRequestDTO The request dto
      * @return RegisterResponseDTO the response dto
      * @throws TraitementException Thrown if no user is found or the role does not exist
      */
-    public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) throws TraitementException {
+    public RegisterResponseDTO register(HttpServletRequest request, RegisterRequestDTO registerRequestDTO) throws TraitementException {
         Objects.requireNonNull(registerRequestDTO);
         if (checkIfNullInCreateNewUserAccountRequest(registerRequestDTO)){
             throw new TraitementException(Error.MISSING_USER_ACCOUNT_FIELDS);
@@ -80,6 +88,7 @@ public class AccountService {
                 registerRequestDTO.firstname(), registerRequestDTO.lastname(),
                 role, true);
         accountRepository.save(account);
+        appLogs.addAccount(request, account);
         return new RegisterResponseDTO(account.getLogin());
     }
 
@@ -231,6 +240,7 @@ public class AccountService {
             throw new TraitementException(Error.MISSING_USER_ACCOUNT_FIELDS);
         }
 
+        appLogs.editAccount(request, userAccount, userUpdateRequestDTO);
         updateIfDifferent(userUpdateRequestDTO.firstname(), userAccount.getFirstname(), userAccount::setFirstname);
         updateIfDifferent(userUpdateRequestDTO.lastname(), userAccount.getLastname(), userAccount::setLastname);
 
@@ -357,7 +367,10 @@ public class AccountService {
      * @return The Response DTO
      * @throws TraitementException thrown custom exception
      */
-    public UpdateUserStructureAccessResponseDTO updateUserStructureAccess(String login, UserStructureAccessRequestDTO userStructureAccessRequestDTO) throws TraitementException{
+    public UpdateUserStructureAccessResponseDTO updateUserStructureAccess(
+        String login,
+        UserStructureAccessRequestDTO userStructureAccessRequestDTO
+    ) throws TraitementException{
         Objects.requireNonNull(login);
         Objects.requireNonNull(userStructureAccessRequestDTO);
         checkIfAccountExist(login);
@@ -400,11 +413,13 @@ public class AccountService {
 
     /**
      * Service that update the user's structure access
+     * @param request access to the deletion author
      * @param login The login of the user
      * @return The Response DTO
      * @throws TraitementException thrown custom exception
      */
-    public RegisterResponseDTO anonymizeTheUserAccount(String login) throws TraitementException {
+    public RegisterResponseDTO anonymizeTheUserAccount(HttpServletRequest request,
+               String login) throws TraitementException {
         Objects.requireNonNull(login);
         var userAccount = accountRepository.findByLogin(login).orElseThrow(() -> new TraitementException(Error.USER_ACCOUNT_NOT_FOUND));
         var random = new Random();
@@ -421,6 +436,7 @@ public class AccountService {
         userAccount.setLastname("Nom anonymisé");
         userAccount.setPasswordEncrypted(null);
         accountRepository.save(userAccount);
+        appLogs.deleteAccount(request, login, userAccount.getId());
         return new RegisterResponseDTO(login);
     }
 
