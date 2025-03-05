@@ -89,7 +89,7 @@ function StructSureBody() {
             const res = data()
             setStructures(res);
         } else {
-            setErrorStructurePage(error().errorData.error);
+            setErrorStructurePage(error()?.errorData.error);
         }
     };
 

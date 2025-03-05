@@ -117,6 +117,11 @@ const StructuresFilter = (props) => {
     { value: "NUMBER_OF_SENSORS", label: "Capteurs" }
   ];
 
+  const isOperator = () => {
+    const role = localStorage.getItem("role");
+    return !(role == null || role !== "OPERATEUR");
+  }
+
   return (
     <div class="bg-white flex flex-col lg:flex-row justify-between w-full rounded-[20px] px-[20px] py-[15px] gap-4">
       <div class="relative w-full">
@@ -140,7 +145,7 @@ const StructuresFilter = (props) => {
 
       <CustomDropDown
         label="Filtrer"
-        options={localStorage.getItem("role").includes("OPERATEUR") ? filterOptionsOperator : filterOptions}
+        options={isOperator() ? filterOptionsOperator : filterOptions}
         value={props.filterValue()}
         onChange={props.setFilterValue}
       />
