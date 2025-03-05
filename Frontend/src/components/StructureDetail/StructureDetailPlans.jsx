@@ -199,6 +199,8 @@ function StructureDetailPlans(props) {
                         }}
                         structureId={props.structureId}
                         plan={selectedPlan()}
+                        setPlan={setPlan}
+                        selectedPlanId={props.selectedPlanId}
                         />
                     </Show>
                 </div>
