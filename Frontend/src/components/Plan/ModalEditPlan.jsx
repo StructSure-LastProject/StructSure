@@ -15,9 +15,11 @@ import { useNavigate } from "@solidjs/router";
  * @param {Function} props.onSave Callback after successful save
  * @param {number} props.structureId ID of the structure
  * @param {Object} props.plan Current plan data
+ * @param {Object} props.setPlan sets the selected plan
+ * @param {number} props.selectedPlanId getter for the selected plan id
  * @returns {JSX.Element} The modal component for editing a plan
  */
-const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan }) => {
+const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan, setPlan, selectedPlanId }) => {
   const [name, setName] = createSignal(plan.name || "");
   const [section, setSection] = createSignal(plan.section || "");
   const [imageData, setImageData] = createSignal(null);
@@ -25,6 +27,7 @@ const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan }) => {
   const [errorMsg, setError] = createSignal("");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const navigate = useNavigate();
+  const [tempImageBlob, setTempImageBlob] = createSignal(null);
 
   /**
    * Handles image file input change.
@@ -100,6 +103,14 @@ const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan }) => {
           section: section()
         }
       })
+      if (selectedPlanId() === plan.id) {
+        const objectURL = URL.createObjectURL(imageFile());
+        setPlan(objectURL);
+        if (tempImageBlob()) {
+          URL.revokeObjectURL(tempImageBlob());
+        }
+        setTempImageBlob(objectURL);
+      }
       handleClose();
     } else {
       setError(error()?.errorData?.error || "Une erreur est survenue");

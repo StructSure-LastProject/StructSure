@@ -246,7 +246,6 @@ const TreeNode = (props) => {
  * @param {number|string} props.plan.id Plan identifier
  * @param {number|string} props.selectedPlanId Selected plan identifier
  * @param {Function} props.onEdit Function to edit a plan
- * @param {Function} props.onEdit Function to edit a plan
  * @returns {JSX.Element} Appropriate component based on plan type
  */
 const RenderPlan = (props) => {
