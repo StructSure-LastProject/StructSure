@@ -322,7 +322,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                     userLogin={userDetails.login}
                 />
             </Show>
-            <div class={ isConfirmationModalOpen() ? "hidden" : `max-h-[100%] overflow-y-auto  sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]`}>
+            <div class={ isConfirmationModalOpen() ? "hidden" : "max-h-[100%] overflow-y-auto  sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]"}>
                 <div class="flex justify-between items-center w-full gap-[10px]">
                     <h1 class="title">Edition de Compte</h1>
                     <div class="flex flex-wrap gap-[10px]">

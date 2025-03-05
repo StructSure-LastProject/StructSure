@@ -37,7 +37,7 @@ const ConfirmationDeleteModal = ({
         
         if (statusCode() === 200) {
             fetchUserDetails();
-            closeModalEditModal;
+            closeModalEditModal();
             closeConfirmationModal();
         }
     }
