@@ -20,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,9 +37,7 @@ public class PlanService {
     private final SensorRepository sensorRepository;
     private final StructureService structureService;
     private final SensorService sensorService;
-
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final Path uploadDir;
 
     private static final List<MediaType> ALLOWED_MIME_TYPES = Arrays.asList(
         MediaType.IMAGE_JPEG,
@@ -56,11 +53,14 @@ public class PlanService {
      */
     @Autowired
     public PlanService(PlanRepository planRepository, SensorRepository sensorRepository,
-           StructureService structureService, SensorService sensorService) {
+       StructureService structureService, SensorService sensorService,
+       @Value("${file.upload-dir}") Path uploadDir
+    ) {
         this.planRepository = planRepository;
         this.sensorRepository = sensorRepository;
         this.structureService = structureService;
         this.sensorService = sensorService;
+        this.uploadDir = uploadDir;
     }
 
     /**
@@ -87,12 +87,11 @@ public class PlanService {
     public AddPlanResponseDTO createPlan(Long structureId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
         Objects.requireNonNull(metadata);
         addPlanAsserts(structureId, metadata, file);
-        var structure = structureService.existStructure(structureId).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
+        var structure = structureService.existStructure(structureId)
+            .orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
         checkState(structure);
-        var directory = Path.of(uploadDir).normalize();
-        var filePath = directory + File.separator;
-        managedFilesDirectory(directory);
-        var savedPlan = handleAddPlan(directory, file, new Plan(filePath, metadata.name(), metadata.section(), structure));
+        managedFilesDirectory(uploadDir);
+        var savedPlan = handleAddPlan(file, new Plan(uploadDir.toString(), metadata.name(), metadata.section(), structure));
         return new AddPlanResponseDTO(savedPlan.getId(), new Timestamp(System.currentTimeMillis()).toString());
     }
 
@@ -126,31 +125,26 @@ public class PlanService {
 
         var noSection = metadata.section() == null || metadata.section().isEmpty();
         var plan = planRepository.findById(planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
-        var structure = plan.getStructure();
-        checkState(plan, structure, structureId);
+        checkState(plan, structureId);
         var planFile = Path.of(plan.getImageUrl());
 
-        var name = plan.getName().equals(metadata.name()) ? plan.getName() : metadata.name();
-        var section = plan.getSection().equals(metadata.section()) ? plan.getSection() : metadata.section();
-        var directory = Path.of(uploadDir).normalize();
-
-        String filePath;
+        Path filePath;
         if (multipartFile.isPresent()) {
             var uniqueFilename = createPlanFilename(planId, Objects.requireNonNull(multipartFile.get().getOriginalFilename()));
-            filePath = Path.of(directory.toString(), uniqueFilename).toString();
+            filePath = uploadDir.resolve(uniqueFilename);
         } else {
-            filePath = planFile.toString();
+            filePath = planFile;
         }
 
-        plan.setName(name);
-        plan.setSection(section);
-        plan.setImageUrl(filePath);
+        plan.setName(metadata.name());
+        plan.setSection(metadata.section());
+        plan.setImageUrl(filePath.toString());
 
         if (!noSection) {
-            managedFilesDirectory(directory);
+            managedFilesDirectory(uploadDir);
         }
 
-        var savedPlan = handleEditPlan(planFile, Path.of(filePath), multipartFile, plan);
+        var savedPlan = handleEditPlan(planFile, filePath, multipartFile, plan);
         return new EditPlanResponseDTO(savedPlan.getId());
     }
 
@@ -167,30 +161,18 @@ public class PlanService {
     }
 
     /**
-     * Checks if a structure and plan are in an archived state.
-     *
-     * @param plan The plan to check
-     * @param structure The structure to check
-     * @throws TraitementException if either the plan or structure is archived
-     */
-    private void checkState(Plan plan, Structure structure) throws TraitementException {
-        checkState(structure);
-        if (plan.isArchived()) {
-            throw new TraitementException(Error.PLAN_IS_ARCHIVED);
-        }
-    }
-
-    /**
      * Checks the state of a plan, its structure, and verifies structure ID matching.
      *
      * @param plan The plan to check
-     * @param structure The structure to check
      * @param structureId The expected structure ID
      * @throws TraitementException if any check fails (archived state or ID mismatch)
      */
-    private void checkState(Plan plan, Structure structure, long structureId) throws TraitementException {
-        checkState(plan, structure);
-        if (structure.getId() != structureId) {
+    private void checkState(Plan plan, long structureId) throws TraitementException {
+        checkState(plan.getStructure());
+        if (plan.isArchived()) {
+            throw new TraitementException(Error.PLAN_IS_ARCHIVED);
+        }
+        if (plan.getStructure().getId() != structureId) {
             throw new TraitementException(Error.PLAN_STRUCTURE_MISMATCH);
         }
     }
@@ -240,15 +222,9 @@ public class PlanService {
      * @throws TraitementException if an IO error occurs during file movement
      */
     private void moveFile(Path source, Path dest) throws TraitementException {
-        var parent = source.getParent();
-        if (source.equals(dest)) {
-            return;
-        }
+        if (source.equals(dest)) return;
         try {
             Files.move(source, dest, StandardCopyOption.REPLACE_EXISTING);
-            if (parent != null) {
-                deleteEmptyParentDirectory(parent);
-            }
         } catch (IOException e) {
             LOGGER.error("IOException when moving file in the server (from '{}' to '{}')", source, dest, e);
             throw new TraitementException(Error.SERVER_ERROR);
@@ -256,38 +232,17 @@ public class PlanService {
     }
 
     /**
-     * Deletes a file from the server and its parent directory if it becomes empty.
+     * Deletes a file from the server.
      *
      * @param path the path of the file to delete
      * @throws TraitementException if an IO error occurs during file deletion
      */
     private void deleteFile(Path path) throws TraitementException {
-        var parent = path.getParent();
         try {
             Files.deleteIfExists(path);
-            if (parent != null) {
-                deleteEmptyParentDirectory(parent);
-            }
         } catch (IOException e) {
             LOGGER.error("IOException when deleting file in the server", e);
             throw new TraitementException(Error.SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Deletes a directory and all its parent if they are empty. Used
-     * for cleanup after file operations.
-     *
-     * @param path the path of the directory to check and potentially delete
-     * @throws IOException if an error occurs while accessing or deleting the directory
-     */
-    private void deleteEmptyParentDirectory(Path path) throws IOException {
-        if (path.getFileName().toString().equals(uploadDir)) return; // security to avoid removing root directory
-        try (var files = Files.list(path)) {
-            if (files.findAny().isEmpty()) {
-                Files.delete(path);
-                deleteEmptyParentDirectory(path.getParent());
-            }
         }
     }
 
@@ -327,13 +282,12 @@ public class PlanService {
      * Handles the plan creation process, including file upload and database updates.
      * If any step fails, the operation is rolled back.
      *
-     * @param targetDirPath the directory path where the file should be stored
      * @param file the MultipartFile to upload
      * @param plan the Plan entity to create
      * @return the saved Plan entity
      * @throws TraitementException if any step of the process fails
      */
-    private Plan handleAddPlan(Path targetDirPath, MultipartFile file, Plan plan) throws TraitementException {
+    private Plan handleAddPlan(MultipartFile file, Plan plan) throws TraitementException {
         Plan savedPlan;
         try {
             savedPlan = planRepository.save(plan);
@@ -343,7 +297,7 @@ public class PlanService {
         }
 
         var fileName = createPlanFilename(savedPlan.getId(), Objects.requireNonNull(file.getOriginalFilename()));
-        var filePath = Path.of(targetDirPath.toString(), fileName);
+        var filePath = uploadDir.resolve(fileName);
         savedPlan.setImageUrl(filePath.toString());
         try {
             savedPlan = planRepository.save(savedPlan);
