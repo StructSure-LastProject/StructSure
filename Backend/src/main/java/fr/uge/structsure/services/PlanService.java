@@ -66,14 +66,13 @@ public class PlanService {
     /**
      * Generates a unique filename for the plan file using the plan name and original filename
      *
-     * @param planName The name of the plan entered by the user
+     * @param planId The unique id of a plan created on the database
      * @param originalFilename The original filename with extension
      * @return A unique filename based on the plan name
      */
-    private String createPlanFilename(String planName, String originalFilename) {
-        var name = planName.replaceAll("[^a-zA-Z0-9-_]", "_");
+    private String createPlanFilename(Long planId, String originalFilename) {
         var extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        return name + "_" + UUID.randomUUID().toString().substring(0, 8) + extension;
+        return "plan_" + planId + extension;
     }
 
     /**
@@ -92,10 +91,9 @@ public class PlanService {
         var structure = structureService.existStructure(structureId).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
         checkState(structure);
         var directory = computeDirectory(noSection, structureId, metadata.section());
-        var filename = createPlanFilename(metadata.name(), Objects.requireNonNull(file.getOriginalFilename()));
-        var filePath = directory + File.separator + filename;
+        var filePath = directory + File.separator;
         managedFilesDirectory(directory);
-        var savedPlan = handleAddPlan(directory, file, filename, new Plan(filePath, metadata.name(), metadata.section(), structure));
+        var savedPlan = handleAddPlan(directory, file, new Plan(filePath, metadata.name(), metadata.section(), structure));
         return new AddPlanResponseDTO(savedPlan.getId(), new Timestamp(System.currentTimeMillis()).toString());
     }
 
@@ -139,7 +137,7 @@ public class PlanService {
 
         String filePath;
         if (multipartFile.isPresent()) {
-            var uniqueFilename = createPlanFilename(metadata.name(), Objects.requireNonNull(multipartFile.get().getOriginalFilename()));
+            var uniqueFilename = createPlanFilename(planId, Objects.requireNonNull(multipartFile.get().getOriginalFilename()));
             filePath = Path.of(directory.toString(), uniqueFilename).toString();
         } else {
             filePath = planFile.toString();
@@ -350,14 +348,23 @@ public class PlanService {
      * @return the saved Plan entity
      * @throws TraitementException if any step of the process fails
      */
-    private Plan handleAddPlan(Path targetDirPath, MultipartFile file, String filename, Plan plan) throws TraitementException {
-        var filePath = Path.of(targetDirPath.toString(), filename);
-        uploadFile(file, filePath);
+    private Plan handleAddPlan(Path targetDirPath, MultipartFile file, Plan plan) throws TraitementException {
         Plan savedPlan;
         try {
             savedPlan = planRepository.save(plan);
         } catch (Exception e) {
-            LOGGER.error("IOException when adding plan to db", e);
+            LOGGER.error("Exception when adding plan to db", e);
+            throw new TraitementException(Error.SERVER_ERROR);
+        }
+
+        var fileName = createPlanFilename(savedPlan.getId(), Objects.requireNonNull(file.getOriginalFilename()));
+        var filePath = Path.of(targetDirPath.toString(), fileName);
+        savedPlan.setImageUrl(filePath.toString());
+        try {
+            savedPlan = planRepository.save(savedPlan);
+            uploadFile(file, filePath);
+        } catch (Exception e) {
+            LOGGER.error("Exception when updating plan or uploading file", e);
             deleteFile(filePath);
             throw new TraitementException(Error.SERVER_ERROR);
         }
