@@ -1,4 +1,4 @@
-import {createSignal, Show} from "solid-js";
+import {createSignal, onCleanup, onMount, Show} from "solid-js";
 import useFetch from "../../hooks/useFetch";
 import ModalHeader from "../Modal/ModalHeader.jsx";
 import ErrorMessage from "../Modal/ErrorMessage.jsx";
@@ -20,6 +20,7 @@ const ModalAddPlan = ({ isOpen, onClose, onSave, structureId }) => {
   const [errorMsg, setError] = createSignal("");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const navigate = useNavigate();
+  let modalRef;
 
   /**
    * Handles image file input change.
@@ -122,11 +123,29 @@ const ModalAddPlan = ({ isOpen, onClose, onSave, structureId }) => {
     setError("");
     onClose();
   };
+  
+  /**
+   * Handles the close of the modal when click outside
+   * @param {Event} event 
+   */
+  const handleClickOutside = (event) => {
+      if (modalRef && !modalRef.contains(event.target)) {
+          onClose();
+      }
+  };
+
+  onMount(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+  });
+
+  onCleanup(() => {
+      document.removeEventListener("mousedown", handleClickOutside);
+  });
 
   return (
     <Show when={isOpen}>
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
-        <div class="bg-white p-6 rounded-[20px] shadow-lg w-96">
+        <div ref={modalRef} class="bg-white p-6 rounded-[20px] shadow-lg w-96">
           <ModalHeader title={"Ajouter un Plan"} onClose={handleClose} onSubmit={handleSubmit} isSubmitting={isSubmitting()} />
           <Show when={errorMsg()}>
             <ErrorMessage message={errorMsg()} />

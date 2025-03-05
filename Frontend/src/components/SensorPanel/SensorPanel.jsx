@@ -1,6 +1,6 @@
 import { Pencil, X, Check } from 'lucide-solid';
 import getSensorStatusColor from "../SensorStatusColorGen";
-import { createResource, createSignal, Show } from 'solid-js';
+import { createResource, createSignal, onCleanup, onMount, Show } from 'solid-js';
 import SensorFieldComponent from './SensorFieldComponent';
 import { loginValidator } from '../../hooks/vaildateUserAccountForm';
 import Canvas from './Canvas';
@@ -157,6 +157,26 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
   const [editMode, setEditMode] = createSignal(false);
   const navigate = useNavigate();
 
+  let modalRef;
+    
+  /**
+   * Handles the close of the modal when click outside
+   * @param {Event} event 
+   */
+  const handleClickOutside = (event) => {
+      if (modalRef && !modalRef.contains(event.target)) {
+        closeSensorPanel();
+      }
+  };
+
+  onMount(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+  });
+
+  onCleanup(() => {
+      document.removeEventListener("mousedown", handleClickOutside);
+  });
+
 
   const [validationError, setvalidationError] = createSignal("");
 
@@ -222,7 +242,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
   
   return (
     <div class="min-h-[100vh] bg-[#F2F2F403] backdrop-blur-[25px] z-[100] flex items-end justify-center align-middle w-[100vw] fixed top-0 left-0">
-      <div class="max-w-[963px] max-h-[calc(100vh-7rem)] justify-center flex flex-col gap-[25px] w-[100%] rounded-t-[35px] p-[25px] lg:p-[50px] bg-[#FFFFFF] shadow-[0px_4px_100px_0px_rgba(151,151,167,0.50)] mx-auto">
+      <div ref={modalRef} class="max-w-[963px] max-h-[calc(100vh-7rem)] justify-center flex flex-col gap-[25px] w-[100%] rounded-t-[35px] p-[25px] lg:p-[50px] bg-[#FFFFFF] shadow-[0px_4px_100px_0px_rgba(151,151,167,0.50)] mx-auto">
         <PanelHeader 
           sensorName={sensorName} 
           sensorState={sensorDetails.state} 

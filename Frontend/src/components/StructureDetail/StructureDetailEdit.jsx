@@ -1,4 +1,4 @@
-import {createEffect, createSignal, Show} from "solid-js";
+import {createEffect, createSignal, onCleanup, onMount, Show} from "solid-js";
 import useFetch from "../../hooks/useFetch";
 import { useNavigate } from "@solidjs/router";
 
@@ -7,6 +7,7 @@ import { useNavigate } from "@solidjs/router";
  */
 function StructureDetailEdit(props) {
     const navigate = useNavigate();
+    let modalRef;
 
     /**
      * Will send request to edit the structure details (name, note)
@@ -69,11 +70,29 @@ function StructureDetailEdit(props) {
         setName(props.structureDetails().name);
         setNote(props.structureDetails().note);
     });
+
+    /**
+     * Handles the close of the modal when click outside
+     * @param {Event} event 
+     */
+    const handleClickOutside = (event) => {
+        if (modalRef && !modalRef.contains(event.target)) {
+            props.closeModal();
+        }
+    };
+
+    onMount(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+    });
+
+    onCleanup(() => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    });
     
     return (
         <Show when={props.isModalVisible() === true}>
-            <div class="fixed z-50 inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                <form class="bg-white p-25px rounded-20px w-388px flex flex-col gap-y-15px" 
+            <div class="fixed z-50 inset-0 flex justify-center items-center bg-black/50 backdrop-blur-[10px]">
+                <form ref={modalRef} class="bg-white p-25px rounded-20px w-388px flex flex-col gap-y-15px" 
                 onSubmit={handleFormSubmit}>
                     <h1 class="title">Modifier l’ouvrage</h1>
                     <p class="text-sm text-red">{errorFronted}</p>
