@@ -1,9 +1,12 @@
 import { Trash2, X, ChevronDown } from 'lucide-solid';
-import { createEffect, createResource, createSignal, createMemo } from 'solid-js';
+import { createEffect, createResource, createSignal, createMemo, Show } from 'solid-js';
 import { validateUserAccountForm } from '../../hooks/vaildateUserAccountForm';
 import useFetch from '../../hooks/useFetch';
 import AccountStructureSection from './AccountStructureSection';
 import { useNavigate } from '@solidjs/router';
+import ConfirmationDeleteModal from './ConfirmationDeleteModal';
+
+
 
 /**
  * Edit account modal component
@@ -24,6 +27,26 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
     const [structureSelection, setStructureSelection] = createSignal([]);
     const [searchValue, setSearchValue] = createSignal("");
 
+    // Confirmation modal
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = createSignal(false);
+
+
+    /**
+     * Open confirmation modal
+     */
+    const openConfirmationModal = () => {
+        setIsConfirmationModalOpen(true);
+        document.body.style.overflow = 'hidden';
+    };
+
+
+    /**
+     * Close confirmation modal
+     */
+    const closeConfirmationModal = () => {
+        setIsConfirmationModalOpen(false);
+        document.body.style.overflow = "auto";
+    };
 
 
     const copyOfStructureSelection = [];
@@ -273,27 +296,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
     createResource(() => getStructuresForAccount())
 
-    /**
-     * Delete the user account
-     */
-    const deleteUserAccount = async () => {
-        const token = localStorage.getItem("token");
-
-        
-        await fetchData(navigate, `/api/api/accounts/${userDetails.login}/anonymize`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            }
-        });
-        
-        
-        if (statusCode() === 200) {
-            fetchUserDetails();
-            closeModal();
-        }
-    }
+    
 
 
     /**
@@ -312,11 +315,20 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
     return (
         <div class="min-h-[100vh] items-center bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] absolute top-0 left-0 p-[25px]">
-            <div class="max-h-[100%]  overflow-y-auto  sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]">
+            <Show when={isConfirmationModalOpen()}>
+                <ConfirmationDeleteModal
+                    navigate={navigate}
+                    closeModalEditModal={closeModal}
+                    closeConfirmationModal={closeConfirmationModal} 
+                    fetchUserDetails={fetchUserDetails} 
+                    userLogin={userDetails.login}
+                />
+            </Show>
+            <div class={ isConfirmationModalOpen() ? "hidden" : "max-h-[100%] overflow-y-auto  sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]"}>
                 <div class="flex justify-between items-center w-full gap-[10px]">
                     <h1 class="title">Edition de Compte</h1>
                     <div class="flex flex-wrap gap-[10px]">
-                        <button onClick={deleteUserAccount} class="flex justify-center items-center w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-[50px] bg-[#F133271A]">
+                        <button onClick={openConfirmationModal} class="flex justify-center items-center w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-[50px] bg-[#F133271A]">
                             <Trash2 color="#f13327" size={20} width={20} top={10} left={10}/>
                         </button>
                         <button onClick={closeModal} class="flex justify-center items-center w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-[50px] bg-lightgray">
@@ -324,7 +336,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                         </button>
                     </div>
                 </div>
-
                 <div>
                     {errorModal().map(err => (
                         <p class="text-red normal">{err}</p>
