@@ -87,10 +87,9 @@ public class PlanService {
     public AddPlanResponseDTO createPlan(Long structureId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
         Objects.requireNonNull(metadata);
         addPlanAsserts(structureId, metadata, file);
-        var noSection = metadata.section() == null || metadata.section().isEmpty();
         var structure = structureService.existStructure(structureId).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
         checkState(structure);
-        var directory = computeDirectory(noSection, structureId, metadata.section());
+        var directory = Path.of(uploadDir).normalize();
         var filePath = directory + File.separator;
         managedFilesDirectory(directory);
         var savedPlan = handleAddPlan(directory, file, new Plan(filePath, metadata.name(), metadata.section(), structure));
@@ -133,7 +132,7 @@ public class PlanService {
 
         var name = plan.getName().equals(metadata.name()) ? plan.getName() : metadata.name();
         var section = plan.getSection().equals(metadata.section()) ? plan.getSection() : metadata.section();
-        var directory = computeDirectory(noSection, structure.getId(), metadata.section());
+        var directory = Path.of(uploadDir).normalize();
 
         String filePath;
         if (multipartFile.isPresent()) {
@@ -213,21 +212,7 @@ public class PlanService {
         }
     }
 
-    /**
-     * Calculates the directory path for storing plan files based on structure and section information.
-     *
-     * @param noSection true if there is no section specified, false otherwise
-     * @param structureId the ID of the structure
-     * @param section the section name, can be null
-     * @return the normalized Path object representing the directory
-     */
-    private Path computeDirectory(boolean noSection, Long structureId, String section) {
-        var directory = Path.of(uploadDir, "ouvrages", String.valueOf(structureId));
-        if (!noSection) {
-            directory = Path.of(directory.toString(), section);
-        }
-        return directory.normalize();
-    }
+
 
     /**
      * Uploads a MultipartFile to a specified path on the server.
