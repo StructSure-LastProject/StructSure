@@ -51,7 +51,7 @@ const ConfirmationDeleteModal = ({
             <div class="flex justify-between gap-[10px]">
                 <button onClick={closeConfirmationModal} class="w-full bg-lightgray rounded-full px-[16px] py-[8px] accent">Annuler</button>
                 <button onClick={deleteUserAccount} class="w-full flex gap-[10px] justify-between items-center bg-red rounded-full px-[16px] py-[8px] text-white accent">
-                    Archiver
+                    <p class="w-full text-center">Supprimer</p>
                     <Trash2 color="#FFFFFF" size={20} width={20} top={10} left={10}/>
                 </button>
             </div>
