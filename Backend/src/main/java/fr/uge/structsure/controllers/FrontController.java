@@ -1,7 +1,9 @@
 package fr.uge.structsure.controllers;
 
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
@@ -21,10 +23,13 @@ import java.util.Optional;
  * matters which url is targeted since it does not start with "/api".
  */
 @Controller
-public class FrontController {
+public class FrontController implements ErrorController {
 
     /** Load the index.html content in memory to reduce reading time */
-    private static final String HTML = load();
+    private static final String INDEX = load("static/index.html");
+
+    /** Load the error.html content in memory to reduce reading time */
+    private static final String ERROR = load("static/error.html");
 
     /** Correspondance table to find MIME type from a file extension */
     private static final Map<String, MediaType> MIME;
@@ -57,7 +62,7 @@ public class FrontController {
         ResponseEntity<?> response;
         if (request.getRequestURI().startsWith("/login") && savedRequest != null && savedRequest.getRequestURI().startsWith("/api")){
             // Request targeting the API that got redirected to the login page
-            response = new ResponseEntity<>(HTML, HttpStatus.UNAUTHORIZED);
+            response = new ResponseEntity<>(INDEX, HttpStatus.UNAUTHORIZED);
         } else if (request.getRequestURI().startsWith("/api")) {
             response = null; // Give up and lets another endpoint take care of this request
         } else if (request.getRequestURI().contains("..")) {
@@ -66,9 +71,31 @@ public class FrontController {
             response = tryLoad(request.getRequestURI())
                 .orElse(ResponseEntity.notFound().build());
         } else {
-            response = ResponseEntity.ok(HTML);
+            response = ResponseEntity.ok(INDEX);
         }
         return response;
+    }
+
+    /**
+     * Endpoint that displays the error page with the error code.
+     * This page works for frontend unknown endpoint by fetch this url
+     * with values such as "/error404", and work also internally for
+     * unsafe endpoints.
+     * @param request the request to get the error code from (internally)
+     * @param code the explicit error code (for the frontend redirect)
+     * @return the error page
+     */
+    @GetMapping("/error{code}")
+    public ResponseEntity<String> handleError(HttpServletRequest request, @PathVariable(required = false) String code) {
+        Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+        if (code == null || code.isBlank()) code = status != null ? status.toString() : ":/";
+        var httpCode = HttpStatus.INTERNAL_SERVER_ERROR;
+        try {
+            httpCode = HttpStatus.valueOf(code);
+        } catch (IllegalArgumentException e) {
+            // Already have 500 default value
+        }
+        return new ResponseEntity<>(ERROR.replace("%%", code), httpCode);
     }
 
     /**
@@ -107,17 +134,18 @@ public class FrontController {
     }
 
     /**
-     * Loads the "index.html" page content as a string from the
+     * Loads the given static page content as a string from the
      * resources files.
-     * @return the content of the index.html
+     * @param file the path of the file to load (ex: static/index.html)
+     * @return the content of the requested file
      * @throws IllegalStateException if the file is not readable or not found
      */
-    private static String load() {
-        try (var input = new ClassPathResource("static/index.html").getInputStream()) {
+    private static String load(String file) {
+        try (var input = new ClassPathResource(file).getInputStream()) {
             return new String(input.readAllBytes());
         } catch (IOException e) {
-            System.err.println("Failed to load 'index.html' which is needed in production");
-            return "Loading error : index.html";
+            System.err.println("Failed to load '" + file + "' which is needed in production");
+            return "Loading error : " + file;
         }
     }
 }
