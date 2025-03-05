@@ -1,5 +1,6 @@
 package fr.uge.structsure.services;
 
+import fr.uge.structsure.DataBaseTests;
 import fr.uge.structsure.dto.sensors.AddSensorResponseDTO;
 import fr.uge.structsure.dto.sensors.BaseSensorDTO;
 import fr.uge.structsure.dto.sensors.AllSensorsByStructureRequestDTO;
@@ -24,7 +25,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class SensorServiceTest {
+class SensorServiceTest extends DataBaseTests {
 
     @Mock
     private SensorRepository sensorRepository;

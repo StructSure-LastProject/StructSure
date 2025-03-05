@@ -99,6 +99,45 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
 };
 
 /**
+ * Will fetch the list of the sensors of this structure without limit and Offset
+ */
+export const sensorsWithoutLimitAndOffsetFetchRequest = async (structureId, setSensors, setTotalItems, navigate, filters = {}) => {
+    const token = localStorage.getItem("token");
+    const { fetchData, statusCode, data } = useFetch();
+
+    // Construire le body avec les filtres
+    const requestBody = {
+        orderByColumn: filters.orderByColumn || "STATE",
+        orderType: filters.orderType || "ASC",
+        ...(filters?.stateFilter && { stateFilter: filters.stateFilter }),
+        ...(filters?.archivedFilter && {archivedFilter: filters.archivedFilter}),
+        ...(filters?.scanFilter && {scanFilter: filters.scanFilter}),
+        ...(filters?.planFilter && {planFilter: filters.planFilter}),
+        ...(filters?.minInstallationDate && {minInstallationDate: filters.minInstallationDate}),
+        ...(filters?.maxInstallationDate && {maxInstallationDate: filters.maxInstallationDate})
+    };
+
+
+    const requestUrl = `/api/structures/${structureId}/sensors`;
+
+    const requestData = {
+        method: "POST",  // Changer GET en POST
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(requestBody) // Ajouter les paramètres dans le body
+    };
+
+    await fetchData(navigate, requestUrl, requestData);
+
+    if (statusCode() === 200) {
+        setTotalItems(data().sizeOfResult);
+        setSensors((data().sensors));
+    }
+};
+
+/**
  * Shows the body part of the strcutre detail page
  * @returns component for the body part
  */

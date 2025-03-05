@@ -97,8 +97,12 @@ public class SensorRepositoryCriteriaQuery {
         };
         cq.orderBy(order);
         var query = em.createQuery(cq);
-        query.setFirstResult(request.offset());
-        query.setMaxResults(request.limit());
+        if (request.offset() != null) {
+            query.setFirstResult(request.offset());
+        }
+        if (request.limit() != null) {
+            query.setMaxResults(request.limit());
+        }
         return query.getResultList();
     }
 
