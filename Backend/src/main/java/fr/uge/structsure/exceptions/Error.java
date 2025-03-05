@@ -26,11 +26,13 @@ public enum Error {
     ORDER_BY_COLUMN_NAME_NOT_EXISTS(422, "L'ordre par le nom de la colonne n'existe pas"),
     LOGIN_PASSWORD_NOT_CORRECT(404, "Login ou mot de passe incorrect"),
     PASSWORD_NOT_VALID(422, "Le mot de passe doit comporter entre 12 et 64 caractères"),
+
     STRUCTURE_NAME_ALREADY_EXISTS(422, "Nom d'ouvrage déjà existant"),
     STRUCTURE_NAME_IS_EMPTY(422, "Le nom d'un ouvrage ne peut pas être vide"),
     STRUCTURE_ID_NOT_FOUND(404, "Id de l'ouvrage est introuvable"),
     STRUCTURE_NAME_EXCEED_LIMIT(422, "Le nom d'un ouvrage ne peut pas dépasser 64 caractères"),
     STRUCTURE_NOTE_EXCEED_LIMIT(422, "La note d'un ouvrage ne peut pas dépasser 1000 caractères"),
+    STRUCTURE_ID_INVALID(422, "L'id de l'ouvrage est invalide"),
 
     PLAN_NOT_BELONG_TO_STRUCTURE(422, "Plan n’appartient pas à l’ouvrage"),
     PLAN_STRUCTURE_ID_IS_EMPTY(422, "Le champ structureId est requis"),
@@ -72,7 +74,6 @@ public enum Error {
     DATE_FORMAT_ERROR(422, "Le format de la date n'est pas correct JJ-MM-AAAA"),
     DATE_TIME_ISO_FORMAT_ERROR(422, "Le format de la date n'est pas correct AAAA-MM-JJTHH:MM:SS"),
     DATE_TIME_FORMAT_ERROR(422, "Le format de la date n'est pas correct AAAA-MM-JJ HH:MM:SS.SSS");
-
 
     public final int code;
     public final String message;

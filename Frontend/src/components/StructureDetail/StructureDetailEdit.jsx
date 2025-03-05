@@ -39,7 +39,7 @@ function StructureDetailEdit(props) {
             });
             props.setNote(note());
         } else {
-            setErrorFronted(error().errorData.error);
+            setErrorFronted(error()?.errorData.error || "Une erreur est survenue");
         }
     };
 

@@ -96,18 +96,35 @@ const StructuresFilter = (props) => {
 
   const filterOptions = [
     { value: "", label: "Tout" },
-    { value: "OK", label: "OK" },
     { value: "NOK", label: "NOK" },
     { value: "DEFECTIVE", label: "Défaillant" },
+    { value: "OK", label: "OK" },
     { value: "UNKNOWN", label: "Non scanné" },
     { value: "ARCHIVED", label: "Archivé" }
   ];
 
-  const sortOptions = [
-    { value: "NAME", label: "Nom" },
-    { value: "NUMBER_OF_SENSORS", label: "Capteurs" },
-    { value: "STATE", label: "État" }
+  const filterOptionsOperator = [
+    { value: "", label: "Tout" },
+    { value: "OK", label: "OK" },
+    { value: "NOK", label: "NOK" },
+    { value: "DEFECTIVE", label: "Défaillant" },
+    { value: "UNKNOWN", label: "Non scanné" }
   ];
+
+  const sortOptions = [
+    { value: "STATE", label: "État" },
+    { value: "NAME", label: "Nom" },
+    { value: "NUMBER_OF_SENSORS", label: "Capteurs" }
+  ];
+
+  /**
+   * Check if there is role item in local storage and the role is an operator
+   * @returns {boolean} whether the role item is in local storage and current user is an operator
+   */
+  const isOperator = () => {
+    const role = localStorage.getItem("role");
+    return !(role == null || role !== "OPERATEUR");
+  }
 
   return (
     <div class="bg-white flex flex-col lg:flex-row justify-between w-full rounded-[20px] px-[20px] py-[15px] gap-4">
@@ -132,7 +149,7 @@ const StructuresFilter = (props) => {
 
       <CustomDropDown
         label="Filtrer"
-        options={filterOptions}
+        options={isOperator() ? filterOptionsOperator : filterOptions}
         value={props.filterValue()}
         onChange={props.setFilterValue}
       />
