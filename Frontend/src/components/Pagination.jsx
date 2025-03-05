@@ -61,18 +61,19 @@ const getPageNumbers = () => {
     for (let i = 1; i <= totalPages(); i++) {
       pagesArray.push(i);
     }
-  } else {
+  } 
+  else {
     pagesArray.push(1);
 
-    if (currentPage() > 3) pages.push('...');
+    if (currentPage() > 3) pagesArray.push('...');
 
-    for (let i = Math.max(currentPage() - 1, 2); i <= Math.min(currentPage() + 1, totalPages - 1); i++) {
+    for (let i = Math.max(currentPage() - 1, 2); i <= Math.min(currentPage() + 1, totalPages() - 1); i++) {
       pagesArray.push(i);
     }
 
-    if (currentPage() < totalPages - 2) pagesArray.push('...');
+    if (currentPage() < totalPages() - 2) pagesArray.push('...');
 
-    if (totalPages > 1) pagesArray.push(totalPages);
+    if (totalPages() > 1) pagesArray.push(totalPages());
   }    
   return pagesArray;
 };
