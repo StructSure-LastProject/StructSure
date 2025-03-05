@@ -154,6 +154,11 @@ public class StructureService {
         }
     }
 
+    /**
+     * Checks if the strucutre exists
+     * @param id the id of the structure
+     * @return option with the structure if the structure exists and empty if not
+     */
     public Optional<Structure> existStructure(Long id) {
         return structureRepository.findById(id);
     }
