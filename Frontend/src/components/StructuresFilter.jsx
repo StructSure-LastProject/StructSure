@@ -117,6 +117,10 @@ const StructuresFilter = (props) => {
     { value: "NUMBER_OF_SENSORS", label: "Capteurs" }
   ];
 
+  /**
+   * Check if there is role item in local storage and the role is an operator
+   * @returns {boolean} whether the role item is in local storage and current user is an operator
+   */
   const isOperator = () => {
     const role = localStorage.getItem("role");
     return !(role == null || role !== "OPERATEUR");
