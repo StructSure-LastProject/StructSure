@@ -1,5 +1,6 @@
 package fr.uge.structsure.services;
 
+import fr.uge.structsure.DataBaseTests;
 import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class PlanServiceTest {
+public class PlanServiceTest extends DataBaseTests {
 
     @Autowired
     private PlanService planService;

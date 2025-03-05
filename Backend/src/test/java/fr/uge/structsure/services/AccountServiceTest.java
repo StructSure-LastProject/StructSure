@@ -1,5 +1,6 @@
 package fr.uge.structsure.services;
 
+import fr.uge.structsure.DataBaseTests;
 import fr.uge.structsure.config.JwtUtils;
 import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
@@ -32,7 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class AccountServiceTest {
+class AccountServiceTest extends DataBaseTests {
 
     @Autowired
     private AccountService accountService;
