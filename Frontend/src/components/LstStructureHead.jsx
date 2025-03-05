@@ -1,4 +1,4 @@
-import {createSignal, Show} from "solid-js";
+import {createSignal, Show, onCleanup, onMount} from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import useFetch from '../hooks/useFetch';
 import { ChevronDown, ChevronUp, Plus } from 'lucide-solid';
@@ -24,6 +24,26 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
     const [note, setNote] = createSignal("");
 
     const navigate = useNavigate();
+
+    let modalRef;
+
+    /**
+     * Handles the close of the modal when click outside
+     * @param {Event} event 
+     */
+    const handleClickOutside = (event) => {
+        if (modalRef && !modalRef.contains(event.target)) {
+            closeModal();
+        }
+    };
+
+    onMount(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+    });
+
+    onCleanup(() => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    });
 
     /**
      * Toggle filter visibility
@@ -92,8 +112,8 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
           </div>
 
           {isModalVisible() && (
-            <div class="fixed z-50 inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                <form class="bg-white p-25px rounded-20px w-388px flex flex-col gap-y-15px"
+            <div class="fixed z-50 inset-0 bg-opacity-50 flex justify-center items-center bg-black/50 backdrop-blur-[10px]">
+                <form ref={modalRef} class="bg-white p-25px rounded-20px w-388px flex flex-col gap-y-15px"
                       onSubmit={handleFormSubmit}>
                     <h1 class="title">Ajouter un Ouvrage</h1>
                     <p class="text-sm text-red-500">{error}</p>
