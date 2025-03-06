@@ -1,6 +1,8 @@
 package fr.uge.structsure.controllers;
 
+import fr.uge.structsure.config.RequiresRole;
 import fr.uge.structsure.dto.sensors.*;
+import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.SensorService;
@@ -152,6 +154,7 @@ public class SensorController {
      * @param httpServletRequest The http servlet request
      * @return The response DTO
      */
+    @RequiresRole(Role.RESPONSABLE)
     @PutMapping("/sensors/archive")
     public ResponseEntity<?> archiveASensor(@RequestBody ArchiveSensorRequestDTO archiveSensorRequestDTO, HttpServletRequest httpServletRequest){
         try {
@@ -160,6 +163,4 @@ public class SensorController {
             return e.toResponseEntity();
         }
     }
-
-
 }

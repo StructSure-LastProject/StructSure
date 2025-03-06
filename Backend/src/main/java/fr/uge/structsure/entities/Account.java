@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import static fr.uge.structsure.StructSureBackendApplication.SUPER_ADMIN_LOGIN;
+
 @Entity
 public class Account {
 
@@ -111,6 +113,14 @@ public class Account {
 
     public void remove(Structure structure){
         structures.remove(Objects.requireNonNull(structure));
+    }
+
+    /**
+     * Test if this account is the super admin or not given its login.
+     * @return true if this account is the super admin, false otherwise
+     */
+    public boolean isSuperAdmin() {
+        return SUPER_ADMIN_LOGIN.equals(login);
     }
 
     @Override

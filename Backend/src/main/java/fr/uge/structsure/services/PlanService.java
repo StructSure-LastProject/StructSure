@@ -503,10 +503,6 @@ public class PlanService {
     public ArchiveRestorePlanResponseDTO archivePlan(Long id, Long planId, HttpServletRequest httpRequest) throws TraitementException {
         Objects.requireNonNull(httpRequest);
         planEmptyPrecondition(id, planId);
-        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
-        if (userSessionAccount.getRole() == Role.OPERATEUR) {
-            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
-        }
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
 
         var plan = planRepository.findByStructureAndId(structure, planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
@@ -527,10 +523,6 @@ public class PlanService {
     public ArchiveRestorePlanResponseDTO restorePlan(Long id, Long planId, HttpServletRequest httpRequest) throws TraitementException {
         Objects.requireNonNull(httpRequest);
         planEmptyPrecondition(id, planId);
-        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
-        if (userSessionAccount.getRole() == Role.OPERATEUR) {
-            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
-        }
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
         var plan = planRepository.findByStructureAndId(structure, planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
         plan.setArchived(false);

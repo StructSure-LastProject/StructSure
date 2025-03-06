@@ -4,7 +4,6 @@ import fr.uge.structsure.dto.scan.AndroidScanResultDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.ScanService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

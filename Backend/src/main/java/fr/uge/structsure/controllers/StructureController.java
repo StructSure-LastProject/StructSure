@@ -1,8 +1,10 @@
 package fr.uge.structsure.controllers;
 
+import fr.uge.structsure.config.RequiresRole;
 import fr.uge.structsure.dto.plan.PlanMetadataDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.structure.AllStructureRequestDTO;
+import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.PlanService;
 import fr.uge.structsure.services.StructureService;
@@ -50,6 +52,7 @@ public class StructureController {
      *   <li>An error response with the appropriate HTTP status and error details in case of a {@link TraitementException}.</li>
      * </ul>
      */
+    @RequiresRole(Role.RESPONSABLE)
     @PostMapping
     public ResponseEntity<?> addStructure(@RequestBody AddStructureRequestDTO request) {
         try {
@@ -69,6 +72,7 @@ public class StructureController {
      * @param file        The new file for the plan
      * @return ResponseEntity containing either the updated plan details or an error message
      */
+    @RequiresRole(Role.RESPONSABLE)
     @PutMapping("/{id}/plans/{planId}")
     public ResponseEntity<?> editPlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, @RequestPart("metadata") PlanMetadataDTO metadataDTO, @RequestPart("file") Optional<MultipartFile> file) {
         try {
@@ -86,6 +90,7 @@ public class StructureController {
      * @param request The http servlet request info
      * @return ResponseEntity containing either the updated plan details or an error message
      */
+    @RequiresRole(Role.RESPONSABLE)
     @PutMapping("/{id}/plans/{planId}/archive")
     public ResponseEntity<?> archivePlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, HttpServletRequest request) {
         try {
@@ -103,6 +108,7 @@ public class StructureController {
      * @param request The http servlet request info
      * @return ResponseEntity containing either the updated plan details or an error message
      */
+    @RequiresRole(Role.RESPONSABLE)
     @PutMapping("/{id}/plans/{planId}/restore")
     public ResponseEntity<?> restorePlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, HttpServletRequest request) {
         try {
@@ -130,6 +136,7 @@ public class StructureController {
      *   <li>An error response with the appropriate HTTP status and error details in case of a {@link TraitementException}.</li>
      * </ul>
      */
+    @RequiresRole(Role.RESPONSABLE)
     @PutMapping("/{id}")
     public ResponseEntity<?> editStructure(@PathVariable("id") Long id, @RequestBody AddStructureRequestDTO request) {
         try {
@@ -145,6 +152,7 @@ public class StructureController {
      * @param id The structure id
      * @return ResponseEntity containing either the restore details or an error message
      */
+    @RequiresRole(Role.RESPONSABLE)
     @PutMapping("/{id}/restore")
     public ResponseEntity<?> restoreStructure(@PathVariable("id") Long id, HttpServletRequest httpRequest) {
         try {
@@ -159,6 +167,7 @@ public class StructureController {
      * @param id The structure id
      * @return ResponseEntity containing either the archive details or an error message
      */
+    @RequiresRole(Role.RESPONSABLE)
     @PutMapping("/{id}/archive")
     public ResponseEntity<?> archiveStructure(@PathVariable("id") Long id, HttpServletRequest httpRequest) {
         try {
@@ -178,6 +187,7 @@ public class StructureController {
      * @param file        The multipart file containing the plan image
      * @return ResponseEntity containing either the created plan details or an error message
      */
+    @RequiresRole(Role.RESPONSABLE)
     @PostMapping("/{id}/plans")
     public ResponseEntity<?> addPlan(@PathVariable("id") Long id, @RequestPart("metadata") PlanMetadataDTO metadataDTO, @RequestPart("file") MultipartFile file) {
         try {

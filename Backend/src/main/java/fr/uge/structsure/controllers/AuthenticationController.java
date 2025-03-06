@@ -1,8 +1,10 @@
 package fr.uge.structsure.controllers;
 
+import fr.uge.structsure.config.RequiresRole;
 import fr.uge.structsure.dto.auth.ChangePasswordRequestDTO;
 import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
+import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
 import fr.uge.structsure.utils.AuthenticationType;
@@ -27,6 +29,14 @@ public class AuthenticationController {
         this.accountService = Objects.requireNonNull(accountService);
     }
 
+    /**
+     * Endpoint that will create a new account if the given account
+     * details are valid and if the user that sends the request has
+     * high enough privileges.
+     * @param registerRequestDTO the details of the account to create
+     * @return the created account
+     */
+    @RequiresRole(Role.ADMIN)
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequestDTO registerRequestDTO) {
         try {
@@ -76,11 +86,6 @@ public class AuthenticationController {
         } catch (TraitementException e) {
             return e.toResponseEntity("User change password rejected: {}");
         }
-    }
-
-    @GetMapping("/test")
-    public ResponseEntity<?> login() {
-        return ResponseEntity.status(200).body("test");
     }
 }
 
