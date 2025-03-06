@@ -33,14 +33,12 @@ function AccountChangePassword() {
      * Will call the api to change password
      */
     const changePasswordFetchRequest = async () => {
-        const token = localStorage.getItem("token");
         const userId = localStorage.getItem("userId");
 
         const requestData = {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({
                 userId: userId,

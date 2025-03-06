@@ -20,8 +20,6 @@ const ConfirmationDeleteModal = ({
 }) => {
 
     const { fetchData, statusCode } = useFetch();
-    const token = localStorage.getItem("token");
-
     let modalRef;
         
     /**
@@ -51,7 +49,6 @@ const ConfirmationDeleteModal = ({
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
             }
         });
         

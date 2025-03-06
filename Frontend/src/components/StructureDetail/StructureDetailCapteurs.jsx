@@ -84,7 +84,6 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
 
     const navigate = useNavigate();
     const { fetchData, statusCode } = useFetch();
-    const token = localStorage.getItem("token");
     
 
     /**
@@ -135,7 +134,6 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({
                 controlChip: sensorDetails.controlChip,

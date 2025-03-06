@@ -35,13 +35,10 @@ const AdminPanelBody = () => {
      * Fetch user details
      */
     const fetchUserDetails = async () => {
-        const token = localStorage.getItem("token");
-        
         const requestData = {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
             }
         };
         
