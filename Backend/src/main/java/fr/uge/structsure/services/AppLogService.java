@@ -1,11 +1,9 @@
 package fr.uge.structsure.services;
 
+import fr.uge.structsure.dto.scan.AndroidSensorEditDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.userAccount.UserUpdateRequestDTO;
-import fr.uge.structsure.entities.Account;
-import fr.uge.structsure.entities.AppLog;
-import fr.uge.structsure.entities.Plan;
-import fr.uge.structsure.entities.Structure;
+import fr.uge.structsure.entities.*;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
 import fr.uge.structsure.repositories.AppLogRepository;
@@ -73,8 +71,7 @@ public class AppLogService {
      */
     public void addAccount(HttpServletRequest request, Account created) {
         var author = currentAccount(request);
-        save(author, String.format(
-            "Compte créé: %s - %s (#%d)",
+        save(author, String.format("Compte créé: %s - %s (#%d)",
             created.getLogin(), created.getRole(), created.getId()
         ));
     }
@@ -86,10 +83,11 @@ public class AppLogService {
      * @param edits the new values to log
      */
     public void editAccount(HttpServletRequest request, Account account, UserUpdateRequestDTO edits) {
+        var diff = edits.logDiff(account);
+        if (diff.isEmpty()) return;
         var author = currentAccount(request);
-        save(author, String.format(
-            "Compte édité: %s (#%d)%s",
-            account.getLogin(), account.getId(), edits.logDiff(account)
+        save(author, String.format("Compte édité: %s (#%d)%s",
+            account.getLogin(), account.getId(), diff
         ));
     }
 
@@ -101,9 +99,7 @@ public class AppLogService {
      */
     public void deleteAccount(HttpServletRequest request, String login, long id) {
         var author = currentAccount(request);
-        save(author, String.format(
-            "Compte supprimé: %s (#%d)", login, id
-        ));
+        save(author, String.format("Compte supprimé: %s (#%d)", login, id));
     }
 
     /**
@@ -113,8 +109,8 @@ public class AppLogService {
      */
     public void addStructure(HttpServletRequest request, Structure structure) {
         var author = currentAccount(request);
-        save(author, String.format(
-            "Ouvrage créé: %s (#%d)", structure.getName(), structure.getId()
+        save(author, String.format("Ouvrage créé: %s (#%d)",
+            structure.getName(), structure.getId()
         ));
     }
 
@@ -125,10 +121,11 @@ public class AppLogService {
      * @param edits the new values to log
      */
     public void editStructure(HttpServletRequest request, Structure structure, AddStructureRequestDTO edits) {
+        var diff = edits.logDiff(structure);
+        if (diff.isEmpty()) return;
         var author = currentAccount(request);
-        save(author, String.format(
-            "Ouvrage édité: %s (#%d)%s",
-            structure.getName(), structure.getId(), edits.logDiff(structure)
+        save(author, String.format("Ouvrage édité: %s (#%d)%s",
+            structure.getName(), structure.getId(), diff
         ));
     }
 
@@ -139,8 +136,8 @@ public class AppLogService {
      */
     public void archiveStructure(HttpServletRequest request, Structure structure) {
         var author = currentAccount(request);
-        save(author, String.format(
-            "Ouvrage archivé: %s (#%d)", structure.getName(), structure.getId()
+        save(author, String.format("Ouvrage archivé: %s (#%d)",
+            structure.getName(), structure.getId()
         ));
     }
 
@@ -151,8 +148,8 @@ public class AppLogService {
      */
     public void restoreStructure(HttpServletRequest request, Structure structure) {
         var author = currentAccount(request);
-        save(author, String.format(
-            "Ouvrage restauré: %s (#%d)", structure.getName(), structure.getId()
+        save(author, String.format("Ouvrage restauré: %s (#%d)",
+            structure.getName(), structure.getId()
         ));
     }
 
@@ -173,6 +170,7 @@ public class AppLogService {
      * @param diff the updated fields
      */
     public void editPlan(HttpServletRequest request, Plan plan, String diff) {
+        if (diff.isEmpty()) return;
         var author = currentAccount(request);
         save(author, String.format("Plan édité: %s%s", plan, diff));
     }
@@ -197,5 +195,105 @@ public class AppLogService {
         // TODO connect to the service method once implemented
         var author = currentAccount(request);
         save(author, String.format("Plan restoré: %s", plan));
+    }
+
+    /**
+     * Adds a log entry for a new sensor creation.
+     * @param request to extract the author of this action
+     * @param sensor the freshly created sensor
+     */
+    public void addSensor(HttpServletRequest request, Sensor sensor) {
+        var author = currentAccount(request);
+        save(author, String.format("Capteur créé: %s (%s), Note: %s",
+            sensor.getName(), sensor.getSensorId(), sensor.getNote()
+        ));
+    }
+
+    /**
+     * Adds a log entry for an existing sensor edition.
+     * @param request to extract the author of this action
+     * @param sensor the updated sensor
+     * @param diff the updated fields
+     */
+    public void editSensor(HttpServletRequest request, Sensor sensor, String diff) {
+        if (diff.isEmpty()) return;
+        var author = currentAccount(request);
+        save(author, String.format("Capteur édité: %s (%s)%s",
+            sensor.getName(), sensor.getSensorId(), diff
+        ));
+    }
+
+    /**
+     * Adds a log entry for an existing sensor archivage.
+     * @param request to extract the author of this action
+     * @param sensor the archived sensor
+     */
+    public void archiveSensor(HttpServletRequest request, Sensor sensor) {
+        var author = currentAccount(request);
+        save(author, String.format("Capteur archivé: %s (%s)",
+            sensor.getName(), sensor.getSensorId()
+        ));
+    }
+
+    /**
+     * Adds a log entry for an existing sensor restoration.
+     * @param request to extract the author of this action
+     * @param sensor the restored sensor
+     */
+    public void restoreSensor(HttpServletRequest request, Sensor sensor) {
+        var author = currentAccount(request);
+        save(author, String.format("Capteur restauré: %s (%s)",
+            sensor.getName(), sensor.getSensorId()
+        ));
+    }
+
+    /**
+     * Adds a log entry for a new scan creation.
+     * @param request to extract the author of this action
+     * @param scan the received scan
+     * @param results the number of results saved
+     */
+    public void addScan(HttpServletRequest request, Scan scan, int results) {
+        var author = currentAccount(request);
+        save(author, String.format(
+            "Scan ajouté: Scan: #%d, Ouvrage: %s (#%d), Auteur: %s, Résultats: %d, Note: %s",
+            scan.getId(), scan.getStructure().getName(), scan.getStructure().getId(),
+            scan.getAuthor().getLogin(), results, scan.getNote()
+        ));
+    }
+
+    /**
+     * Adds a log entry for a sensor creation/edition within a scan.
+     * @param request to extract the author of this action
+     * @param scan the scan where the edition occurs
+     * @param sensor the edited sensor
+     * @param edit the new data of the sensor
+     * @param newSensor true if this sensor just got created
+     */
+    public void addScanEdit(HttpServletRequest request, Scan scan, Sensor sensor, AndroidSensorEditDTO edit, boolean newSensor) {
+        var author = currentAccount(request);
+        if (newSensor) {
+            save(author, String.format("Capteur créé lors du scan #%d: %s (%s), Note: %s",
+                scan.getId(), sensor.getName(), sensor.getSensorId(), sensor.getNote()
+            ));
+        } else {
+            save(author, String.format("Capteur édité lors du scan #%d: %s (%s)%s",
+                scan.getId(), sensor.getName(), sensor.getSensorId(), edit.logDiff(sensor)
+            ));
+        }
+    }
+
+    /**
+     * Adds a log entry for a sensor creation/edition within a scan.
+     * @param request to extract the author of this action
+     * @param scan the scan where the edition occurs
+     * @param structure structure to be edited
+     * @param note the new structure note
+     */
+    public void addScanNote(HttpServletRequest request, Scan scan, Structure structure, String note) {
+        var author = currentAccount(request);
+        save(author, String.format("Note d'ouvrage éditée lors du scan #%d: %s (%s), Note: %s -> %s",
+            scan.getId(), structure.getName(), structure.getId(), scan.getNote(), note
+        ));
     }
 }

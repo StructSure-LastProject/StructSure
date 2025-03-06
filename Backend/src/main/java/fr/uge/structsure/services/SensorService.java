@@ -25,6 +25,7 @@ public class SensorService {
     private final PlanRepository planRepository;
     private final AccountRepository accountRepository;
     private final SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery;
+    private final AppLogService appLogs;
 
     private final AuthValidationService authValidationService;
 
@@ -35,17 +36,23 @@ public class SensorService {
      * @param resultRepository the result repository
      * @param planRepository the plan repository
      * @param accountRepository The account repository
+     * @param appLogService The logs manager
      * @param sensorRepositoryCriteriaQuery the sensor repository using criteria query api
      * @param authValidationService The auth validation service
      */
     @Autowired
-    public SensorService(SensorRepository sensorRepository, StructureRepository structureRepository, ResultRepository resultRepository, PlanRepository planRepository,
-        AccountRepository accountRepository,SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery, AuthValidationService authValidationService) {
+    public SensorService(
+        SensorRepository sensorRepository, StructureRepository structureRepository,
+        ResultRepository resultRepository, PlanRepository planRepository,
+        AccountRepository accountRepository, AppLogService appLogService,
+        SensorRepositoryCriteriaQuery sensorRepositoryCriteriaQuery, AuthValidationService authValidationService
+    ) {
         this.sensorRepository = sensorRepository;
         this.structureRepository = structureRepository;
         this.resultRepository = resultRepository;
         this.planRepository = planRepository;
         this.accountRepository = accountRepository;
+        this.appLogs = appLogService;
         this.sensorRepositoryCriteriaQuery = sensorRepositoryCriteriaQuery;
         this.authValidationService = authValidationService;
     }
@@ -143,30 +150,32 @@ public class SensorService {
      * If the provided structure ID does not exist, an exception is thrown.
      * Finally, the sensor is saved in the repository and its identifier is returned.
      *
-     * @param request An object containing the necessary information to create a sensor.
+     * @param request to get the current user account
+     * @param sensorDto An object containing the necessary information to create a sensor.
      * @return A DTO containing the identifiers of the created sensor.
      * @throws TraitementException If preconditions are not met or uniqueness constraints fail.
      */
-    public AddSensorResponseDTO createSensor(BaseSensorDTO request) throws TraitementException {
-        Objects.requireNonNull(request);
-        addPlanAsserts(request);
-        if (request.measureChip().equals(request.controlChip())) {
+    public AddSensorResponseDTO createSensor(HttpServletRequest request, BaseSensorDTO sensorDto) throws TraitementException {
+        Objects.requireNonNull(sensorDto);
+        addPlanAsserts(sensorDto);
+        if (sensorDto.measureChip().equals(sensorDto.controlChip())) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_ARE_IDENTICAL);
         }
-        var structure = structureRepository.findById(request.structureId()).orElseThrow(() -> new TraitementException(Error.SENSOR_STRUCTURE_NOT_FOUND));
+        var structure = structureRepository.findById(sensorDto.structureId()).orElseThrow(() -> new TraitementException(Error.SENSOR_STRUCTURE_NOT_FOUND));
         checkState(structure);
-        if (sensorRepository.chipTagAlreadyExists(request.controlChip())) {
+        if (sensorRepository.chipTagAlreadyExists(sensorDto.controlChip())) {
             throw new TraitementException(Error.SENSOR_CHIP_TAGS_ALREADY_EXISTS);
         }
-        if (sensorRepository.nameAlreadyExists(request.name())) {
+        if (sensorRepository.nameAlreadyExists(sensorDto.name())) {
             throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
         }
-        var sensor = new Sensor(request.controlChip(),
-                request.measureChip(),
-                request.name(),
-                request.note() == null ? "": request.note(),
+        var sensor = new Sensor(sensorDto.controlChip(),
+            sensorDto.measureChip(),
+            sensorDto.name(),
+            sensorDto.note() == null ? "": sensorDto.note(),
                 structure);
         var saved = sensorRepository.save(sensor);
+        appLogs.addSensor(request, sensor);
         return new AddSensorResponseDTO(saved.getSensorId().getControlChip(), saved.getSensorId().getMeasureChip());
     }
 
@@ -242,11 +251,13 @@ public class SensorService {
 
     /**
      * Service that will handle the edit sensor request
+     * @param request the request to get the author account from
      * @param editSensorRequestDTO The edit sensor request DTO
      */
-    public EditSensorResponseDTO editSensor(EditSensorRequestDTO editSensorRequestDTO) throws TraitementException {
+    public EditSensorResponseDTO editSensor(HttpServletRequest request, EditSensorRequestDTO editSensorRequestDTO) throws TraitementException {
         Objects.requireNonNull(editSensorRequestDTO);
         var sensor = sensorRepository.findByChipsId(editSensorRequestDTO.controlChip(), editSensorRequestDTO.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
+        var diff = editSensorRequestDTO.logDiff(sensor);
         if (!sensor.getName().equals(editSensorRequestDTO.name())){
             if (sensorRepository.nameAlreadyExists(editSensorRequestDTO.name())) {
                 throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
@@ -265,6 +276,7 @@ public class SensorService {
             sensor.setInstallationDate(null);
         }
         var sensorSaved = sensorRepository.save(sensor);
+        appLogs.editSensor(request, sensor, diff);
         return new EditSensorResponseDTO(sensorSaved.getSensorId().getControlChip(), sensorSaved.getSensorId().getMeasureChip(), LocalDateTime.now().toString());
     }
 
@@ -357,6 +369,8 @@ public class SensorService {
         ).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
         sensor.setArchived(isArchived);
         sensorRepository.save(sensor);
+        if (isArchived) appLogs.archiveSensor(request, sensor);
+        else appLogs.restoreSensor(request, sensor);
         return new EditSensorResponseDTO(
             sensor.getSensorId().getControlChip(),
             sensor.getSensorId().getMeasureChip(),
