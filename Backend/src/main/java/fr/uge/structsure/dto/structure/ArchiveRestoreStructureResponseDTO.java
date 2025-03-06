@@ -6,5 +6,5 @@ package fr.uge.structsure.dto.structure;
  * @param name The structure name
  * @param archived Whether is archived or not
  */
-public record ArchiveRestoreStructureResponseDto(long id, String name, String archived) {
+public record ArchiveRestoreStructureResponseDTO(long id, String name, boolean archived) {
 }

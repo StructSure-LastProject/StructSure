@@ -1,16 +1,17 @@
 package fr.uge.structsure.services;
 
-import fr.uge.structsure.dto.plan.AddPlanResponseDTO;
-import fr.uge.structsure.dto.plan.EditPlanResponseDTO;
-import fr.uge.structsure.dto.plan.PlanImageResponseDTO;
-import fr.uge.structsure.dto.plan.PlanMetadataDTO;
+import fr.uge.structsure.dto.plan.*;
 import fr.uge.structsure.entities.Plan;
+import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.entities.SensorId;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
+import fr.uge.structsure.repositories.AccountRepository;
 import fr.uge.structsure.repositories.PlanRepository;
 import fr.uge.structsure.repositories.SensorRepository;
+import fr.uge.structsure.repositories.StructureRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +38,15 @@ public class PlanService {
     private final SensorRepository sensorRepository;
     private final StructureService structureService;
     private final SensorService sensorService;
+    private final AuthValidationService authValidationService;
+    private final AccountRepository accountRepository;
     private final Path uploadDir;
 
     private static final List<MediaType> ALLOWED_MIME_TYPES = Arrays.asList(
         MediaType.IMAGE_JPEG,
         MediaType.IMAGE_PNG
     );
+    private final StructureRepository structureRepository;
 
     /**
      * Constructor
@@ -53,14 +57,17 @@ public class PlanService {
      */
     @Autowired
     public PlanService(PlanRepository planRepository, SensorRepository sensorRepository,
-       StructureService structureService, SensorService sensorService,
-       @Value("${file.upload-dir}") Path uploadDir
-    ) {
+                       StructureService structureService, SensorService sensorService, AuthValidationService authValidationService, AccountRepository accountRepository,
+                       @Value("${file.upload-dir}") Path uploadDir,
+                       StructureRepository structureRepository) {
         this.planRepository = planRepository;
         this.sensorRepository = sensorRepository;
         this.structureService = structureService;
         this.sensorService = sensorService;
+        this.authValidationService = authValidationService;
+        this.accountRepository = accountRepository;
         this.uploadDir = uploadDir;
+        this.structureRepository = structureRepository;
     }
 
     /**
@@ -350,17 +357,28 @@ public class PlanService {
      *
      * @param structureId The ID of the structure to be validated
      * @param planId The ID of the plan to be validated
-     * @param metadata The DTO containing plan details to be validated
      * @throws TraitementException if any required field is null or empty
      */
-    private void planEmptyPrecondition(Long structureId, Long planId, PlanMetadataDTO metadata) throws TraitementException {
-        Objects.requireNonNull(metadata);
+    private void planEmptyPrecondition(Long structureId, Long planId) throws TraitementException {
         if (structureId == null) {
             throw new TraitementException(Error.PLAN_STRUCTURE_ID_IS_EMPTY);
         }
         if (planId == null) {
             throw new TraitementException(Error.PLAN_ID_IS_EMPTY);
         }
+    }
+
+    /**
+     * Validates that all required plan fields are present and not empty.
+     *
+     * @param structureId The ID of the structure to be validated
+     * @param planId The ID of the plan to be validated
+     * @param metadata The DTO containing plan details to be validated
+     * @throws TraitementException if any required field is null or empty
+     */
+    private void planEmptyPrecondition(Long structureId, Long planId, PlanMetadataDTO metadata) throws TraitementException {
+        Objects.requireNonNull(metadata);
+        planEmptyPrecondition(structureId, planId);
         if (metadata.name() == null || metadata.name().isEmpty()) {
             throw new TraitementException(Error.PLAN_NAME_IS_EMPTY);
         }
@@ -472,5 +490,51 @@ public class PlanService {
             throw new TraitementException(Error.PLAN_NOT_FOUND);
         }
         return downloadPlanImage(plan.getId());
+    }
+
+    /**
+     * Archive a plan and remove all sensors associated
+     * @param id The structure id
+     * @param planId The plan id
+     * @param httpRequest The http servlet request info
+     * @return the record containing the response
+     * @throws TraitementException in case of incorrect behaviour
+     */
+    public ArchiveRestorePlanResponseDTO archivePlan(Long id, Long planId, HttpServletRequest httpRequest) throws TraitementException {
+        Objects.requireNonNull(httpRequest);
+        planEmptyPrecondition(id, planId);
+        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
+        if (userSessionAccount.getRole() == Role.OPERATEUR) {
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
+        }
+        var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
+
+        var plan = planRepository.findByStructureAndId(structure, planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
+        plan.setArchived(true);
+        sensorRepository.clearPlanReferencesByPlanId(id);
+        var saved = planRepository.save(plan);
+        return new ArchiveRestorePlanResponseDTO(saved.getId(), saved.getName(), saved.isArchived());
+    }
+
+    /**
+     * Restore a plan
+     * @param id The structure id
+     * @param planId The plan id
+     * @param httpRequest The http servlet request info
+     * @return the record containing the response
+     * @throws TraitementException in case of incorrect behaviou
+     */
+    public ArchiveRestorePlanResponseDTO restorePlan(Long id, Long planId, HttpServletRequest httpRequest) throws TraitementException {
+        Objects.requireNonNull(httpRequest);
+        planEmptyPrecondition(id, planId);
+        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
+        if (userSessionAccount.getRole() == Role.OPERATEUR) {
+            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
+        }
+        var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
+        var plan = planRepository.findByStructureAndId(structure, planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
+        plan.setArchived(false);
+        var saved = planRepository.save(plan);
+        return new ArchiveRestorePlanResponseDTO(saved.getId(), saved.getName(), saved.isArchived());
     }
 }

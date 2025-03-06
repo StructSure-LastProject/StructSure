@@ -282,10 +282,11 @@ public class StructureService {
     /**
      * Restore archived structure
      * @param id The structure id
+     * @param httpRequest The http servlet request info
      * @return the record containing the response
      * @throws TraitementException in case of incorrect behaviour
      */
-    public ArchiveRestoreStructureResponseDto restoreStructure(Long id, HttpServletRequest httpRequest) throws TraitementException {
+    public ArchiveRestoreStructureResponseDTO restoreStructure(Long id, HttpServletRequest httpRequest) throws TraitementException {
         Objects.requireNonNull(httpRequest);
         if (Objects.isNull(id)) {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
@@ -297,17 +298,17 @@ public class StructureService {
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
         structure.setArchived(false);
         var saved = structureRepository.save(structure);
-        var archived = saved.getArchived() ? "archivé" : "actif";
-        return new ArchiveRestoreStructureResponseDto(saved.getId(), saved.getName(), archived);
+        return new ArchiveRestoreStructureResponseDTO(saved.getId(), saved.getName(), saved.getArchived());
     }
 
     /**
      * Archive a structure
      * @param id The structure id
      * @return the record containing the response
+     * @param httpRequest The http servlet request info
      * @throws TraitementException in case of incorrect behaviour
      */
-    public ArchiveRestoreStructureResponseDto archiveStructure(Long id, HttpServletRequest httpRequest) throws TraitementException {
+    public ArchiveRestoreStructureResponseDTO archiveStructure(Long id, HttpServletRequest httpRequest) throws TraitementException {
         Objects.requireNonNull(httpRequest);
         if (Objects.isNull(id)) {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
@@ -319,7 +320,6 @@ public class StructureService {
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
         structure.setArchived(true);
         var saved = structureRepository.save(structure);
-        var archived = saved.getArchived() ? "archivé" : "actif";
-        return new ArchiveRestoreStructureResponseDto(saved.getId(), saved.getName(), archived);
+        return new ArchiveRestoreStructureResponseDTO(saved.getId(), saved.getName(), saved.getArchived());
     }
 }

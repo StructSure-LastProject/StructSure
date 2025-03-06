@@ -5,7 +5,9 @@ import fr.uge.structsure.entities.Plan;
 import fr.uge.structsure.entities.Sensor;
 import fr.uge.structsure.entities.SensorId;
 import fr.uge.structsure.entities.Structure;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -94,4 +96,13 @@ SensorRepository extends JpaRepository<Sensor, Long> {
      * @return optional with the sensor if there is a sensor and optional empty if not
      */
     Optional<Sensor> findBySensorId(SensorId sensorId);
+
+    /**
+     * Update sensors associated with a specific plan id by removing x, y and plan reference
+     * @param planId The plan id
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE Sensor s SET s.plan = NULL, s.x = NULL, s.y = NULL WHERE s.plan.id = :planId")
+    void clearPlanReferencesByPlanId(@Param("planId") Long planId);
 }
