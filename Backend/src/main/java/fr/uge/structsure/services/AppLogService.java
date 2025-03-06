@@ -8,37 +8,49 @@ import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
 import fr.uge.structsure.repositories.AppLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Account service class
  */
 @Service
 public class AppLogService {
+
+    /** The logger of this service */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppLogService.class);
+
     private final AppLogRepository appLogRepository;
     private final AccountRepository accountRepository;
     private final AuthValidationService authValidation;
+    private final int logsKeepingDays;
+    private final AtomicInteger counter = new AtomicInteger(0);
 
     /**
      * Constructor
-     * @param appLogRepository Database access to the logs table
-     * @param accountRepository Database access to the accounts table
+     * @param appLogRepository Database access to the log table
+     * @param accountRepository Database access to the account table
      * @param authValidation Service to validate authentication
+     * @param logsKeepingDays Maximum time to keep logs in the database
      */
     @Autowired
     public AppLogService(
         AppLogRepository appLogRepository, AccountRepository accountRepository,
-        AuthValidationService authValidation
+        AuthValidationService authValidation, @Value("${logs.expiration-time.days}") int logsKeepingDays
     ) {
         this.appLogRepository = Objects.requireNonNull(appLogRepository);
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.authValidation = Objects.requireNonNull(authValidation);
+        this.logsKeepingDays = logsKeepingDays;
     }
-
-    // TODO flush too old entries
 
     /**
      * Creates and saves a new log entry with the given author and
@@ -46,8 +58,14 @@ public class AppLogService {
      * @param author the user that initiated the action
      * @param message the description of the action
      */
-    private void save(Account author, String message) {
+    void save(Account author, String message) {
         appLogRepository.save(new AppLog(author, message));
+        if (counter.getAndIncrement() % 100 == 0) {
+            var maxTime = LocalDateTime.now().minusDays(logsKeepingDays);
+            var removed = appLogRepository.deleteAllByTimeBefore(maxTime);
+            if (removed == 0) return;
+            LOGGER.info("Removed {} logs entries from the database (TTL:{} days)", removed, logsKeepingDays);
+        }
     }
 
     /**
