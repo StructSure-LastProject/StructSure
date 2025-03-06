@@ -1,15 +1,15 @@
-import useFetch from '../hooks/useFetch';
 import {useNavigate} from "@solidjs/router";
 import {Trash2} from "lucide-solid";
-import ErrorMessage from "./Modal/ErrorMessage.jsx";
 import { onCleanup, onMount } from 'solid-js';
+import useFetch from "../../hooks/useFetch.js";
+import ErrorMessage from "../Modal/ErrorMessage.jsx";
 
 /**
- * Modal component for archiving structures
+ * Modal component for archiving plan
  * @param {Object} props Component properties
- * @returns {JSX.Element} The archive modal component
+ * @returns {JSX.Element} The plan modal component
  */
-function ArchiveModal(props) {
+function ArchivePlanModal(props) {
   const { fetchData, statusCode, data, error } = useFetch();
   const navigate = useNavigate();
 
@@ -17,47 +17,49 @@ function ArchiveModal(props) {
 
   /**
    * Handles the close of the modal when click outside
-   * @param {Event} event 
+   * @param {Event} event
    */
   const handleClickOutside = (event) => {
-      if (modalRef && !modalRef.contains(event.target)) {
-          props.onClose();
-      }
+    if (modalRef && !modalRef.contains(event.target)) {
+      props.onClose();
+    }
   };
 
   onMount(() => {
-      document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
   });
 
   onCleanup(() => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    document.removeEventListener("mousedown", handleClickOutside);
   });
 
   /**
-   * Handles the archive of a structure
+   * Handles the archive of a plan
    */
   const handleArchive = async () => {
-    if (!props.structure) return;
+    if (!props.plan || !props.structureId) return;
 
+    const token = localStorage.getItem("token");
     const requestData = {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       }
     };
 
     await fetchData(
       navigate,
-      `/api/structures/${props.structure.id}/archive`,
+      `/api/structures/${props.structureId}/plans/65846161646465432136468/archive`,
       requestData
     );
 
     if (statusCode() === 200) {
       props.onArchive && props.onArchive(data());
     } else if (statusCode() === 422) {
-      props.setErrorMsgArchiveStructure(error()?.errorData.error);
+      props.setErrorMsgArchivePlan(error()?.errorData.error);
     } else {
-      props.setErrorMsgArchiveStructure("Une erreur est survenue");
+      props.setErrorMsgArchivePlan("Une erreur est survenue");
     }
   };
 
@@ -65,9 +67,9 @@ function ArchiveModal(props) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
       <div ref={modalRef} class="bg-white p-6 rounded-[20px] shadow-lg w-[370px]">
         <h2 class="title mb-4">Archivage</h2>
-        <ErrorMessage message={props.errorMsgArchiveStructure}></ErrorMessage>
+        <ErrorMessage message={props.errorMsgArchivePlan}></ErrorMessage>
         <p class="mb-6 normal">
-          Souhaitez vous archiver l&apos;ouvrage <span class="font-bold">{props.structure?.name}</span> ?
+          Souhaitez vous archiver le plan <span class="font-bold">{props.plan?.name}</span> ?
         </p>
         <div class="flex justify-between gap-4">
           <button
@@ -89,4 +91,4 @@ function ArchiveModal(props) {
   );
 }
 
-export default ArchiveModal;
+export default ArchivePlanModal;

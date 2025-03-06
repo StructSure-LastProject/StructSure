@@ -127,6 +127,17 @@ function StructureDetailPlans(props) {
         closeAddModal();
     };
 
+    const handlePlanRestore = (planId) => {
+        setPlans(prevPlans =>
+          prevPlans.map(plan =>
+            plan.id === planId
+              ? { ...plan, archived: false, type: isAuthorized() ? "edit" : "plan" }
+              : plan
+          )
+        );
+        console.log("plans", plans());
+    }
+
     /**
      * Effect that updates plans based on props and user role
      */
@@ -176,46 +187,55 @@ function StructureDetailPlans(props) {
                             selectedPlanId={props.selectedPlanId}
                             setSelectedPlanId={props.setSelectedPlanId}
                             onEdit={handleEdit}
-                            onPlanEdit={handleEditSave}
+                            onPlanRestore={handlePlanRestore}
                             structureId={props.structureId}
                         />
                     </div>
                     <Show when={isAddModalOpen()}>
                         <ModalAddPlan
-                        isOpen={isAddModalOpen()}
-                        onSave={handleAddSave}
-                        onClose={closeAddModal}
-                        structureId={props.structureId}
+                            isOpen={isAddModalOpen()}
+                            onSave={handleAddSave}
+                            onClose={closeAddModal}
+                            structureId={props.structureId}
                         />
                     </Show>
                     <Show when={isEditModalOpen() && selectedPlan()}>
                         <ModalEditPlan
-                        isOpen={isEditModalOpen()}
-                        onSave={handleEditSave}
-                        onClose={() => {
-                            setIsEditModalOpen(false);
-                            setSelectedPlan(null);
-                        }}
-                        structureId={props.structureId}
-                        plan={selectedPlan()}
-                        setPlan={setPlan}
-                        selectedPlanId={props.selectedPlanId}
+                            isOpen={isEditModalOpen()}
+                            onSave={handleEditSave}
+                            onClose={() => {
+                                setIsEditModalOpen(false);
+                                setSelectedPlan(null);
+                            }}
+                            structureId={props.structureId}
+                            plan={selectedPlan()}
+                            setPlan={setPlan}
+                            selectedPlanId={props.selectedPlanId}
                         />
                     </Show>
                 </div>
 
-                <div class="lg:w-[75%] rounded-[20px] bg-white">
-                    <div class="w-full p-[20px]">
-                        <div class="w-full relative">
-                            <Show when={plan() !== null}>
-                                <StructureDetailCanvas structureId={props.structureId} plan={plan} interactiveMode={true} planSensors={props.planSensors} structureDetails={props.structureDetails} 
-                                setPlanSensors={props.setPlanSensors} sensors={props.sensors} setSensors={props.setSensors} setSensorsDetail={props.setSensorsDetail} selectedPlanId={props.selectedPlanId}/>
-                            </Show>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
+              <div class="lg:w-[75%] rounded-[20px] bg-white">
+                  <div class="w-full p-[20px]">
+                      <div class="w-full relative">
+                          <Show when={plan() !== null}>
+                              <StructureDetailCanvas
+                                structureId={props.structureId}
+                                plan={plan} interactiveMode={true}
+                                planSensors={props.planSensors}
+                                structureDetails={props.structureDetails}
+                                setPlanSensors={props.setPlanSensors}
+                                sensors={props.sensors}
+                                setSensors={props.setSensors}
+                                setSensorsDetail={props.setSensorsDetail}
+                                selectedPlanId={props.selectedPlanId}
+                              />
+                          </Show>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </>
     );
 }
 

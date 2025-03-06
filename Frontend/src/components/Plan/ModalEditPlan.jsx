@@ -1,10 +1,11 @@
 import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import useFetch from "../../hooks/useFetch";
-import ModalHeader from "../Modal/ModalHeader.jsx";
 import ErrorMessage from "../Modal/ErrorMessage.jsx";
 import ModalField from "../Modal/ModalField.jsx";
 import ModalImage from "../Modal/ModalImage.jsx";
 import { useNavigate } from "@solidjs/router";
+import ArchiveModalHeader from "./ArchiveModalHeader.jsx";
+import ArchivePlanModal from "./ArchivePlanModal.jsx";
 
 /**
  * Modal for editing a plan.
@@ -28,6 +29,10 @@ const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan, setPlan, se
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const navigate = useNavigate();
   const [tempImageBlob, setTempImageBlob] = createSignal(null);
+
+  // Archive modal state
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = createSignal(false);
+  const [errorMsgArchivePlan, setErrorMsgArchivePlan] = createSignal("");
 
   /**
    * Handles image file input change.
@@ -131,6 +136,20 @@ const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan, setPlan, se
     onClose();
   };
 
+  /**
+   * Opens the archive confirmation modal
+   */
+  const handleArchive = () => {
+    setIsArchiveModalOpen(true);
+  }
+
+  /**
+   * Handles the successful archive of a plan and closes the modal
+   */
+  const handleArchiveSuccess = (data) => {
+    setIsArchiveModalOpen(false);
+  }
+
   let modalRef;
 
   /**
@@ -155,9 +174,9 @@ const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan, setPlan, se
     <Show when={isOpen}>
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
         <div ref={modalRef} class="bg-white p-6 rounded-[20px] shadow-lg w-96">
-          <ModalHeader
+          <ArchiveModalHeader
             title="Edition du Plan"
-            onClose={handleClose}
+            onArchive={handleArchive}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting()}
           />
@@ -187,6 +206,16 @@ const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan, setPlan, se
           </div>
         </div>
       </div>
+      <Show when={isArchiveModalOpen()}>
+        <ArchivePlanModal
+          plan={plan}
+          structureId={structureId}
+          onClose={() => setIsArchiveModalOpen(false)}
+          onArchive={handleArchiveSuccess}
+          errorMsgArchivePlan={errorMsgArchivePlan}
+          setErrorMsgArchivePlan={setErrorMsgArchivePlan}
+        />
+      </Show>
     </Show>
   );
 };
