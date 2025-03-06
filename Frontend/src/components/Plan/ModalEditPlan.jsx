@@ -11,7 +11,6 @@ import ArchivePlanModal from "./ArchivePlanModal.jsx";
  * Modal for editing a plan.
  * Displays a form to edit name, section and optionally update the image.
  * @param {Object} props Component properties
- * @param {boolean} props.isOpen Whether the modal is open
  * @param {Function} props.onClose Callback to close the modal
  * @param {Function} props.onSave Callback after successful save
  * @param {number} props.structureId ID of the structure
@@ -20,7 +19,7 @@ import ArchivePlanModal from "./ArchivePlanModal.jsx";
  * @param {number} props.selectedPlanId getter for the selected plan id
  * @returns {JSX.Element} The modal component for editing a plan
  */
-const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan, setPlan, selectedPlanId }) => {
+const ModalEditPlan = ({onClose, onSave, structureId, plan, setPlan, selectedPlanId, onPlanArchive }) => {
   const [name, setName] = createSignal(plan.name || "");
   const [section, setSection] = createSignal(plan.section || "");
   const [imageData, setImageData] = createSignal(null);
@@ -146,77 +145,95 @@ const ModalEditPlan = ({ isOpen, onClose, onSave, structureId, plan, setPlan, se
   /**
    * Handles the successful archive of a plan and closes the modal
    */
-  const handleArchiveSuccess = (data) => {
+  const handleArchiveSuccess = (planId) => {
     setIsArchiveModalOpen(false);
+    onPlanArchive(planId);
   }
 
   let modalRef;
 
   /**
    * Handles the close of the modal when click outside
-   * @param {Event} event 
+   * @param {Event} event
    */
   const handleClickOutside = (event) => {
-      if (modalRef && !modalRef.contains(event.target)) {
-          onClose();
-      }
+    if (!isArchiveModalOpen() && modalRef && !modalRef.contains(event.target)) {
+      onClose();
+    }
   };
 
   onMount(() => {
-      document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    if (!isArchiveModalOpen()) {
+      document.body.style.overflow = 'hidden';
+    }
   });
 
   onCleanup(() => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    document.removeEventListener("mousedown", handleClickOutside);
+    if (!isArchiveModalOpen()) {
+      document.body.style.overflow = 'auto';
+    }
   });
 
+  /**
+   * Ferme la modale d'archivage
+   */
+  const handleArchiveClose = () => {
+    setIsArchiveModalOpen(false);
+    setErrorMsgArchivePlan("");
+    document.body.style.overflow = 'hidden';
+  }
+
   return (
-    <Show when={isOpen}>
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
-        <div ref={modalRef} class="bg-white p-6 rounded-[20px] shadow-lg w-96">
-          <ArchiveModalHeader
-            title="Edition du Plan"
-            onArchive={handleArchive}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting()}
-          />
-          <Show when={errorMsg()}>
-            <ErrorMessage message={errorMsg()} />
-          </Show>
-          <div class="space-y-4">
-            <ModalField
-              label="Nom*"
-              value={name()}
-              maxLength={32}
-              onInput={(e) => setName(e.target.value)}
-              placeholder="Zone 03"
+    <>
+      <Show when={!isArchiveModalOpen()}>
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
+          <div ref={modalRef} class="bg-white p-6 rounded-[20px] shadow-lg w-96">
+            <ArchiveModalHeader
+              title="Edition du Plan"
+              onArchive={handleArchive}
+              onSubmit={handleSubmit}
+              isSubmitting={isSubmitting()}
             />
-            <ModalField
-              label="Section"
-              value={section()}
-              maxLength={128}
-              onInput={(e) => setSection(e.target.value)}
-              placeholder="OA/Aval"
-            />
-            <ModalImage
-              imageSignal={[imageData, setImageData]}
-              onImageChange={handleImageChange}
-              currentImageUrl={plan.imageUrl}
-            />
+            <Show when={errorMsg()}>
+              <ErrorMessage message={errorMsg()} />
+            </Show>
+            <div class="space-y-4">
+              <ModalField
+                label="Nom*"
+                value={name()}
+                maxLength={32}
+                onInput={(e) => setName(e.target.value)}
+                placeholder="Zone 03"
+              />
+              <ModalField
+                label="Section"
+                value={section()}
+                maxLength={128}
+                onInput={(e) => setSection(e.target.value)}
+                placeholder="OA/Aval"
+              />
+              <ModalImage
+                imageSignal={[imageData, setImageData]}
+                onImageChange={handleImageChange}
+                currentImageUrl={plan.imageUrl}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </Show>
       <Show when={isArchiveModalOpen()}>
         <ArchivePlanModal
-          plan={plan}
+          planId={plan.id}
           structureId={structureId}
-          onClose={() => setIsArchiveModalOpen(false)}
+          onCloseArchive={handleArchiveClose}
           onArchive={handleArchiveSuccess}
           errorMsgArchivePlan={errorMsgArchivePlan}
           setErrorMsgArchivePlan={setErrorMsgArchivePlan}
         />
       </Show>
-    </Show>
+    </>
   );
 };
 

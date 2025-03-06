@@ -55,7 +55,7 @@ function RestoreModal(props) {
     if (statusCode() === 200) {
       props.onRestore && props.onRestore(data());
     } else if (statusCode() === 422) {
-      props.setErrorMsgActiveStructure(error()?.errorData.error);
+      props.setErrorMsgActiveStructure(error()?.errorData.error || "Une erreur est survenue");
     } else {
       props.setErrorMsgActiveStructure("Une erreur est survenue");
     }

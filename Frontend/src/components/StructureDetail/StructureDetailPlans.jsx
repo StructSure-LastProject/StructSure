@@ -1,11 +1,11 @@
-import { createSignal, Show, createEffect } from "solid-js";
+import {createSignal, Show, createEffect, createMemo} from "solid-js";
 import { Plus } from 'lucide-solid';
 import ModalAddPlan from '../Plan/ModalAddPlan';
 import ModalEditPlan from '../Plan/ModalEditPlan';
 import DropdownsSection from "../Plan/DropdownsSection.jsx";
 import StructureDetailCanvas from "./StructureDetailCanvas";
 import useFetch from "../../hooks/useFetch.js";
-import { useNavigate } from "@solidjs/router";
+import {useNavigate, useSearchParams} from "@solidjs/router";
 
 
 /**
@@ -32,6 +32,8 @@ export const planImageFetchRequest = async (planId, setPlan, navigate) => {
  */
 function StructureDetailPlans(props) {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
     // Plans and modals state management
     const [plans, setPlans] = createSignal([]);
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
@@ -40,6 +42,14 @@ function StructureDetailPlans(props) {
 
     const [isAuthorized, setIsAuthorized] = createSignal(false);
     const [plan, setPlan] = createSignal(null);
+
+    /**
+     *
+     */
+    const isInScanMode = createMemo(() => {
+        const scanParam = searchParams.selectedScan;
+        return scanParam !== undefined && scanParam !== "-1";
+    });
 
     /**
      * Opens the add plan modal
@@ -94,16 +104,13 @@ function StructureDetailPlans(props) {
      * @param {Object} formData Form data containing the edited plan information
      */
     const handleEditSave = (formData) => {
-        const userRole = localStorage.getItem("role");
-        const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
-
         setPlans(prev => prev.map(p =>
           p.id === formData.id
             ? {
                 ...p,
                 name: formData.metadata.name,
                 section: formData.metadata.section,
-                type: p.archived ? "archived" : (canEdit ? "edit" : "plan")
+                type: p.archived ? "archived" : (isAuthorized() ? "edit" : "plan")
             }
             : p
         ));
@@ -127,6 +134,10 @@ function StructureDetailPlans(props) {
         closeAddModal();
     };
 
+    /**
+     * Handles restoring a plan locally
+     * @param planId The plan id
+     */
     const handlePlanRestore = (planId) => {
         setPlans(prevPlans =>
           prevPlans.map(plan =>
@@ -135,7 +146,21 @@ function StructureDetailPlans(props) {
               : plan
           )
         );
-        console.log("plans", plans());
+    }
+
+    /**
+     * Handles archive a plan locally
+     * @param planId The plan id
+     */
+    const handlePlanArchive = (planId) => {
+        setPlans(prevPlans =>
+          prevPlans.map(plan =>
+            plan.id === planId
+              ? { ...plan, archived: true, type: "archived" }
+              : plan
+          )
+        );
+        closeEditModal();
     }
 
     /**
@@ -170,7 +195,7 @@ function StructureDetailPlans(props) {
                 <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5 max-h-[350px] lg:max-h-[436px]">
                     <div class="flex items-center justify-between">
                         <p class="title">Plans</p>
-                        <Show when={isAuthorized()}>
+                        <Show when={isAuthorized() && !isInScanMode()}>
                             <button
                             title="Ajouter un plan"
                             onClick={openAddModal}
@@ -189,6 +214,7 @@ function StructureDetailPlans(props) {
                             onEdit={handleEdit}
                             onPlanRestore={handlePlanRestore}
                             structureId={props.structureId}
+                            isInScanMode={isInScanMode}
                         />
                     </div>
                     <Show when={isAddModalOpen()}>
@@ -201,12 +227,9 @@ function StructureDetailPlans(props) {
                     </Show>
                     <Show when={isEditModalOpen() && selectedPlan()}>
                         <ModalEditPlan
-                            isOpen={isEditModalOpen()}
                             onSave={handleEditSave}
-                            onClose={() => {
-                                setIsEditModalOpen(false);
-                                setSelectedPlan(null);
-                            }}
+                            onClose={closeEditModal}
+                            onPlanArchive={handlePlanArchive}
                             structureId={props.structureId}
                             plan={selectedPlan()}
                             setPlan={setPlan}
@@ -221,7 +244,8 @@ function StructureDetailPlans(props) {
                           <Show when={plan() !== null}>
                               <StructureDetailCanvas
                                 structureId={props.structureId}
-                                plan={plan} interactiveMode={true}
+                                plan={plan}
+                                interactiveMode={true}
                                 planSensors={props.planSensors}
                                 structureDetails={props.structureDetails}
                                 setPlanSensors={props.setPlanSensors}

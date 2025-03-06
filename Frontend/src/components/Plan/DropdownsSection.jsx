@@ -1,5 +1,5 @@
 import {createEffect, createSignal, Show} from "solid-js";
-import {ChevronDown, ChevronRight, Dot, FolderSync, Pencil} from "lucide-solid";
+import {ChevronDown, ChevronRight, Dot, FolderSync, Pencil, Shield} from "lucide-solid";
 import { useSearchParams } from "@solidjs/router";
 import RestorePlanModal from "./RestorePlanModal.jsx"
 
@@ -58,7 +58,7 @@ const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId, setSearchParams
  * @param {boolean} props.selectedPlanId contains the selected plan id
  * @returns {JSX.Element} PlanEdit component
  */
-const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId, setSearchParams}) => (
+const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId, setSearchParams, isInScanMode}) => (
   <div class={`py-[8px] px-[9px] rounded-[10px] flex items-center cursor-pointer gap-x-[10px] justify-between hover:bg-gray-100 group ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`}
   onClick={() => {
     setSelectedPlanId(planId);
@@ -70,17 +70,19 @@ const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId, setS
       </div>
       <p class="poppins text-base font-medium !leading-[11px]">{name}</p>
     </div>
-    <div class="w-5 h-5 flex items-center justify-center invisible group-hover:visible">
-      <button
-        title="Éditer un plan"
-        onClick={(e) => {
-          e.stopPropagation();
-          onEdit(planId);
-        }}
-      >
-        <Pencil size={20} />
-      </button>
-    </div>
+    <Show when={!isInScanMode()}>
+      <div class="w-5 h-5 flex items-center justify-center invisible group-hover:visible">
+        <button
+          title="Éditer un plan"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(planId);
+          }}
+        >
+          <Pencil size={20} />
+        </button>
+      </div>
+    </Show>
   </div>
 );
 
@@ -118,6 +120,15 @@ const PlanArchived = (props) => {
     }
   };
 
+  /**
+   * Check if there is role item in local storage and the role is an operator
+   * @returns {boolean} whether the role item is in local storage and current user is an operator
+   */
+  const isOperator = () => {
+    const role = localStorage.getItem("role");
+    return !(role == null || role !== "OPERATEUR");
+  }
+
   return (
     <>
       <div class="py-[8px] px-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between">
@@ -127,13 +138,15 @@ const PlanArchived = (props) => {
           </div>
           <p class="poppins text-base font-medium !leading-[11px] opacity-60">{props.name}</p>
         </div>
-        <div class="w-5 h-5 flex items-center justify-center" title="Restaurer le plan">
-          <button
-            onClick={handleArchivedClick}
-          >
-            <FolderSync size={20} />
-          </button>
-        </div>
+        <Show when={!isOperator() && !props.isInScanMode()}>
+          <div class="w-5 h-5 flex items-center justify-center" title="Restaurer le plan">
+            <button
+              onClick={handleArchivedClick}
+            >
+              <FolderSync size={20} />
+            </button>
+          </div>
+        </Show>
       </div>
 
       <Show when={isRestoreModalOpen()}>
@@ -265,6 +278,7 @@ const TreeNode = (props) => {
                 structureId={props.structureId}
                 onPlanEdit={props.onPlanEdit}
                 onPlanRestore={props.onPlanRestore}
+                isInScanMode={props.isInScanMode}
               />
             ))}
           </div>
@@ -297,6 +311,7 @@ const TreeNode = (props) => {
         structureId={props.structureId}
         onPlanEdit={props.onPlanEdit}
         onPlanRestore={props.onPlanRestore}
+        isInScanMode={props.isInScanMode}
       />
     </div>
   );
@@ -337,6 +352,8 @@ const RenderPlan = (props) => {
       setSearchParams={props.setSearchParams}
       structureId={props.structureId}
       onPlanEdit={props.onPlanEdit}
+      onPlanRestore={props.onPlanRestore}
+      isInScanMode={props.isInScanMode}
     />
   );
 };
@@ -361,7 +378,7 @@ const DropdownsSection = (props) => {
     if (Array.isArray(props.data)) {
       if (props.data.length > 0 && props.selectedPlanId() == null) {
         props.setSelectedPlanId(props.data[0].id);
-        setSearchParams({ selectedPlanId: props.selectedPlanId() });
+        setSearchParams({ selectedPlanId: props.data[0].id });
       }
     }
     return Array.isArray(props.data) ? props.data : [];
@@ -392,6 +409,7 @@ const DropdownsSection = (props) => {
           structureId={props.structureId}
           onPlanEdit={props.onPlanEdit}
           onPlanRestore={props.onPlanRestore}
+          isInScanMode={props.isInScanMode}
         />
       ))}
 
@@ -407,6 +425,7 @@ const DropdownsSection = (props) => {
           structureId={props.structureId}
           onPlanEdit={props.onPlanEdit}
           onPlanRestore={props.onPlanRestore}
+          isInScanMode={props.isInScanMode}
         />
       ))}
     </div>

@@ -47,7 +47,6 @@ function RestorePlanModal(props) {
         "Authorization": `Bearer ${token}`
       }
     };
-    console.log("props", props);
     await fetchData(
       navigate,
       `/api/structures/${props.structureId}/plans/${props.planId}/restore`,
@@ -57,7 +56,7 @@ function RestorePlanModal(props) {
     if (statusCode() === 200) {
       props.onRestore && props.onRestore(data());
     } else if (statusCode() === 422 || statusCode() === 404) {
-      props.setErrorMsgRestorePlan(error()?.errorData.error);
+      props.setErrorMsgRestorePlan(error()?.errorData.error || "Une erreur est survenue");
     } else {
       props.setErrorMsgRestorePlan("Une erreur est survenue");
     }
