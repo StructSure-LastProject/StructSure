@@ -45,7 +45,8 @@ public class StructureController {
      * If the operation is successful, it returns a response with the details of the created structure.
      * In case of a business exception, it returns an appropriate error response.
      *
-     * @param request the {@link AddStructureRequestDTO} containing the details of the structure to be added.
+     * @param request full data to extract the author of the creation
+     * @param addStructureDTO the {@link AddStructureRequestDTO} containing the details of the structure to be added.
      * @return a {@link ResponseEntity} containing:
      * <ul>
      *   <li>The details of the created structure with an HTTP status of {@code 201 Created}, if successful.</li>
@@ -54,9 +55,12 @@ public class StructureController {
      */
     @RequiresRole(Role.RESPONSABLE)
     @PostMapping
-    public ResponseEntity<?> addStructure(@RequestBody AddStructureRequestDTO request) {
+    public ResponseEntity<?> addStructure(
+        HttpServletRequest request,
+        @RequestBody AddStructureRequestDTO addStructureDTO
+    ) {
         try {
-            var structure = structureService.createStructure(request);
+            var structure = structureService.createStructure(request, addStructureDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
             return e.toResponseEntity("Structure creation rejected: {}");
@@ -66,6 +70,7 @@ public class StructureController {
     /**
      * Updates a plan within a structure.
      *
+     * @param request     The request body to get the author of the edit
      * @param id          The ID of the structure containing the plan
      * @param planId      The ID of the plan to edit
      * @param metadataDTO The DTO containing updated plan metadata
@@ -74,9 +79,15 @@ public class StructureController {
      */
     @RequiresRole(Role.RESPONSABLE)
     @PutMapping("/{id}/plans/{planId}")
-    public ResponseEntity<?> editPlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, @RequestPart("metadata") PlanMetadataDTO metadataDTO, @RequestPart("file") Optional<MultipartFile> file) {
+    public ResponseEntity<?> editPlan(
+        HttpServletRequest request,
+        @PathVariable("id") Long id,
+        @PathVariable("planId") Long planId,
+        @RequestPart("metadata") PlanMetadataDTO metadataDTO,
+        @RequestPart("file") Optional<MultipartFile> file
+    ) {
         try {
-            var structure = planService.editPlan(id, planId, metadataDTO, file);
+            var structure = planService.editPlan(request, id, planId, metadataDTO, file);
             return ResponseEntity.status(HttpStatus.OK).body(structure);
         } catch (TraitementException e) {
             return e.toResponseEntity("Plan update rejected: {}");
@@ -126,8 +137,9 @@ public class StructureController {
      * If the update is successful, it returns the details of the updated structure.
      * If a business exception occurs, it returns an appropriate error response.
      *
+     * @param request full data to extract the author of the creation
      * @param id      the ID of the structure to be updated, provided as a path variable.
-     * @param request the {@link AddStructureRequestDTO} containing the updated details
+     * @param addStructureDTO the {@link AddStructureRequestDTO} containing the updated details
      *                for the structure. The name must not be null, empty, or exceed 64 characters.
      *                The note must not exceed 1000 characters.
      * @return a {@link ResponseEntity} containing:
@@ -138,9 +150,13 @@ public class StructureController {
      */
     @RequiresRole(Role.RESPONSABLE)
     @PutMapping("/{id}")
-    public ResponseEntity<?> editStructure(@PathVariable("id") Long id, @RequestBody AddStructureRequestDTO request) {
+    public ResponseEntity<?> editStructure(
+        HttpServletRequest request,
+        @PathVariable("id") Long id,
+        @RequestBody AddStructureRequestDTO addStructureDTO
+    ) {
         try {
-            var structure = structureService.editStructure(id, request);
+            var structure = structureService.editStructure(request, id, addStructureDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
             return e.toResponseEntity("Structure edition rejected: {}");
@@ -182,6 +198,7 @@ public class StructureController {
      * Handles the addition of a new plan to an existing structure.
      * Processes a multipart request containing both the plan metadata and the plan file.
      *
+     * @param request     The request to get the author of the creation
      * @param id          The ID of the structure to which the plan will be added
      * @param metadataDTO The DTO containing plan metadata (name and section)
      * @param file        The multipart file containing the plan image
@@ -189,9 +206,14 @@ public class StructureController {
      */
     @RequiresRole(Role.RESPONSABLE)
     @PostMapping("/{id}/plans")
-    public ResponseEntity<?> addPlan(@PathVariable("id") Long id, @RequestPart("metadata") PlanMetadataDTO metadataDTO, @RequestPart("file") MultipartFile file) {
+    public ResponseEntity<?> addPlan(
+        HttpServletRequest request,
+        @PathVariable("id") Long id,
+        @RequestPart("metadata") PlanMetadataDTO metadataDTO,
+        @RequestPart("file") MultipartFile file
+    ) {
         try {
-            var structure = planService.createPlan(id, metadataDTO, file);
+            var structure = planService.createPlan(request, id, metadataDTO, file);
             return ResponseEntity.status(HttpStatus.CREATED).body(structure);
         } catch (TraitementException e) {
             return e.toResponseEntity("Plan creation rejected: {}");
