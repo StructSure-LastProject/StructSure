@@ -109,7 +109,7 @@ public class StructureController {
             var structure = planService.restorePlan(id, planId, request);
             return ResponseEntity.status(HttpStatus.OK).body(structure);
         } catch (TraitementException e) {
-            return e.toResponseEntity("Plan archive rejected: {}");
+            return e.toResponseEntity("Plan restore rejected: {}");
         }
     }
 
