@@ -50,8 +50,7 @@ const AdminPanelBody = () => {
         }
         else if (statusCode() === 422){
             navigate("/");
-        }      
-        
+        }
     }
 
     createResource(() => fetchUserDetails());

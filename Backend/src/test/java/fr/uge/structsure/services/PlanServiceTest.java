@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class PlanServiceTest extends DataBaseTests {
+class PlanServiceTest extends DataBaseTests {
 
     @Autowired
     private PlanService planService;

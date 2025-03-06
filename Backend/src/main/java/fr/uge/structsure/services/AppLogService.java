@@ -1,8 +1,8 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.scan.AndroidSensorEditDTO;
-import fr.uge.structsure.dto.sensors.LogsRequestDTO;
-import fr.uge.structsure.dto.sensors.LogsResponseDTO;
+import fr.uge.structsure.dto.logs.LogsRequestDTO;
+import fr.uge.structsure.dto.logs.LogsResponseDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.userAccount.UserUpdateRequestDTO;
 import fr.uge.structsure.entities.*;
@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -62,18 +63,19 @@ public class AppLogService {
      * @throws TraitementException if the query is malformed
      */
     public LogsResponseDTO loadLogs(LogsRequestDTO logsDto) throws TraitementException {
+        var pageSize = 30;
         logsDto.checkFields();
-        var page = PageRequest.of(logsDto.page(), 30);
+        var page = PageRequest.of(logsDto.page(), pageSize, Sort.by(Sort.Direction.DESC,"time"));
         if (logsDto.search() == null || logsDto.search().isEmpty()) {
             /* Optimized query without search */
             var size = appLogRepository.count();
             var logs = appLogRepository.search(page);
-            return new LogsResponseDTO(size, logs);
+            return new LogsResponseDTO(size, pageSize, logs);
         } else {
             var search = '%' + logsDto.search().toLowerCase() + '%';
             var size = appLogRepository.count(search);
             var logs = appLogRepository.search(search, page);
-            return new LogsResponseDTO(size, logs);
+            return new LogsResponseDTO(size, pageSize, logs);
         }
     }
 

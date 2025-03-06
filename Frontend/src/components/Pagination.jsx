@@ -12,7 +12,7 @@ import { createEffect, createSignal } from 'solid-js';
  */
 export const Pagination = ({ limit, offset, totalItems, setOffset}) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [currentPage, setCurrentPage] = createSignal(Math.floor(offset() / limit()) + 1);
+  const [currentPage, setCurrentPage] = createSignal(Math.floor(offset / limit) + 1);
   const [pages, setPages] = createSignal([]);
   const [totalPages, setTotalPages] = createSignal(0);
 

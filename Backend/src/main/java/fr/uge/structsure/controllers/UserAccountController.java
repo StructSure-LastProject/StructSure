@@ -3,7 +3,7 @@ package fr.uge.structsure.controllers;
 import com.fasterxml.jackson.core.JsonParseException;
 import fr.uge.structsure.config.RequiresRole;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
-import fr.uge.structsure.dto.sensors.LogsRequestDTO;
+import fr.uge.structsure.dto.logs.LogsRequestDTO;
 import fr.uge.structsure.dto.userAccount.UserStructureAccessRequestDTO;
 import fr.uge.structsure.dto.userAccount.UserUpdateRequestDTO;
 import fr.uge.structsure.entities.Role;
@@ -33,9 +33,10 @@ public class UserAccountController {
     /**
      * Constructor
      * @param accountService Service class
+     * @param appLogService Logs service
      */
     @Autowired
-    public UserAccountController(AccountService accountService) {
+    public UserAccountController(AccountService accountService, AppLogService appLogService) {
       this.accountService = accountService;
       this.appLogService = appLogService;
     }

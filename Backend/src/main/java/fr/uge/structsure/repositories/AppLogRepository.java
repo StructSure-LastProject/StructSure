@@ -35,11 +35,10 @@ public interface AppLogRepository extends JpaRepository<AppLog, Long> {
     @Query("""
     SELECT l
     FROM AppLog l
-    WHERE LOWER(l.author.login) LIKE :searchString
-        OR LOWER(l.author.firstname) LIKE :searchString
-        OR LOWER(l.author.lastname) LIKE :searchString
-        OR LOWER(l.message) LIKE :searchString
-    ORDER BY l.time DESC
+    WHERE LOWER(l.author.login) LIKE :search
+        OR LOWER(l.author.firstname) LIKE :search
+        OR LOWER(l.author.lastname) LIKE :search
+        OR LOWER(l.message) LIKE :search
     """)
     List<AppLog> search(@Param("search") String search, Pageable page);
 
@@ -52,7 +51,6 @@ public interface AppLogRepository extends JpaRepository<AppLog, Long> {
     SELECT l
     FROM AppLog l
     WHERE true
-    ORDER BY l.time DESC
     """)
     List<AppLog> search(Pageable page);
 
@@ -65,10 +63,10 @@ public interface AppLogRepository extends JpaRepository<AppLog, Long> {
     @Query("""
     SELECT count(l)
     FROM AppLog l
-    WHERE LOWER(l.author.login) LIKE :searchString
-        OR LOWER(l.author.firstname) LIKE :searchString
-        OR LOWER(l.author.lastname) LIKE :searchString
-        OR LOWER(l.message) LIKE :searchString
+    WHERE LOWER(l.author.login) LIKE :search
+        OR LOWER(l.author.firstname) LIKE :search
+        OR LOWER(l.author.lastname) LIKE :search
+        OR LOWER(l.message) LIKE :search
     """)
     Long count(@Param("search") String search);
 }

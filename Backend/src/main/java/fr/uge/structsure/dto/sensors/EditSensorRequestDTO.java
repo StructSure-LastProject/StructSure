@@ -47,22 +47,42 @@ public class EditSensorRequestDTO {
         this.note = Objects.requireNonNullElse(note, "");
     }
 
+    /**
+     * Gets the display name of the sensor
+     * @return the display name of the sensor
+     */
     public String name() {
         return name;
     }
 
+    /**
+     * Gets the time at which the sensor got installed on a structure
+     * @return the time at which the sensor got installed
+     */
     public String installationDate() {
         return installationDate;
     }
 
+    /**
+     * Gets the commentary of the structure
+     * @return the note of the structure
+     */
     public String note() {
         return note;
     }
 
+    /**
+     * Gets the ID of the RFID chip that should always respond OK
+     * @return the ID of the control chip
+     */
     public String controlChip() {
         return controlChip;
     }
 
+    /**
+     * Gets the ID of the RFID chip that should never respond OK
+     * @return the ID of the measure chip
+     */
     public String measureChip() {
         return measureChip;
     }

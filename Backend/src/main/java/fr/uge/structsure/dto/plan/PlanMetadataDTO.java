@@ -4,6 +4,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.uge.structsure.entities.Plan;
 import fr.uge.structsure.utils.DiffMaker;
 
+/**
+ * DTO to map the attributes of a plan add/edit request (except the
+ * file that is in a multipart object)
+ * @param section the section of the plan to set
+ * @param name the name of the plan
+ */
 @JsonSerialize
 public record PlanMetadataDTO(String section, String name) {
 

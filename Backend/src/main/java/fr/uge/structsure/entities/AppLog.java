@@ -1,12 +1,17 @@
 package fr.uge.structsure.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @Entity
 public class AppLog {
+    /** Formatter to export time */
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss");
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -34,7 +39,20 @@ public class AppLog {
         this.time = LocalDateTime.now();
     }
 
+    @JsonIgnore
     public long getId() {
         return id;
+    }
+
+    public String getTime() {
+        return time.format(FORMATTER);
+    }
+
+    public String getAuthor() {
+        return author.getLogin();
+    }
+
+    public String getMessage() {
+        return message;
     }
 }

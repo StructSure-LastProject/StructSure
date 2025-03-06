@@ -6,6 +6,11 @@ import fr.uge.structsure.utils.DiffMaker;
 
 import java.util.Objects;
 
+/**
+ * DTO to map a new structure creation request fields
+ * @param name the name of the structure
+ * @param note the note of the structure
+ */
 @JsonSerialize
 public record AddStructureRequestDTO(String name, String note) {
     public AddStructureRequestDTO {

@@ -1,4 +1,4 @@
-package fr.uge.structsure.dto.sensors;
+package fr.uge.structsure.dto.logs;
 
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
