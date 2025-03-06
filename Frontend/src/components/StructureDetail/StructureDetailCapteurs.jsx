@@ -5,7 +5,7 @@ import getSensorStatusColor from "../SensorStatusColorGen"
 import ModalAddSensor from "../Sensor/ModalAddSensor.jsx";
 import SensorFilter from '../SensorFilter';
 import { Pagination } from '../Pagination.jsx';
-import {useNavigate} from "@solidjs/router";
+import {useNavigate, useSearchParams} from "@solidjs/router";
 import {planSensorsFetchRequest, sensorsFetchRequest, sensorsWithoutLimitAndOffsetFetchRequest} from "./StructureDetailBody.jsx";
 import useFetch from '../../hooks/useFetch.js';
 import Papa from "papaparse";
@@ -25,6 +25,7 @@ import Alert from '../Alert.jsx';
  * @returns the component for the sensors part
  */
 function StructureDetailCapteurs({structureId, setSensors, selectedScan, selectedPlanId, sensors, totalItems, setTotalItems, setPlanSensors, setSensorsDetail, structureDetails}) {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
     const [clickedSensor, setClickedSensor] = createSignal({});
 
@@ -36,7 +37,9 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
     const [sensorsSizeForCSV, setSensorsSizeForCSV] = createSignal(null);
 
     const [limit, setLimit] = createSignal(30);
-    const [offset, setOffset] = createSignal(0);
+    const [offset, setOffset] = createSignal(
+        searchParams.offset ? parseInt(searchParams.offset, 10) : 0
+    );
 
     const [errorFront, setErrorFront] = createSignal("");
 
@@ -46,14 +49,38 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
     };
     const FILTER_VALUES = {"Tout" : "Tout", "OK" : "OK", "NOK" : "NOK", "Défaillant" : "DEFECTIVE", "Non détecté" : "UNKNOWN"};
 
-    const [orderByColumn, setOrderByColumn] = createSignal(SORT_VALUES.Tout);
-    const [orderType, setOrderType] = createSignal(true);
-    const [isCheckedPlanFilter, setIsCheckedPlanFilter] = createSignal(false);
-    const [isCheckedArchivedFilter, setIsCheckedArchivedFilter] = createSignal(false);
-    const [startDate, setStartDate] = createSignal("");
-    const [endDate, setEndDate] = createSignal("");
-    const [stateFilter, setStateFilter] = createSignal(FILTER_VALUES.Tout);
 
+    const [orderByColumn, setOrderByColumn] = createSignal(
+        searchParams.orderByColumn && SORT_VALUES[searchParams.orderByColumn] 
+            ? searchParams.orderByColumn
+            : "Tout"
+    );
+
+    const [stateFilter, setStateFilter] = createSignal(
+        searchParams.stateFilter && FILTER_VALUES[searchParams.stateFilter] 
+            ? searchParams.stateFilter 
+            : "Tout"
+    );
+
+    const [orderType, setOrderType] = createSignal(
+        searchParams.orderType ? searchParams.orderType === "true" : true
+    );
+    
+    const [isCheckedPlanFilter, setIsCheckedPlanFilter] = createSignal(
+        searchParams.isCheckedPlanFilter ? searchParams.isCheckedPlanFilter === "true" : false
+    );
+    
+    const [isCheckedArchivedFilter, setIsCheckedArchivedFilter] = createSignal(
+        searchParams.isCheckedArchivedFilter ? searchParams.isCheckedArchivedFilter === "true" : false
+    );
+
+
+    const [startDate, setStartDate] = createSignal(
+        searchParams.startDate ? searchParams.startDate : ""
+    );
+    const [endDate, setEndDate] = createSignal(
+        searchParams.endDate ? searchParams.endDate : ""
+    );
 
     const navigate = useNavigate();
     const { fetchData, statusCode } = useFetch();

@@ -1,3 +1,4 @@
+import { useSearchParams } from '@solidjs/router';
 import { ChevronLeft, ChevronRight } from 'lucide-solid';
 import { createEffect, createSignal } from 'solid-js';
 
@@ -10,6 +11,7 @@ import { createEffect, createSignal } from 'solid-js';
  * @returns The pagination component
  */
 export const Pagination = ({ limit, offset, totalItems, setOffset}) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [currentPage, setCurrentPage] = createSignal(Math.floor(offset() / limit()) + 1);
   const [pages, setPages] = createSignal([]);
   const [totalPages, setTotalPages] = createSignal(0);
@@ -26,7 +28,9 @@ export const Pagination = ({ limit, offset, totalItems, setOffset}) => {
    */
   const handlePrevPage = () => {
     if (offset() > 0) {
-      setOffset(offset() - limit());
+      const val = offset() - limit();
+      setOffset(val);
+      setSearchParams({ offset: val });
       updateCurrentPage(); 
     }
   };
@@ -36,7 +40,9 @@ export const Pagination = ({ limit, offset, totalItems, setOffset}) => {
    */
   const handleNextPage = () => {
     if (offset() + limit() < totalItems()) {
-      setOffset(offset() + limit());
+      const val = offset() + limit();
+      setOffset(val);
+      setSearchParams({ offset: val });
       updateCurrentPage();
     }
   };
@@ -46,7 +52,9 @@ export const Pagination = ({ limit, offset, totalItems, setOffset}) => {
    * @param {Number} pageNumber 
    */
   const handlePageChange = (pageNumber) => {
-    setOffset((pageNumber - 1) * limit());
+    const val = (pageNumber - 1) * limit();
+    setOffset(val);
+    setSearchParams({ offset: val });
     setCurrentPage(pageNumber); 
   };
 
