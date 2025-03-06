@@ -374,6 +374,10 @@ const DropdownsSection = (props) => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
+  /**
+   * The data of plan locally
+   * @returns {any[]|*[]} local data plan or empty
+   */
   const safeData = () => {
     if (Array.isArray(props.data)) {
       if (props.data.length > 0 && props.selectedPlanId() == null) {
