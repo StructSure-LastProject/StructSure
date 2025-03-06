@@ -1,6 +1,8 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.dto.scan.AndroidSensorEditDTO;
+import fr.uge.structsure.dto.sensors.LogsRequestDTO;
+import fr.uge.structsure.dto.sensors.LogsResponseDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.userAccount.UserUpdateRequestDTO;
 import fr.uge.structsure.entities.*;
@@ -8,11 +10,11 @@ import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
 import fr.uge.structsure.repositories.AppLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -50,6 +52,29 @@ public class AppLogService {
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.authValidation = Objects.requireNonNull(authValidation);
         this.logsKeepingDays = logsKeepingDays;
+    }
+
+    /**
+     * Loads the logs matching the search string and the requested
+     * pagination.
+     * @param logsDto the parameters of the research
+     * @return the logs matching the query
+     * @throws TraitementException if the query is malformed
+     */
+    public LogsResponseDTO loadLogs(LogsRequestDTO logsDto) throws TraitementException {
+        logsDto.checkFields();
+        var page = PageRequest.of(logsDto.page(), 30);
+        if (logsDto.search() == null || logsDto.search().isEmpty()) {
+            /* Optimized query without search */
+            var size = appLogRepository.count();
+            var logs = appLogRepository.search(page);
+            return new LogsResponseDTO(size, logs);
+        } else {
+            var search = '%' + logsDto.search().toLowerCase() + '%';
+            var size = appLogRepository.count(search);
+            var logs = appLogRepository.search(search, page);
+            return new LogsResponseDTO(size, logs);
+        }
     }
 
     /**
