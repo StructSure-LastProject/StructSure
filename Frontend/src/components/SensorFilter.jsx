@@ -269,7 +269,7 @@ const SensorFilter = ({
                         setter={setIsCheckedPlanFilter}
                         searchParamName={"isCheckedPlanFilter"}
                     />
-                    <Show when={localStorage.getItem("role") == "ADMIN" || localStorage.getItem("role") == "RESPONSABLE"}>
+                    <Show when={localStorage.getItem("role") === "ADMIN" || localStorage.getItem("role") === "RESPONSABLE"}>
                         <CheckBoxComponent 
                             description={"Capteurs archivés"}
                             value={isCheckedArchivedFilter}
