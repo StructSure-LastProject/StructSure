@@ -42,6 +42,7 @@ fun StructuresListView(
         structures.value
             ?.filter { it.name.contains(searchByName.value, true) }
             ?.sortedBy { it.name.lowercase() }
+            ?.sortedBy { -(it.state.value?.ordinal?:0) }
             ?.forEach { Structure(it, structureViewModel, navController) }
     }
 }

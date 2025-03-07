@@ -3,6 +3,7 @@ package fr.uge.structsure.structuresPage.presentation.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -27,20 +28,22 @@ import fr.uge.structsure.ui.theme.Red
 fun StructureButtons(structure: StructureWithState, structureViewModel: StructureViewModel, navController: NavController) {
     val state by structure.state.observeAsState(initial = StructureStates.ONLINE)
 
-    when (state) {
-        StructureStates.ONLINE, null -> {
-            DownloadButton(
-                structureName = structure.name,
-                onDownloadClick = { structureViewModel.download(structure) }
-            )
-        }
+    Row(Modifier.wrapContentWidth()) {
+        when (state) {
+            StructureStates.ONLINE, null -> {
+                DownloadButton(
+                    structureName = structure.name,
+                    onDownloadClick = { structureViewModel.download(structure) }
+                )
+            }
 
-        StructureStates.AVAILABLE -> {
-            PlaySupButton(structure, structureViewModel, navController)
-        }
+            StructureStates.AVAILABLE -> {
+                PlaySupButton(structure, structureViewModel, navController)
+            }
 
-        StructureStates.DOWNLOADING, StructureStates.UPLOADING -> {
-            LoadingButton()
+            StructureStates.DOWNLOADING, StructureStates.UPLOADING -> {
+                LoadingButton()
+            }
         }
     }
 }
