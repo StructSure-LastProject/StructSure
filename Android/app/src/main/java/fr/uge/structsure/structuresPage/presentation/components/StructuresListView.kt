@@ -39,8 +39,9 @@ fun StructuresListView(
             text = "Ouvrages",
         )
         SearchBar(input = searchByName)
-        structures.value?.filter { it.name.contains(searchByName.value, true) }?.forEach {
-            Structure(it, structureViewModel, navController)
-        }
+        structures.value
+            ?.filter { it.name.contains(searchByName.value, true) }
+            ?.sortedBy { it.name.lowercase() }
+            ?.forEach { Structure(it, structureViewModel, navController) }
     }
 }
