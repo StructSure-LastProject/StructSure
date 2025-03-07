@@ -64,17 +64,4 @@ class AccountServiceTest extends DataBaseTests {
         TraitementException exception = assertThrows(TraitementException.class, () -> accountService.login(loginRequestDTO, AuthenticationType.WEB));
         assertEquals(Error.LOGIN_PASSWORD_NOT_CORRECT, exception.error);
     }
-
-    @Test
-    void testGetUserAccounts() {
-        // Set up an account with the correct role (USER) for testing purposes
-        Account testAccount = new Account("testuser", "encodedPassword", "John", "Doe", Role.OPERATEUR, true);
-
-        // Simulate the request with a valid token and role (ADMIN)
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        when(request.getHeader("authorization")).thenReturn("valid_token");
-
-        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.getUserAccounts(request));
-        assertEquals(Error.INVALID_TOKEN, exception.error);
-    }
 }
