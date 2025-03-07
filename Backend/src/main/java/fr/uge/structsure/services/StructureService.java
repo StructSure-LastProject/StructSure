@@ -291,10 +291,6 @@ public class StructureService {
         if (Objects.isNull(id)) {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
         }
-        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
-        if (userSessionAccount.getRole() == Role.OPERATEUR) {
-            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
-        }
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
         structure.setArchived(false);
         var saved = structureRepository.save(structure);
@@ -312,10 +308,6 @@ public class StructureService {
         Objects.requireNonNull(httpRequest);
         if (Objects.isNull(id)) {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
-        }
-        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(httpRequest, accountRepository);
-        if (userSessionAccount.getRole() == Role.OPERATEUR) {
-            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
         }
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
         structure.setArchived(true);

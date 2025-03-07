@@ -31,7 +31,6 @@ import java.util.function.Consumer;
  */
 @Service
 public class AccountService {
-    private static final String SUPER_ADMIN_LOGIN = "StructSureAdmin";
     private final AccountRepository accountRepository;
     private final AuthenticationManager authenticationManager;
     private final AccountStructureService accountStructureService;
@@ -118,11 +117,6 @@ public class AccountService {
      */
     public List<UserAccountResponseDTO> getUserAccounts(HttpServletRequest request) throws TraitementException {
         Objects.requireNonNull(request);
-        var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(request, accountRepository);
-        if (userSessionAccount.getRole() != Role.ADMIN && !userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN)){
-            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
-        }
-
         return accountRepository
             .findAll()
             .stream()
@@ -230,9 +224,6 @@ public class AccountService {
 
         var userSessionAccount = authValidationService.checkTokenValidityAndUserAccessVerifier(request, accountRepository);
         var userAccount = userAccountOperationChecker(userUpdateRequestDTO, userSessionAccount);
-        if (userSessionAccount.getRole() != Role.ADMIN && !userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN)){
-            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
-        }
         if (!userUpdateRequestDTO.password().isEmpty() && (userUpdateRequestDTO.password().length() < 12 || userUpdateRequestDTO.password().length() > 64)){
             throw new TraitementException(Error.PASSWORD_NOT_VALID);
         }
@@ -282,20 +273,13 @@ public class AccountService {
         Objects.requireNonNull(userUpdateRequestDTO);
         Objects.requireNonNull(userSessionAccount);
 
-        if (userSessionAccount.getRole() != Role.ADMIN ||  (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) &&
-                userSessionAccount.getRole() == Role.ADMIN &&
-                authValidationService.convertRoleStringToRole(userUpdateRequestDTO.role()) == Role.ADMIN))
-        {
-            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
-        }
-
         var userAccount = checkIfAccountExist(userUpdateRequestDTO.login());
 
-        if (userAccount.getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.getRole() == Role.ADMIN){
+        if (userAccount.isSuperAdmin()) {
             throw new TraitementException(Error.SUPER_ADMIN_ACCOUNT_CANT_BE_MODIFIED);
         }
 
-        if (!userSessionAccount.getLogin().equals(SUPER_ADMIN_LOGIN) && userAccount.getRole() == Role.ADMIN){
+        if (!userSessionAccount.isSuperAdmin() && userAccount.getRole() == Role.ADMIN){
             throw new TraitementException(Error.ADMIN_ACCOUNT_CANT_BE_MODIFIED_BY_AN_ADMIN_ACCOUNT);
         }
 

@@ -1,9 +1,11 @@
 package fr.uge.structsure.controllers;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import fr.uge.structsure.config.RequiresRole;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
 import fr.uge.structsure.dto.userAccount.UserStructureAccessRequestDTO;
 import fr.uge.structsure.dto.userAccount.UserUpdateRequestDTO;
+import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
@@ -39,6 +41,7 @@ public class UserAccountController {
      * @param request The HTTP Request
      * @return UserAccountResponseDTO The list of user details
      */
+    @RequiresRole(Role.ADMIN)
     @GetMapping("/accounts")
     public ResponseEntity<?> getUserAccounts(HttpServletRequest request){
         try{
@@ -56,6 +59,7 @@ public class UserAccountController {
      * @param registerRequestDTO The request DTO
      * @return RegisterResponseDTO The login of the user account
      */
+    @RequiresRole(Role.ADMIN)
     @PostMapping("/accounts")
     public ResponseEntity<?> createNewUserAccount(@RequestBody RegisterRequestDTO registerRequestDTO){
         Objects.requireNonNull(registerRequestDTO);
@@ -72,6 +76,7 @@ public class UserAccountController {
      * @param userUpdateRequestDTO The new information of user
      * @return RegisterResponseDTO The login of the user account
      */
+    @RequiresRole(Role.ADMIN)
     @PutMapping("/accounts/reset")
     public ResponseEntity<?> updateUserAccount(@RequestBody UserUpdateRequestDTO userUpdateRequestDTO, HttpServletRequest request) {
         Objects.requireNonNull(userUpdateRequestDTO);
@@ -138,6 +143,7 @@ public class UserAccountController {
      * @param userStructureAccessRequestDTO The DTO that represent the update request
      * @return The response DTO
      */
+    @RequiresRole(Role.ADMIN)
     @PostMapping("/accounts/{login}/access")
     public ResponseEntity<?> updateUserStructureAccess(@PathVariable String login, @RequestBody UserStructureAccessRequestDTO userStructureAccessRequestDTO){
         Objects.requireNonNull(userStructureAccessRequestDTO);
@@ -149,10 +155,11 @@ public class UserAccountController {
     }
 
     /**
-     * Get structure list for user account
+     * Get allowed structure list for the given user account
      * @param login The login of the user
      * @return GetStructureListForUserAccountsResponseDTO The response DTO
      */
+    @RequiresRole(Role.ADMIN)
     @GetMapping("/accounts/{login}/structures")
     public ResponseEntity<?> getStructureListForUserAccounts(@PathVariable String login){
         try {
@@ -169,6 +176,7 @@ public class UserAccountController {
      * @param login The login of the user
      * @return The response DTO
      */
+    @RequiresRole(Role.ADMIN)
     @PutMapping("/api/accounts/{login}/anonymize")
     public ResponseEntity<?> anonymizeTheUserAccount(@PathVariable String login){
         try {
@@ -177,5 +185,4 @@ public class UserAccountController {
             return e.toResponseEntity("Account anonymization failed: {}");
         }
     }
-
 }

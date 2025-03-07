@@ -344,21 +344,24 @@ public class SensorService {
     /**
      * Service that will archive or restore a sensor
      * @param archiveSensorRequestDTO The archive sensor request DTO
-     * @param httpServletRequest The http servlet request
+     * @param request The http servlet request
      * @return The response DTO
      * @throws TraitementException thrown custom exceptions
      */
-    public EditSensorResponseDTO archiveASensor(ArchiveSensorRequestDTO archiveSensorRequestDTO, HttpServletRequest httpServletRequest, boolean isArchived) throws TraitementException {
+    public EditSensorResponseDTO archiveASensor(ArchiveSensorRequestDTO archiveSensorRequestDTO, HttpServletRequest request, boolean isArchived) throws TraitementException {
         archiveSensorRequestDTO.checkFields();
-        Objects.requireNonNull(httpServletRequest);
-        var accountSession = authValidationService.checkTokenValidityAndUserAccessVerifier(httpServletRequest, accountRepository);
-        if (accountSession.getRole() == Role.OPERATEUR || (accountSession.getRole() != Role.RESPONSABLE && accountSession.getRole() != Role.ADMIN)) {
-            throw new TraitementException(Error.UNAUTHORIZED_OPERATION);
-        }
-        var sensor = sensorRepository.findByChipsId(archiveSensorRequestDTO.controlChip(), archiveSensorRequestDTO.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
+        Objects.requireNonNull(request);
+        var sensor = sensorRepository.findByChipsId(
+            archiveSensorRequestDTO.controlChip(),
+            archiveSensorRequestDTO.measureChip()
+        ).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
         sensor.setArchived(isArchived);
         sensorRepository.save(sensor);
-        return new EditSensorResponseDTO(sensor.getSensorId().getControlChip(), sensor.getSensorId().getMeasureChip(), LocalDateTime.now().toString());
+        return new EditSensorResponseDTO(
+            sensor.getSensorId().getControlChip(),
+            sensor.getSensorId().getMeasureChip(),
+            LocalDateTime.now().toString()
+        );
     }
 
 }
