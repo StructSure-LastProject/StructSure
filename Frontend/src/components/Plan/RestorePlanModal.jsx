@@ -37,7 +37,7 @@ function RestorePlanModal(props) {
    * Handles the restoration of an archived plan
    */
   const handleRestore = async () => {
-    if (!props.planId || !props.structureId) return;
+    if (!props.plan.id || !props.structureId) return;
 
     const token = localStorage.getItem("token");
     const requestData = {
@@ -49,7 +49,7 @@ function RestorePlanModal(props) {
     };
     await fetchData(
       navigate,
-      `/api/structures/${props.structureId}/plans/${props.planId}/restore`,
+      `/api/structures/${props.structureId}/plans/${props.plan.id}/restore`,
       requestData
     );
 

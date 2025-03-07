@@ -39,7 +39,7 @@ function ArchivePlanModal(props) {
    * Handles the archive of a plan
    */
   const handleArchive = async () => {
-    if (!props.planId || !props.structureId) return;
+    if (!props.plan.id || !props.structureId) return;
 
     const token = localStorage.getItem("token");
     const requestData = {
@@ -52,7 +52,7 @@ function ArchivePlanModal(props) {
 
     await fetchData(
       navigate,
-      `/api/structures/${props.structureId}/plans/${props.planId}/archive`,
+      `/api/structures/${props.structureId}/plans/${props.plan.id}/archive`,
       requestData
     );
 

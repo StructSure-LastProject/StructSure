@@ -151,7 +151,7 @@ const PlanArchived = (props) => {
 
       <Show when={isRestoreModalOpen()}>
         <RestorePlanModal
-          planId={props.planId}
+          plan={{id: props.planId, name: props.name}}
           structureId={props.structureId}
           onClose={() => {
             setIsRestoreModalOpen(false);
@@ -406,7 +406,7 @@ const DropdownsSection = (props) => {
   };
 
   return (
-    <div class="space-y-2">
+    <div class="flex flex-col">
       {treeData().rootPlans.map(plan => (
         <RenderPlan
           plan={plan}

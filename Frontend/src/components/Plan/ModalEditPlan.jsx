@@ -225,7 +225,7 @@ const ModalEditPlan = ({onClose, onSave, structureId, plan, setPlan, selectedPla
       </Show>
       <Show when={isArchiveModalOpen()}>
         <ArchivePlanModal
-          planId={plan.id}
+          plan={plan}
           structureId={structureId}
           onCloseArchive={handleArchiveClose}
           onArchive={handleArchiveSuccess}
