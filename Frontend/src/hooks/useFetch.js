@@ -21,6 +21,7 @@ const useFetch = () => {
     setLoading(true);
         try {
             if (localStorage.getItem("token")) {
+                if (!requestData.headers) requestData.headers = {};
                 requestData.headers.Authorization = `Bearer ${localStorage.getItem("token")}`
             }
             const response = await fetch(endpoint, requestData);
@@ -74,13 +75,16 @@ const useFetch = () => {
     const fetchImage = async (navigate, endpoint, requestData) => {
         setLoading(true);
         try {
-            requestData.headers.Authorization = `Bearer ${localStorage.getItem("token")}`
+            if (localStorage.getItem("token")) {
+                if (!requestData.headers) requestData.headers = {};
+                requestData.headers.Authorization = `Bearer ${localStorage.getItem("token")}`
+            }
             const response = await fetch(endpoint, requestData);
             setStatusCode(response.status);
-        
+
             if (response.ok) {
                 const imageBlob = await response.blob();
-                const imageUrl = URL.createObjectURL(imageBlob);            
+                const imageUrl = URL.createObjectURL(imageBlob);
                 setImage(imageUrl);
             } else {
                 if (response.status === 401) {

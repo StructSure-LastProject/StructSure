@@ -80,6 +80,40 @@ public class StructureController {
     }
 
     /**
+     * Archive a plan
+     * @param id The structure id
+     * @param planId The plan id
+     * @param request The http servlet request info
+     * @return ResponseEntity containing either the updated plan details or an error message
+     */
+    @PutMapping("/{id}/plans/{planId}/archive")
+    public ResponseEntity<?> archivePlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, HttpServletRequest request) {
+        try {
+            var structure = planService.archivePlan(id, planId, request);
+            return ResponseEntity.status(HttpStatus.OK).body(structure);
+        } catch (TraitementException e) {
+            return e.toResponseEntity("Plan archive rejected: {}");
+        }
+    }
+
+    /**
+     * Restore a plan
+     * @param id The structure id
+     * @param planId The plan id
+     * @param request The http servlet request info
+     * @return ResponseEntity containing either the updated plan details or an error message
+     */
+    @PutMapping("/{id}/plans/{planId}/restore")
+    public ResponseEntity<?> restorePlan(@PathVariable("id") Long id, @PathVariable("planId") Long planId, HttpServletRequest request) {
+        try {
+            var structure = planService.restorePlan(id, planId, request);
+            return ResponseEntity.status(HttpStatus.OK).body(structure);
+        } catch (TraitementException e) {
+            return e.toResponseEntity("Plan restore rejected: {}");
+        }
+    }
+
+    /**
      * Updates an existing structure in the system.
      * This method handles HTTP PUT requests to update the name and/or note of a structure
      * identified by its ID. It delegates the update operation to the service layer.

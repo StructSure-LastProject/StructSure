@@ -1,11 +1,11 @@
-import { createSignal, Show, createEffect } from "solid-js";
+import {createSignal, Show, createEffect, createMemo} from "solid-js";
 import { Plus } from 'lucide-solid';
 import ModalAddPlan from '../Plan/ModalAddPlan';
 import ModalEditPlan from '../Plan/ModalEditPlan';
 import DropdownsSection from "../Plan/DropdownsSection.jsx";
 import StructureDetailCanvas from "./StructureDetailCanvas";
 import useFetch from "../../hooks/useFetch.js";
-import { useNavigate } from "@solidjs/router";
+import {useNavigate, useSearchParams, useLocation} from "@solidjs/router";
 
 
 /**
@@ -32,6 +32,9 @@ export const planImageFetchRequest = async (planId, setPlan, navigate) => {
  */
 function StructureDetailPlans(props) {
     const navigate = useNavigate();
+    const location = useLocation();
+    const [searchParams] = useSearchParams();
+
     // Plans and modals state management
     const [plans, setPlans] = createSignal([]);
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
@@ -40,6 +43,14 @@ function StructureDetailPlans(props) {
 
     const [isAuthorized, setIsAuthorized] = createSignal(false);
     const [plan, setPlan] = createSignal(null);
+
+    /**
+     *
+     */
+    const isInScanMode = createMemo(() => {
+        const scanParam = searchParams.selectedScan;
+        return scanParam !== undefined && scanParam !== "-1";
+    });
 
     /**
      * Opens the add plan modal
@@ -94,16 +105,13 @@ function StructureDetailPlans(props) {
      * @param {Object} formData Form data containing the edited plan information
      */
     const handleEditSave = (formData) => {
-        const userRole = localStorage.getItem("role");
-        const canEdit = userRole === "ADMIN" || userRole === "RESPONSABLE";
-
         setPlans(prev => prev.map(p =>
           p.id === formData.id
             ? {
                 ...p,
                 name: formData.metadata.name,
                 section: formData.metadata.section,
-                type: p.archived ? "archived" : (canEdit ? "edit" : "plan")
+                type: p.archived ? "archived" : (isAuthorized() ? "edit" : "plan")
             }
             : p
         ));
@@ -128,13 +136,67 @@ function StructureDetailPlans(props) {
     };
 
     /**
+     * Handles restoring a plan locally
+     * @param planId The plan id
+     */
+    const handlePlanRestore = (planId) => {
+        setPlans(prevPlans =>
+          prevPlans.map(plan =>
+            plan.id === planId
+              ? { ...plan, archived: false, type: isAuthorized() ? "edit" : "plan" }
+              : plan
+          )
+        );
+    }
+
+    /**
+     * Handles archive a plan locally
+     * @param planId The plan id
+     */
+    const handlePlanArchive = (planId) => {
+        setPlans(prevPlans =>
+          prevPlans.map(plan =>
+            plan.id === planId
+              ? { ...plan, archived: true, type: "archived" }
+              : plan
+          )
+        );
+
+        if (props.selectedPlanId() === planId) {
+            const nonArchivedPlans = plans().filter(p => !p.archived && p.id !== planId);
+
+            if (nonArchivedPlans.length > 0) {
+                props.setSelectedPlanId(nonArchivedPlans[0].id);
+                const newSearchParams = { ...searchParams };
+                newSearchParams.selectedPlanId = nonArchivedPlans[0].id;
+                const searchParamsString = new URLSearchParams(newSearchParams).toString();
+                navigate(`${location.pathname}${searchParamsString ? '?' + searchParamsString : ''}`, { replace: true });
+            } else {
+                props.setSelectedPlanId(null);
+                const newSearchParams = { ...searchParams };
+                delete newSearchParams.selectedPlanId;
+                const searchParamsString = new URLSearchParams(newSearchParams).toString();
+                navigate(`${location.pathname}${searchParamsString ? '?' + searchParamsString : ''}`, { replace: true });
+            }
+            setPlan(null);
+        }
+        closeEditModal();
+    }
+
+    /**
      * Effect that updates plans based on props and user role
      */
     createEffect(() => {
         const userRole = localStorage.getItem("role");
-        setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE")
+        const isOperator = userRole === "OPERATEUR";
+        setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE");
+
         if (props.structureDetails().plans) {
-            const newPlans = props.structureDetails().plans.map(p => {
+            let plansToDisplay = isOperator
+              ? props.structureDetails().plans.filter(p => !p.archived)
+              : props.structureDetails().plans;
+
+            const newPlans = plansToDisplay.map(p => {
                 if (p.archived) {
                     return {
                         ...p,
@@ -159,7 +221,7 @@ function StructureDetailPlans(props) {
                 <div class="flex flex-col gap-y-[15px] lg:w-[25%] m-5 max-h-[350px] lg:max-h-[436px]">
                     <div class="flex items-center justify-between">
                         <p class="title">Plans</p>
-                        <Show when={isAuthorized()}>
+                        <Show when={isAuthorized() && !isInScanMode()}>
                             <button
                             title="Ajouter un plan"
                             onClick={openAddModal}
@@ -176,46 +238,54 @@ function StructureDetailPlans(props) {
                             selectedPlanId={props.selectedPlanId}
                             setSelectedPlanId={props.setSelectedPlanId}
                             onEdit={handleEdit}
-                            onPlanEdit={handleEditSave}
+                            onPlanRestore={handlePlanRestore}
                             structureId={props.structureId}
+                            isInScanMode={isInScanMode}
                         />
                     </div>
                     <Show when={isAddModalOpen()}>
                         <ModalAddPlan
-                        isOpen={isAddModalOpen()}
-                        onSave={handleAddSave}
-                        onClose={closeAddModal}
-                        structureId={props.structureId}
+                            isOpen={isAddModalOpen()}
+                            onSave={handleAddSave}
+                            onClose={closeAddModal}
+                            structureId={props.structureId}
                         />
                     </Show>
                     <Show when={isEditModalOpen() && selectedPlan()}>
                         <ModalEditPlan
-                        isOpen={isEditModalOpen()}
-                        onSave={handleEditSave}
-                        onClose={() => {
-                            setIsEditModalOpen(false);
-                            setSelectedPlan(null);
-                        }}
-                        structureId={props.structureId}
-                        plan={selectedPlan()}
-                        setPlan={setPlan}
-                        selectedPlanId={props.selectedPlanId}
+                            onSave={handleEditSave}
+                            onClose={closeEditModal}
+                            onPlanArchive={handlePlanArchive}
+                            structureId={props.structureId}
+                            plan={selectedPlan()}
+                            setPlan={setPlan}
+                            selectedPlanId={props.selectedPlanId}
                         />
                     </Show>
                 </div>
 
-                <div class="lg:w-[75%] rounded-[20px] bg-white">
-                    <div class="w-full p-[20px]">
-                        <div class="w-full relative">
-                            <Show when={plan() !== null}>
-                                <StructureDetailCanvas structureId={props.structureId} plan={plan} interactiveMode={true} planSensors={props.planSensors} structureDetails={props.structureDetails} 
-                                setPlanSensors={props.setPlanSensors} sensors={props.sensors} setSensors={props.setSensors} setSensorsDetail={props.setSensorsDetail} selectedPlanId={props.selectedPlanId}/>
-                            </Show>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
+              <div class="lg:w-[75%] rounded-[20px] bg-white">
+                  <div class="w-full p-[20px]">
+                      <div class="w-full relative">
+                          <Show when={plan() !== null}>
+                              <StructureDetailCanvas
+                                structureId={props.structureId}
+                                plan={plan}
+                                interactiveMode={true}
+                                planSensors={props.planSensors}
+                                structureDetails={props.structureDetails}
+                                setPlanSensors={props.setPlanSensors}
+                                sensors={props.sensors}
+                                setSensors={props.setSensors}
+                                setSensorsDetail={props.setSensorsDetail}
+                                selectedPlanId={props.selectedPlanId}
+                              />
+                          </Show>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </>
     );
 }
 

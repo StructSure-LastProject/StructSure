@@ -1,6 +1,7 @@
-import {createEffect, createSignal} from "solid-js";
-import {ChevronDown, ChevronRight, Dot, FolderSync, Pencil} from "lucide-solid";
+import {createEffect, createSignal, Show} from "solid-js";
+import {ChevronDown, ChevronRight, Dot, FolderSync, Pencil, Shield} from "lucide-solid";
 import { useSearchParams } from "@solidjs/router";
+import RestorePlanModal from "./RestorePlanModal.jsx"
 
 /**
  * Component that displays a section with a toggle button
@@ -57,8 +58,8 @@ const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId, setSearchParams
  * @param {boolean} props.selectedPlanId contains the selected plan id
  * @returns {JSX.Element} PlanEdit component
  */
-const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId, setSearchParams}) => (
-  <div class={`py-[8px] px-[9px] rounded-[10px] flex items-center cursor-pointer gap-x-[10px] justify-between hover:bg-gray-100 group ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`} 
+const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId, setSearchParams, isInScanMode}) => (
+  <div class={`py-[8px] px-[9px] rounded-[10px] flex items-center cursor-pointer gap-x-[10px] justify-between hover:bg-gray-100 group ${selectedPlanId() === planId ? 'bg-[#F2F2F4]' : ''}`}
   onClick={() => {
     setSelectedPlanId(planId);
     setSearchParams({ selectedPlanId: planId });
@@ -69,17 +70,19 @@ const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId, setS
       </div>
       <p class="poppins text-base font-medium !leading-[11px]">{name}</p>
     </div>
-    <div class="w-5 h-5 flex items-center justify-center invisible group-hover:visible">
-      <button
-        title="Éditer un plan"
-        onClick={(e) => {
-          e.stopPropagation();
-          onEdit(planId);
-        }}
-      >
-        <Pencil size={20} />
-      </button>
-    </div>
+    <Show when={!isInScanMode()}>
+      <div class="w-5 h-5 flex items-center justify-center invisible group-hover:visible">
+        <button
+          title="Éditer un plan"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(planId);
+          }}
+        >
+          <Pencil size={20} />
+        </button>
+      </div>
+    </Show>
   </div>
 );
 
@@ -87,21 +90,81 @@ const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId, setS
  * Component that displays an archived plan
  * @param {Object} props Component properties
  * @param {string} props.name Plan name
+ * @param {number|string} props.structureId Structure identifier
+ * @param {number|string} props.planId Plan identifier
+ * @param {Function} props.onPlanEdit Function to be called after a plan is edited
+ * @param {Function} props.onPlanRestore Function to be called after a plan is restores
  * @returns {JSX.Element} PlanArchived component
  */
-const PlanArchived = ({ name }) => (
-  <div class="py-[8px] px-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between">
-    <div class="flex items-center gap-x-[10px]">
-      <div class="w-4 h-4 flex items-center justify-center">
-        <Dot class="stroke-[5]" size={16}/>
+const PlanArchived = (props) => {
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = createSignal(false);
+  const [errorMsgRestorePlan, setErrorMsgRestorePlan] = createSignal("");
+
+  /**
+   * Open the restore modal
+   * @param {Event} e
+   */
+  const handleArchivedClick = (e) => {
+    e.stopPropagation();
+    setIsRestoreModalOpen(true);
+  };
+
+  /**
+   * Handle successful restoration
+   * @param {Object} data - The data returned after restoration
+   */
+  const handleRestoreSuccess = (data) => {
+    setIsRestoreModalOpen(false);
+    if (props.onPlanRestore) {
+      props.onPlanRestore(data?.id);
+    }
+  };
+
+  /**
+   * Check if there is role item in local storage and the role is an operator
+   * @returns {boolean} whether the role item is in local storage and current user is an operator
+   */
+  const isOperator = () => {
+    const role = localStorage.getItem("role");
+    return !(role == null || role !== "OPERATEUR");
+  }
+
+  return (
+    <>
+      <div class="py-[8px] px-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between">
+        <div class="flex items-center gap-x-[10px]">
+          <div class="w-4 h-4 flex items-center justify-center">
+            <Dot class="stroke-[5]" size={16}/>
+          </div>
+          <p class="poppins text-base font-medium !leading-[11px] opacity-60">{props.name}</p>
+        </div>
+        <Show when={!isOperator() && !props.isInScanMode()}>
+          <div class="w-5 h-5 flex items-center justify-center" title="Restaurer le plan">
+            <button
+              onClick={handleArchivedClick}
+            >
+              <FolderSync size={20} />
+            </button>
+          </div>
+        </Show>
       </div>
-      <p class="poppins text-base font-medium !leading-[11px]">{name}</p>
-    </div>
-    <div class="w-5 h-5 flex items-center justify-center">
-      <FolderSync size={20} />
-    </div>
-  </div>
-);
+
+      <Show when={isRestoreModalOpen()}>
+        <RestorePlanModal
+          plan={{id: props.planId, name: props.name}}
+          structureId={props.structureId}
+          onClose={() => {
+            setIsRestoreModalOpen(false);
+            setErrorMsgRestorePlan("");
+          }}
+          onRestore={handleRestoreSuccess}
+          errorMsgRestorePlan={errorMsgRestorePlan}
+          setErrorMsgRestorePlan={setErrorMsgRestorePlan}
+        />
+      </Show>
+    </>
+  );
+};
 
 /**
  * Builds a tree structure from plan data
@@ -172,6 +235,10 @@ const buildTree = (data) => {
  * @param {Function} props.onEdit Function to edit a plan
  * @param {number|string} props.planId Plan identifier
  * @param {number|string} props.selectedPlanId Selected plan identifier
+ * @param {number|string} props.structureId Structure identifier
+ * @param {string} props.section Section path for the plan
+ * @param {Function} props.onPlanEdit Function called after plan edit
+ * @param {Function} props.onPlanRestore Function called after plan restore
  * @returns {JSX.Element} TreeNode component
  */
 const TreeNode = (props) => {
@@ -208,6 +275,10 @@ const TreeNode = (props) => {
                 onEdit={props.onEdit}
                 planId={child.id}
                 setSearchParams={props.setSearchParams}
+                structureId={props.structureId}
+                onPlanEdit={props.onPlanEdit}
+                onPlanRestore={props.onPlanRestore}
+                isInScanMode={props.isInScanMode}
               />
             ))}
           </div>
@@ -237,6 +308,10 @@ const TreeNode = (props) => {
         planId={props.planId}
         setSelectedPlanId={props.setSelectedPlanId}
         setSearchParams={props.setSearchParams}
+        structureId={props.structureId}
+        onPlanEdit={props.onPlanEdit}
+        onPlanRestore={props.onPlanRestore}
+        isInScanMode={props.isInScanMode}
       />
     </div>
   );
@@ -251,6 +326,8 @@ const TreeNode = (props) => {
  * @param {number|string} props.plan.id Plan identifier
  * @param {number|string} props.selectedPlanId Selected plan identifier
  * @param {Function} props.onEdit Function to edit a plan
+ * @param {number|string} props.structureId Structure identifier
+ * @param {Function} props.onPlanEdit Function called after plan edit or restore
  * @returns {JSX.Element} Appropriate component based on plan type
  */
 const RenderPlan = (props) => {
@@ -273,6 +350,10 @@ const RenderPlan = (props) => {
       onEdit={props.onEdit}
       planId={props.plan.id}
       setSearchParams={props.setSearchParams}
+      structureId={props.structureId}
+      onPlanEdit={props.onPlanEdit}
+      onPlanRestore={props.onPlanRestore}
+      isInScanMode={props.isInScanMode}
     />
   );
 };
@@ -293,14 +374,19 @@ const DropdownsSection = (props) => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // todo for interaction
-  /*const [selectedPlan, setSelectedPlan] = createSignal(null);*/
-
+  /**
+   * The data of plan locally
+   * @returns {any[]|*[]} local data plan or empty
+   */
   const safeData = () => {
     if (Array.isArray(props.data)) {
       if (props.data.length > 0 && props.selectedPlanId() == null) {
-        props.setSelectedPlanId(props.data[0].id);
-        setSearchParams({ selectedPlanId: props.selectedPlanId() });
+        const nonArchivedPlans = props.data.filter(plan => plan.type !== "archived");
+
+        if (nonArchivedPlans.length > 0) {
+          props.setSelectedPlanId(nonArchivedPlans[0].id);
+          setSearchParams({ selectedPlanId: nonArchivedPlans[0].id });
+        }
       }
     }
     return Array.isArray(props.data) ? props.data : [];
@@ -320,7 +406,7 @@ const DropdownsSection = (props) => {
   };
 
   return (
-    <div class="space-y-2">
+    <div class="flex flex-col">
       {treeData().rootPlans.map(plan => (
         <RenderPlan
           plan={plan}
@@ -328,6 +414,10 @@ const DropdownsSection = (props) => {
           onEdit={props.onEdit}
           setSelectedPlanId={props.setSelectedPlanId}
           setSearchParams={setSearchParams}
+          structureId={props.structureId}
+          onPlanEdit={props.onPlanEdit}
+          onPlanRestore={props.onPlanRestore}
+          isInScanMode={props.isInScanMode}
         />
       ))}
 
@@ -340,6 +430,10 @@ const DropdownsSection = (props) => {
           setSelectedPlanId={props.setSelectedPlanId}
           onEdit={props.onEdit}
           setSearchParams={setSearchParams}
+          structureId={props.structureId}
+          onPlanEdit={props.onPlanEdit}
+          onPlanRestore={props.onPlanRestore}
+          isInScanMode={props.isInScanMode}
         />
       ))}
     </div>

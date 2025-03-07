@@ -1,63 +1,64 @@
-import useFetch from '../hooks/useFetch';
 import {useNavigate} from "@solidjs/router";
-import {FolderSync, Shield} from "lucide-solid";
-import ErrorMessage from "./Modal/ErrorMessage.jsx";
+import {FolderSync} from "lucide-solid";
 import { onCleanup, onMount } from 'solid-js';
+import useFetch from "../../hooks/useFetch.js";
+import ErrorMessage from "../Modal/ErrorMessage.jsx";
 
 /**
- * Modal component for restoring archived structures
+ * Modal component for restoring plan
  * @param {Object} props Component properties
- * @returns {JSX.Element} The restore modal component
+ * @returns {JSX.Element} The plan modal component
  */
-function RestoreModal(props) {
+function RestorePlanModal(props) {
   const { fetchData, statusCode, data, error } = useFetch();
   const navigate = useNavigate();
 
   let modalRef;
-  
+
   /**
    * Handles the close of the modal when click outside
-   * @param {Event} event 
+   * @param {Event} event
    */
   const handleClickOutside = (event) => {
-      if (modalRef && !modalRef.contains(event.target)) {
-          props.onClose();
-      }
+    if (modalRef && !modalRef.contains(event.target)) {
+      props.onClose();
+    }
   };
 
   onMount(() => {
-      document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
   });
 
   onCleanup(() => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    document.removeEventListener("mousedown", handleClickOutside);
   });
 
   /**
-   * Handles the restoration of an archived structure
+   * Handles the restoration of an archived plan
    */
   const handleRestore = async () => {
-    if (!props.structure) return;
+    if (!props.plan.id || !props.structureId) return;
 
+    const token = localStorage.getItem("token");
     const requestData = {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       }
     };
-
     await fetchData(
       navigate,
-      `/api/structures/${props.structure.id}/restore`,
+      `/api/structures/${props.structureId}/plans/${props.plan.id}/restore`,
       requestData
     );
 
     if (statusCode() === 200) {
       props.onRestore && props.onRestore(data());
-    } else if (statusCode() === 422) {
-      props.setErrorMsgActiveStructure(error()?.errorData.error || "Une erreur est survenue");
+    } else if (statusCode() === 422 || statusCode() === 404) {
+      props.setErrorMsgRestorePlan(error()?.errorData.error || "Une erreur est survenue");
     } else {
-      props.setErrorMsgActiveStructure("Une erreur est survenue");
+      props.setErrorMsgRestorePlan("Une erreur est survenue");
     }
   };
 
@@ -65,9 +66,9 @@ function RestoreModal(props) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[10px]">
       <div ref={modalRef} class="bg-white p-6 rounded-[20px] shadow-lg w-[370px]">
         <h2 class="title mb-4">Restauration</h2>
-        <ErrorMessage message={props.errorMsgActiveStructure}></ErrorMessage>
+        <ErrorMessage message={props.errorMsgRestorePlan}></ErrorMessage>
         <p class="mb-6 normal">
-          Souhaitez vous restaurer l&apos;ouvrage <span class="font-bold">{props.structure?.name}</span> ?
+          Souhaitez vous restaurer le plan <span class="font-bold">{props.plan?.name}</span> ?
         </p>
         <div class="flex justify-between gap-4">
           <button
@@ -89,4 +90,4 @@ function RestoreModal(props) {
   );
 }
 
-export default RestoreModal;
+export default RestorePlanModal;
