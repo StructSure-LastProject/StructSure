@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,10 +29,11 @@ fun Structure(structure: StructureWithState, structureViewModel: StructureViewMo
             .background(color = White, shape = RoundedCornerShape(20.dp))
             .padding(horizontal = 20.dp, vertical = 15.dp)
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+
     ) {
         Column(
-            modifier = Modifier
+            modifier = Modifier.weight(1f).wrapContentHeight()
         ) {
             Text(
                 style = Typography.headlineMedium,
