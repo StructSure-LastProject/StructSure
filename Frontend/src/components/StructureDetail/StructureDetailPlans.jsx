@@ -160,6 +160,12 @@ function StructureDetailPlans(props) {
               : plan
           )
         );
+        const newSearchParams = { ...searchParams };
+        delete newSearchParams.selectedPlanId;
+
+        const searchParamsString = new URLSearchParams(newSearchParams).toString();
+        navigate(`${location.pathname}${searchParamsString ? '?' + searchParamsString : ''}`, { replace: true });
+        setPlan(null);
         closeEditModal();
     }
 
@@ -168,9 +174,15 @@ function StructureDetailPlans(props) {
      */
     createEffect(() => {
         const userRole = localStorage.getItem("role");
-        setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE")
+        const isOperator = userRole === "OPERATEUR";
+        setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE");
+
         if (props.structureDetails().plans) {
-            const newPlans = props.structureDetails().plans.map(p => {
+            let plansToDisplay = isOperator
+              ? props.structureDetails().plans.filter(p => !p.archived)
+              : props.structureDetails().plans;
+
+            const newPlans = plansToDisplay.map(p => {
                 if (p.archived) {
                     return {
                         ...p,
