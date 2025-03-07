@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +33,7 @@ fun Structure(structure: StructureWithState, structureViewModel: StructureViewMo
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Column(
-            modifier = Modifier
+            modifier = Modifier.widthIn(min = 100.dp, max = 250.dp)
         ) {
             Text(
                 style = Typography.headlineMedium,
