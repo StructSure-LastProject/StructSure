@@ -517,7 +517,7 @@ public class PlanService {
 
         var plan = planRepository.findByStructureAndId(structure, planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
         plan.setArchived(true);
-        sensorRepository.clearPlanReferencesByPlanId(id);
+        sensorRepository.clearPlanReferencesByPlanId(planId);
         var saved = planRepository.save(plan);
         return new ArchiveRestorePlanResponseDTO(saved.getId(), saved.getName(), saved.isArchived());
     }

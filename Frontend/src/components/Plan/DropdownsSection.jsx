@@ -204,13 +204,14 @@ const buildTree = (data) => {
 
     sectionParts.forEach((part, index) => {
       currentPath = currentPath ? `${currentPath}/${part}` : part;
+      const sectionId = `section-${currentPath}`;
 
       if (!current[part]) {
         current[part] = {
           name: part,
           children: {},
           type: "section",
-          id: `section-${currentPath}`
+          id: sectionId
         };
       }
 
@@ -231,7 +232,7 @@ const buildTree = (data) => {
  * @param {string} props.name Node name
  * @param {string} props.type Node type ("section", "edit", "archived", "plan")
  * @param {Object} props.children Child nodes
- * @param {boolean} props.setSelectedPlanId Setter for plan Id
+ * @param {Function} props.setSelectedPlanId Setter for plan Id
  * @param {Function} props.onEdit Function to edit a plan
  * @param {number|string} props.planId Plan identifier
  * @param {number|string} props.selectedPlanId Selected plan identifier
@@ -239,48 +240,69 @@ const buildTree = (data) => {
  * @param {string} props.section Section path for the plan
  * @param {Function} props.onPlanEdit Function called after plan edit
  * @param {Function} props.onPlanRestore Function called after plan restore
+ * @param {string} props.sectionId ID of the current section
+ * @param {Function} props.isSectionOpen Function to check if section is open
+ * @param {Function} props.toggleSectionState Function to toggle section state
  * @returns {JSX.Element} TreeNode component
  */
 const TreeNode = (props) => {
-  const [isOpen, setIsOpen] = createSignal(false);
   const hasChildren = Object.keys(props.children || {}).length > 0;
+
+  /**
+   * Check if the current section is open
+   * @returns {*|boolean} Whether the section is open or not
+   */
+  const isCurrentSectionOpen = () => {
+    if (props.type === "section" && props.isSectionOpen && props.sectionId) {
+      return props.isSectionOpen(props.sectionId);
+    }
+    return false;
+  };
 
   /**
    * Change the toggle status
    * @param e Click event
    */
-  const toggleOpen = (e) => {
+  const toggleCurrentSection = (e) => {
     e.stopPropagation();
-    setIsOpen(!isOpen());
+    if (props.type === "section" && props.toggleSectionState && props.sectionId) {
+      props.toggleSectionState(props.sectionId, !isCurrentSectionOpen());
+    }
   };
-
 
   if (props.type === "section") {
     return (
       <div class="mb-2">
         <Section
           name={props.name}
-          isOpen={isOpen}
-          toggleOpen={toggleOpen}
+          isOpen={isCurrentSectionOpen}
+          toggleOpen={toggleCurrentSection}
         />
-        {hasChildren && isOpen() && (
+        {hasChildren && isCurrentSectionOpen() && (
           <div class="pl-4 mt-2">
-            {Object.entries(props.children).map(([key, child]) => (
-              <TreeNode
-                name={child.name}
-                type={child.type}
-                children={child.children}
-                setSelectedPlanId={props.setSelectedPlanId}
-                selectedPlanId={props.selectedPlanId}
-                onEdit={props.onEdit}
-                planId={child.id}
-                setSearchParams={props.setSearchParams}
-                structureId={props.structureId}
-                onPlanEdit={props.onPlanEdit}
-                onPlanRestore={props.onPlanRestore}
-                isInScanMode={props.isInScanMode}
-              />
-            ))}
+            {Object.entries(props.children).map(([key, child]) => {
+              const childSectionId = child.type === "section" ? child.id : null;
+
+              return (
+                <TreeNode
+                  name={child.name}
+                  type={child.type}
+                  children={child.children}
+                  setSelectedPlanId={props.setSelectedPlanId}
+                  selectedPlanId={props.selectedPlanId}
+                  onEdit={props.onEdit}
+                  planId={child.id}
+                  setSearchParams={props.setSearchParams}
+                  structureId={props.structureId}
+                  onPlanEdit={props.onPlanEdit}
+                  onPlanRestore={props.onPlanRestore}
+                  isInScanMode={props.isInScanMode}
+                  sectionId={childSectionId}
+                  isSectionOpen={props.isSectionOpen}
+                  toggleSectionState={props.toggleSectionState}
+                />
+              );
+            })}
           </div>
         )}
       </div>
@@ -371,6 +393,7 @@ const RenderPlan = (props) => {
  */
 const DropdownsSection = (props) => {
   const [localPlans, setLocalPlans] = createSignal([]);
+  const [openSections, setOpenSections] = createSignal({});
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -405,6 +428,27 @@ const DropdownsSection = (props) => {
     return buildTree(currentPlans);
   };
 
+  /**
+   * Toggle the open state of a section
+   * @param {string} sectionId - The ID of the section
+   * @param {boolean} isOpen - Whether the section should be open
+   */
+  const toggleSectionState = (sectionId, isOpen) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [sectionId]: isOpen
+    }));
+  };
+
+  /**
+   * Check if a section is open
+   * @param {string} sectionId - The ID of the section
+   * @returns {boolean} True if the section is open
+   */
+  const isSectionOpen = (sectionId) => {
+    return openSections()[sectionId] === true;
+  };
+
   return (
     <div class="flex flex-col">
       {treeData().rootPlans.map(plan => (
@@ -434,6 +478,9 @@ const DropdownsSection = (props) => {
           onPlanEdit={props.onPlanEdit}
           onPlanRestore={props.onPlanRestore}
           isInScanMode={props.isInScanMode}
+          sectionId={section.id}
+          isSectionOpen={isSectionOpen}
+          toggleSectionState={toggleSectionState}
         />
       ))}
     </div>
