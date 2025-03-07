@@ -1,4 +1,7 @@
 import {Pencil} from 'lucide-solid';
+import { createEffect, createSignal } from 'solid-js';
+import useFetch from '../../hooks/useFetch';
+import { useNavigate } from '@solidjs/router';
 
 /**
  * Component for handling image upload and preview functionality
@@ -28,25 +31,52 @@ const ModalImage = (props) => {
  * @param {string} props.currentImageUrl - URL of the existing image
  * @returns {JSX.Element} Image preview or placeholder message
  */
-const ImagePreview = ({ imageData, currentImageUrl }) => (
-  <div class="h-full w-full flex justify-center items-center">
-    {imageData() ? (
-      <img
-        src={imageData()}
-        alt="Plan modifié"
-        class="w-full h-full rounded-[10px] object-cover"
-      />
-    ) : currentImageUrl ? (
-      <img
-        src={currentImageUrl}
-        alt="Plan actuel"
-        class="w-full h-full rounded-[10px] object-cover"
-      />
-    ) : (
-      <p class="text-center normal text-black opacity-50">Pas d&apos;image sélectionnée</p>
-    )}
-  </div>
-);
+const ImagePreview = ({ imageData, currentImageUrl }) => {
+  const [img, setImg] = createSignal(null);
+  const navigate = useNavigate();
+  /**
+   * Will fetch the existing plan image
+   */
+  const fetchExistingImage = async () => {
+    const requestData = {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    };
+
+    const { fetchImage, image, statusCode } = useFetch();
+    await fetchImage(navigate, currentImageUrl, requestData);
+    if (statusCode() === 200) {
+        setImg(image());
+    }
+  };
+
+  createEffect(() => {
+    if (currentImageUrl)
+      fetchExistingImage();
+  });
+
+  return (
+    <div class="h-full w-full flex justify-center items-center">
+      {imageData() ? (
+        <img
+          src={imageData()}
+          alt="Plan modifié"
+          class="w-full h-full rounded-[10px] object-cover"
+        />
+      ) : currentImageUrl ? (
+        <img
+          src={img()}
+          alt="Plan actuel"
+          class="w-full h-full rounded-[10px] object-cover"
+        />
+      ) : (
+        <p class="text-center normal text-black opacity-50">Pas d&apos;image sélectionnée</p>
+      )}
+    </div>
+  );
+}
 
 /**
  * A styled button component that handles file uploads
