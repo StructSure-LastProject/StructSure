@@ -341,7 +341,27 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
                 </Show> 
                 {
                     openSensorPanel() && (
-                        <SensorPanel structureId={structureId} sensors={sensors} setSensors={setSensors} selectedPlanId={selectedPlanId} sensorDetails={clickedSensor()} closeSensorPanel={closeSensorPanelHandler} setTotalItems={setTotalItems}/>
+                        <SensorPanel 
+                            structureId={structureId} 
+                            sensors={sensors} 
+                            setSensors={setSensors} 
+                            selectedPlanId={selectedPlanId} 
+                            sensorDetails={clickedSensor()} 
+                            closeSensorPanel={closeSensorPanelHandler} 
+                            setTotalItems={setTotalItems}
+                            filters={{
+                                orderByColumn: orderByColumn() !== "Tout" ? SORT_VALUES[orderByColumn()] : "STATE",
+                                orderType: orderType() ? "ASC" : "DESC",
+                                limit: limit(),
+                                offset: offset(),
+                                ...(selectedScan() > -1 && {scanFilter: selectedScan()}),
+                                ...(stateFilter() !== "Tout" && {stateFilter: FILTER_VALUES[stateFilter()] }),
+                                ...(isCheckedArchivedFilter() ? {archivedFilter: isCheckedArchivedFilter()} : false),
+                                ...(isCheckedPlanFilter() && selectedPlanId() !== undefined && {planFilter: selectedPlanId()}),
+                                ...(startDate() !== "" && {minInstallationDate: startDate()}),
+                                ...(endDate() !== "" && {maxInstallationDate: endDate()})
+                            }}
+                        />
                     )
                 }
             </div>

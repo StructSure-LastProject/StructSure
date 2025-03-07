@@ -1,5 +1,5 @@
 import { ChevronDown, SortAsc, SortDesc, MoveRight } from 'lucide-solid';
-import { createEffect, createSignal } from 'solid-js';
+import { createEffect, createSignal, Show } from 'solid-js';
 import SensorFieldComponent from "../components/SensorPanel/SensorFieldComponent";
 import { sensorsFetchRequest } from './StructureDetail/StructureDetailBody';
 import { useNavigate, useSearchParams } from '@solidjs/router';
@@ -168,6 +168,23 @@ const CheckBoxComponent = ({description, value, setter, searchParamName}) => {
  * @param {Number} limit The limit
  * @param {Number} offset The offset
  * @param {Function} setTotalItems The setter function
+ * @param {Number} selectedPlanId The selected plan id
+ * @param {String} orderByColumn The column to order by
+ * @param {Function} setOrderByColumn The setter function for orderByColumn
+ * @param {String} orderType The order type (e.g. 'asc' or 'desc')
+ * @param {Function} setOrderType The setter function for orderType
+ * @param {boolean} isCheckedPlanFilter Whether the plan filter is checked
+ * @param {Function} setIsCheckedPlanFilter The setter function for isCheckedPlanFilter
+ * @param {boolean} isCheckedArchivedFilter Whether the archived filter is checked
+ * @param {Function} setIsCheckedArchivedFilter The setter function for isCheckedArchivedFilter
+ * @param {String} startDate The start date
+ * @param {Function} setStartDate The setter function for startDate
+ * @param {String} endDate The end date
+ * @param {Function} setEndDate The setter function for endDate
+ * @param {String} stateFilter The state filter
+ * @param {Function} setStateFilter The setter function for stateFilter
+ * @param {Array} SORT_VALUES The possible sort values
+ * @param {Array} FILTER_VALUES The possible filter values
  * @returns The component
  */
 const SensorFilter = ({
@@ -252,12 +269,14 @@ const SensorFilter = ({
                         setter={setIsCheckedPlanFilter}
                         searchParamName={"isCheckedPlanFilter"}
                     />
-                    <CheckBoxComponent 
-                        description={"Capteurs archivés"}
-                        value={isCheckedArchivedFilter}
-                        setter={setIsCheckedArchivedFilter}
-                        searchParamName={"isCheckedArchivedFilter"}
-                    />
+                    <Show when={localStorage.getItem("role") === "ADMIN" || localStorage.getItem("role") === "RESPONSABLE"}>
+                        <CheckBoxComponent 
+                            description={"Capteurs archivés"}
+                            value={isCheckedArchivedFilter}
+                            setter={setIsCheckedArchivedFilter}
+                            searchParamName={"isCheckedArchivedFilter"}
+                        />
+                    </Show>
                 </div>
             </div>
         </div>

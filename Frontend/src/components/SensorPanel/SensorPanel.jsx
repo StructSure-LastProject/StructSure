@@ -145,9 +145,10 @@ const SensorCommentSection = ({
  * @param {String} selectedPlanId The selected plan id
  * @param {Object} sensorDetails contains all the information about the clickded sensor
  * @param {Function} closeSensorPanel Function that close the sensor panel
+ * @param {Object} filters The filters to apply when get sensors
  * @returns The sensor panel component
  */
-const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDetails, closeSensorPanel, setTotalItems}) => {
+const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDetails, closeSensorPanel, setTotalItems, filters}) => {
 
   const [sensorName, setSensorName] = createSignal(sensorDetails.name);
   const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate === null ? "" : sensorDetails.installationDate.split('T')[0]);
@@ -221,7 +222,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
 
     if (statusCode() === 200) {
       setvalidationError("");
-      sensorsFetchRequest(structureId, setSensors, setTotalItems, navigate);
+      sensorsFetchRequest(structureId, setSensors, setTotalItems, navigate, filters);
       closeSensorPanel();
       return true;
     }    
