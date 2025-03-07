@@ -13,14 +13,12 @@ function StructureDetailEdit(props) {
      * Will send request to edit the structure details (name, note)
      */
     const structuresUpdateRequest = async () => {
-        const token = localStorage.getItem("token");       
         const url = `/api/structures/${props.structureDetails().id}`;
     
         const requestData = {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({
                 name: name(),

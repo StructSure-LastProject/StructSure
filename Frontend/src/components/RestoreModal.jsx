@@ -39,12 +39,10 @@ function RestoreModal(props) {
   const handleRestore = async () => {
     if (!props.structure) return;
 
-    const token = localStorage.getItem("token");
     const requestData = {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
       }
     };
 

@@ -20,6 +20,9 @@ const useFetch = () => {
   const fetchData = async (navigate, endpoint, requestData) => {
     setLoading(true);
         try {
+            if (localStorage.getItem("token")) {
+                requestData.headers.Authorization = `Bearer ${localStorage.getItem("token")}`
+            }
             const response = await fetch(endpoint, requestData);
             setStatusCode(response.status);
             if (response.ok) {    
@@ -71,28 +74,29 @@ const useFetch = () => {
     const fetchImage = async (navigate, endpoint, requestData) => {
         setLoading(true);
         try {
-        const response = await fetch(endpoint, requestData);
-        setStatusCode(response.status);
-    
-        if (response.ok) {
-            const imageBlob = await response.blob();
-            const imageUrl = URL.createObjectURL(imageBlob);            
-            setImage(imageUrl);
-        } else {
-            if (response.status === 401) {
-                const currentRoute = window.location.pathname + window.location.search
-                if (!currentRoute.startsWith("/login") && !currentRoute.startsWith("/account")) {
-                    localStorage.setItem("loginForward", currentRoute);
+            requestData.headers.Authorization = `Bearer ${localStorage.getItem("token")}`
+            const response = await fetch(endpoint, requestData);
+            setStatusCode(response.status);
+        
+            if (response.ok) {
+                const imageBlob = await response.blob();
+                const imageUrl = URL.createObjectURL(imageBlob);            
+                setImage(imageUrl);
+            } else {
+                if (response.status === 401) {
+                    const currentRoute = window.location.pathname + window.location.search
+                    if (!currentRoute.startsWith("/login") && !currentRoute.startsWith("/account")) {
+                        localStorage.setItem("loginForward", currentRoute);
+                    }
+                    navigate("/login");
+                    return
                 }
-                navigate("/login");
-                return
+                const errorData = await response.json();
+                setError({
+                    statusCode: response.status,
+                    errorData
+                });
             }
-            const errorData = await response.json();
-            setError({
-                statusCode: response.status,
-                errorData
-            });
-        }
         } catch (err) {
         const errorData = { message: err.message || "Network or server error occurred" };
             setError({

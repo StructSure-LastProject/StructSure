@@ -67,8 +67,6 @@ const AddAccountModal = ({ closeModal }) => {
         
 
         const { fetchData, error, statusCode } = useFetch();
-        const token = localStorage.getItem("token");
-        
 
         if (errorModal().length === 0) {
             const requestBody = {
@@ -83,7 +81,6 @@ const AddAccountModal = ({ closeModal }) => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(requestBody),
             };

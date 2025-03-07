@@ -1,5 +1,7 @@
 package fr.uge.structsure.config;
 
+import fr.uge.structsure.exceptions.Error;
+import fr.uge.structsure.exceptions.TraitementException;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -7,6 +9,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -48,9 +52,11 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
 
-
         if (authHeader == null || !authHeader.startsWith("Bearer ") || authHeader.endsWith("null")) {
-            filterChain.doFilter(request, response);
+            String encodedRedirectURL = response.encodeRedirectURL(
+                request.getContextPath() + "/login");
+            response.setStatus(HttpStatus.TEMPORARY_REDIRECT.value());
+            response.setHeader("Location", encodedRedirectURL);
             return;
         }
 
@@ -101,6 +107,7 @@ public class JwtFilter extends OncePerRequestFilter {
         return request.getServletPath().startsWith("/api/android/login")
             || request.getServletPath().startsWith("/api/login")
             || request.getServletPath().startsWith("/api/register")
-            || request.getServletPath().startsWith("/swagger-ui/index.html");
+            || request.getServletPath().startsWith("/swagger-ui/index.html")
+            || !request.getRequestURI().startsWith("/api");
     }
 }

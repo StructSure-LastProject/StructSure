@@ -12,12 +12,10 @@ import useFetch from '../../hooks/useFetch';
  */
 export const planSensorsFetchRequest = async (structureId, setPlanSensors, planId, navigate) => {
     if (planId === null) return;
-    const token = localStorage.getItem("token");
     const requestData = {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`   
         }
     };
 
@@ -61,7 +59,6 @@ export const planSensorsScanFetchRequest = async (structureId, scanId, planId, s
  * Will fetch the list of the sensors of this structure
  */
 export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems, navigate, filters = {}) => {
-    const token = localStorage.getItem("token");
     const { fetchData, statusCode, data } = useFetch();
 
     // Construire le body avec les filtres
@@ -85,7 +82,6 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
         method: "POST",  // Changer GET en POST
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(requestBody) // Ajouter les paramètres dans le body
     };
@@ -102,7 +98,6 @@ export const sensorsFetchRequest = async (structureId, setSensors, setTotalItems
  * Will fetch the list of the sensors of this structure without limit and Offset
  */
 export const sensorsWithoutLimitAndOffsetFetchRequest = async (structureId, setSensors, setTotalItems, navigate, filters = {}) => {
-    const token = localStorage.getItem("token");
     const { fetchData, statusCode, data } = useFetch();
 
     // Construire le body avec les filtres
@@ -124,7 +119,6 @@ export const sensorsWithoutLimitAndOffsetFetchRequest = async (structureId, setS
         method: "POST",  // Changer GET en POST
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(requestBody) // Ajouter les paramètres dans le body
     };
@@ -163,12 +157,10 @@ function StructureDetailBody(props) {
      * Will fetch the structure details
      */
     const structureDetailsFetchRequest = async (structureId) => {
-        const token = localStorage.getItem("token");
         const requestData = {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
             }
         };
         const { fetchData, statusCode, data, errorFetch } = useFetch();

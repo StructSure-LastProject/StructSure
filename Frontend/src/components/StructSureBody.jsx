@@ -60,8 +60,6 @@ function StructSureBody() {
      * @param {String} orderType the order by string
      */
     const structuresFetchRequest = async (url, searchByName, filterValue, orderByColumnName, orderType) => {
-        const token = localStorage.getItem("token");
-
         const params = new URLSearchParams();
         params.append('searchByName', searchByName);
         params.append('searchByState', filterValue);
@@ -79,7 +77,6 @@ function StructSureBody() {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
             }
         };
 

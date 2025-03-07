@@ -124,7 +124,6 @@ function StructureDetailCanvas(props) {
      */
     const deletePositionRequest = async (controlChip, measureChip) => {
         const { fetchData, statusCode, error } = useFetch();
-        const token = localStorage.getItem("token");
 
         const url = `/api/sensors/${controlChip}/${measureChip}/position/delete`;
 
@@ -132,7 +131,6 @@ function StructureDetailCanvas(props) {
             method: "DELETE",  // Changer GET en POST
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
             }
         };
 

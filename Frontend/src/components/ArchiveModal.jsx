@@ -39,12 +39,10 @@ function ArchiveModal(props) {
   const handleArchive = async () => {
     if (!props.structure) return;
 
-    const token = localStorage.getItem("token");
     const requestData = {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
       }
     };
 

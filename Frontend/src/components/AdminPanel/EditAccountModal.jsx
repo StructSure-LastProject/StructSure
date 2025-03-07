@@ -189,13 +189,10 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
      * Get structure for the user account
      */
     const getStructuresForAccount = async () => {
-        const token = localStorage.getItem("token");
-        
         const requestData = {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
             }
         };
 
@@ -217,8 +214,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
         e.preventDefault();
 
         validateUserAccountForm(firstName(), lastName(), login, role(), password(), addError, removeError, false)
-
-        const token = localStorage.getItem("token")
 
         if (errorModal().length === 0) {
             const updatedFields = [];
@@ -259,7 +254,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                     method: requestMethod,
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify(requestData),
                 };

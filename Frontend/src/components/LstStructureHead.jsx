@@ -66,7 +66,6 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
      * @param {String} url the url of the server
      */
     const structuresFetchRequest = async (url) => {
-        const token = localStorage.getItem("token");
         const requestBody = JSON.stringify({
             name: name(),
             note: note()
@@ -76,7 +75,6 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
             },
             body: requestBody
         };

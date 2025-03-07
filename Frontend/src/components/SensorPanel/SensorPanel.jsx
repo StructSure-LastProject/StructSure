@@ -76,7 +76,6 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
 const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => {  
   const planId = selectedPlanId() === null ? 1 : selectedPlanId();
   const { fetchImage, image, loading } = useFetch();
-  const token = localStorage.getItem("token");
   const endpoint = `/api/structures/plans/${structureId}/${sensorDetails.controlChip}/${sensorDetails.measureChip}/image`;
   const navigate = useNavigate();
 
@@ -84,7 +83,6 @@ const SensorPlan = ({sensorMap, selectedPlanId, sensorDetails, structureId}) => 
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
     },
   };
   
@@ -202,7 +200,6 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
     }
 
     const { fetchData, error, statusCode } = useFetch();
-    const token = localStorage.getItem("token");
     
     const requestBody = {
       controlChip: sensorDetails.controlChip,
@@ -216,7 +213,6 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(requestBody)
     };
