@@ -118,7 +118,7 @@ function AccountChangePassword() {
                 </div>
                 <div class="flex justify-end">
                     <button type="submit" class="bg-black flex justify-between gap-[10px] rounded-50px py-2 px-4" >
-                        <p class="accent text-white">Se connecter</p>
+                        <p class="accent text-white">Mettre à jour</p>
                         
                     </button>
                 </div>

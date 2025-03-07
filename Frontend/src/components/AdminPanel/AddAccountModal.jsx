@@ -205,7 +205,7 @@ const AddAccountModal = ({ closeModal }) => {
                                 />
                             </div>
                             <div className="flex flex-col gap-[5px]">
-                                <label htmlFor="role" className="normal opacity-50">Role*</label>
+                                <label htmlFor="role" className="normal opacity-50">Rôle*</label>
                                 <div className="relative">
                                     <select
                                         id="role"
