@@ -381,8 +381,12 @@ const DropdownsSection = (props) => {
   const safeData = () => {
     if (Array.isArray(props.data)) {
       if (props.data.length > 0 && props.selectedPlanId() == null) {
-        props.setSelectedPlanId(props.data[0].id);
-        setSearchParams({ selectedPlanId: props.data[0].id });
+        const nonArchivedPlans = props.data.filter(plan => plan.type !== "archived");
+
+        if (nonArchivedPlans.length > 0) {
+          props.setSelectedPlanId(nonArchivedPlans[0].id);
+          setSearchParams({ selectedPlanId: nonArchivedPlans[0].id });
+        }
       }
     }
     return Array.isArray(props.data) ? props.data : [];

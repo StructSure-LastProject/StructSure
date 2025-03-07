@@ -5,7 +5,7 @@ import ModalEditPlan from '../Plan/ModalEditPlan';
 import DropdownsSection from "../Plan/DropdownsSection.jsx";
 import StructureDetailCanvas from "./StructureDetailCanvas";
 import useFetch from "../../hooks/useFetch.js";
-import {useNavigate, useSearchParams} from "@solidjs/router";
+import {useNavigate, useSearchParams, useLocation} from "@solidjs/router";
 
 
 /**
@@ -32,6 +32,7 @@ export const planImageFetchRequest = async (planId, setPlan, navigate) => {
  */
 function StructureDetailPlans(props) {
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
 
     // Plans and modals state management
@@ -160,12 +161,25 @@ function StructureDetailPlans(props) {
               : plan
           )
         );
-        const newSearchParams = { ...searchParams };
-        delete newSearchParams.selectedPlanId;
 
-        const searchParamsString = new URLSearchParams(newSearchParams).toString();
-        navigate(`${location.pathname}${searchParamsString ? '?' + searchParamsString : ''}`, { replace: true });
-        setPlan(null);
+        if (props.selectedPlanId() === planId) {
+            const nonArchivedPlans = plans().filter(p => !p.archived && p.id !== planId);
+
+            if (nonArchivedPlans.length > 0) {
+                props.setSelectedPlanId(nonArchivedPlans[0].id);
+                const newSearchParams = { ...searchParams };
+                newSearchParams.selectedPlanId = nonArchivedPlans[0].id;
+                const searchParamsString = new URLSearchParams(newSearchParams).toString();
+                navigate(`${location.pathname}${searchParamsString ? '?' + searchParamsString : ''}`, { replace: true });
+            } else {
+                props.setSelectedPlanId(null);
+                const newSearchParams = { ...searchParams };
+                delete newSearchParams.selectedPlanId;
+                const searchParamsString = new URLSearchParams(newSearchParams).toString();
+                navigate(`${location.pathname}${searchParamsString ? '?' + searchParamsString : ''}`, { replace: true });
+            }
+            setPlan(null);
+        }
         closeEditModal();
     }
 
