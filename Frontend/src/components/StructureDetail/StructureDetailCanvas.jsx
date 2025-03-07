@@ -5,6 +5,8 @@ import Alert from '../Alert';
 import getSensorStatusColor from "../SensorStatusColorGen";
 import { planSensorsFetchRequest } from "./StructureDetailBody";
 import { useNavigate } from "@solidjs/router";
+import image_plan_not_found from '/src/assets/image_plan_not_found.png';
+import no_plan from '/src/assets/no_plan.png';
 
 /**
  * Shows the plans part
@@ -388,9 +390,9 @@ function StructureDetailCanvas(props) {
     }
 
     /**
-         * Loads and draws the image from it's link
-         * @param {String} imgLink the link of the image
-         */
+     * Loads and draws the image from its link
+     * @param {String} imgLink the link of the image
+     */
     const loadAndDrawImage = (imgLink) => {
         img.src = imgLink;
         img.onload = () => drawImage();
@@ -410,12 +412,16 @@ function StructureDetailCanvas(props) {
 
     createEffect(() => {
         if (props.plan() != null) {
+            if (props.plan() === no_plan || props.plan() === image_plan_not_found) {
+                setIsPopupVisible(false);
+                isPopupVisible();
+            }
             initCanvasWhenPlanChanged();
         }
     });
 
     /**
-     * This function is called in the begning when this component is mounted in the DOM
+     * This function is called in the beginning when this component is mounted in the DOM
      */
     onMount(() => {
         const ctx = canvasRef.getContext('2d');
