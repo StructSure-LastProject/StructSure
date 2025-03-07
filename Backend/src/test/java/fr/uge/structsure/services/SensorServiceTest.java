@@ -13,11 +13,13 @@ import fr.uge.structsure.repositories.ResultRepository;
 import fr.uge.structsure.repositories.SensorRepository;
 import fr.uge.structsure.repositories.SensorRepositoryCriteriaQuery;
 import fr.uge.structsure.repositories.StructureRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class SensorServiceTest extends DataBaseTests {
+    private static final HttpServletRequest REQUEST = new MockHttpServletRequest();
 
     @Mock
     private SensorRepository sensorRepository;
@@ -38,6 +41,9 @@ class SensorServiceTest extends DataBaseTests {
 
     @Mock
     private ResultRepository resultRepository;
+
+    @Mock
+    private AppLogService appLogs;
 
     @InjectMocks
     private SensorService sensorService;
@@ -76,47 +82,47 @@ class SensorServiceTest extends DataBaseTests {
     // Test createSensor method
     @Test
     void testCreateSensor_StructureNotFound() {
-        BaseSensorDTO request = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
-        when(structureRepository.findById(request.structureId())).thenReturn(Optional.empty());
+        BaseSensorDTO dto = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
+        when(structureRepository.findById(dto.structureId())).thenReturn(Optional.empty());
 
-        TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
+        TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(REQUEST, dto));
         assertEquals(Error.SENSOR_STRUCTURE_NOT_FOUND, exception.error);
     }
 
     @Test
     void testCreateSensor_SensorNameAlreadyExists() {
-        BaseSensorDTO request = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
-        when(structureRepository.findById(request.structureId())).thenReturn(Optional.of(new Structure()));
-        when(sensorRepository.nameAlreadyExists(request.name())).thenReturn(true);
+        BaseSensorDTO dto = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
+        when(structureRepository.findById(dto.structureId())).thenReturn(Optional.of(new Structure()));
+        when(sensorRepository.nameAlreadyExists(dto.name())).thenReturn(true);
 
-        TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
+        TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(REQUEST, dto));
         assertEquals(Error.SENSOR_NAME_ALREADY_EXISTS, exception.error);
     }
 
     @Test
     void testCreateSensor_Success() throws TraitementException {
-        BaseSensorDTO request = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
+        BaseSensorDTO dto = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
         var structure = new Structure();
-        when(structureRepository.findById(request.structureId())).thenReturn(Optional.of(structure));
-        when(sensorRepository.findByName(request.name())).thenReturn(Optional.empty());
-        when(sensorRepository.findByChipTag(request.controlChip())).thenReturn(List.of());
+        when(structureRepository.findById(dto.structureId())).thenReturn(Optional.of(structure));
+        when(sensorRepository.findByName(dto.name())).thenReturn(Optional.empty());
+        when(sensorRepository.findByChipTag(dto.controlChip())).thenReturn(List.of());
 
-        Sensor sensor = new Sensor(request.controlChip(), request.measureChip(), request.name(), request.note(), structure);
+        Sensor sensor = new Sensor(dto.controlChip(), dto.measureChip(), dto.name(), dto.note(), structure);
         when(sensorRepository.save(any(Sensor.class))).thenReturn(sensor);
 
-        AddSensorResponseDTO response = sensorService.createSensor(request);
+        AddSensorResponseDTO response = sensorService.createSensor(REQUEST, dto);
 
         assertNotNull(response);
-        assertEquals(request.controlChip(), response.controlChip());
-        assertEquals(request.measureChip(), response.measureChip());
+        assertEquals(dto.controlChip(), response.controlChip());
+        assertEquals(dto.measureChip(), response.measureChip());
     }
 
     // Test sensorEmptyPrecondition (indirectly tested through createSensor)
     @Test
     void testSensorEmptyPrecondition() {
-        BaseSensorDTO request = new BaseSensorDTO(1L, null, "chip2", "Sensor1", "");
+        BaseSensorDTO dto = new BaseSensorDTO(1L, null, "chip2", "Sensor1", "");
 
-        TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(request));
+        TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(REQUEST, dto));
         assertEquals(Error.SENSOR_CHIP_TAGS_IS_EMPTY, exception.error);
     }
 }

@@ -3,12 +3,14 @@ package fr.uge.structsure.controllers;
 import com.fasterxml.jackson.core.JsonParseException;
 import fr.uge.structsure.config.RequiresRole;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
+import fr.uge.structsure.dto.logs.LogsRequestDTO;
 import fr.uge.structsure.dto.userAccount.UserStructureAccessRequestDTO;
 import fr.uge.structsure.dto.userAccount.UserUpdateRequestDTO;
 import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
+import fr.uge.structsure.services.AppLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,14 +28,17 @@ import java.util.Objects;
 @RequestMapping("/api")
 public class UserAccountController {
     private final AccountService accountService;
+    private final AppLogService appLogService;
     
     /**
      * Constructor
      * @param accountService Service class
+     * @param appLogService Logs service
      */
     @Autowired
-    public UserAccountController(AccountService accountService) {
+    public UserAccountController(AccountService accountService, AppLogService appLogService) {
       this.accountService = accountService;
+      this.appLogService = appLogService;
     }
 
     /**
@@ -55,16 +60,20 @@ public class UserAccountController {
     }
 
     /**
-     * Create new user account
+     * Create a new user account
+     * @param request the full request data to get the current user account
      * @param registerRequestDTO The request DTO
      * @return RegisterResponseDTO The login of the user account
      */
     @RequiresRole(Role.ADMIN)
     @PostMapping("/accounts")
-    public ResponseEntity<?> createNewUserAccount(@RequestBody RegisterRequestDTO registerRequestDTO){
+    public ResponseEntity<?> createNewUserAccount(
+        HttpServletRequest request,
+        @RequestBody RegisterRequestDTO registerRequestDTO
+    ){
         Objects.requireNonNull(registerRequestDTO);
         try {
-            return ResponseEntity.status(201).body(accountService.register(registerRequestDTO));
+            return ResponseEntity.status(201).body(accountService.register(request, registerRequestDTO));
         } catch (TraitementException e) {
             return e.toResponseEntity("Account creation failed: {}");
         }
@@ -81,7 +90,7 @@ public class UserAccountController {
     public ResponseEntity<?> updateUserAccount(@RequestBody UserUpdateRequestDTO userUpdateRequestDTO, HttpServletRequest request) {
         Objects.requireNonNull(userUpdateRequestDTO);
         try {
-            return ResponseEntity.status(200).body(accountService.updateUserAccount(userUpdateRequestDTO, request));
+            return ResponseEntity.ok().body(accountService.updateUserAccount(userUpdateRequestDTO, request));
         } catch (TraitementException e) {
             return e.toResponseEntity("Account update failed: {}");
         }
@@ -145,10 +154,14 @@ public class UserAccountController {
      */
     @RequiresRole(Role.ADMIN)
     @PostMapping("/accounts/{login}/access")
-    public ResponseEntity<?> updateUserStructureAccess(@PathVariable String login, @RequestBody UserStructureAccessRequestDTO userStructureAccessRequestDTO){
+    public ResponseEntity<?> updateUserStructureAccess(
+        @PathVariable String login,
+        @RequestBody UserStructureAccessRequestDTO userStructureAccessRequestDTO
+    ) {
         Objects.requireNonNull(userStructureAccessRequestDTO);
         try {
-            return ResponseEntity.status(200).body(accountService.updateUserStructureAccess(login, userStructureAccessRequestDTO));
+            return ResponseEntity.ok().body(accountService.updateUserStructureAccess(
+                login, userStructureAccessRequestDTO));
         } catch (TraitementException e){
             return e.toResponseEntity("Account authorizations update failed: {}");
         }
@@ -161,11 +174,10 @@ public class UserAccountController {
      */
     @RequiresRole(Role.ADMIN)
     @GetMapping("/accounts/{login}/structures")
-    public ResponseEntity<?> getStructureListForUserAccounts(@PathVariable String login){
+    public ResponseEntity<?> getStructureListForUserAccounts(@PathVariable String login) {
         try {
-            return ResponseEntity.status(200).body(accountService.getStructureListForUserAccounts(login));
-        }
-        catch (TraitementException e){
+            return ResponseEntity.ok().body(accountService.getStructureListForUserAccounts(login));
+        } catch (TraitementException e){
             return e.toResponseEntity();
         }
     }
@@ -173,16 +185,36 @@ public class UserAccountController {
 
     /** 
      * Anonymize the user account
+     * @param request the full request data to get current user account
      * @param login The login of the user
      * @return The response DTO
      */
     @RequiresRole(Role.ADMIN)
     @PutMapping("/api/accounts/{login}/anonymize")
-    public ResponseEntity<?> anonymizeTheUserAccount(@PathVariable String login){
+    public ResponseEntity<?> anonymizeTheUserAccount(
+        HttpServletRequest request,
+        @PathVariable String login
+    ) {
         try {
-            return ResponseEntity.status(200).body(accountService.anonymizeTheUserAccount(login));
+            return ResponseEntity.ok().body(accountService.anonymizeTheUserAccount(request, login));
         } catch (TraitementException e){
             return e.toResponseEntity("Account anonymization failed: {}");
+        }
+    }
+
+    /**
+     * Loads the logs matching the search string and the requested
+     * pagination.
+     * @param logsDto the parameters of the research
+     * @return the logs matching the query
+     */
+    @RequiresRole(Role.ADMIN)
+    @PostMapping("/logs")
+    public ResponseEntity<?> getLogs(@RequestBody LogsRequestDTO logsDto) {
+        try {
+            return ResponseEntity.ok(appLogService.loadLogs(logsDto));
+        } catch (TraitementException e) {
+            return e.toResponseEntity();
         }
     }
 }

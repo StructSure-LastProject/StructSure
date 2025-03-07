@@ -3,6 +3,7 @@ package fr.uge.structsure.controllers;
 import fr.uge.structsure.dto.scan.AndroidScanResultDTO;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.ScanService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +22,9 @@ public class AndroidScanController {
     }
 
     @PostMapping
-    public ResponseEntity<?> submitScanResults(@RequestBody AndroidScanResultDTO scanData) {
+    public ResponseEntity<?> submitScanResults(HttpServletRequest request, @RequestBody AndroidScanResultDTO scanData) {
         try {
-            scanService.saveScanResults(scanData);
+            scanService.saveScanResults(request, scanData);
             return ResponseEntity.ok().build();
         } catch (TraitementException e) {
             return e.toResponseEntity("Android scan rejected: {}");

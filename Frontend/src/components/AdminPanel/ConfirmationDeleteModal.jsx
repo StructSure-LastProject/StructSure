@@ -16,7 +16,8 @@ const ConfirmationDeleteModal = ({
     closeModalEditModal,
     fetchUserDetails,
     userLogin,
-    closeConfirmationModal
+    closeConfirmationModal,
+    fetchLogs
 }) => {
 
     const { fetchData, statusCode } = useFetch();
@@ -55,6 +56,7 @@ const ConfirmationDeleteModal = ({
         
         if (statusCode() === 200) {
             fetchUserDetails();
+            fetchLogs();
             closeModalEditModal();
             closeConfirmationModal();
         }

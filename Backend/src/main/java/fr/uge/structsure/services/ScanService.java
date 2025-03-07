@@ -7,6 +7,7 @@ import fr.uge.structsure.entities.*;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.*;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Service class responsible for handling scan-related operations.
@@ -36,6 +38,7 @@ public class ScanService {
     private final SensorRepository sensorRepository;
     private final SensorService sensorService;
     private final PlanRepository planRepository;
+    private final AppLogService appLogs;
 
     /**
      * Constructs a new ScanService with the necessary repositories.
@@ -45,22 +48,23 @@ public class ScanService {
      * @param structureRepository Repository for Structure entities
      * @param accountRepository   Repository for Account entities
      * @param sensorRepository    Repository for Sensor entities
+     * @param appLogService       Logs manager
      */
     @Autowired
     public ScanService(
-        ScanRepository scanRepository,
-        ResultRepository resultRepository,
-        StructureRepository structureRepository,
-        AccountRepository accountRepository,
-        SensorRepository sensorRepository,
-        SensorService sensorService, PlanRepository planRepository) {
+        ScanRepository scanRepository, ResultRepository resultRepository,
+        StructureRepository structureRepository, AccountRepository accountRepository,
+        SensorRepository sensorRepository, SensorService sensorService,
+        PlanRepository planRepository, AppLogService appLogService
+    ) {
         this.resultRepository = Objects.requireNonNull(resultRepository);
         this.scanRepository = Objects.requireNonNull(scanRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.accountRepository = Objects.requireNonNull(accountRepository);
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.sensorService = Objects.requireNonNull(sensorService);
-        this.planRepository = planRepository;
+        this.planRepository = Objects.requireNonNull(planRepository);
+        this.appLogs = Objects.requireNonNull(appLogService);
     }
 
     /**
@@ -68,26 +72,29 @@ public class ScanService {
      * This method validates the scan data, creates a new Scan entity,
      * processes the results, and saves them to the database.
      *
+     * @param request the details of the request to get the scan submitter
      * @param scanData The DTO containing the scan results from the Android device
      * @throws TraitementException If there's an error during the processing of the scan data
      */
     @Transactional
-    public void saveScanResults(AndroidScanResultDTO scanData) throws TraitementException {
+    public void saveScanResults(HttpServletRequest request, AndroidScanResultDTO scanData) throws TraitementException {
         if (!isValidScanData(scanData) || scanAlreadyExists(scanData)) return;
 
         Structure structure = findStructure(scanData.structureId());
         Account account = findAccount(scanData.login());
 
         Scan scan = createScan(structure, scanData, account);
-        processEdits(scanData.sensorEdits(), scan);
+        processEdits(request, scanData.sensorEdits(), scan);
         List<Result> results = processResults(scan, scanData);
 
         if (scanData.structureNote() != null && !scanData.structureNote().isEmpty()) {
+            appLogs.addScanNote(request, scan, structure, scanData.structureNote());
             structure.setNote(scanData.structureNote());
             structureRepository.save(structure);
         }
 
         resultRepository.saveAll(results);
+        appLogs.addScan(request, scan, results.size());
         LOGGER.info("Saved {} results and {} edits for scan {}",
             results.size(), scanData.sensorEdits().size(), scanData.scanId());
     }
@@ -186,18 +193,24 @@ public class ScanService {
     /**
      * Updates sensors or creates new ones based on the edits from the scan.
      *
+     * @param request the details of the request to get the scan submitter
      * @param edits All the editions done on sensors during the scan
      * @param scan details of the main scan object
      * @throws TraitementException if there's an error during processing
      */
-    private void processEdits(List<AndroidSensorEditDTO> edits, Scan scan) throws TraitementException {
+    private void processEdits(HttpServletRequest request, List<AndroidSensorEditDTO> edits, Scan scan) throws TraitementException {
         var sensors = new ArrayList<Sensor>();
 
+        var newSensor = new AtomicBoolean(false);
         for (var edit : edits) {
+            newSensor.set(false);
             var sensorId = SensorId.from(edit.sensorId());
-            var sensor = sensorRepository.findBySensorId(sensorId)
-                .orElseGet(() -> getIfValid(edit, scan.getStructure()));
+            var sensor = sensorRepository.findBySensorId(sensorId).orElseGet(() -> {
+                newSensor.set(true);
+                return getIfValid(edit, scan.getStructure());
+            });
             if (sensor == null) break; // cannot save this sensor
+            appLogs.addScanEdit(request, scan, sensor, edit, newSensor.get());
             if (edit.note() != null) sensor.setNote(edit.note());
             if (edit.plan() != null) setPlan(edit, sensor);
             sensors.add(sensor);
@@ -207,7 +220,6 @@ public class ScanService {
             sensorRepository.saveAll(sensors);
         }
     }
-
 
     /**
      * Updates the given sensor with the plan and position found in

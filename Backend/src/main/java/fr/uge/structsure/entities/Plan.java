@@ -142,4 +142,8 @@ public class Plan {
         this.sensors = new HashSet<>(sensors);
     }
 
+    @Override
+    public String toString() {
+        return section + '/' + name + " (#" + id + ")";
+    }
 }

@@ -55,7 +55,7 @@ public class RoleFilter extends OncePerRequestFilter {
         try {
             var handlerChain = handlerMapping.getHandler(request);
             if (handlerChain != null && handlerChain.getHandler() instanceof HandlerMethod handlerMethod) {
-                RequiresRole requiredRole = handlerMethod.getMethodAnnotation(RequiresRole.class);
+                var requiredRole = handlerMethod.getMethodAnnotation(RequiresRole.class);
 
                 if (requiredRole != null) {
                     var user = authValidationService.checkTokenValidityAndUserAccessVerifier(request, accountRepository);

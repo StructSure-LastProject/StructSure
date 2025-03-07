@@ -13,9 +13,10 @@ import ConfirmationDeleteModal from './ConfirmationDeleteModal';
  * @param {Function} fetchUserDetails The fetch user details function
  * @param {Function} closeModal The function to close the modal
  * @param {Object} userDetails The userDetails object
+ * @param {Function} fetchLogs Updates the logs list
  * @returns The Model component
  */
-const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
+const EditAccountModal = ({ fetchUserDetails, closeModal, userDetails, fetchLogs }) => {
 
     const [firstName, setFirstName] = createSignal(userDetails.firstName);
     const [lastName, setLastName] = createSignal(userDetails.lastName);
@@ -46,10 +47,12 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
     onMount(() => {
         document.addEventListener("mousedown", handleClickOutside);
+        document.body.style.overflow = 'hidden';
     });
 
     onCleanup(() => {
         document.removeEventListener("mousedown", handleClickOutside);
+        document.body.style.overflow = 'auto';
     });
 
 
@@ -67,7 +70,6 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
      */
     const closeConfirmationModal = () => {
         setIsConfirmationModalOpen(false);
-        document.body.style.overflow = "auto";
     };
 
 
@@ -294,6 +296,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                 editError = error().errorData.error;
             }
             if (statusCode() === 200) {
+                fetchLogs();
                 closeModal();
                 fetchUserDetails();
                 setApiError("");
@@ -330,7 +333,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
 
 
     return (
-        <div class="min-h-[100vh] items-center bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] absolute top-0 left-0 p-[25px]">
+        <div class="min-h-[100vh] items-center bg-gray-800 bg-opacity-50 backdrop-blur-[10px] shadow-[0px 0px 50px 0px #33333340] z-[100] bg-[#00000040] flex justify-center align-middle w-[100vw] h-[100vh] fixed top-0 left-0 p-[25px]">
             <Show when={isConfirmationModalOpen()}>
                 <ConfirmationDeleteModal
                     navigate={navigate}
@@ -338,6 +341,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                     closeConfirmationModal={closeConfirmationModal} 
                     fetchUserDetails={fetchUserDetails} 
                     userLogin={userDetails.login}
+                    fetchLogs={fetchLogs}
                 />
             </Show>
             <div ref={modalRef} class={ isConfirmationModalOpen() ? "hidden" : "max-h-[100%] overflow-y-auto  sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]"}>

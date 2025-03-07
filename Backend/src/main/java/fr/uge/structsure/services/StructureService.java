@@ -24,6 +24,7 @@ public class StructureService {
     private final PlanRepository planRepository;
     private final SensorRepository sensorRepository;
     private final ScanRepository scanRepository;
+    private final AppLogService appLogs;
     private final SensorRepositoryCriteriaQuery sensorCriteriaQuery;
     private final AuthValidationService authValidationService;
     private final AccountRepository accountRepository;
@@ -37,14 +38,18 @@ public class StructureService {
      * @param planRepository the plan repository
      */
     @Autowired
-    public StructureService(StructureRepository structureRepository, SensorRepository sensorRepository,
-                            PlanRepository planRepository, ScanRepository scanRepository,
-                            StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery,
-                            SensorRepositoryCriteriaQuery sensorCriteriaQuery, AuthValidationService authValidationService, AccountRepository accountRepository) {
+    public StructureService(
+        StructureRepository structureRepository, SensorRepository sensorRepository,
+        PlanRepository planRepository, ScanRepository scanRepository,
+        AccountRepository accountRepository, AppLogService appLogService,
+        StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery,
+        SensorRepositoryCriteriaQuery sensorCriteriaQuery, AuthValidationService authValidationService
+    ) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
         this.planRepository = Objects.requireNonNull(planRepository);
         this.scanRepository = Objects.requireNonNull(scanRepository);
+        this.appLogs = Objects.requireNonNull(appLogService);
         this.structureRepositoryCriteriaQuery = structureRepositoryCriteriaQuery;
         this.sensorCriteriaQuery = sensorCriteriaQuery;
         this.authValidationService = authValidationService;
@@ -57,6 +62,7 @@ public class StructureService {
      * with the same name, and if valid, saves a new structure in the repository.
      * It returns details of the newly created structure.
      *
+     * @param request the full content of the request to get the author
      * @param addStructureRequestDTO the DTO containing the details required to create the structure,
      *                               including its name and note. The name must not be null, empty,
      *                               exceed 64 characters, or conflict with an existing structure's name.
@@ -77,10 +83,14 @@ public class StructureService {
      *               ({@code Error.STRUCTURE_NAME_ALREADY_EXISTS}).</li>
      *         </ul>
      */
-    public AddStructureAnswerDTO createStructure(AddStructureRequestDTO addStructureRequestDTO) throws TraitementException {
+    public AddStructureAnswerDTO createStructure(
+        HttpServletRequest request,
+        AddStructureRequestDTO addStructureRequestDTO
+    ) throws TraitementException {
         structurePrecondition(addStructureRequestDTO);
         var structure = new Structure(addStructureRequestDTO.name(), addStructureRequestDTO.note(), false);
         var result = structureRepository.save(structure);
+        appLogs.addStructure(request, structure);
         return new AddStructureAnswerDTO(result.getId(), new Timestamp(System.currentTimeMillis()).toString());
     }
 
@@ -89,6 +99,7 @@ public class StructureService {
      * This method validates the input data, ensures that the structure with the specified ID exists,
      * and updates its name and note. It then returns the details of the updated structure.
      *
+     * @param request full data to extract the author of the creation
      * @param id                     the ID of the structure to be edited. Must not be null.
      * @param editStructureRequestDTO the DTO containing the updated name and note of the structure.
      *                                The name must not be null, empty, or exceed 64 characters.
@@ -110,16 +121,17 @@ public class StructureService {
      *               ({@code Error.STRUCTURE_ID_NOT_FOUND}).</li>
      *         </ul>
      */
-    public EditStructureResponseDTO editStructure(Long id, AddStructureRequestDTO editStructureRequestDTO) throws TraitementException {
+    public EditStructureResponseDTO editStructure(
+        HttpServletRequest request, Long id, AddStructureRequestDTO editStructureRequestDTO
+    ) throws TraitementException {
         structureEditPrecondition(id, editStructureRequestDTO);
         Objects.requireNonNull(id);
-        var exists = structureRepository.findById(id);
-        if (exists.isEmpty()) {
-            throw new TraitementException(Error.STRUCTURE_ID_NOT_FOUND);
-        }
-        exists.get().setNote(editStructureRequestDTO.note());
-        exists.get().setName(editStructureRequestDTO.name());
-        var result = structureRepository.save(exists.get());
+        var exists = structureRepository.findById(id).orElseThrow(
+            () -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        appLogs.editStructure(request, exists, editStructureRequestDTO);
+        exists.setNote(editStructureRequestDTO.note());
+        exists.setName(editStructureRequestDTO.name());
+        var result = structureRepository.save(exists);
         return new EditStructureResponseDTO(result.getId(), new Timestamp(System.currentTimeMillis()).toString());
     }
 
@@ -282,18 +294,19 @@ public class StructureService {
     /**
      * Restore archived structure
      * @param id The structure id
-     * @param httpRequest The http servlet request info
+     * @param request The http servlet request info
      * @return the record containing the response
      * @throws TraitementException in case of incorrect behaviour
      */
-    public ArchiveRestoreStructureResponseDTO restoreStructure(Long id, HttpServletRequest httpRequest) throws TraitementException {
-        Objects.requireNonNull(httpRequest);
+    public ArchiveRestoreStructureResponseDTO restoreStructure(Long id, HttpServletRequest request) throws TraitementException {
+        Objects.requireNonNull(request);
         if (Objects.isNull(id)) {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
         }
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
         structure.setArchived(false);
         var saved = structureRepository.save(structure);
+        appLogs.restoreStructure(request, structure);
         return new ArchiveRestoreStructureResponseDTO(saved.getId(), saved.getName(), saved.getArchived());
     }
 
@@ -301,17 +314,18 @@ public class StructureService {
      * Archive a structure
      * @param id The structure id
      * @return the record containing the response
-     * @param httpRequest The http servlet request info
+     * @param request The http servlet request info
      * @throws TraitementException in case of incorrect behaviour
      */
-    public ArchiveRestoreStructureResponseDTO archiveStructure(Long id, HttpServletRequest httpRequest) throws TraitementException {
-        Objects.requireNonNull(httpRequest);
+    public ArchiveRestoreStructureResponseDTO archiveStructure(Long id, HttpServletRequest request) throws TraitementException {
+        Objects.requireNonNull(request);
         if (Objects.isNull(id)) {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
         }
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
         structure.setArchived(true);
         var saved = structureRepository.save(structure);
+        appLogs.archiveStructure(request, structure);
         return new ArchiveRestoreStructureResponseDTO(saved.getId(), saved.getName(), saved.getArchived());
     }
 }

@@ -90,6 +90,9 @@ const ModalAddPlan = ({ isOpen, onClose, onSave, structureId }) => {
 
     await fetchData(navigate, `/api/structures/${structureId}/plans`, {
       method: "POST",
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      },
       body: formData
     });
 

@@ -1,10 +1,8 @@
 package fr.uge.structsure.services;
 
 import fr.uge.structsure.DataBaseTests;
-import fr.uge.structsure.config.JwtUtils;
 import fr.uge.structsure.dto.auth.LoginRequestDTO;
 import fr.uge.structsure.dto.auth.RegisterRequestDTO;
-import fr.uge.structsure.dto.userAccount.UserAccountResponseDTO;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.Error;
@@ -13,23 +11,13 @@ import fr.uge.structsure.repositories.AccountRepository;
 import fr.uge.structsure.utils.AuthenticationType;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -44,6 +32,7 @@ class AccountServiceTest extends DataBaseTests {
     private final Account account = new Account("testuser", "encodedPassword", "John", "Doe", Role.ADMIN, true);
     private final RegisterRequestDTO registerRequestDTO = new RegisterRequestDTO("testuser", "passwordlongenough", "John", "Doe", "Admin");
     private final LoginRequestDTO loginRequestDTO = new LoginRequestDTO("testuser", "passwordlongenough");
+    private final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 
     @BeforeEach
     void setUp() {
@@ -57,7 +46,7 @@ class AccountServiceTest extends DataBaseTests {
 
     @Test
     void testRegisterUserAlreadyExists() {
-        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(registerRequestDTO));
+        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(request, registerRequestDTO));
         assertEquals(Error.USER_ALREADY_EXISTS, exception.error);
     }
 
@@ -65,7 +54,7 @@ class AccountServiceTest extends DataBaseTests {
     void testRegisterInvalidRole() {
         RegisterRequestDTO invalidRoleRequest = new RegisterRequestDTO("testuser2", "passwordlongenough", "John", "Doe", "INVALID_ROLE");
 
-        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(invalidRoleRequest));
+        TraitementException exception = assertThrows(TraitementException.class, () -> accountService.register(request, invalidRoleRequest));
 
         assertEquals(Error.ROLE_NOT_EXISTS, exception.error);
     }

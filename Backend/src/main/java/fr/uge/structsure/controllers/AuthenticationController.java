@@ -8,6 +8,7 @@ import fr.uge.structsure.entities.Role;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.services.AccountService;
 import fr.uge.structsure.utils.AuthenticationType;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,9 +39,12 @@ public class AuthenticationController {
      */
     @RequiresRole(Role.ADMIN)
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequestDTO registerRequestDTO) {
+    public ResponseEntity<?> register(
+        HttpServletRequest request,
+        @RequestBody RegisterRequestDTO registerRequestDTO
+    ) {
         try {
-            return ResponseEntity.status(200).body(accountService.register(registerRequestDTO));
+            return ResponseEntity.status(200).body(accountService.register(request, registerRequestDTO));
         } catch (TraitementException e) {
             return e.toResponseEntity("Account creation rejected: {}");
         }

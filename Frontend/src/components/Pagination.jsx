@@ -94,7 +94,7 @@ createEffect(() => {
   setTotalPages(Math.ceil(totalItems() / limit()));
   setPages(getPageNumbers());
   setCurrentPage(pages().includes(currentPage()) ? currentPage() : 1);
-  handlePageChange(currentPage());
+  setCurrentPage(currentPage()); 
 });
 
 

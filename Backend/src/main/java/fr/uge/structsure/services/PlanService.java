@@ -38,8 +38,7 @@ public class PlanService {
     private final SensorRepository sensorRepository;
     private final StructureService structureService;
     private final SensorService sensorService;
-    private final AuthValidationService authValidationService;
-    private final AccountRepository accountRepository;
+    private final AppLogService appLogs;
     private final Path uploadDir;
 
     private static final List<MediaType> ALLOWED_MIME_TYPES = Arrays.asList(
@@ -54,18 +53,19 @@ public class PlanService {
      * @param sensorRepository The sensor repo
      * @param structureService The structure service
      * @param sensorService The sensor service
+     * @param appLogService The logs service
      */
     @Autowired
     public PlanService(PlanRepository planRepository, SensorRepository sensorRepository,
-                       StructureService structureService, SensorService sensorService, AuthValidationService authValidationService, AccountRepository accountRepository,
-                       @Value("${file.upload-dir}") Path uploadDir,
-                       StructureRepository structureRepository) {
+        StructureRepository structureRepository, StructureService structureService,
+        SensorService sensorService, AppLogService appLogService,
+        @Value("${file.upload-dir}") Path uploadDir
+    ) {
         this.planRepository = planRepository;
         this.sensorRepository = sensorRepository;
         this.structureService = structureService;
         this.sensorService = sensorService;
-        this.authValidationService = authValidationService;
-        this.accountRepository = accountRepository;
+        this.appLogs = appLogService;
         this.uploadDir = uploadDir;
         this.structureRepository = structureRepository;
     }
@@ -85,13 +85,17 @@ public class PlanService {
     /**
      * Creates a new plan for a given structure with the provided details and file.
      *
+     * @param request to get the creation author account
      * @param structureId The ID of the structure to which the plan will be attached
      * @param metadata The DTO containing plan details (name and section)
      * @param file The multipart file containing the plan image
      * @return AddPlanResponseDTO containing the created plan's ID and creation timestamp
      * @throws TraitementException if validation fails or if there are issues during plan creation
      */
-    public AddPlanResponseDTO createPlan(Long structureId, PlanMetadataDTO metadata, MultipartFile file) throws TraitementException {
+    public AddPlanResponseDTO createPlan(
+        HttpServletRequest request,
+        Long structureId, PlanMetadataDTO metadata, MultipartFile file
+    ) throws TraitementException {
         Objects.requireNonNull(metadata);
         addPlanAsserts(structureId, metadata, file);
         var structure = structureService.existStructure(structureId)
@@ -99,6 +103,7 @@ public class PlanService {
         checkState(structure);
         managedFilesDirectory(uploadDir);
         var savedPlan = handleAddPlan(file, new Plan(uploadDir.toString(), metadata.name(), metadata.section(), structure));
+        appLogs.addPlan(request, savedPlan);
         return new AddPlanResponseDTO(savedPlan.getId(), new Timestamp(System.currentTimeMillis()).toString());
     }
 
@@ -119,6 +124,7 @@ public class PlanService {
     /**
      * Edits an existing plan with new metadata and optionally a new file.
      *
+     * @param request Content of the request to get the author
      * @param structureId The ID of the structure containing the plan
      * @param planId The ID of the plan to edit
      * @param metadata The new metadata for the plan
@@ -126,7 +132,10 @@ public class PlanService {
      * @return EditPlanResponseDTO containing the edited plan's ID
      * @throws TraitementException if validation fails or if there are issues during plan editing
      */
-    public EditPlanResponseDTO editPlan(Long structureId, Long planId, PlanMetadataDTO metadata, Optional<MultipartFile> multipartFile) throws TraitementException {
+    public EditPlanResponseDTO editPlan(
+        HttpServletRequest request, Long structureId, Long planId,
+        PlanMetadataDTO metadata, Optional<MultipartFile> multipartFile
+    ) throws TraitementException {
         Objects.requireNonNull(metadata);
         editPlanAsserts(structureId, planId, metadata, multipartFile);
 
@@ -143,6 +152,7 @@ public class PlanService {
             filePath = planFile;
         }
 
+        appLogs.editPlan(request, plan, metadata.logDiff(plan, multipartFile.isPresent()));
         plan.setName(metadata.name());
         plan.setSection(metadata.section());
         plan.setImageUrl(filePath.toString());

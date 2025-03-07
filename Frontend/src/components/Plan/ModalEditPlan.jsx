@@ -96,6 +96,9 @@ const ModalEditPlan = ({onClose, onSave, structureId, plan, setPlan, selectedPla
 
     await fetchData(navigate, `/api/structures/${structureId}/plans/${plan.id}`, {
       method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      },
       body: formData
     });
 

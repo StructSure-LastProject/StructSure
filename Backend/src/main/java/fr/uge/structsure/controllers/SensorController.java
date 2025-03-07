@@ -42,14 +42,15 @@ public class SensorController {
      * If an exception occurs (e.g., missing data, duplicate name or ID, or invalid structure),
      * an appropriate error response is returned.
      *
-     * @param request The request body containing sensor details.
+     * @param request to request data to get current user account
+     * @param sensorDto The request body containing sensor details.
      * @return A ResponseEntity containing either the created sensor data (on success)
      *         or an error message (on failure).
      */
     @PostMapping("/sensors")
-    public ResponseEntity<?> addSensor(@RequestBody BaseSensorDTO request) {
+    public ResponseEntity<?> addSensor(HttpServletRequest request, @RequestBody BaseSensorDTO sensorDto) {
         try {
-            var sensor = sensorService.createSensor(request);
+            var sensor = sensorService.createSensor(request, sensorDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(sensor);
         } catch (TraitementException e) {
             return e.toResponseEntity("Sensor creation rejected: {}");
@@ -109,9 +110,10 @@ public class SensorController {
      * @return The edit sensor response DTO
      */
     @PutMapping("/sensors/edit")
-    public ResponseEntity<?> editSensor(@RequestBody EditSensorRequestDTO editSensorRequestDTO){
+    public ResponseEntity<?> editSensor(HttpServletRequest request,
+            @RequestBody EditSensorRequestDTO editSensorRequestDTO) {
         try {
-            return ResponseEntity.ok(sensorService.editSensor(editSensorRequestDTO));
+            return ResponseEntity.ok(sensorService.editSensor(request, editSensorRequestDTO));
         } catch (TraitementException e){
             return e.toResponseEntity("Sensor update rejected: {}");
         }
