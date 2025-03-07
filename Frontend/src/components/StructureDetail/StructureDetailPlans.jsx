@@ -6,6 +6,8 @@ import DropdownsSection from "../Plan/DropdownsSection.jsx";
 import StructureDetailCanvas from "./StructureDetailCanvas";
 import useFetch from "../../hooks/useFetch.js";
 import {useNavigate, useSearchParams, useLocation} from "@solidjs/router";
+import image_plan_not_found from '/src/assets/image_plan_not_found.png';
+import no_plan from '/src/assets/no_plan.png';
 
 
 /**
@@ -23,6 +25,8 @@ export const planImageFetchRequest = async (planId, setPlan, navigate) => {
     await fetchImage(navigate, `/api/structures/plans/${planId()}/image`, requestData);
     if (statusCode() === 200) {
         setPlan(image());
+    } else {
+        setPlan(image_plan_not_found);
     }
 };
 
@@ -45,7 +49,8 @@ function StructureDetailPlans(props) {
     const [plan, setPlan] = createSignal(null);
 
     /**
-     *
+     * Tell whether the page is in scan mode
+     * @return the page is in scan mode or not
      */
     const isInScanMode = createMemo(() => {
         const scanParam = searchParams.selectedScan;
@@ -178,7 +183,7 @@ function StructureDetailPlans(props) {
                 const searchParamsString = new URLSearchParams(newSearchParams).toString();
                 navigate(`${location.pathname}${searchParamsString ? '?' + searchParamsString : ''}`, { replace: true });
             }
-            setPlan(null);
+            setPlan(no_plan);
         }
         closeEditModal();
     }
@@ -211,6 +216,10 @@ function StructureDetailPlans(props) {
                 };
             });
             setPlans(newPlans);
+
+            if (plansToDisplay.length <= 0) {
+                setPlan(no_plan)
+            }
         }
     });
 
