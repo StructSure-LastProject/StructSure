@@ -2,17 +2,20 @@ import Header from '../components/Header'
 import AdminPanelBody from '../components/AdminPanelBody'
 import AdminPanelBottom, { fetchLogs } from '../components/AdminPanelBottom'
 import { createSignal } from "solid-js";
-import { useNavigate } from '@solidjs/router';
+import { useNavigate, useSearchParams } from '@solidjs/router';
 
 /**
  * The admin panel page
  * @returns the page for the Admin panel page
  */
 const AdminPanel = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = createSignal("");
-  const [page, setPage] = createSignal(0);
   const [pageSize, setPageSize] = createSignal(30);
-  const [totalItems, setTotalItems] = createSignal(0);
+  const [page, setPage] = createSignal(
+    searchParams.offset ? parseInt(searchParams.offset, 10) / pageSize() : 0
+  );
+  const [totalItems, setTotalItems] = createSignal((page() + 1) * pageSize());
   const [logs, setLogs] = createSignal([]);
   const navigate = useNavigate();
 
@@ -20,7 +23,7 @@ const AdminPanel = () => {
     <div class="bg-lightgray min-h-screen p-[25px]">
         <Header />
         <div class="pt-[3%] flex flex-col gap-[15px] sm:mx-auto lg:max-w-[1250px] h-auto" >
-            <AdminPanelBody fetchLogs={() => fetchLogs(navigate, search, page, setTotalItems, setPageSize, setLogs)} />
+            <AdminPanelBody fetchLogs={() => fetchLogs(navigate, search, page, setPage, setTotalItems, setPageSize, setLogs)} />
             <AdminPanelBottom
               search={search} setSearch={setSearch}
               page={page} setPage={setPage}

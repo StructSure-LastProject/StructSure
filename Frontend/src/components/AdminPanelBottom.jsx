@@ -8,9 +8,10 @@ import { Pagination } from './Pagination.jsx';
 /**
  * Fetch the logs
  */
-export const fetchLogs = async (navigate, search, page, setTotalItems, setPageSize, setLogs) => {
+export const fetchLogs = async (navigate, search, page, setPage, setTotalItems, setPageSize, setLogs) => {
     const { fetchData, statusCode, data } = useFetch();
 
+    const savedPage = page();
     const requestData = {
         method: "POST",
         headers: {
@@ -18,7 +19,7 @@ export const fetchLogs = async (navigate, search, page, setTotalItems, setPageSi
         },
         body: JSON.stringify({
             search: search(),
-            page: page()
+            page: savedPage
         })
     };
 
@@ -27,6 +28,7 @@ export const fetchLogs = async (navigate, search, page, setTotalItems, setPageSi
     if (statusCode() === 200) {
         setTotalItems(data().total);
         setPageSize(data().pageSize);
+        setPage(savedPage);
         setLogs(data().logs);
     }
 };
@@ -56,15 +58,15 @@ const AdminPanelBottom = ({
 
     /**
      * Alias to set offset value in the page variable
-     * @param {Integer} offset the number of entries to skip
+     * @param {Integer} offsetValue the number of entries to skip
      */
-    const setOffset = (offset) => {
-        setPage(offset / pageSize())
+    const setOffset = (offsetValue) => {
+        setPage(offsetValue / pageSize())
     }
     
     // Watch for changes in filter parameters and refetch
-    createEffect(() => fetchLogs(navigate, search, page, setTotalItems, setPageSize, setLogs));
-    createResource(() => fetchLogs(navigate, search, page, setTotalItems, setPageSize, setLogs));
+    createEffect(() => fetchLogs(navigate, search, page, setPage, setTotalItems, setPageSize, setLogs));
+    createResource(() => fetchLogs(navigate, search, page, setPage, setTotalItems, setPageSize, setLogs));
 
     return (
         <>
