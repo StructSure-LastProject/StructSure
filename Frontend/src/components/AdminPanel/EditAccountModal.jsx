@@ -13,9 +13,10 @@ import ConfirmationDeleteModal from './ConfirmationDeleteModal';
  * @param {Function} fetchUserDetails The fetch user details function
  * @param {Function} closeModal The function to close the modal
  * @param {Object} userDetails The userDetails object
+ * @param {Function} fetchLogs Updates the logs list
  * @returns The Model component
  */
-const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
+const EditAccountModal = ({ fetchUserDetails, closeModal, userDetails, fetchLogs }) => {
 
     const [firstName, setFirstName] = createSignal(userDetails.firstName);
     const [lastName, setLastName] = createSignal(userDetails.lastName);
@@ -294,6 +295,7 @@ const EditAccountModal = ({fetchUserDetails, closeModal, userDetails}) => {
                 editError = error().errorData.error;
             }
             if (statusCode() === 200) {
+                fetchLogs();
                 closeModal();
                 fetchUserDetails();
                 setApiError("");

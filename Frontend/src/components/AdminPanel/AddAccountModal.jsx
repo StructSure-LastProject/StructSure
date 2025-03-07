@@ -10,7 +10,7 @@ import useFetch from '../../hooks/useFetch';
  * @param {Function} closeModal The function to close the modal
  * @returns The Model compoanent
  */
-const AddAccountModal = ({ closeModal }) => {
+const AddAccountModal = ({ closeModal, fetchLogs }) => {
 
     const [firstName, setFirstName] = createSignal("");
     const [lastName, setLastName] = createSignal("");
@@ -92,6 +92,7 @@ const AddAccountModal = ({ closeModal }) => {
                 creationError = error().errorData.error;
             }
             if (statusCode() === 201) {
+                fetchLogs();
                 closeModal();
                 setApiError("");
             }

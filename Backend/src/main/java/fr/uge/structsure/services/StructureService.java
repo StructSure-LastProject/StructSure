@@ -298,7 +298,7 @@ public class StructureService {
      * @return the record containing the response
      * @throws TraitementException in case of incorrect behaviour
      */
-    public ArchiveRestoreStructureResponseDto restoreStructure(Long id, HttpServletRequest request) throws TraitementException {
+    public ArchiveRestoreStructureResponseDTO restoreStructure(Long id, HttpServletRequest request) throws TraitementException {
         Objects.requireNonNull(request);
         if (Objects.isNull(id)) {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);
@@ -317,7 +317,7 @@ public class StructureService {
      * @param request The http servlet request info
      * @throws TraitementException in case of incorrect behaviour
      */
-    public ArchiveRestoreStructureResponseDto archiveStructure(Long id, HttpServletRequest request) throws TraitementException {
+    public ArchiveRestoreStructureResponseDTO archiveStructure(Long id, HttpServletRequest request) throws TraitementException {
         Objects.requireNonNull(request);
         if (Objects.isNull(id)) {
             throw new TraitementException(Error.STRUCTURE_ID_INVALID);

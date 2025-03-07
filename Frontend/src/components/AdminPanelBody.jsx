@@ -7,9 +7,10 @@ import AddAccountModal from "./AdminPanel/AddAccountModal";
 
 /**
  * The admin panel body component 
+ * @param {Function} fetchLogs Updates the logs list
  * @returns the component for the admin panel
  */
-const AdminPanelBody = () => {
+const AdminPanelBody = ({ fetchLogs }) => {
 
     const [users, setUsers] = createSignal([]);
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
@@ -72,13 +73,13 @@ const AdminPanelBody = () => {
                 <For each={users()}>
                     {
                         (item) => (
-                            <AccountDetails fetchUserDetails={fetchUserDetails} firstName={item.firstName} lastName={item.lastName} login={item.login} role={item.role} isEnabled={item.enabled} />
+                            <AccountDetails fetchUserDetails={fetchUserDetails} firstName={item.firstName} lastName={item.lastName} login={item.login} role={item.role} isEnabled={item.enabled} fetchLogs={fetchLogs} />
                         )
                     }
                 </For>
             </div>
             {isAddModalOpen() && (
-                <AddAccountModal closeModal={closeAddAccountModal} />
+                <AddAccountModal closeModal={closeAddAccountModal} fetchLogs={fetchLogs} />
             )}
         </>
     )

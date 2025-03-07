@@ -1,47 +1,50 @@
-import {For, createResource, createSignal, createEffect} from "solid-js";
+import {For, createResource, createEffect} from "solid-js";
 import { X } from 'lucide-solid';
 import LogDetails from "./LogDetails"
 import { useNavigate } from '@solidjs/router';
 import useFetch from '../hooks/useFetch';
 import { Pagination } from './Pagination.jsx';
 
+/**
+ * Fetch the logs
+ */
+export const fetchLogs = async (navigate, search, page, setTotalItems, setPageSize, setLogs) => {
+    const { fetchData, statusCode, data } = useFetch();
+
+    const requestData = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            search: search(),
+            page: page()
+        })
+    };
+
+    await fetchData(navigate, "/api/logs", requestData);
+
+    if (statusCode() === 200) {
+        setTotalItems(data().total);
+        setPageSize(data().pageSize);
+        setLogs(data().logs);
+    }
+};
 
 /**
  * The admin panel bottom component 
+ * @param {Function} search getter for the search field value
+ * @param {Function} setSearch setter for the search fieldl value
  * @returns the component for the admin panel
  */
-const AdminPanelBottom = () => {
-    const [search, setSearch] = createSignal("");
-    const [page, setPage] = createSignal(0);
-    const [pageSize, setPageSize] = createSignal(30);
-    const [totalItems, setTotalItems] = createSignal(0);
-    const [logs, setLogs] = createSignal([]);
+const AdminPanelBottom = ({
+    search, setSearch,
+    page, setPage,
+    pageSize, setPageSize,
+    totalItems, setTotalItems,
+    logs, setLogs
+}) => {
     const navigate = useNavigate();
-    /**
-     * Fetch the logs
-     */
-    const fetchLogs = async () => {
-        const { fetchData, statusCode, data } = useFetch();
-    
-        const requestData = {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                search: search(),
-                page: page()
-            })
-        };
-    
-        await fetchData(navigate, "/api/logs", requestData);
-    
-        if (statusCode() === 200) {
-            setTotalItems(data().total);
-            setPageSize(data().pageSize);
-            setLogs(data().logs);
-        }
-    };
 
     /**
      * Alias to get offset value from the page variable
@@ -60,8 +63,8 @@ const AdminPanelBottom = () => {
     }
     
     // Watch for changes in filter parameters and refetch
-    createEffect(() => fetchLogs());
-    createResource(() => fetchLogs());
+    createEffect(() => fetchLogs(navigate, search, page, setTotalItems, setPageSize, setLogs));
+    createResource(() => fetchLogs(navigate, search, page, setTotalItems, setPageSize, setLogs));
 
     return (
         <>

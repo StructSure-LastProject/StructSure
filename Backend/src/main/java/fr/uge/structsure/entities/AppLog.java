@@ -39,6 +39,10 @@ public class AppLog {
         this.time = LocalDateTime.now();
     }
 
+    void setId(long id) {
+        this.id = id;
+    }
+
     @JsonIgnore
     public long getId() {
         return id;
@@ -49,7 +53,7 @@ public class AppLog {
     }
 
     public String getAuthor() {
-        return author.getLogin();
+        return author == null ? "?" : author.getLogin();
     }
 
     public String getMessage() {
