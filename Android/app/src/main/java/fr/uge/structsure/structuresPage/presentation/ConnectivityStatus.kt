@@ -8,21 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import fr.uge.structsure.R
 import fr.uge.structsure.structuresPage.domain.ConnectivityViewModel
-import fr.uge.structsure.structuresPage.domain.ConnectivityViewModelFactory
 import fr.uge.structsure.ui.theme.Typography
 
 @Composable
-fun ConnectivityStatus() {
-    val connectivityViewModel: ConnectivityViewModel = viewModel(
-        factory = ConnectivityViewModelFactory(context = LocalContext.current)
-    )
+fun ConnectivityStatus(connectivityViewModel: ConnectivityViewModel) {
     val isConnected = connectivityViewModel.isConnected.observeAsState()
 
 

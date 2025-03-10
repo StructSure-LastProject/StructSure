@@ -16,15 +16,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import fr.uge.structsure.structuresPage.domain.ConnectivityViewModel
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.ui.theme.Typography
 
 @Composable
 fun StructuresListView(
     structureViewModel: StructureViewModel,
+    connectivityViewModel: ConnectivityViewModel,
     navController: NavController
 ) {
     val structures = structureViewModel.getAllStructures.observeAsState()
+    val isConnected = connectivityViewModel.isConnected.observeAsState()
 
     LaunchedEffect(structureViewModel) {
         structureViewModel.getAllStructures()
@@ -43,6 +46,7 @@ fun StructuresListView(
         )
         SearchBar(input = searchByName)
         val filteredStructures = structures.value
+            ?.filter { isConnected.value?:true || it.state.value != StructureStates.ONLINE }
             ?.filter { it.name.contains(searchByName.value, true) }
             ?.sortedBy { it.name.lowercase() }
             ?.sortedBy { -(it.state.value?.ordinal?:0) }
