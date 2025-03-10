@@ -18,6 +18,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +40,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ConnexionCard(navController: NavController, backRoute: String, accountDao: AccountDao, structureViewModel: StructureViewModel) {
+    val context = LocalContext.current
     Page(navController = navController) {
         Column(
             verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
@@ -106,7 +108,7 @@ fun ConnexionCard(navController: NavController, backRoute: String, accountDao: A
                     coroutineScope.launch {
                         try {
                             // Assuming auth is a suspend function
-                            val result = auth(login, password, accountDao, navController, backRoute, structureViewModel)
+                            val result = auth(login, password, context, navController, backRoute, structureViewModel)
                             if (result.isEmpty()) {
                                 // Handle successful authentication (e.g., navigate)
                             } else {
