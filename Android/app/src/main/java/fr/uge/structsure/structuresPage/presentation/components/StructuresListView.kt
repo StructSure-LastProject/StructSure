@@ -3,7 +3,10 @@ package fr.uge.structsure.structuresPage.presentation.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,10 +42,19 @@ fun StructuresListView(
             text = "Ouvrages",
         )
         SearchBar(input = searchByName)
-        structures.value
+        val filteredStructures = structures.value
             ?.filter { it.name.contains(searchByName.value, true) }
             ?.sortedBy { it.name.lowercase() }
             ?.sortedBy { -(it.state.value?.ordinal?:0) }
-            ?.forEach { Structure(it, structureViewModel, navController) }
+            .orEmpty()
+        LazyColumn (
+            modifier = Modifier.fillMaxSize()
+                .heightIn(max = 10000.dp),
+            verticalArrangement = Arrangement.spacedBy(15.dp)
+        ) {
+            items(filteredStructures) {
+                Structure(it, structureViewModel, navController)
+            }
+        }
     }
 }
