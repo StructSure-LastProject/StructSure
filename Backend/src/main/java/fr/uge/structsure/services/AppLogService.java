@@ -100,7 +100,7 @@ public class AppLogService {
      * @param request the request to get the user from
      * @return the current user if existing, null otherwise
      */
-    private Account currentAccount(HttpServletRequest request) {
+    public Account currentAccount(HttpServletRequest request) {
         try {
             return authValidation.checkTokenValidityAndUserAccessVerifier(
                 request, accountRepository);
