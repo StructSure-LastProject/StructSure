@@ -6,8 +6,7 @@ import DropdownsSection from "../Plan/DropdownsSection.jsx";
 import StructureDetailCanvas from "./StructureDetailCanvas";
 import useFetch from "../../hooks/useFetch.js";
 import {useNavigate, useSearchParams, useLocation} from "@solidjs/router";
-import image_plan_not_found from '/src/assets/image_plan_not_found.png';
-import no_plan from '/src/assets/no_plan.png';
+import {sensorsWithoutLimitAndOffsetFetchRequest} from "./StructureDetailBody.jsx";
 
 
 /**
@@ -26,7 +25,7 @@ export const planImageFetchRequest = async (planId, setPlan, navigate) => {
     if (statusCode() === 200) {
         setPlan(image());
     } else {
-        setPlan(image_plan_not_found);
+        setPlan(null);
     }
 };
 
@@ -41,6 +40,7 @@ function StructureDetailPlans(props) {
 
     // Plans and modals state management
     const [plans, setPlans] = createSignal([]);
+    const [sensors, setSensors] = createSignal([]);
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
     const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
     const [selectedPlan, setSelectedPlan] = createSignal(null);
@@ -89,7 +89,7 @@ function StructureDetailPlans(props) {
             planImageFetchRequest(props.selectedPlanId, setPlan, navigate);
         }
     });
-    
+
     /**
      * Handles the edit action for a plan
      * @param {number|string} planId Identifier of the plan to edit
@@ -183,8 +183,14 @@ function StructureDetailPlans(props) {
                 const searchParamsString = new URLSearchParams(newSearchParams).toString();
                 navigate(`${location.pathname}${searchParamsString ? '?' + searchParamsString : ''}`, { replace: true });
             }
-            setPlan(no_plan);
+            setPlan(null);
         }
+        sensorsWithoutLimitAndOffsetFetchRequest(
+          props.structureId,
+          setSensors,
+          () => {},
+          navigate
+        )
         closeEditModal();
     }
 
@@ -195,6 +201,10 @@ function StructureDetailPlans(props) {
         const userRole = localStorage.getItem("role");
         const isOperator = userRole === "OPERATEUR";
         setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE");
+
+        if (props.structureDetails().sensors) {
+            setSensors(props.structureDetails().sensors);
+        }
 
         if (props.structureDetails().plans) {
             let plansToDisplay = isOperator
@@ -216,9 +226,10 @@ function StructureDetailPlans(props) {
                 };
             });
             setPlans(newPlans);
+            console.log("plans after render", plans());
 
             if (plansToDisplay.length <= 0) {
-                setPlan(no_plan)
+                setPlan(null)
             }
         }
     });
@@ -283,6 +294,8 @@ function StructureDetailPlans(props) {
                                 interactiveMode={true}
                                 planSensors={props.planSensors}
                                 structureDetails={props.structureDetails}
+                                localSensors={sensors}
+                                setLocalSensors={setSensors}
                                 setPlanSensors={props.setPlanSensors}
                                 sensors={props.sensors}
                                 setSensors={props.setSensors}

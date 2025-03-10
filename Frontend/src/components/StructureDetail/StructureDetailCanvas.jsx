@@ -64,8 +64,8 @@ function StructureDetailCanvas(props) {
     };
 
     const filteredOptions = createMemo(() => {
-        if (!props.structureDetails().sensors) return [];
-        return props.structureDetails().sensors.filter(detailSensor =>
+        if (!props.localSensors()) return [];
+        return props.localSensors().filter(detailSensor =>
             detailSensor.x == null && detailSensor.y == null & detailSensor.name?.toLowerCase().includes(inputValue().toLowerCase() || "")
         );
     });
@@ -81,7 +81,7 @@ function StructureDetailCanvas(props) {
                 x: popupX(),
                 y: popupY()
             };
-            props.setSensorsDetail(props.structureDetails().sensors.map(sensor =>
+            props.setLocalSensors(props.localSensors().map(sensor =>
                 sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip 
                 ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
             ));
@@ -106,13 +106,13 @@ function StructureDetailCanvas(props) {
         if (clickExistingPoint()) {
 
             planSensorsFetchRequest(props.structureId, props.setPlanSensors, props.selectedPlanId(), navigate);
-            const newDetailSensors = props.structureDetails().sensors.map(sensor => {
+            const newDetailSensors = props.localSensors().map(sensor => {
                 return sensor.controlChip === clickExistingPoint().controlChip && sensor.measureChip === clickExistingPoint().measureChip
                     ? { ...sensor, x: null, y: null }
                     : sensor
             }
             );
-            props.setSensorsDetail(newDetailSensors);
+            props.setLocalSensors(newDetailSensors);
             setClickExistingPoint(null);
             setInputValue("");
             setIsPopupVisible(false);
@@ -412,10 +412,6 @@ function StructureDetailCanvas(props) {
 
     createEffect(() => {
         if (props.plan() != null) {
-            if (props.plan() === no_plan || props.plan() === image_plan_not_found) {
-                setIsPopupVisible(false);
-                isPopupVisible();
-            }
             initCanvasWhenPlanChanged();
         }
     });
