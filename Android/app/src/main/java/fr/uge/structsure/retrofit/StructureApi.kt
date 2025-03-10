@@ -9,7 +9,7 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface StructureApi {
-    @GET("api/structures?searchByName=&orderByColumnName=NAME&orderType=ASC")
+    @GET("api/structures?searchByName=&orderByColumnName=NAME&orderType=ASC&archived=false")
     fun getAllStructures(): Call<List<GetAllStructureResponse>>
 
     @GET("/api/structures/android/{id}")
