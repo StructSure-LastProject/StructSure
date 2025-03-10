@@ -14,10 +14,12 @@ import { useNavigate } from "@solidjs/router";
  * @param {Function} structureDetails The structure detail
  * @returns The modal component for adding a plan
  */
-const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail, structureDetails }) => {
+const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, structureId, setSensorsDetail, structureDetails }) => {
   const [name, setName] = createSignal("");
   const [controlChip, setControlChip] = createSignal("");
   const [measureChip, setMeasureChip] = createSignal("");
+  const [controlHint, setControlHint] = createSignal(nextChip() === "" ? "E280 6F12 0000 002 208F FACD" : nextChip());
+  const [measureHint, setMeasureHint] = createSignal(nextChip() === "" ? "E280 6F12 0000 002 208F FACE" : nextChip());
   const [note, setNote] = createSignal("");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const [errorMsg, setError] = createSignal("");
@@ -49,7 +51,7 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail
    */
   const base10ToHex = (base10Number) => {
     const hex = base10Number.toString(16).toUpperCase();
-    return hex.length % 2 === 0 ? hex : '0' + hex;
+    return hex;
   };
 
   /**
@@ -122,8 +124,8 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail
       return;
     }
 
-    const cleanControlChip = controlChip().replace(/\s+/g, '');
-    const cleanMeasureChip = measureChip().replace(/\s+/g, '');
+    const cleanControlChip = controlChip().replace(/\s+/g, '').toUpperCase();
+    const cleanMeasureChip = measureChip().replace(/\s+/g, '').toUpperCase();
 
     if (!cleanControlChip) {
       setError("La puce témoin est requise");
@@ -180,6 +182,20 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail
   };
 
   /**
+   * Updates the nextChip value and all the placeholders.
+   * @param {String} value of the current field
+   * @returns value
+   */
+  const updateChip = (value) => {
+    setNextChip(hexAddOne(value.replace(/\s+/g, '')));
+    setControlHint(nextChip())
+    setMeasureHint(nextChip())
+    document.getElementById("addSensorControl").placeholder = nextChip();
+    document.getElementById("addSensorMeasure").placeholder = nextChip();
+    return value;
+  }
+
+  /**
    * Resets the modal state and closes it.
    * Clears all form fields and any error messages before calling the onClose callback.
    */
@@ -192,18 +208,24 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail
     onClose();
   };
 
-
   /**
-   * Create effect to init and the get the suggestion chip values
+   * Put the auto-complete value in the field when pressing tab.
+   * @param {Event} e the event to check
+   * @returns false to cancel the event
    */
-  createEffect(() => {
-    const controlChipValue  = localStorage.getItem("controlChip");
-    const measureChipValue  = localStorage.getItem("measureChip");
-    if (controlChipValue !== null && measureChipValue !== null) {
-      setControlChip(hexAddOne(controlChipValue));
-      setMeasureChip(hexAddOne(measureChipValue));
-    }    
-  })
+  const autoComplete = (e) => {
+    if (e.target.value === "" && e.keyCode == 9) {
+        e.preventDefault();
+        e.target.value = nextChip();
+        if (e.target.id === "addSensorControl") {
+            setControlChip(e.target.value);
+        } else {
+            setMeasureChip(e.target.value);
+        }
+        updateChip(nextChip());
+        return false;
+    }
+  }
     
   /**
    * Handles the close of the modal when click outside
@@ -217,6 +239,8 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail
 
   onMount(() => {
       document.addEventListener("mousedown", handleClickOutside);
+      document.getElementById("addSensorControl").addEventListener("keydown", autoComplete)
+      document.getElementById("addSensorMeasure").addEventListener("keydown", autoComplete)
   });
 
   onCleanup(() => {
@@ -232,19 +256,10 @@ const ModalAddSensor = ({ isOpen, onClose, onSave, structureId, setSensorsDetail
             <ErrorMessage message={errorMsg()} />
           </Show>
           <div class="space-y-4">
-            <Show when={controlChip() !== "" && measureChip() !== ""} 
-              fallback={
-                <>
-                  <ModalField label="Nom*" value={name()} maxLength={32} onInput={(e) => setName(e.target.value)} placeholder="Capteur 42" />
-                  <ModalField label="Puce Témoin*" value={controlChip()} maxLength={32} onInput={(e) => setControlChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACE" /><ModalField label="Puce Mesure*" value={measureChip()} maxLength={32} onInput={(e) => setMeasureChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACD" />
-                  <ModalComment note={note()} onInput={(e) => setNote(e.target.value)} />
-                </>
-              }
-            >
-                <ModalField label="Nom*" value={name()} maxLength={32} onInput={(e) => setName(e.target.value)} placeholder="Capteur 42" />
-                <ModalField label="Puce Témoin*" value={controlChip()} maxLength={32} onInput={(e) => setControlChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACE" /><ModalField label="Puce Mesure*" value={measureChip()} maxLength={32} onInput={(e) => setMeasureChip(e.target.value)} placeholder="E280 6F12 0000 002 208F FACD" />
-                <ModalComment note={note()} onInput={(e) => setNote(e.target.value)} />
-            </Show>
+            <ModalField label="Nom*" value={name()} maxLength={32} onInput={(e) => setName(e.target.value)} placeholder="Capteur 42" />
+            <ModalField id="addSensorControl" label="Puce Témoin*" value={controlChip()} maxLength={32} onChange={(e) => setControlChip(updateChip(e.target.value))} placeholder={ controlHint() } />
+            <ModalField id="addSensorMeasure" label="Puce Mesure*" value={measureChip()} maxLength={32} onChange={(e) => setMeasureChip(updateChip(e.target.value))} placeholder={ measureHint() } />
+            <ModalComment note={note()} onInput={(e) => setNote(e.target.value)} />
           </div>
         </div>
       </div>
