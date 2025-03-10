@@ -226,7 +226,6 @@ function StructureDetailPlans(props) {
                 };
             });
             setPlans(newPlans);
-            console.log("plans after render", plans());
 
             if (plansToDisplay.length <= 0) {
                 setPlan(null)
