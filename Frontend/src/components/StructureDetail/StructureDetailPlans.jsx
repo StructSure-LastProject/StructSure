@@ -7,6 +7,7 @@ import StructureDetailCanvas from "./StructureDetailCanvas";
 import useFetch from "../../hooks/useFetch.js";
 import {useNavigate, useSearchParams, useLocation} from "@solidjs/router";
 import {sensorsWithoutLimitAndOffsetFetchRequest} from "./StructureDetailBody.jsx";
+import image_plan_not_found from '/src/assets/image_plan_not_found.png';
 
 
 /**
@@ -25,7 +26,7 @@ export const planImageFetchRequest = async (planId, setPlan, navigate) => {
     if (statusCode() === 200) {
         setPlan(image());
     } else {
-        setPlan(null);
+        setPlan(image_plan_not_found);
     }
 };
 
