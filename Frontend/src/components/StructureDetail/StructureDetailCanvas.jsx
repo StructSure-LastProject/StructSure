@@ -5,8 +5,6 @@ import Alert from '../Alert';
 import getSensorStatusColor from "../SensorStatusColorGen";
 import { planSensorsFetchRequest } from "./StructureDetailBody";
 import { useNavigate } from "@solidjs/router";
-import image_plan_not_found from '/src/assets/image_plan_not_found.png';
-import no_plan from '/src/assets/no_plan.png';
 
 /**
  * Shows the plans part

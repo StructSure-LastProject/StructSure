@@ -146,10 +146,10 @@ function StructureDetailPlans(props) {
      */
     const handlePlanRestore = (planId) => {
         setPlans(prevPlans =>
-          prevPlans.map(plan =>
-            plan.id === planId
-              ? { ...plan, archived: false, type: isAuthorized() ? "edit" : "plan" }
-              : plan
+          prevPlans.map(p =>
+            p.id === planId
+              ? { ...p, archived: false, type: isAuthorized() ? "edit" : "plan" }
+              : p
           )
         );
     }
@@ -160,10 +160,10 @@ function StructureDetailPlans(props) {
      */
     const handlePlanArchive = (planId) => {
         setPlans(prevPlans =>
-          prevPlans.map(plan =>
-            plan.id === planId
-              ? { ...plan, archived: true, type: "archived" }
-              : plan
+          prevPlans.map(p =>
+            p.id === planId
+              ? { ...p, archived: true, type: "archived" }
+              : p
           )
         );
 
@@ -188,7 +188,7 @@ function StructureDetailPlans(props) {
         sensorsWithoutLimitAndOffsetFetchRequest(
           props.structureId,
           setSensors,
-          () => {},
+          () => {/*We don't need to set total items here*/},
           navigate
         )
         closeEditModal();
