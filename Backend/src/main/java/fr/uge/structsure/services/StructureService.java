@@ -208,7 +208,7 @@ public class StructureService {
         if (addStructureRequestDTO.note().length() > 1000) {
             throw new TraitementException(Error.STRUCTURE_NOTE_EXCEED_LIMIT);
         }
-        if (addStructureRequestDTO.name().length() > 64) {
+        if (addStructureRequestDTO.name().length() < 12 || addStructureRequestDTO.name().length() > 64) {
             throw new TraitementException(Error.STRUCTURE_NAME_EXCEED_LIMIT);
         }
         var exists = structureRepository.findByName(addStructureRequestDTO.name());

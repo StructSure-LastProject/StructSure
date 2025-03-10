@@ -17,7 +17,7 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
      */
     const closeModal = () => setModalVisible(false);
 
-    const [error, setError] = createSignal("");
+    const [errorFronted, setErrorFronted] = createSignal("");
 
     const [name, setName] = createSignal("");
 
@@ -58,7 +58,13 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
      */
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        structuresFetchRequest("/api/structures");
+        if (name().length < 12 || name().length > 64) {
+            setErrorFronted("Le nom de l'ouvrage doit comporter entre 12 et 64 caractères");
+        } else if (note().length > 1000) {
+            setErrorFronted("La note d'un ouvrage ne peut pas dépasser 1000 caractères");
+        } else {
+            structuresFetchRequest("/api/structures");
+        }
     };
 
     /**
@@ -114,7 +120,7 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
                 <form ref={modalRef} class="bg-white p-25px rounded-20px w-388px flex flex-col gap-y-15px"
                       onSubmit={handleFormSubmit}>
                     <h1 class="title">Ajouter un Ouvrage</h1>
-                    <p class="text-sm text-red-500">{error}</p>
+                    <p class="text-sm text-red">{errorFronted}</p>
                     <div class="flex flex-col justify-start gap-y-15px">
                         <div class="flex flex-col gap-y-5px">
                             <p class="normal opacity-75">Nom*</p>
@@ -124,6 +130,7 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
                               placeholder="Ajouter un nom"
                               class="w-full pb-2 pt-2 pl-4 pr-4 normal rounded-10px bg-lightgray h-37px"
                               onChange={(e) => setName(e.target.value)}
+                              maxlength="64"
                             />
                         </div>
 
@@ -135,6 +142,7 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
                               placeholder="Ajouter une note"
                               class="w-full pb-2 pt-2 pl-4 pr-4 normal rounded-10px bg-lightgray h-37px"
                               onChange={(e) => setNote(e.target.value)}
+                              maxlength="1000"
                             />
                         </div>
                     </div>
