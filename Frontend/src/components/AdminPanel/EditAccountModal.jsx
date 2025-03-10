@@ -344,7 +344,7 @@ const EditAccountModal = ({ fetchUserDetails, closeModal, userDetails, fetchLogs
                     fetchLogs={fetchLogs}
                 />
             </Show>
-            <div ref={modalRef} class={ isConfirmationModalOpen() ? "hidden" : "max-h-[100%] overflow-y-auto  sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]"}>
+            <div ref={modalRef} class={ isConfirmationModalOpen() ? "hidden" : "max-h-[100%] overflow-y-auto box-content sm:text-start inset-0 relative flex flex-col w-[100%] max-w-[776px] size-fit rounded-[20px] p-[25px] gap-[15px] bg-white shadow-[0px 0px 50px 0px #33333340]"}>
                 <div class="flex justify-between items-center w-full gap-[10px]">
                     <h1 class="title">Edition de Compte</h1>
                     <div class="flex flex-wrap gap-[10px]">
@@ -366,8 +366,8 @@ const EditAccountModal = ({ fetchUserDetails, closeModal, userDetails, fetchLogs
                 </div>
                 
                 <form action="" class="flex flex-col gap-5">
-                    <div className="flex flex-wrap gap-[15px] lg:gap-[50px] text-black font-poppins">
-                        <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
+                    <div className="flex flex-wrap justify-between gap-x-[25px] gap-y-[15px] text-black font-poppins">
+                        <div className="flex flex-col w-full basis-48 grow-[1] min-w-[360px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
                                 <label htmlFor="lastname" className="normal opacity-50">Nom*</label>
                                 <input
@@ -410,7 +410,7 @@ const EditAccountModal = ({ fetchUserDetails, closeModal, userDetails, fetchLogs
                             </div>
                         </div>
 
-                        <div className="flex flex-col w-full lg:w-[338px] gap-[15px]">
+                        <div className="flex flex-col w-full basis-48 grow-[1] min-w-[360px] gap-[15px]">
                             <div className="flex flex-col gap-[5px]">
                                 <label htmlFor="password" className="normal opacity-50">Mot de passe* (12 à 64 caractères)</label>
                                 <input

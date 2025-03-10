@@ -27,7 +27,7 @@ export const AccountStructureSection = ({structures, setStructureSelection}) => 
     
 
     return (
-        <div class="w-[100%] h-auto flex flex-wrap gap-[10px]">             
+        <div class="w-[100%] max-h-[12rem] overflow-y-auto rounded-[14px] h-auto flex flex-wrap gap-[10px]">             
             <Show when={structures() !== undefined}>
                 <For each={structures()}>
                     {(item) => (
