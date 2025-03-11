@@ -312,7 +312,7 @@ fun AddSensorPopUp(scanViewModel: ScanViewModel, onSubmit: (controlChip: String,
 
     ScanTagPopUp(scanViewModel, scanTagVisible, onScanReadSubmit)
 
-    PopUp(onCancel) {
+    PopUp(onCancel, {
         Title("Ajouter un capteur", false) {
             Button(R.drawable.x, "Annuler", Black, LightGray, onCancel)
             Button(R.drawable.check, "Valider", White, Black) {
@@ -323,6 +323,7 @@ fun AddSensorPopUp(scanViewModel: ScanViewModel, onSubmit: (controlChip: String,
                 }
             }
         }
+    }) {
         Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
             InputText(Modifier, "Nom *", name, "Capteur 42",
                 errorMessage = errors?.nameError
@@ -382,10 +383,11 @@ fun ScanTagPopUp(scanViewModel: ScanViewModel, visible: MutableState<Boolean>, o
     PopUp({
         scanViewModel.toggleDirectChipRead(false)
         visible.value = false
-    }) {
+    }, {
         Title("Lire un tag", false) {
             Button(R.drawable.x, "Annuler", Black, LightGray) { visible.value = false }
         }
+    }) {
         Text("Approchez le tag de l'interrogateur et sélectionnez le dans la liste ci-dessous.\nLes tag trop éloignés sont affichés avec un point d'interrogation.", style = typography.bodyMedium)
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp)

@@ -19,8 +19,10 @@ object ChipFinder {
 
     /** Clears all scanned chip from the list. */
     fun reset() {
-        entries.clear()
-        chips.clear()
+        synchronized(this) {
+            entries.clear()
+            chips.clear()
+        }
     }
 
     /**

@@ -136,6 +136,7 @@ private fun SensorPopUp(
     onCancel: () -> Unit
 ) {
     var note by remember { mutableStateOf(sensor.note.orEmpty()) }
+    var scanStarted = scanViewModel.isScanStarted()
 
     val currentStateDisplay = getStateDisplayName(
         scanViewModel.sensorsScanned.observeAsState(initial = emptyList()).value
@@ -144,11 +145,16 @@ private fun SensorPopUp(
 
     val lastStateDisplay = getStateDisplayName(scanViewModel.getPreviousState(sensor.sensorId))
 
-    PopUp(onCancel) {
+    PopUp(onCancel, {
         Title(sensor.name, false) {
-            Button(R.drawable.check, "valider", Black, LightGray) { onSubmit(note) }
+            Button(
+                R.drawable.check,
+                "valider",
+                Black,
+                LightGray
+            ) { if (scanStarted) onSubmit(note) else onCancel() }
         }
-
+    }) {
         PlanForSensor(scanViewModel.planViewModel, sensor, Black)
 
         SensorDetails(
@@ -162,7 +168,8 @@ private fun SensorPopUp(
         InputTextArea(
             label = "Note",
             value = note,
-            placeholder = "Aucune note pour le moment"
+            placeholder = "Aucune note pour le moment",
+            enabled = scanStarted
         ) { s -> note = s.take(1000) }
     }
 }
@@ -185,7 +192,7 @@ private fun ScanNotePopUp(
         }
     }
 
-    PopUp(onCancel) {
+    PopUp(onCancel, {
         Title("Note du scan", false) {
             if (scanState != ScanState.NOT_STARTED) {
                 Button(R.drawable.check, "valider", Black, LightGray) {
@@ -199,7 +206,7 @@ private fun ScanNotePopUp(
                 }
             }
         }
-
+    }) {
         Column(
             verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.Start,

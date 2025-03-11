@@ -84,6 +84,7 @@ fun Title (
 @Composable
 fun PopUp(
     onClose: () -> Unit,
+    header: @Composable () -> Unit = {},
     content: @Composable () -> Unit = {},
 ) {
     val interactionSource by remember { mutableStateOf(MutableInteractionSource()) }
@@ -115,12 +116,22 @@ fun PopUp(
                         // Disable the ripple when clicking
                     }
                     .background(White)
-                    .padding(25.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .verticalScroll(scroll),
+                    .padding(25.dp),
                 verticalArrangement = Arrangement.spacedBy(15.dp)
             ) {
-                content.invoke()
+                header.invoke()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, true) {
+                            // Disable the ripple when clicking
+                        }
+                        .clip(RoundedCornerShape(10.dp))
+                        .verticalScroll(scroll),
+                    verticalArrangement = Arrangement.spacedBy(15.dp)
+                ) {
+                    content.invoke()
+                }
             }
             Spacer( modifier = Modifier.windowInsetsBottomHeight(WindowInsets.ime))
         }

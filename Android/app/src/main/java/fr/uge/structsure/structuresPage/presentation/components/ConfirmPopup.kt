@@ -23,8 +23,9 @@ import fr.uge.structsure.ui.theme.White
 @Composable
 fun ConfirmPopup(visible: MutableState<Boolean>, structure: String, onSubmit: () -> Unit) {
     if (!visible.value) return
-    PopUp({ visible.value = false }) {
+    PopUp({ visible.value = false }, {
         Title("Supprimer l'ouvrage", false)
+    }) {
         Text("Êtes-vous sûr de vouloir supprimer \"$structure\" ?", style = typography.bodyMedium)
         Text(
             "La suppression effacera les données de l'ouvrage sur votre appareil, mais vous pourrez toujours les télécharger à nouveau depuis le serveur.",
