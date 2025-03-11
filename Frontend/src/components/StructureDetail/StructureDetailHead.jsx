@@ -96,11 +96,26 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
     return (
         <>
             <div class="flex flex-col gap-y-2.5">
-                <p class="title">{structureDetails().name}</p>
                 <div class="flex gap-x-[10px]">
-                    <select class="px-4 py-2 w-full h-10 rounded-[20px] subtitle bg-white"
-                            onChange={handleScanChange}
-                    >
+                <p class="title w-full">{structureDetails().name}</p>
+                    <Show when={isAuthorized()}>
+                        <button
+                            class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+                            onclick={openModal}
+                        >
+                            <Pencil size={20} />
+                        </button>
+                        <button
+                            class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+                            onclick={handleArchiveClick}
+                        >
+                            <Trash2 color="red" size={20} />
+                        </button>
+                    </Show>
+                </div>
+                <div class="flex gap-x-[10px]">
+                <div class="relative w-full">
+                    <select class="normal bg-white w-full h-[37px] rounded-full px-[16px] appearance-none" onChange={handleScanChange}>
                         <option value="-1">Aucun Scan Sélectionné</option>
                         <For each={structureDetails().scans}>
                             {(scan) => (
@@ -108,25 +123,7 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
                             )}
                         </For>
                     </select>
-                    <div class="flex gap-x-[10px]">
-                        <Show when={isAuthorized()}>
-                            <button
-                              class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
-                              onclick={openModal}
-                            >
-                                <Pencil size={20} />
-                            </button>
-                            <button
-                              class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
-                              onclick={handleArchiveClick}
-                            >
-                                <Trash2 color="red" size={20} />
-                            </button>
-                        </Show>
-                        <button class="bg-black rounded-[50px] h-[40px] w-[40px] flex items-center justify-center">
-                            <Plus color="white" size={20} />
-                        </button>
-                    </div>
+                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" stroke="currentColor" stroke-width="2.5" class="lucide lucide-icon lucide-chevron-down"><path d="m6 9 6 6 6-6" key="qrunsl"></path></svg></div></div>
                 </div>
                 <div class="flex justify-between px-[10px]">
                     <p class="normal">{name()}</p>
