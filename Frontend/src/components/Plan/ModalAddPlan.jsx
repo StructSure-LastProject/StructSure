@@ -27,10 +27,11 @@ const ModalAddPlan = ({ isOpen, onClose, onSave, structureId }) => {
    * @param {*} event - The file input change event
    */
   const handleImageChange = (event) => {
+    setError("");
     const file = event.target.files[0];
     if (file) {
       const validTypes = ['image/jpeg', 'image/png'];
-      if (file.size > 2097152) {
+      if (file.size > 20971520) {
         setError("L'image ne doit pas dépasser 20Mo");
         return;
       }
