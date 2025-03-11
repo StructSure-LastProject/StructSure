@@ -18,7 +18,7 @@ const Section = (props) => {
       onClick={props.toggleOpen}
       role="button"
     >
-      <div class="w-4 h-4 flex items-center justify-center">
+      <div class="w-5 h-5 flex items-center justify-center">
         {props.isOpen() ? <ChevronDown class="stroke-[2.5]" size={16} /> : <ChevronRight class="stroke-[2.5]" size={16} />}
       </div>
       <p class="subtitle leading-[11px]">{props.name}</p>
@@ -40,7 +40,7 @@ const Plan = ({ name, selectedPlanId, setSelectedPlanId, planId, setSearchParams
     setSearchParams({ selectedPlanId: planId });
   }}>
     <div class="flex items-center gap-x-[10px]">
-      <div class="w-4 h-4 flex items-center justify-center">
+      <div class="w-5 h-5 flex items-center justify-center">
         <Dot class="stroke-[5]"/>
       </div>
       <p class="poppins text-base font-medium leading-[11px]">{name}</p>
@@ -65,7 +65,7 @@ const PlanEdit = ({name, onEdit, planId, selectedPlanId, setSelectedPlanId, setS
     setSearchParams({ selectedPlanId: planId });
   }}>
     <div class="flex items-center gap-x-[10px]">
-      <div class="w-4 h-4 flex items-center justify-center">
+      <div class="w-5 h-5 flex items-center justify-center">
         <Dot class="stroke-[5]" size={16}/>
       </div>
       <p class="poppins text-base font-medium !leading-[11px]">{name}</p>
@@ -133,7 +133,7 @@ const PlanArchived = (props) => {
     <>
       <div class="py-[8px] px-[9px] rounded-[10px] flex items-center gap-x-[10px] justify-between">
         <div class="flex items-center gap-x-[10px]">
-          <div class="w-4 h-4 flex items-center justify-center">
+          <div class="w-5 h-5 flex items-center justify-center">
             <Dot class="stroke-[5]" size={16}/>
           </div>
           <p class="poppins text-base font-medium !leading-[11px] opacity-60">{props.name}</p>
@@ -272,14 +272,14 @@ const TreeNode = (props) => {
 
   if (props.type === "section") {
     return (
-      <div class="mb-2">
+      <div class="flex flex-col gap-[5px]">
         <Section
           name={props.name}
           isOpen={isCurrentSectionOpen}
           toggleOpen={toggleCurrentSection}
         />
         {hasChildren && isCurrentSectionOpen() && (
-          <div class="pl-4 mt-2">
+          <div class="pl-4 flex flex-col gap-[5px]">
             {Object.entries(props.children).map(([key, child]) => {
               const childSectionId = child.type === "section" ? child.id : null;
 
@@ -322,20 +322,18 @@ const TreeNode = (props) => {
   }
 
   return (
-    <div class="mb-2">
-      <Component
-        name={props.name}
-        selectedPlanId={props.selectedPlanId}
-        onEdit={props.onEdit}
-        planId={props.planId}
-        setSelectedPlanId={props.setSelectedPlanId}
-        setSearchParams={props.setSearchParams}
-        structureId={props.structureId}
-        onPlanEdit={props.onPlanEdit}
-        onPlanRestore={props.onPlanRestore}
-        isInScanMode={props.isInScanMode}
-      />
-    </div>
+    <Component
+      name={props.name}
+      selectedPlanId={props.selectedPlanId}
+      onEdit={props.onEdit}
+      planId={props.planId}
+      setSelectedPlanId={props.setSelectedPlanId}
+      setSearchParams={props.setSearchParams}
+      structureId={props.structureId}
+      onPlanEdit={props.onPlanEdit}
+      onPlanRestore={props.onPlanRestore}
+      isInScanMode={props.isInScanMode}
+    />
   );
 };
 
@@ -450,7 +448,7 @@ const DropdownsSection = (props) => {
   };
 
   return (
-    <div class="flex flex-col">
+    <div class="flex flex-col gap-[5px]">
       {treeData().rootPlans.map(plan => (
         <RenderPlan
           plan={plan}
