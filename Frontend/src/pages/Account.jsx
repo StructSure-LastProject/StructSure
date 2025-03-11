@@ -38,7 +38,7 @@ function Account() {
     return (
         <div class="bg-lightgray min-h-screen p-25px">
             <Header />
-            <div class="flex justify-center">
+            <div class="flex mt-[35px] justify-center">
                 <form class="bg-black w-500px rounded-20px flex flex-col gap-y-25px px-5 px-15px" onSubmit={handlSubmit}>
                     <div class="flex flex-col items-center">
                         <h1 class="title text-center py-0.5 text-white">Bonjour {localStorage.getItem("firstName") + " " +  localStorage.getItem("lastName")}</h1>
