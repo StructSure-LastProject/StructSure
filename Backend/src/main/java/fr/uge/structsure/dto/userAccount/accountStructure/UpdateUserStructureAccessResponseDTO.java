@@ -25,6 +25,15 @@ public interface UpdateUserStructureAccessResponseDTO {
         );
     }
 
+    /**
+     * Constructor that ensures all fields are not null.
+     * <p>
+     * If any of the fields is null, a {@link NullPointerException} will be thrown.
+     * </p>
+     *
+     * @param login The login.
+     * @param accessChanged The list of structure IDs whose access was changed.
+     */
     static UpdateUserStructureAccessResponseDTO success(String login, List<Long> accessChanged) {
         return new SuccessUpdateUserStructureAccessResponseDTO(
                 Objects.requireNonNull(login),
