@@ -37,8 +37,9 @@ function StructureDetailEdit(props) {
                 note: note()
             });
             props.setNote(note());
+            setErrorFrontend("");
         } else {
-            setErrorFronted(error()?.errorData.error || "Une erreur est survenue");
+            setErrorFrontend(error()?.errorData.error || "Une erreur est survenue");
         }
     };
 
@@ -48,16 +49,18 @@ function StructureDetailEdit(props) {
      */
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        if (name().length > 64) {
-            setErrorFronted("Le nom d'un ouvrage ne peut pas dépasser 64 caractères");
+        if (name().length <= 0) {
+            setErrorFrontend("Le nom d'un ouvrage ne peut pas être vide");
+        } else if (name().length > 64) {
+            setErrorFrontend("Le nom d'un ouvrage ne peut pas dépasser 64 caractères");
         } else if (note().length > 1000) {
-            setErrorFronted("La note d'un ouvrage ne peut pas dépasser 1000 caractères");
+            setErrorFrontend("La note d'un ouvrage ne peut pas dépasser 1000 caractères");
         } else {
             structuresUpdateRequest();
         }
     };
 
-    const [errorFronted, setErrorFronted] = createSignal("");
+    const [errorFrontend, setErrorFrontend] = createSignal("");
 
 
     const [name, setName] = createSignal("");
@@ -75,6 +78,7 @@ function StructureDetailEdit(props) {
      */
     const handleClickOutside = (event) => {
         if (modalRef && !modalRef.contains(event.target)) {
+            setErrorFrontend("");
             props.closeModal();
         }
     };
@@ -93,7 +97,7 @@ function StructureDetailEdit(props) {
                 <form ref={modalRef} class="bg-white p-25px rounded-20px w-388px flex flex-col gap-y-15px" 
                 onSubmit={handleFormSubmit}>
                     <h1 class="title">Modifier l’ouvrage</h1>
-                    <p class="text-sm text-red">{errorFronted}</p>
+                    <p class="text-sm text-red">{errorFrontend}</p>
                     <div class="flex flex-col justify-start gap-y-15px">
                         <div class="flex flex-col gap-y-5px">
                             <p class="normal opacity-75">Nom*</p>
@@ -123,7 +127,10 @@ function StructureDetailEdit(props) {
 
                     <div class="flex justify-end justify-between">
                         <button class="w-161px bg-lightgray rounded-50px pb-2 pt-2 pl-4 pr-4 h-9" 
-                        onClick={props.closeModal}>
+                        onClick={()=>{
+                            props.closeModal();
+                            setErrorFrontend("");
+                        }}>
                             <p class="accent">Annuler</p>
                         </button>
                         <button type="submit" class="w-161px bg-black rounded-50px pb-2 pt-2 pl-4 pr-4 h-9" >
