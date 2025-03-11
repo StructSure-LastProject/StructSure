@@ -43,5 +43,8 @@ interface ScanDao {
 
     @Query("SELECT note FROM scan WHERE id = :scanId")
     suspend fun getNote(scanId: Long): String?
+
+    @Query("DELETE FROM scan")
+    fun clear()
 }
 

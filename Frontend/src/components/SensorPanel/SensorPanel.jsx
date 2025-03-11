@@ -37,11 +37,11 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
 
   return (
     <div class="flex justify-between rounded-[20px]">
-      <div class="flex flex-wrap justify-center items-center">
+      <div class="flex w-full justify-start items-center">
         <div class="w-[39px] h-[39px] flex items-center justify-center">
           <div class={`w-[20px] h-[20px] rounded-[50px] border-[3px] ${getSensorStatusColor(sensorState)}`}></div>
         </div>
-        <input class="font-poppins font-[600] max-w-[150px] lg:max-w-[714px] text-[25px] leading-[37.5px] tracking-[0%] text-[#181818]"
+        <input class="font-poppins font-[600] w-full lg:max-w-[714px] text-[25px] leading-[37.5px] tracking-[0%] text-black bg-transparent"
           type="text"
           value={sensorName()}
           onChange={(e) => setSensorName(e.target.value)}
@@ -51,7 +51,7 @@ const PanelHeader = ({sensorState, sensorName, closeSensorPanel, editMode, setEd
           disabled={!editMode()}
         />
       </div>
-      <div class="flex flex-wrap gap-[10px]">
+      <div class="flex gap-[10px]">
         <Show when={editMode()} fallback={
           <button onClick={changeMode} class="flex justify-center items-center w-[40px] h-[40px] sm:w-[40px] sm:h-[40px] rounded-[50px] bg-[#F2F2F4]">
             <Pencil color="#181818" size={20} width={16.67} top={1.67} left={1.67} strokeWidth={2} />
@@ -251,7 +251,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
           validationError={validationError}
         />
         <Show when={validationError() !== ""}>
-          <p class="text-[#F13327] font-poppins HeadLineMedium">{validationError()}</p>
+          <p class="text-red font-poppins HeadLineMedium">A{ validationError().error }</p>
         </Show>
         <div class="overflow-auto overflow-x-hidden flex flex-col gap-[25px] rounded-[18px]">
           <div class="lg:flex lg:flex-row lg:gap-[25px] flex flex-col gap-[25px]">

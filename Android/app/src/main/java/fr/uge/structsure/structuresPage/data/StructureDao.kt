@@ -26,4 +26,7 @@ interface StructureDao {
 
     @Query("SELECT note FROM structure WHERE id = :structureId")
     suspend fun getStructureNote(structureId: Long): String?
+
+    @Query("DELETE FROM structure")
+    fun clear()
 }

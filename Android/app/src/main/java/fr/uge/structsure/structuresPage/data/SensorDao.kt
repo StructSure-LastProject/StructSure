@@ -40,4 +40,7 @@ interface SensorDao {
 
     @Query("SELECT * FROM sensors as s WHERE s.measureChip = :id OR s.controlChip = :id LIMIT 1")
     fun findSensor(id: String): SensorDB?
+
+    @Query("DELETE FROM sensors")
+    fun clear()
 }

@@ -21,4 +21,7 @@ interface PlanDao {
 
     @Query("DELETE FROM `plan` WHERE id = :planId")
     fun deleteImagePlan(planId: Long)
+
+    @Query("DELETE FROM `plan`")
+    fun clear()
 }

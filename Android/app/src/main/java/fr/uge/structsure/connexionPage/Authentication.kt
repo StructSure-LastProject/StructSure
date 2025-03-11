@@ -1,6 +1,7 @@
+import android.content.Context
 import android.util.Log
 import androidx.navigation.NavController
-import fr.uge.structsure.connexionPage.data.AccountDao
+import fr.uge.structsure.MainActivity.Companion.db
 import fr.uge.structsure.connexionPage.data.AccountEntity
 import fr.uge.structsure.navigateNoReturn
 import fr.uge.structsure.retrofit.LoginApi
@@ -8,6 +9,7 @@ import fr.uge.structsure.retrofit.RetrofitInstance
 import fr.uge.structsure.retrofit.response.Datamodel
 import fr.uge.structsure.retrofit.response.UserAuthResponse
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
+import fr.uge.structsure.utils.FileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Optional
@@ -16,13 +18,13 @@ private const val TAG = "AuthenticationAPI"
 
 suspend fun auth(login:String,
                  password:String,
-                 dao: AccountDao,
+                 context: Context,
                  navController: NavController,
                  backRoute: String,
                  structureViewModel: StructureViewModel? = null ): String {
     if (login.isEmpty()){
         return "Veuillez renseigner votre identifiant"
-    } else if (password.isEmpty()){
+    } else if (password.isEmpty()) {
         return "Veuillez renseigner votre mot de passe"
     }
 
@@ -31,13 +33,33 @@ suspend fun auth(login:String,
         val account = response.get()
         val entity = AccountEntity(account.login, account.token, account.type, account.firstName, account.lastName, account.role)
         structureViewModel?.tryUploadScans(true, false, login)
-        val out = dao.upsertAccount(entity)
+        clearDataIfNewUser(context, account.login)
+        val out = db.accountDao().upsertAccount(entity)
         // TODO clear all data from the DB if dap.upsertAccount return false
         navController.navigateNoReturn(backRoute)
         return ""
     }
 
     return "Identifiant et/ou mot de passe incorrect"
+}
+
+/**
+ * Wipes out all the data from the previous session if the given login
+ * is different from the last one.
+ * @param context used to perform local storage files operations
+ * @param login the new login of the current user
+ */
+private fun clearDataIfNewUser(context: Context, login: String) {
+    val lastUser = db.accountDao().getLogin()
+    if (login != lastUser) {
+        db.scanEditsDao().clear()
+        db.scanDao().clear()
+        db.resultDao().clear()
+        db.sensorDao().clear()
+        db.planDao().clear()
+        db.structureDao().clear()
+        FileUtils.deletePlans(context)
+    }
 }
 
 private fun getApiInterface(): LoginApi {

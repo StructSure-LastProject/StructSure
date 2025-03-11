@@ -53,7 +53,7 @@ public class AccountStructureService {
         var allowedStructures = account.getAllowedStructures();
         var structure = structureRepository.findById(structureId).orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
 
-        if(allowedStructures.stream().noneMatch(s -> s.getId() == structureId)){
+        if (allowedStructures.stream().noneMatch(s -> s.getId() == structureId)) {
             account.add(structure);
             structure.add(account);
             accountRepository.save(account);

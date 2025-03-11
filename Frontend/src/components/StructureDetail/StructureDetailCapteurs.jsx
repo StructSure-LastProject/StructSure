@@ -30,6 +30,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
     const [clickedSensor, setClickedSensor] = createSignal({});
 
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
+    const [nextChip, setNextChip] = createSignal("");
     
     const [isAuthorized, setIsAuthorized] = createSignal(false);
 
@@ -264,6 +265,8 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
                             <ModalAddSensor
                             isOpen={isAddModalOpen()}
                             onClose={closeAddModal}
+                            nextChip={nextChip}
+                            setNextChip={setNextChip}
                             structureId={structureId}
                             onSave={handleAddSave}
                             setSensorsDetail={setSensorsDetail}

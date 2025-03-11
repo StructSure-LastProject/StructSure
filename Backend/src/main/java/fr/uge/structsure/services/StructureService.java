@@ -28,6 +28,7 @@ public class StructureService {
     private final SensorRepositoryCriteriaQuery sensorCriteriaQuery;
     private final AuthValidationService authValidationService;
     private final AccountRepository accountRepository;
+    private final AccountStructureService accountStructureService;
 
     private final StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery;
 
@@ -43,7 +44,8 @@ public class StructureService {
         PlanRepository planRepository, ScanRepository scanRepository,
         AccountRepository accountRepository, AppLogService appLogService,
         StructureRepositoryCriteriaQuery structureRepositoryCriteriaQuery,
-        SensorRepositoryCriteriaQuery sensorCriteriaQuery, AuthValidationService authValidationService
+        SensorRepositoryCriteriaQuery sensorCriteriaQuery, AuthValidationService authValidationService,
+        AccountStructureService accountStructureService
     ) {
         this.sensorRepository = Objects.requireNonNull(sensorRepository);
         this.structureRepository = Objects.requireNonNull(structureRepository);
@@ -54,6 +56,7 @@ public class StructureService {
         this.sensorCriteriaQuery = sensorCriteriaQuery;
         this.authValidationService = authValidationService;
         this.accountRepository = accountRepository;
+        this.accountStructureService = accountStructureService;
     }
 
     /**
@@ -91,6 +94,7 @@ public class StructureService {
         var structure = new Structure(addStructureRequestDTO.name(), addStructureRequestDTO.note(), false);
         var result = structureRepository.save(structure);
         appLogs.addStructure(request, structure);
+        accountStructureService.assignAccountToStructure(appLogs.currentAccount(request).getLogin(), result.getId());
         return new AddStructureAnswerDTO(result.getId(), new Timestamp(System.currentTimeMillis()).toString());
     }
 

@@ -8,13 +8,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import fr.uge.structsure.bluetooth.cs108.Cs108Connector
 import fr.uge.structsure.components.BluetoothButton
 import fr.uge.structsure.components.Page
 import fr.uge.structsure.components.PullToRefresh
 import fr.uge.structsure.connexionPage.data.AccountDao
+import fr.uge.structsure.structuresPage.domain.ConnectivityViewModel
+import fr.uge.structsure.structuresPage.domain.ConnectivityViewModelFactory
 import fr.uge.structsure.structuresPage.domain.StructureViewModel
 import fr.uge.structsure.structuresPage.presentation.components.AccountInformationsView
 import fr.uge.structsure.structuresPage.presentation.components.StructuresListView
@@ -27,6 +31,9 @@ fun HomePage(
     dao: AccountDao,
     structureViewModel: StructureViewModel
 ) {
+    val connectivityViewModel: ConnectivityViewModel = viewModel(
+        factory = ConnectivityViewModelFactory(context = LocalContext.current)
+    )
     LaunchedEffect(Unit) {
         structureViewModel.getAllStructures()
     }
@@ -49,8 +56,8 @@ fun HomePage(
             { structureViewModel.getAllStructures() }
         ) {
             AccountInformationsView(dao, navController)
-            StructuresListView(structureViewModel, navController)
-            ConnectivityStatus()
+            StructuresListView(structureViewModel, connectivityViewModel, navController)
+            ConnectivityStatus(connectivityViewModel)
         }
     }
 

@@ -61,4 +61,19 @@ object FileUtils {
             true
         }
     }
+
+    /**
+     * Deletes all plans images from internal storage.
+     *
+     * @param context The application context needed for file operations
+     * @return true if deletion was successful, false otherwise
+     */
+    fun deletePlans(context: Context): Boolean {
+        val directory = File(context.filesDir, "plans")
+        return if (directory.exists()) {
+            directory.delete()
+        } else {
+            true
+        }
+    }
 }

@@ -212,7 +212,7 @@ public class ScanService {
             if (sensor == null) break; // cannot save this sensor
             appLogs.addScanEdit(request, scan, sensor, edit, newSensor.get());
             if (edit.note() != null) sensor.setNote(edit.note());
-            if (edit.plan() != null) setPlan(edit, sensor);
+            if (edit.plan() != null) setPlan(edit, sensor, scan);
             sensors.add(sensor);
         }
 
@@ -226,8 +226,9 @@ public class ScanService {
      * the given edit. The plan from the edit is assumed non-null.
      * @param edit the Android data containing new plan values
      * @param sensor the sensor to put values in
+     * @param scan to add the installation date if not already set
      */
-    private void setPlan(AndroidSensorEditDTO edit, Sensor sensor) {
+    private void setPlan(AndroidSensorEditDTO edit, Sensor sensor, Scan scan) {
         if (edit.x() == null || edit.y() == null) {
             LOGGER.warn("Plan without coordinates received by Android will be ignored");
             return;
@@ -237,6 +238,9 @@ public class ScanService {
                 sensor.setPlan(plan);
                 sensor.setX(edit.x());
                 sensor.setY(edit.y());
+                if (sensor.getInstallationDate() == null) {
+                    sensor.setInstallationDate(scan.getDate().toLocalDate());
+                }
             },
             () -> LOGGER.warn("Unknown plan with ID '{}' received from Android will be ignored", edit.plan())
         );
