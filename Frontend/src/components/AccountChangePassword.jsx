@@ -86,7 +86,7 @@ function AccountChangePassword() {
 
                 <div class="flex flex-col gap-y-25px">
                     <div class="flex flex-col gap-[5px] justify-start">
-                        <p class="normal opacity-75">Ancien mot de passe</p>
+                        <p class="normal opacity-75">Ancien mot de passe*</p>
                         <input 
                             id="Password" 
                             type="password" 
@@ -96,7 +96,7 @@ function AccountChangePassword() {
                         />
                     </div>
                     <div class="flex flex-col gap-[5px] justify-start">
-                        <p class="normal opacity-75">Nouveau mot de passe</p>
+                        <p class="normal opacity-75">Nouveau mot de passe* (12 à 64 caractères)</p>
                         <input 
                             id="Password" 
                             type="password" 
@@ -106,7 +106,7 @@ function AccountChangePassword() {
                         />
                     </div>
                     <div class="flex flex-col gap-[5px] justify-start">
-                        <p class="normal opacity-75">Confirmation du mot de passe</p>
+                        <p class="normal opacity-75">Confirmation du mot de passe* (12 à 64 caractères)</p>
                         <input 
                             id="Password" 
                             type="password" 
