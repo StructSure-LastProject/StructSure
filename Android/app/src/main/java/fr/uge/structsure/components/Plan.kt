@@ -54,7 +54,8 @@ fun PlanForSensor(
     ) {
         val planNode = point?.plan?.let { planViewModel.plans.value?.findPlanById(it) }
         planNode?.let {
-            Text(getPlanSectionName(it), color = color, style = typography.headlineMedium)
+            val section = getPlanSectionName(it)
+            if (section.isNotBlank()) Text(section, color = color, style = typography.headlineMedium)
         }
         Plan(planImage, { point?.let { listOf(it) } ?: emptyList()})
     }

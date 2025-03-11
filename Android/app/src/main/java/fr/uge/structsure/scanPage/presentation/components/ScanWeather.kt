@@ -143,7 +143,7 @@ private fun StructureNotePopUp(
         }
     }
 
-    PopUp(onCancel) {
+    PopUp(onCancel, {
         Title("Note de l'ouvrage", false) {
             if (scanState != ScanState.NOT_STARTED) {
                 Button(R.drawable.check, "valider", Black, LightGray) {
@@ -157,6 +157,7 @@ private fun StructureNotePopUp(
                 }
             }
         }
+    }) {
 
         Column(
             verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
