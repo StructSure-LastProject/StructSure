@@ -2,6 +2,7 @@ import { createSignal, onMount, onCleanup, Show, createEffect, createMemo } from
 import { Check, ChevronDown, Minus, Plus, Trash2, X } from 'lucide-solid';
 import useFetch from '../../hooks/useFetch';
 import Alert from '../Alert';
+import { PointTooltip, PlacePoint } from "./StructureDetailCanvasModals";
 import getSensorStatusColor from "../SensorStatusColorGen";
 import { planSensorsFetchRequest } from "./StructureDetailBody";
 import { useNavigate } from "@solidjs/router";
@@ -40,7 +41,6 @@ function StructureDetailCanvas(props) {
     const [cClickY, setCClickY] = createSignal(0);
 
     const [inputValue, setInputValue] = createSignal("");
-    const [isOpen, setIsOpen] = createSignal(false);
 
     const [selectedSensor, setSelectedSensor] = createSignal(null);
     const navigate = useNavigate();
@@ -56,7 +56,6 @@ function StructureDetailCanvas(props) {
         setBaseOffsetX(0);
         setBaseOffsetY(0);
         setIsPopupVisible(false);
-        setIsOpen(false);
         isMouseDown = false;
         hasMoved = false;
     };
@@ -703,95 +702,20 @@ function StructureDetailCanvas(props) {
             <Show when={isPopupVisible() && !popupOutOfCanvas() && props.interactiveMode === true}>
                 <div ref={popupRef}>
                     <Show when={!clickExistingPoint()}>
-                        <div class="absolute z-20 border-4 border-black w-5 h-5 bg-white rounded-[50px]"
-                            style={{
-                                top: `${popupCanvasY()-10}px`,
-                                left: `${popupCanvasX()-10}px`,
-                            }}>
-                        </div>
+                        <PlacePoint
+                            top={popupCanvasY} left={popupCanvasX}
+                            onSubmit={() => { if (selectedSensor() != null) positionSensorFetchRequest(props.structureId, selectedSensor().controlChip, selectedSensor().measureChip, props.selectedPlanId(), popupX(), popupY()); }}
+                            inputValue={inputValue} setInputValue={setInputValue}
+                            filteredOptions={filteredOptions}
+                            setSelectedSensor={setSelectedSensor}
+                            />
                     </Show>
                     <Show when={clickExistingPoint()}>
                         <DrawClickedSensor state={clickExistingPoint().state} />
+                        <PointTooltip top={popupCanvasY} left={popupCanvasX} name={() => clickExistingPoint().name} onClick={() => {
+                            deletePositionRequest(clickExistingPoint().controlChip, clickExistingPoint().measureChip);
+                        }}/>
                     </Show>
-                    <div 
-                        class="absolute z-10 w-[351px] rounded-tr-[20px] rounded-b-[20px] flex flex-col gap-5  bg-white px-5 py-[15px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
-                        style={{
-                            top: `${popupCanvasY()}px`,
-                            left: `${popupCanvasX()}px`,
-                        }}
-                    >
-                        <div class="w-full flex justify-between items-center">
-                            <h1 class="title">{clickExistingPoint() != null ? clickExistingPoint().name : "Nouveau point"}</h1>
-                            <div class="flex gap-x-[10px]">
-                                <Show when={!clickExistingPoint()}>
-                                    <button class="bg-lightgray rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onClick={() => {
-                                        if (selectedSensor() != null) {
-                                            positionSensorFetchRequest(props.structureId, selectedSensor().controlChip, selectedSensor().measureChip, props.selectedPlanId(), popupX(), popupY());
-                                        }
-                                    }}>
-                                        <Check color="black" stroke-width="2.5" width="20px" height="20px"/>
-                                    </button>
-                                </Show>
-                                <Show when={clickExistingPoint()}>
-                                    <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onClick={() => {
-                                        if (clickExistingPoint()) {
-                                            deletePositionRequest(clickExistingPoint().controlChip, clickExistingPoint().measureChip);
-                                        }
-                                    }}>
-                                        <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
-                                    </button>
-                                </Show>
-                                <button class="bg-lightgray rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onClick={() => {
-                                    setIsPopupVisible(false);
-                                }}>
-                                    <X color="black" stroke-width="2.5" width="20px" height="20px"/>
-                                </button>
-                            </div>
-                        </div>
-                        <Show when={!clickExistingPoint()}>
-                            <div class="flex flex-col gap-y-[5px]">
-                                <p class="normal opacity-50">Capteur</p>
-
-                                <div class="bg-lightgray px-[16px] py-[8px] rounded-[20px] flex justify-between items-center">
-                                    <input
-                                        type="text"
-                                        class="bg-transparent subtitle w-full"
-                                        value={inputValue()}
-                                        onInput={(e) => setInputValue(e.currentTarget.value)}
-                                        onFocus={() => setIsOpen(true)} // Open dropdown on focus
-                                    />
-                                    <button
-                                        class="rounded-[50px] h-[24px] w-[24px] flex items-center justify-center"
-                                        onClick={() => setIsOpen(!isOpen())}
-                                    >
-                                        <ChevronDown class={`transition-transform ${isOpen() ? "rotate-180" : ""}`} color="black" />
-                                    </button>
-                                </div>
-                                <Show when={isOpen() && filteredOptions().length > 0}>
-                                    <div class="rounded-[10px] py-[10px] px-[20px] flex flex-col gap-y-[10px]">
-                                        {filteredOptions().map((option, index) => (
-                                        <>
-                                            <p
-                                                class="normal cursor-pointer"
-                                                onClick={(event) => {
-                                                    event.stopImmediatePropagation();
-                                                    setInputValue(option.name);
-                                                    setSelectedSensor(option);
-                                                    setIsOpen(false);
-                                                }}
-                                            >
-                                            {option.name}
-                                            </p>
-                                            <Show when={index < filteredOptions().length - 1}>
-                                                <div class="w-full h-[1px] bg-lightgray"></div>
-                                            </Show>
-                                        </>
-                                        ))}
-                                    </div>
-                                </Show>
-                            </div>
-                        </Show>
-                    </div>
                 </div>
             </Show>
         </>
