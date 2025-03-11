@@ -2,6 +2,7 @@ import {Pencil} from 'lucide-solid';
 import { createEffect, createSignal } from 'solid-js';
 import useFetch from '../../hooks/useFetch';
 import { useNavigate } from '@solidjs/router';
+import image_plan_not_found from '/src/assets/image_plan_not_found.png';
 
 /**
  * Component for handling image upload and preview functionality
@@ -33,6 +34,7 @@ const ModalImage = (props) => {
  */
 const ImagePreview = ({ imageData, currentImageUrl }) => {
   const [img, setImg] = createSignal(null);
+  const [hasError, setHasError] = createSignal(false);
   const navigate = useNavigate();
   /**
    * Will fetch the existing plan image
@@ -49,6 +51,9 @@ const ImagePreview = ({ imageData, currentImageUrl }) => {
     await fetchImage(navigate, currentImageUrl, requestData);
     if (statusCode() === 200) {
         setImg(image());
+        setHasError(false);
+    } else {
+      setHasError(true);
     }
   };
 
@@ -65,10 +70,16 @@ const ImagePreview = ({ imageData, currentImageUrl }) => {
           alt="Plan modifié"
           class="w-full h-full rounded-[10px] object-cover"
         />
-      ) : currentImageUrl ? (
+      ) : currentImageUrl && !hasError() ? (
         <img
           src={img()}
           alt="Plan actuel"
+          class="w-full h-full rounded-[10px] object-cover"
+        />
+      ) : hasError() ? (
+        <img
+          src={image_plan_not_found}
+          alt="Image du plan non trouvé"
           class="w-full h-full rounded-[10px] object-cover"
         />
       ) : (
