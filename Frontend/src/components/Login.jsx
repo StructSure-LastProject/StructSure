@@ -96,6 +96,9 @@ function Login() {
                                 placeholder="votre identifiant" 
                                 class="w-full py-2 px-4 normal rounded-50px bg-lightgray"
                                 onChange={(e) => setLogin(e.target.value)}
+                                autocomplete="username"
+                                minLength="1"
+                                maxLength="128"
                             />
                         </div>
                             
@@ -107,6 +110,8 @@ function Login() {
                                 placeholder="••••••••••••" 
                                 class="w-full py-2 px-4 normal rounded-50px  bg-lightgray"
                                 onChange={(e) => setPassword(e.target.value)}
+                                minLength="12"
+                                maxLength="64"
                             />
                         </div>
                     </div>

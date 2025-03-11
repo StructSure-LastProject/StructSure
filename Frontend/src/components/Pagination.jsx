@@ -100,16 +100,16 @@ createEffect(() => {
 
   return (
     <div className="flex items-center justify-between py-5">
-      <div className="flex flex-1 justify-between sm:hidden">
+      <div className="flex flex-1 gap-[10px] justify-between sm:hidden">
         <button
           onClick={handlePrevPage}
-          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="relative inline-flex items-center rounded-[50px] bg-white px-[16px] py-[8px] accent"
         >
           Précédent
         </button>
         <button
           onClick={handleNextPage}
-          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="relative inline-flex items-center rounded-[50px] bg-white px-[16px] py-[8px] accent"
         >
           Suivant
         </button>
@@ -127,7 +127,7 @@ createEffect(() => {
               onClick={handlePrevPage}
               className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
             >
-              <span className="sr-only">Previous</span>
+              <span className="sr-only">Précédent</span>
               <ChevronLeft aria-hidden="true" className="size-5" color="gray" />
             </button>
 
@@ -154,7 +154,7 @@ createEffect(() => {
               onClick={handleNextPage}
               className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-[#F2F2F4] ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
             >
-              <span className="sr-only">Next</span>
+              <span className="sr-only">Suivant</span>
               <ChevronRight aria-hidden="true" className="size-5" color="gray" />
             </button>
           </nav>
