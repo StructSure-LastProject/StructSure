@@ -33,7 +33,7 @@ interface SensorDao {
     fun getSensorsUnplacedByStructure(structureId: Long): List<SensorDB>
 
     @Query("UPDATE sensors SET `plan` = :plan, x = :x, y = :y WHERE sensorId = :id")
-    fun placeSensor(id: String, plan: Long?, x: Int, y: Int)
+    fun placeSensor(id: String, plan: Long?, x: Int?, y: Int?)
 
     @Query("SELECT _state FROM sensors WHERE sensorId = :sensorId")
     fun getSensorState(sensorId: String): String

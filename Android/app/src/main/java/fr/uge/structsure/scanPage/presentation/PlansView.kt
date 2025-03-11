@@ -3,6 +3,7 @@ package fr.uge.structsure.scanPage.presentation
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -58,13 +60,15 @@ import fr.uge.structsure.ui.theme.fonts
 /**
  * This composable is used to display the plans of the structure.
  * @param scanViewModel to get plans list and active plan
+ * @param onClick action to run once a sensor of the list is clicked
  */
 @Composable
-fun PlansView(scanViewModel: ScanViewModel) {
+fun PlansView(scanViewModel: ScanViewModel, onClick: (SensorDB) -> Unit) {
     val planViewModel = scanViewModel.planViewModel
     val plans = planViewModel.plans.observeAsState()
     val points = planViewModel.filteredPoints.distinctUntilChanged().observeAsState(listOf())
     var addPoint by remember { mutableStateOf<SensorDB?>(null) }
+    var selectPoint by remember { mutableStateOf<SensorDB?>(null) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
@@ -89,8 +93,14 @@ fun PlansView(scanViewModel: ScanViewModel) {
                 image = image.value,
                 points = { points.value },
                 temporaryPoint = addPoint,
-                addPoint = { x, y -> if (scanViewModel.isScanStarted()) addPoint = SensorDB.point(scanViewModel, x, y) },
-                selectPoint = { /* TODO enable to remove points */ }
+                addPoint = { x, y -> if (scanViewModel.isScanStarted()) {
+                    addPoint = SensorDB.point(scanViewModel, x, y)
+                    selectPoint = null
+                } },
+                selectPoint = { sensor -> if (scanViewModel.isScanStarted()) {
+                    selectPoint = sensor
+                    addPoint = SensorDB.point(scanViewModel, sensor.x!!, sensor.y!!)
+                } }
             )
 
             Spacer(
@@ -99,7 +109,27 @@ fun PlansView(scanViewModel: ScanViewModel) {
                     .height(1.dp)
                     .background(LightGray) )
 
-            if (addPoint != null) {
+            if (selectPoint != null) {
+                SelectPointPane(
+                    selectPoint!!,
+                    { /* Opens the sensor popup */
+                        onClick(selectPoint!!)
+                        selectPoint = null
+                        addPoint = null
+                    },
+                    { /* Remove the point fromm the plan */
+                        selectPoint?.let {
+                            planViewModel.placeSensor(it, null, null, null)
+                            selectPoint = null
+                            addPoint = null
+                        }
+                    },
+                    { /* Closes the pane */
+                        selectPoint = null
+                        addPoint = null
+                    }
+                )
+            } else if (addPoint != null) {
                 val unplacedSensors = MainActivity.db.sensorDao().getSensorsUnplacedByStructure(scanViewModel.structure?.id ?: -1)
                 AddPointPane(
                     unplacedSensors,
@@ -276,5 +306,51 @@ fun AddPointPane(
             // Button(R.drawable.trash, "Save", Red, Red.copy(alpha = 0.1f))
         }
         ComboBox("Capteur", options.keys, search, { search = it }, if (valid != null) Black else Red)
+    }
+}
+
+/**
+ * Component that prompts the user to select a point on the plan.
+ * @param sensor the list of available sensors
+ * @param onClick the action to run when the sensor name is clicked
+ * @param onDelete the action to run when a sensor is selected
+ * @param onCancel the action to run when the cancel button is pressed
+ */
+@Composable
+fun SelectPointPane(
+    sensor: SensorDB,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    onCancel: () -> Unit
+) {
+    Column(
+        Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Row (
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row (
+                Modifier
+                    .height(40.dp)
+                    .fillMaxSize()
+                    .weight(2f)
+                    .clickable(interactionSource = remember { MutableInteractionSource() }, null, true) {
+                        // Disable the ripple when clicking
+                        onClick()
+                    }
+                    .padding(0.dp, 10.dp)
+            ) {
+                Text(sensor.name, Modifier.height(20.dp).fillMaxWidth(), Black,
+                    style = MaterialTheme.typography.headlineMedium,
+                    lineHeight = 14.0.sp,
+                    textAlign = TextAlign.Start
+                )
+            }
+            Button(R.drawable.trash, "Save", Red, Red.copy(alpha = 0.1f), onDelete)
+            Button(R.drawable.x, "Cancel") { onCancel() }
+        }
     }
 }

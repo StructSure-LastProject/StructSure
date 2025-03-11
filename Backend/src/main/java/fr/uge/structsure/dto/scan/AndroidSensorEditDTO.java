@@ -25,9 +25,12 @@ public record AndroidSensorEditDTO(
      * @return the changed values
      */
     public String logDiff(Sensor sensor) {
-        return new DiffMaker()
-            .add("Nom", sensor.getName(), name)
-            .add("Note", sensor.getNote(), note)
+        var diff = new DiffMaker();
+        if (name != null) diff.add("Nom", sensor.getName(), name);
+        if (note != null) diff.add("Note", sensor.getNote(), note);
+        return diff
+            .add(plan != null && plan == -1, "Plan retiré: #" + sensor.getPlan().getId())
+            .add(plan != null && plan != -1, "Plan ajouté: #" + plan + " (x:" + x + ", y:" + y + ")")
             .toString();
     }
 }

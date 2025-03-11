@@ -1,6 +1,12 @@
 package fr.uge.structsure.components
 
 import android.graphics.Bitmap
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -15,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,6 +44,7 @@ import fr.uge.structsure.scanPage.data.getPlanSectionName
 import fr.uge.structsure.scanPage.domain.PlanViewModel
 import fr.uge.structsure.scanPage.presentation.components.SensorState
 import fr.uge.structsure.structuresPage.data.SensorDB
+import fr.uge.structsure.ui.theme.White
 import kotlin.math.sqrt
 
 @Composable
@@ -77,6 +85,15 @@ fun Plan(
     addPoint: (Int, Int) -> Unit = { _, _ -> },
     selectPoint: (SensorDB) -> Unit = { _ -> }
 ) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val blinkEffect by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = CubicBezierEasing(0.4f, 0.0f, 0.4f, 1.0f)),
+            repeatMode = RepeatMode.Restart
+        )
+    )
     val painter = remember(image) { BitmapPainter(image.asImageBitmap()) }
     val factor = remember(1) { Factor() }
     factor.init(painter.intrinsicSize)
@@ -107,11 +124,16 @@ fun Plan(
                 )
         )
         Canvas(Modifier.fillMaxSize()) {
-            val positions = if (temporaryPoint == null) points() else points() + temporaryPoint
-            positions.forEach {
-                if (it.x != null && it.y != null) {
+            points().forEach {
+                if (it.x != null && it.y != null && (it.x != temporaryPoint?.x || it.y != temporaryPoint.y)) {
                     val panned = imgToCanvas(factor, size, it.x, it.y)
                     point(size, panned.x, panned.y, SensorState.from(it.state))
+                }
+            }
+            temporaryPoint?.let {
+                if (it.x != null && it.y != null) {
+                    val panned = imgToCanvas(factor, size, it.x, it.y)
+                    pointActive(size, panned.x, panned.y, SensorState.from(it.state), blinkEffect)
                 }
             }
         }
@@ -165,6 +187,38 @@ private fun DrawScope.point(size: Size, x: Int, y: Int, state: SensorState) {
         color = state.color.copy(alpha = 0.25F),
         radius = 30f,
         center = Offset(x + 0f, y + 0f),
+    )
+}
+
+/**
+ * Draw a point representing a sensor on a plan.
+ * @param x the x coordinate of the center of the point
+ * @param y the y coordinate of the center of the point
+ * @param state the state of the sensor to show its color
+ */
+private fun DrawScope.pointActive(size: Size, x: Int, y: Int, state: SensorState, alpha: Float) {
+    val visibleX = x + 30 >= 0 && x - 30 <= size.width
+    val visibleY = y + 30 >= 0 && y - 30 <= size.height
+    if (!visibleX || !visibleY) return // out of canvas
+    drawCircle(
+        color = state.color.copy(alpha * 0.75f),
+        radius = 20f + ((1 - alpha) * 50),
+        center = Offset(x + 0f,  y + 0f),
+    )
+    drawCircle(
+        color = White,
+        radius = 30f,
+        center = Offset(x + 0f, y + 0f),
+    )
+    drawCircle(
+        color = state.color.copy(0.25F),
+        radius = 30f,
+        center = Offset(x + 0f, y + 0f),
+    )
+    drawCircle(
+        color = state.color,
+        radius = 20f,
+        center = Offset(x + 0f,  y + 0f),
     )
 }
 
