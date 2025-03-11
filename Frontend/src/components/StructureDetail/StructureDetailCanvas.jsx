@@ -712,7 +712,7 @@ function StructureDetailCanvas(props) {
                     </Show>
                     <Show when={clickExistingPoint()}>
                         <DrawClickedSensor state={clickExistingPoint().state} />
-                        <PointTooltip top={popupCanvasY} left={popupCanvasX} name={() => clickExistingPoint().name} onClick={() => {
+                        <PointTooltip top={popupCanvasY} left={popupCanvasX} sensor={clickExistingPoint} onClick={() => {
                             deletePositionRequest(clickExistingPoint().controlChip, clickExistingPoint().measureChip);
                         }}/>
                     </Show>
