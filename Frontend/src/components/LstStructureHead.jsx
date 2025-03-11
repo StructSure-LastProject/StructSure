@@ -7,7 +7,7 @@ import { ChevronDown, ChevronUp, Plus } from 'lucide-solid';
  * Component for list of structure
  * @returns component for the list of structure
  */
-function LstStructureHead({setFilterVisible, filterVisible}) {
+function LstStructureHead({setFilterVisible, filterVisible, fetchStructures}) {
     const [isModalVisible, setModalVisible] = createSignal(false);
 
     const openModal = () => setModalVisible(true);
@@ -15,7 +15,10 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
     /**
      * Handles close modal
      */
-    const closeModal = () => setModalVisible(false);
+    const closeModal = () => {
+        setModalVisible(false);
+        setErrorFronted("");
+    };
 
     const [errorFronted, setErrorFronted] = createSignal("");
 
@@ -58,8 +61,11 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
      */
     const handleFormSubmit = (e) => {
         e.preventDefault();
-        if (name().length < 12 || name().length > 64) {
-            setErrorFronted("Le nom de l'ouvrage doit comporter entre 12 et 64 caractères");
+        const regex = /^[\p{L}\d@_-][\p{L}\d @_-]+$/u;
+        if (name().length < 1 || name().length > 64) {
+            setErrorFronted("Le nom de l'ouvrage doit comporter entre 1 et 64 caractères");
+        } else if (!regex.test(name())) {
+            setErrorFronted("Le nom doit contenir uniquement des lettres, des chiffres, des espaces, des underscores et des @");
         } else if (note().length > 1000) {
             setErrorFronted("La note d'un ouvrage ne peut pas dépasser 1000 caractères");
         } else {
@@ -85,13 +91,14 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
             body: requestBody
         };
 
-        const { fetchData, statusCode, errorFetch } = useFetch();
+        const { fetchData, statusCode, data, error } = useFetch();
         await fetchData(navigate, url, requestData);
 
         if (statusCode() === 201) {
-            location.reload();
+            fetchStructures();
+            closeModal();
         } else {
-            setError(errorFetch());
+            setErrorFronted(error().errorData.error);
         }
     };
 
