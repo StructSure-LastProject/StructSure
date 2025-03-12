@@ -79,7 +79,7 @@ const ImagePreview = ({ imageData, currentImageUrl }) => {
       ) : hasError() ? (
         <img
           src={image_plan_not_found}
-          alt="Image du plan non trouvé"
+          alt="Plan sans image"
           class="w-full h-full rounded-[10px] object-cover"
         />
       ) : (
