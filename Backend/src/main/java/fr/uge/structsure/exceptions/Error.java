@@ -27,10 +27,12 @@ public enum Error {
     LOGIN_PASSWORD_NOT_CORRECT(404, "Login ou mot de passe incorrect"),
     PASSWORD_NOT_VALID(422, "Le mot de passe doit comporter entre 12 et 64 caractères"),
 
+
+    STRUCTURE_NAME_MALFORMED(422, "Le nom doit contenir uniquement des lettres, des chiffres, des espaces, des underscores et des @"),
     STRUCTURE_NAME_ALREADY_EXISTS(422, "Nom d'ouvrage déjà existant"),
     STRUCTURE_NAME_IS_EMPTY(422, "Le nom d'un ouvrage ne peut pas être vide"),
     STRUCTURE_ID_NOT_FOUND(404, "Id de l'ouvrage est introuvable"),
-    STRUCTURE_NAME_EXCEED_LIMIT(422, "Le nom d'un ouvrage ne peut pas dépasser 64 caractères"),
+    STRUCTURE_NAME_EXCEED_LIMIT(422, "Le nom de l'ouvrage doit comporter entre 1 et 64 caractères"),
     STRUCTURE_NOTE_EXCEED_LIMIT(422, "La note d'un ouvrage ne peut pas dépasser 1000 caractères"),
     STRUCTURE_ID_INVALID(422, "L'id de l'ouvrage est invalide"),
 

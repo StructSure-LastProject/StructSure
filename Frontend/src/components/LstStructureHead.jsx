@@ -7,17 +7,12 @@ import { ChevronDown, ChevronUp, Plus } from 'lucide-solid';
  * Component for list of structure
  * @returns component for the list of structure
  */
-function LstStructureHead({setFilterVisible, filterVisible}) {
+function LstStructureHead({setFilterVisible, filterVisible, fetchStructures}) {
     const [isModalVisible, setModalVisible] = createSignal(false);
 
     const openModal = () => setModalVisible(true);
 
-    /**
-     * Handles close modal
-     */
-    const closeModal = () => setModalVisible(false);
-
-    const [error, setError] = createSignal("");
+    const [errorFronted, setErrorFronted] = createSignal("");
 
     const [name, setName] = createSignal("");
 
@@ -26,6 +21,16 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
     const navigate = useNavigate();
 
     let modalRef;
+
+    /**
+     * Handles close modal
+     */
+    const closeModal = () => {
+        setModalVisible(false);
+        setErrorFronted("");
+        setName("");
+        setNote("");
+    };
 
     /**
      * Handles the close of the modal when click outside
@@ -53,15 +58,6 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
     };
 
     /**
-     * Handles the form submit
-     * @param {Event} e The event of form submit
-     */
-    const handleFormSubmit = (e) => {
-        e.preventDefault();
-        structuresFetchRequest("/api/structures");
-    };
-
-    /**
      * Fetch the strucutres
      * @param {String} url the url of the server
      */
@@ -79,13 +75,32 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
             body: requestBody
         };
 
-        const { fetchData, statusCode, errorFetch } = useFetch();
+        const { fetchData, statusCode, error } = useFetch();
         await fetchData(navigate, url, requestData);
 
         if (statusCode() === 201) {
-            location.reload();
+            fetchStructures();
+            closeModal();
         } else {
-            setError(errorFetch());
+            setErrorFronted(error().errorData.error);
+        }
+    };
+
+    /**
+     * Handles the form submit
+     * @param {Event} e The event of form submit
+     */
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        const regex = /^[\p{L}\d@_-][\p{L}\d @_-]+$/u;
+        if (name().length < 1 || name().length > 64) {
+            setErrorFronted("Le nom de l'ouvrage doit comporter entre 1 et 64 caractères");
+        } else if (!regex.test(name())) {
+            setErrorFronted("Le nom doit contenir uniquement des lettres, des chiffres, des espaces, des underscores et des @");
+        } else if (note().length > 1000) {
+            setErrorFronted("La note d'un ouvrage ne peut pas dépasser 1000 caractères");
+        } else {
+            structuresFetchRequest("/api/structures");
         }
     };
 
@@ -114,7 +129,7 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
                 <form ref={modalRef} class="bg-white p-25px rounded-20px w-388px flex flex-col gap-y-15px"
                       onSubmit={handleFormSubmit}>
                     <h1 class="title">Ajouter un Ouvrage</h1>
-                    <p class="text-sm text-red-500">{error}</p>
+                    <p class="text-sm text-red">{errorFronted}</p>
                     <div class="flex flex-col justify-start gap-y-15px">
                         <div class="flex flex-col gap-y-5px">
                             <p class="normal opacity-75">Nom*</p>
@@ -124,6 +139,7 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
                               placeholder="Ajouter un nom"
                               class="w-full pb-2 pt-2 pl-4 pr-4 normal rounded-10px bg-lightgray h-37px"
                               onChange={(e) => setName(e.target.value)}
+                              maxlength="64"
                             />
                         </div>
 
@@ -135,6 +151,7 @@ function LstStructureHead({setFilterVisible, filterVisible}) {
                               placeholder="Ajouter une note"
                               class="w-full pb-2 pt-2 pl-4 pr-4 normal rounded-10px bg-lightgray h-37px"
                               onChange={(e) => setNote(e.target.value)}
+                              maxlength="1000"
                             />
                         </div>
                     </div>

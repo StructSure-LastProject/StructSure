@@ -151,6 +151,7 @@ function StructSureBody() {
           <LstStructureHead
             filterVisible={filterVisible}
             setFilterVisible={setFilterVisible}
+            fetchStructures={fetchStructures}
           />
 
           <div class={`bg-white rounded-[20px] w-full ${filterVisible() ? 'block' : 'hidden'}`}>

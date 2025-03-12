@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Will regroup all the services available for structure like the service that will create a structure
@@ -202,8 +203,12 @@ public class StructureService {
      */
     private void structurePrecondition(AddStructureRequestDTO addStructureRequestDTO) throws TraitementException {
         Objects.requireNonNull(addStructureRequestDTO);
+
         if (addStructureRequestDTO.name() == null || addStructureRequestDTO.name().isEmpty()) {
             throw new TraitementException(Error.STRUCTURE_NAME_IS_EMPTY);
+        }
+        if (!isValidName(addStructureRequestDTO.name())) {
+            throw new TraitementException(Error.STRUCTURE_NAME_MALFORMED);
         }
         if (addStructureRequestDTO.note().length() > 1000) {
             throw new TraitementException(Error.STRUCTURE_NOTE_EXCEED_LIMIT);
@@ -215,6 +220,18 @@ public class StructureService {
         if (exists.isPresent()) {
             throw new TraitementException(Error.STRUCTURE_NAME_ALREADY_EXISTS);
         }
+    }
+
+    /**
+     * Check if the name is valid
+     * @param name the name
+     * @return boolean true if its valid and false if not
+     */
+    private static boolean isValidName(String name) {
+        String regex = "^[\\p{L}\\d@_-][\\p{L}\\d @_-]+$";
+        var pattern = Pattern.compile(regex);
+        var matcher = pattern.matcher(name);
+        return matcher.matches();
     }
 
 
