@@ -101,6 +101,7 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
       controlChip: controlChip().trim(),
       measureChip: measureChip().trim(),
       installationDate: installationDate(),
+      archived: false,
       x: null,
       y: null
     }]);

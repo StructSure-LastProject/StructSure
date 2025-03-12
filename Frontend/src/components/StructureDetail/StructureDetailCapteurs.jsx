@@ -328,7 +328,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
                                     <div class="flex justify-between rounded-[50px] px-[25px] py-[10px] bg-white">    
                                         <button class="flex gap-x-[15px] items-center overflow-hidden" onClick={() => openSensorPanelHandler(sensor)} >
                                             <div class={`w-[16px] min-w-[16px] h-[16px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
-                                            <p class="subtitle text-left w-full text-[#6A6A6A] truncate">sd {sensor.name}</p>
+                                            <p class="subtitle text-left w-full text-[#6A6A6A] truncate">{sensor.name}</p>
                                         </button>
                                         <Show when={localStorage.getItem("role") === "RESPONSABLE" || localStorage.getItem("role") === "ADMIN" }>
                                             <button onClick={() => toggleArchiveSensor(sensor, false)} class="w-5 h-5 rounded-[50px] flex justify-center items-center">
