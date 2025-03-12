@@ -56,6 +56,7 @@ public enum Error {
     PLAN_IS_ARCHIVED(409, "Le plan à été archivé"),
     STRUCTURE_IS_ARCHIVED(409, "L'ouvrage à été archivé"),
 
+    PLACE_ARCHIVED_SENSOR_UNAUTHORIZED(422, "Positionner un capteur archivé est interdit"),
     SENSOR_NOT_FOUND(404, "Capteur introuvable"),
     SENSOR_CHIP_TAGS_IS_EMPTY(422, "Les champs [controlChip | measureChip] sont obligatoires"),
     SENSOR_NAME_IS_EMPTY(422, "Le champ name est obligatoire"),

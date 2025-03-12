@@ -146,10 +146,12 @@ const SensorCommentSection = ({
  * @param {String} selectedPlanId The selected plan id
  * @param {Object} sensorDetails contains all the information about the clicked sensor
  * @param {Function} closeSensorPanel Function that close the sensor panel
+ * @param {Function} setSensorsDetail Function that sets the sensors in the structure detail state
+ * @param {Function} structureDetails The structure detail
  * @param {Object} filters The filters to apply when get sensors
  * @returns The sensor panel component
  */
-const SensorPanel = ({structureId, sensors, setSensors, setPlanSensors, selectedPlanId, sensorDetails, closeSensorPanel, setTotalItems, filters}) => {
+const SensorPanel = ({structureId, sensors, setSensors, setPlanSensors, selectedPlanId, sensorDetails, closeSensorPanel, setSensorsDetail, structureDetails, setTotalItems, filters}) => {
 
   const [sensorName, setSensorName] = createSignal(sensorDetails.name);
   const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate === null ? "" : sensorDetails.installationDate.split('T')[0]);
@@ -188,6 +190,22 @@ const SensorPanel = ({structureId, sensors, setSensors, setPlanSensors, selected
   const sensorNameValidator = (sensorNameValue) => /^[\w@-][\w @-]+$/.test(sensorNameValue);
 
   /**
+   * Updates the sensor details when a sensor is edited.
+   * 
+   * This function iterates through the `sensors` array from `structureDetails()`,
+   * finds the sensor that matches the currently selected sensor (`sensorDetails`),
+   * and updates its `name` property with the trimmed value of `sensorName()`.
+   *
+  */
+  const updateDataWhenSensorEdited = () => {
+    console.log("Edited: ", structureDetails());
+    setSensorsDetail(structureDetails().sensors.map(sensor =>
+      sensor.controlChip === sensorDetails.controlChip && sensor.measureChip === sensorDetails.measureChip
+      ? { ...sensor, name: sensorName().trim() } : sensor
+    ));
+  }
+
+  /**
    * Handle the submit
    * @returns true or false
    */
@@ -222,6 +240,7 @@ const SensorPanel = ({structureId, sensors, setSensors, setPlanSensors, selected
     await fetchData(navigate, "/api/sensors/edit", requestData);
 
     if (statusCode() === 200) {
+      updateDataWhenSensorEdited();
       setvalidationError("");
       sensorsFetchRequest(structureId, setSensors, setTotalItems, navigate, filters);
       planSensorsFetchRequest(structureId, setPlanSensors, selectedPlanId(), navigate)

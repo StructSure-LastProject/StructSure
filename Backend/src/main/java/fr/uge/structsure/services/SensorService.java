@@ -319,6 +319,9 @@ public class SensorService {
             throw new TraitementException(Error.PLAN_NOT_BELONG_TO_STRUCTURE);
         }
         var sensor = sensorRepository.findByChipsId(request.controlChip(), request.measureChip()).orElseThrow(() -> new TraitementException(Error.SENSOR_NOT_FOUND));
+        if (sensor.isArchived()) {
+            throw new TraitementException(Error.PLACE_ARCHIVED_SENSOR_UNAUTHORIZED);
+        }
         if (plan.getSensors() == null) {
             plan.setSensors(new HashSet<>());
         }

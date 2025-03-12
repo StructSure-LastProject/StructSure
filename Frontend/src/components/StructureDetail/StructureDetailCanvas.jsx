@@ -61,9 +61,9 @@ function StructureDetailCanvas(props) {
     };
 
     const filteredOptions = createMemo(() => {
-        if (!props.localSensors()) return [];
-        return props.localSensors().filter(detailSensor =>
-            detailSensor.x == null && detailSensor.y == null & detailSensor.name?.toLowerCase().includes(inputValue().toLowerCase() || "")
+        if (!props.structureDetails().sensors) return [];
+        return props.structureDetails().sensors.filter(detailSensor =>
+            detailSensor.x == null && detailSensor.y == null && detailSensor.archived === false && detailSensor.name?.toLowerCase().includes(inputValue().toLowerCase() || "")
         );
     });
     

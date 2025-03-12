@@ -125,6 +125,24 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
         document.body.style.overflow = "auto";
     }
 
+    /**
+     * Updates the archived status of a specific sensor.
+     *
+     * This function searches for a sensor in the `sensors` array of `structureDetails()`
+     * that matches the given `sensorDetails` (based on `controlChip` and `measureChip`).
+     * If a match is found, it updates the sensor's `archived` property with `isArchiveValue`.
+     *
+     * @param {Object} sensorDetails - The details of the sensor to be updated.
+     * @param {boolean} isArchiveValue - The new archived state of the sensor (true for archived, false for active).
+     *
+     */
+    const updateDataWhenSensorArchived = (sensorDetails, isArchiveValue) => {
+        console.log("Deleted: ", structureDetails());
+        setSensorsDetail(structureDetails().sensors.map(sensor =>
+            sensor.controlChip === sensorDetails.controlChip && sensor.measureChip === sensorDetails.measureChip
+            ? { ...sensor, archived: isArchiveValue } : sensor
+        ));
+    }
 
     /**
      * Archive a sensor
@@ -148,6 +166,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
         await fetchData(navigate, "/api/sensors/archive", requestData);
 
         if (statusCode() === 200) {
+            updateDataWhenSensorArchived(sensorDetails, isArchiveValue);
             sensorsFetchRequest(structureId, setSensors, setTotalItems, navigate, {
                 orderByColumn: orderByColumn() !== "Tout" ? SORT_VALUES[orderByColumn()] : "STATE",
                 orderType: orderType() ? "ASC" : "DESC",
@@ -310,7 +329,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
                                     <div class="flex justify-between rounded-[50px] px-[25px] py-[10px] bg-white">    
                                         <button class="flex gap-x-[15px] items-center overflow-hidden" onClick={() => openSensorPanelHandler(sensor)} >
                                             <div class={`w-[16px] min-w-[16px] h-[16px] rounded-[50px] border-2 ${getSensorStatusColor(sensor.state)}`}></div>
-                                            <p class="subtitle text-left w-full text-[#6A6A6A] truncate">{sensor.name}</p>
+                                            <p class="subtitle text-left w-full text-[#6A6A6A] truncate">sd {sensor.name}</p>
                                         </button>
                                         <Show when={localStorage.getItem("role") === "RESPONSABLE" || localStorage.getItem("role") === "ADMIN" }>
                                             <button onClick={() => toggleArchiveSensor(sensor, false)} class="w-5 h-5 rounded-[50px] flex justify-center items-center">
@@ -354,6 +373,8 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
                             sensorDetails={clickedSensor()} 
                             closeSensorPanel={closeSensorPanelHandler} 
                             setTotalItems={setTotalItems}
+                            setSensorsDetail={setSensorsDetail}
+                            structureDetails={structureDetails}
                             filters={{
                                 orderByColumn: orderByColumn() !== "Tout" ? SORT_VALUES[orderByColumn()] : "STATE",
                                 orderType: orderType() ? "ASC" : "DESC",
