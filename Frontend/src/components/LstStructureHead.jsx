@@ -75,7 +75,7 @@ function LstStructureHead({setFilterVisible, filterVisible, fetchStructures}) {
             body: requestBody
         };
 
-        const { fetchData, statusCode, data, error } = useFetch();
+        const { fetchData, statusCode, error } = useFetch();
         await fetchData(navigate, url, requestData);
 
         if (statusCode() === 201) {
