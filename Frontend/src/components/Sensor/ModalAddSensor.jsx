@@ -67,9 +67,6 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
    * @returns The new hexa value suggestion
    */
   const hexAddOne = (hexString) => {
-    if (!validateHexInput(hexString)) {
-      return nextChip(); // Return current nextChip if input is invalid
-    }
     const base10Value = hexToBase10(hexString);
     const newBase10Value = base10Value + 1n;
     return addSpaces(base10ToHex(newBase10Value));
@@ -200,16 +197,15 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
    */
   const updateChip = (value) => {
     if (validateHexInput(value)) {
-      const newNextChip = hexAddOne(value.replace(/\s+/g, ''));
-      setNextChip(newNextChip);
-      setControlHint(newNextChip);
-      setMeasureHint(newNextChip);
+      setNextChip(hexAddOne(value.replace(/\s+/g, '')));
+      setControlHint(nextChip())
+      setMeasureHint(nextChip())
 
       const controlInput = document.getElementById("addSensorControl");
       const measureInput = document.getElementById("addSensorMeasure");
 
-      if (controlInput) controlInput.placeholder = newNextChip;
-      if (measureInput) measureInput.placeholder = newNextChip;
+      if (controlInput) controlInput.placeholder = nextChip();
+      if (measureInput) measureInput.placeholder = nextChip();
     }
     return value;
   }

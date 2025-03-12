@@ -13,6 +13,7 @@ object SensorValidator {
 
     private fun validateName(name: String): String? = when {
         name.isBlank() -> "Le nom est obligatoire"
+        !name.matches(Regex("^[\\w@-][\\w @-]+\$")) -> "Le nom doit contenir uniquement des lettres, des chiffres, des espaces, des underscores et des @"
         name.length > MAX_NAME_LENGTH -> "Le nom doit contenir au maximum $MAX_NAME_LENGTH caractères"
         else -> null
     }
@@ -24,7 +25,7 @@ object SensorValidator {
             raw.isBlank() -> "La puce est obligatoire"
             raw.length < MIN_CHIP_LENGTH -> "La puce doit contenir au moins $MIN_CHIP_LENGTH caractère"
             raw.length > MAX_CHIP_LENGTH -> "La puce doit contenir au maximum $MAX_CHIP_LENGTH caractères"
-            !raw.matches(Regex("^[0-9A-F]+$")) -> "La puce doit contenir uniquement des chiffres et lettre de A à F"
+            !raw.matches(Regex("^[0-9A-Fa-f]+\$")) -> "La puce doit contenir uniquement des chiffres et lettre de A à F"
             otherRaw != null && raw == otherRaw -> "Les puces doivent être différentes"
             db.sensorDao().findSensor(raw) != null -> "Un capteur avec cette puces existe déjà"
             else -> null
