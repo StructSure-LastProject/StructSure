@@ -16,8 +16,8 @@ public class SensorId implements Serializable {
     }
 
     public SensorId(String controlChip, String measureChip) {
-        this.controlChip = Objects.requireNonNull(controlChip);
-        this.measureChip = Objects.requireNonNull(measureChip);
+        this.controlChip = Objects.requireNonNull(controlChip.replace(" ", "").toUpperCase());
+        this.measureChip = Objects.requireNonNull(measureChip.replace(" ", "").toUpperCase());
     }
 
     /**

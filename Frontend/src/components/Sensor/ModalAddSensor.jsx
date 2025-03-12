@@ -34,8 +34,13 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
    * @param {String} hexString 
    * @returns The base 10 value
    */
-  const hexToBase10 = (hexString) => BigInt('0x' + hexString);
-
+  const hexToBase10 = (hexString) => {
+    const cleanHex = hexString.replace(/\s+/g, '');
+    if (!/^[0-9A-Fa-f]+$/.test(cleanHex)) {
+      return BigInt(0); // Return 0 for invalid input
+    }
+    return BigInt('0x' + cleanHex);
+  }
 
   /**
    * Helper function to insert a space every 4 character in tag chips
@@ -62,6 +67,9 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
    * @returns The new hexa value suggestion
    */
   const hexAddOne = (hexString) => {
+    if (!validateHexInput(hexString)) {
+      return nextChip(); // Return current nextChip if input is invalid
+    }
     const base10Value = hexToBase10(hexString);
     const newBase10Value = base10Value + 1n;
     return addSpaces(base10ToHex(newBase10Value));
@@ -74,7 +82,7 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
    */
   const validateHexInput = (input) => {
     const cleanInput = input.replace(/\s+/g, '');
-    return /^[0-9A-F]+$/.test(cleanInput);
+    return /^[0-9A-Fa-f]+$/.test(cleanInput);
   };
 
   /**
@@ -191,11 +199,18 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
    * @returns value
    */
   const updateChip = (value) => {
-    setNextChip(hexAddOne(value.replace(/\s+/g, '')));
-    setControlHint(nextChip())
-    setMeasureHint(nextChip())
-    document.getElementById("addSensorControl").placeholder = nextChip();
-    document.getElementById("addSensorMeasure").placeholder = nextChip();
+    if (validateHexInput(value)) {
+      const newNextChip = hexAddOne(value.replace(/\s+/g, ''));
+      setNextChip(newNextChip);
+      setControlHint(newNextChip);
+      setMeasureHint(newNextChip);
+
+      const controlInput = document.getElementById("addSensorControl");
+      const measureInput = document.getElementById("addSensorMeasure");
+
+      if (controlInput) controlInput.placeholder = newNextChip;
+      if (measureInput) measureInput.placeholder = newNextChip;
+    }
     return value;
   }
 

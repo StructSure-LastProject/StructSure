@@ -253,7 +253,7 @@ const SensorPanel = ({structureId, sensors, setSensors, setPlanSensors, selected
           validationError={validationError}
         />
         <Show when={validationError() !== ""}>
-          <p class="text-red font-poppins HeadLineMedium">A{ validationError().error }</p>
+          <p class="text-red font-poppins HeadLineMedium">{validationError()}</p>
         </Show>
         <div class="overflow-auto overflow-x-hidden flex flex-col gap-[25px] rounded-[18px]">
           <div class="lg:flex lg:flex-row lg:gap-[25px] flex flex-col gap-[25px]">
