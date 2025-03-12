@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -113,14 +111,7 @@ private fun AlertDetails(planViewModel: PlanViewModel, state: Boolean, sensor: S
             "Dernier état :", SensorState.getStateDisplayName(sensor?.state ?: SensorState.UNKNOWN.displayName))
         val displaySensor = sensor?.copy(_state = (if(state) SensorState.NOK else SensorState.DEFECTIVE).name)
 
-        Box(
-            Modifier.clip(RoundedCornerShape(20.dp))
-                .background(White.copy(alpha = .5f))
-                .padding(5.dp)
-                .clip(RoundedCornerShape(15.dp))
-        ) {
-            PlanForSensor(planViewModel, displaySensor, White)
-        }
+        PlanForSensor(planViewModel, displaySensor, White)
 
         // Sensor note
         sensor?.note?.let {

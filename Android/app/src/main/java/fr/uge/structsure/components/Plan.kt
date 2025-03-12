@@ -9,6 +9,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
@@ -65,7 +67,14 @@ fun PlanForSensor(
             val section = getPlanSectionName(it)
             if (section.isNotBlank()) Text(section, color = color, style = typography.headlineMedium)
         }
-        Plan(planImage, { point?.let { listOf(it) } ?: emptyList()})
+        Box(
+            Modifier.clip(RoundedCornerShape(20.dp))
+                .background(White.copy(alpha = .5f))
+                .padding(5.dp)
+                .clip(RoundedCornerShape(15.dp))
+        ) {
+            Plan(planImage, { point?.let { listOf(it) } ?: emptyList() })
+        }
     }
 }
 

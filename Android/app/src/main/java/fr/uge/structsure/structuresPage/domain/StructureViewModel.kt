@@ -135,7 +135,6 @@ class StructureViewModel(private val structureRepository: StructureRepository,
      * @param scanId the id of the scan
      */
     suspend fun tryUploadScan(structureId: Long, scanId: Long) {
-        setStructureState(structureId, StructureStates.UPLOADING)
 
         val results = scanRepository.getResultsByScan(scanId)
 
@@ -144,8 +143,8 @@ class StructureViewModel(private val structureRepository: StructureRepository,
             .onSuccess {
                 Log.i(TAG, "Scan #${scanId} successfully uploaded, removing data...")
                 delete(structureId)
-                setStructureState(structureId, StructureStates.ONLINE)
                 getAllStructures()
+                setStructureState(structureId, StructureStates.ONLINE)
             }.onFailure { e ->
                 Log.w(TAG, "Failed to upload results of scan #${scanId} (structure ${structureId}): ${e.message}")
                 setStructureState(structureId, StructureStates.UPLOADING)
