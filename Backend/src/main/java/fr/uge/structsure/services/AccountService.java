@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 
 /**
@@ -297,69 +298,89 @@ public class AccountService {
 
     /**
      * Service that update the user's structure access
+     * @param request to get the author of this update
      * @param login The user login
      * @param userStructureAccessRequestDTO The DTO that represent the request
      * @return The Response DTO
      * @throws TraitementException thrown custom exception
      */
     public UpdateUserStructureAccessResponseDTO updateUserStructureAccess(
+        HttpServletRequest request,
         String login,
         UserStructureAccessRequestDTO userStructureAccessRequestDTO
-    ) throws TraitementException{
+    ) throws TraitementException {
         Objects.requireNonNull(login);
         Objects.requireNonNull(userStructureAccessRequestDTO);
         var userAccount = checkIfAccountExist(login);
 
-        if (userStructureAccessRequestDTO.access().isEmpty()){
-            return UpdateUserStructureAccessResponseDTO.success(login, List.of());
+        if (userStructureAccessRequestDTO.access().isEmpty()) {
+            return new UpdateUserStructureAccessResponseDTO(login, List.of());
         }
 
-        var allowedSet = userAccount.getAllowedStructures();
-        var unChangedAccess = new ArrayList<Long>();
-        var changedAccess = new ArrayList<Long>();
+        var allowedIds = userAccount.getAllowedStructures().stream()
+            .map(Structure::getId).collect(Collectors.toSet());
+        var changedAccess = new ArrayList<StructurePermission>();
 
-        for (var structurePermission : userStructureAccessRequestDTO.access()){
-            updateProcessStructureAccess(structurePermission, allowedSet, unChangedAccess, userAccount, changedAccess);
-
+        /* Add updated access */
+        var addedAccess = userStructureAccessRequestDTO.access().stream()
+            .filter(StructurePermission::hasAccess)
+            .map(StructurePermission::structureId)
+            .filter(s -> !allowedIds.contains(s))
+            .toList();
+        for (var structure : addedAccess) {
+            authorizeStructureForAccount(structure, userAccount, changedAccess);
         }
+
+        /* Remove updated access */
+        userStructureAccessRequestDTO.access().stream()
+            .filter(access -> !access.hasAccess())
+            .map(StructurePermission::structureId)
+            .forEach(structure -> revokeStructureForAccount(structure, userAccount, changedAccess));
+
         accountRepository.save(userAccount);
-        if (!unChangedAccess.isEmpty()){
-            return UpdateUserStructureAccessResponseDTO.error("Ouvrage introuvable", Collections.unmodifiableList(changedAccess), Collections.unmodifiableList(unChangedAccess));
-        }
-        return UpdateUserStructureAccessResponseDTO.success(login, Collections.unmodifiableList(changedAccess));
+        appLogs.editAccountAccess(request, userAccount, changedAccess);
+        var updatedAccess = changedAccess.stream()
+            .map(StructurePermission::structureId).toList();
+        return new UpdateUserStructureAccessResponseDTO(login, updatedAccess);
     }
 
     /**
-     * Update process handler method
-     * @param structurePermission The structure permission
-     * @param allowedSet The allowed structure set
-     * @param unChangedAccess The unchanged structure access list of unkown structure
-     * @param userAccount The user account
-     * @param changedAccess The changed access list for the given user
+     * Allow the given account to access to the structure having the
+     * given ID.
+     * @param structureId the ID of the structure be allowed
+     * @param user the user to allow the structure to
+     * @param changedAccess list to put the ID of the structure if
+     *     the authorization was not already present.
+     * @throws TraitementException if the structureID does not exist
      */
-    private void updateProcessStructureAccess(StructurePermission structurePermission, Set<Structure> allowedSet, ArrayList<Long> unChangedAccess, Account userAccount, ArrayList<Long> changedAccess) {
-        var removedStructure = allowedSet.stream().filter(structure -> structure.getId() == structurePermission.structureId()).findFirst();
-        Structure structure;
-        if (removedStructure.isPresent()){
-            structure = removedStructure.get();
-        } else {
-            var structureOp = structureRepository.findById(structurePermission.structureId());
-            if (structureOp.isEmpty()) {
-                unChangedAccess.add(structurePermission.structureId());
-                return;
-            }
-            structure = structureOp.get();
-        }
-        if (structurePermission.hasAccess()){
-            structure.add(userAccount);
-            userAccount.add(structure);
-            changedAccess.add(structure.getId());
-        }
-        else {
-            structure.remove(userAccount);
-            userAccount.remove(structure);
-            changedAccess.add(structure.getId());
-        }
+    private void authorizeStructureForAccount(
+        long structureId, Account user, ArrayList<StructurePermission> changedAccess
+    ) throws TraitementException {
+        var structure = structureRepository.findById(structureId)
+            .orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        structure.add(user);
+        user.add(structure);
+        changedAccess.add(new StructurePermission(structureId, true));
+    }
+
+    /**
+     * Revoke the authorization from the given account to access to
+     * the structure having the given ID.
+     * @param structureId the ID of the structure be revoked
+     * @param user the user to revoke the structure from
+     * @param changedAccess list to put the ID of the structure if
+     *     the authorization was not already revoked.
+     */
+    private void revokeStructureForAccount(long structureId, Account user, ArrayList<StructurePermission> changedAccess) {
+        var structure = user.getAllowedStructures().stream()
+            .filter(s -> s.getId() == structureId)
+            .findAny()
+            .orElse(null);
+
+        if (structure == null) return; // Already not authorized!
+        structure.remove(user);
+        user.remove(structure);
+        changedAccess.add(new StructurePermission(structureId, false));
     }
 
 
