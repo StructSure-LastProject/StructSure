@@ -78,7 +78,7 @@ function StructureDetailCanvas(props) {
                 x: popupX(),
                 y: popupY()
             };
-            props.setLocalSensors(props.localSensors().map(sensor =>
+            props.setSensorsDetail(props.structureDetails().sensors.map(sensor =>
                 sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip 
                 ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
             ));
@@ -110,6 +110,10 @@ function StructureDetailCanvas(props) {
             }
             );
             props.setLocalSensors(newDetailSensors);
+            props.setSensorsDetail(props.structureDetails().sensors.map(sensor =>
+                sensor.controlChip === clickExistingPoint().controlChip && sensor.measureChip === clickExistingPoint().measureChip 
+                ? { ...sensor, x: null, y: null } : sensor
+            ));
             setClickExistingPoint(null);
             setInputValue("");
             setIsPopupVisible(false);
