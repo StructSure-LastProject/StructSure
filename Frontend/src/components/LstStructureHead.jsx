@@ -12,16 +12,6 @@ function LstStructureHead({setFilterVisible, filterVisible, fetchStructures}) {
 
     const openModal = () => setModalVisible(true);
 
-    /**
-     * Handles close modal
-     */
-    const closeModal = () => {
-        setModalVisible(false);
-        setErrorFronted("");
-        setName("");
-        setNote("");
-    };
-
     const [errorFronted, setErrorFronted] = createSignal("");
 
     const [name, setName] = createSignal("");
@@ -31,6 +21,16 @@ function LstStructureHead({setFilterVisible, filterVisible, fetchStructures}) {
     const navigate = useNavigate();
 
     let modalRef;
+
+    /**
+     * Handles close modal
+     */
+    const closeModal = () => {
+        setModalVisible(false);
+        setErrorFronted("");
+        setName("");
+        setNote("");
+    };
 
     /**
      * Handles the close of the modal when click outside
