@@ -141,6 +141,23 @@ public class Sensor {
         this.structure = structure;
     }
 
+    /**
+     * The base constructor for the Sensor entity with an installation date
+     * @param controlChip the control chip id
+     * @param measureChip the measure chip id
+     * @param name the name of the sensor
+     * @param installationDate the installation date
+     * @param note the note of the sensor
+     * @param structure the structure
+     */
+    public Sensor(String controlChip, String measureChip, String name, LocalDate installationDate, String note, Structure structure) {
+        this.sensorId = new SensorId(controlChip, measureChip);
+        this.name = name;
+        this.installationDate = installationDate;
+        this.note = note;
+        this.structure = structure;
+    }
+
 
     @Override
     public String toString() {

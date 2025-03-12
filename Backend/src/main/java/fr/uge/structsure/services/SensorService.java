@@ -169,9 +169,11 @@ public class SensorService {
         if (sensorRepository.nameAlreadyExists(sensorDto.name())) {
             throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
         }
+        var formatter = DateTimeFormatter.ISO_LOCAL_DATE;
         var sensor = new Sensor(sensorDto.controlChip(),
             sensorDto.measureChip(),
             sensorDto.name(),
+            LocalDate.parse(sensorDto.installationDate().orElse(""), formatter),
             sensorDto.note() == null ? "": sensorDto.note(),
                 structure);
         var saved = sensorRepository.save(sensor);

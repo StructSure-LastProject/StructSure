@@ -20,6 +20,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -274,7 +275,7 @@ public class ScanService {
      */
     private boolean isValidNewSensor(AndroidSensorEditDTO edit) {
         try {
-            sensorService.addPlanAsserts(new BaseSensorDTO(-1L, edit.controlChip(), edit.measureChip(), edit.name(), edit.note()));
+            sensorService.addPlanAsserts(new BaseSensorDTO(-1L, edit.controlChip(), edit.measureChip(), edit.name(), Optional.empty(), edit.note()));
             if (sensorRepository.chipTagAlreadyExists(edit.controlChip())) {
                 LOGGER.warn("New sensor from scan will be ignored because of already used chips");
                 return false;
