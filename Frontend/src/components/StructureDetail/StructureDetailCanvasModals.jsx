@@ -1,20 +1,21 @@
 import { createSignal, Show } from "solid-js";
 import { Check, ChevronDown, Trash2 } from 'lucide-solid';
+import { openSensorPanelHandler } from './StructureDetailCapteurs';
 
 /**
  * Popup of the canvas displayed when a point is clicked
  * @param {Function} top offset from the top to place the popup in the canvas
  * @param {Function} left offset from the left to place the popup in the canvas
- * @param {Function} name of the sensor
+ * @param {Function} sensor the data of the sensor
  * @param {Function} onClick action to run when the delete button is clicked
  * @returns the popup
  */
-export function PointTooltip({ top, left, name, onClick }) {
+export function PointTooltip({ top, left, sensor, onClick }) {
     return (
         <div class="absolute z-10 w-fit rounded-r-[28px] rounded-bl-[25px] flex flex-col gap-5 bg-white p-[8px] shadow-[0_0_100px_0_rgba(151,151,167,0.5)]"
             style={`top: ${top()}px; left: ${left()}px`}>
             <div class="w-fit flex gap-[25px] items-center pl-[10px]">
-                <h1 class="subtitle">{name()}</h1>
+                <button class="subtitle" onClick={() => openSensorPanelHandler(sensor)}>{sensor().name}</button>
                 <button class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center" onClick={onClick}>
                     <Trash2 color="red" stroke-width="2.5" width="20px" height="20px"/>
                 </button>

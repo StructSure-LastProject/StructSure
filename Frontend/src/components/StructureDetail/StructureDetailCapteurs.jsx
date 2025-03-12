@@ -11,10 +11,23 @@ import useFetch from '../../hooks/useFetch.js';
 import Papa from "papaparse";
 import Alert from '../Alert.jsx';
 
+
+const [clickedSensor, setClickedSensor] = createSignal({});
+const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
+/**
+ * Open the sensor panel
+ * @param {Object} sensor Sensor object that contains all the details about the clicked sensor
+ */
+export const openSensorPanelHandler = (sensor) => {
+    setClickedSensor(sensor);
+    setOpenSensorPanel(true);
+    document.body.style.overflow = 'hidden';
+}
+
 /**
  * Show the sensors part of the structure detail page
  * @param {String} structureId The structure id
- * @param {Function} setSensors The set sonsors function
+ * @param {Function} setSensors The set sensors function
  * @param {function} selectedScan The selected scan id
  * @param {String} selectedPlanId The selected plan id
  * @param {Array} sensors The sensors array
@@ -26,8 +39,6 @@ import Alert from '../Alert.jsx';
  */
 function StructureDetailCapteurs({structureId, setSensors, selectedScan, selectedPlanId, sensors, totalItems, setTotalItems, setPlanSensors, setSensorsDetail, structureDetails}) {
     const [searchParams, setSearchParams] = useSearchParams();
-    const [openSensorPanel, setOpenSensorPanel] = createSignal(false);
-    const [clickedSensor, setClickedSensor] = createSignal({});
 
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
     const [nextChip, setNextChip] = createSignal("");
@@ -86,16 +97,6 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
     const navigate = useNavigate();
     const { fetchData, statusCode } = useFetch();
     
-
-    /**
-     * Open the sensor panel
-     * @param {Object} sensor Sensor object that contains all the details about the clicked sensor
-     */
-    const openSensorPanelHandler = (sensor) => {
-        setClickedSensor(sensor);
-        setOpenSensorPanel(true);
-        document.body.style.overflow = 'hidden';
-    }
 
     /**
      * Opens the add sensor modal
@@ -348,6 +349,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
                             structureId={structureId} 
                             sensors={sensors} 
                             setSensors={setSensors} 
+                            setPlanSensors={setPlanSensors}
                             selectedPlanId={selectedPlanId} 
                             sensorDetails={clickedSensor()} 
                             closeSensorPanel={closeSensorPanelHandler} 

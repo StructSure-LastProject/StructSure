@@ -5,7 +5,7 @@ import SensorFieldComponent from './SensorFieldComponent';
 import { loginValidator } from '../../hooks/vaildateUserAccountForm';
 import Canvas from './Canvas';
 import useFetch from '../../hooks/useFetch';
-import {sensorsFetchRequest} from "../StructureDetail/StructureDetailBody"
+import { sensorsFetchRequest, planSensorsFetchRequest } from "../StructureDetail/StructureDetailBody"
 import plan_not_found from '/src/assets/plan_not_found.png';
 import { useNavigate } from '@solidjs/router';
 
@@ -141,14 +141,15 @@ const SensorCommentSection = ({
  * Shows the sensor panel with extra details of the clicked sensor
  * @param {String} structureId The structure id
  * @param {Array} sensors The sensors array
- * @param {Function} setSensors The set sonsors function
+ * @param {Function} setSensors The set sensors function
+ * @param {Function} setPlanSensors The set sensors of the plan
  * @param {String} selectedPlanId The selected plan id
- * @param {Object} sensorDetails contains all the information about the clickded sensor
+ * @param {Object} sensorDetails contains all the information about the clicked sensor
  * @param {Function} closeSensorPanel Function that close the sensor panel
  * @param {Object} filters The filters to apply when get sensors
  * @returns The sensor panel component
  */
-const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDetails, closeSensorPanel, setTotalItems, filters}) => {
+const SensorPanel = ({structureId, sensors, setSensors, setPlanSensors, selectedPlanId, sensorDetails, closeSensorPanel, setTotalItems, filters}) => {
 
   const [sensorName, setSensorName] = createSignal(sensorDetails.name);
   const [installationDate, setInstallationDate] = createSignal(sensorDetails.installationDate === null ? "" : sensorDetails.installationDate.split('T')[0]);
@@ -223,6 +224,7 @@ const SensorPanel = ({structureId, sensors, setSensors, selectedPlanId, sensorDe
     if (statusCode() === 200) {
       setvalidationError("");
       sensorsFetchRequest(structureId, setSensors, setTotalItems, navigate, filters);
+      planSensorsFetchRequest(structureId, setPlanSensors, selectedPlanId(), navigate)
       closeSensorPanel();
       return true;
     }    
