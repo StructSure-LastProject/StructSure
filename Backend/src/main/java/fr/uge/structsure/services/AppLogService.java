@@ -5,6 +5,7 @@ import fr.uge.structsure.dto.logs.LogsRequestDTO;
 import fr.uge.structsure.dto.logs.LogsResponseDTO;
 import fr.uge.structsure.dto.structure.AddStructureRequestDTO;
 import fr.uge.structsure.dto.userAccount.UserUpdateRequestDTO;
+import fr.uge.structsure.dto.userAccount.accountStructure.StructurePermission;
 import fr.uge.structsure.entities.*;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Account service class
@@ -137,6 +139,21 @@ public class AppLogService {
     }
 
     /**
+     * Adds a log entry for an existing account access edition.
+     * @param request to extract the author of this action
+     * @param account the account that is edited
+     * @param edits the edited structures and their new state
+     */
+    public void editAccountAccess(HttpServletRequest request, Account account, List<StructurePermission> edits) {
+        var author = currentAccount(request);
+        var diff = edits.stream()
+            .map(e -> "#" + e.structureId() + " " + (e.hasAccess() ? "ajouté" : "retiré"))
+            .collect(Collectors.joining(", "));
+        save(author, String.format("Autorisations de compte édité: %s (#%d) -> %s",
+            account.getLogin(), account.getId(), diff));
+    }
+
+    /**
      * Adds a log entry for an existing account deletion.
      * @param request to extract the author of this action
      * @param login the login of the account that will be deleted
@@ -226,7 +243,6 @@ public class AppLogService {
      * @param plan the plan that got archived
      */
     public void archivePlan(HttpServletRequest request, Plan plan) {
-        // TODO connect to the service method once implemented
         var author = currentAccount(request);
         save(author, String.format("Plan archivé: %s", plan));
     }
@@ -237,7 +253,6 @@ public class AppLogService {
      * @param plan the plan that got restored
      */
     public void restorePlan(HttpServletRequest request, Plan plan) {
-        // TODO connect to the service method once implemented
         var author = currentAccount(request);
         save(author, String.format("Plan restoré: %s", plan));
     }

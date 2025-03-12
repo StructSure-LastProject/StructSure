@@ -155,13 +155,14 @@ public class UserAccountController {
     @RequiresRole(Role.ADMIN)
     @PostMapping("/accounts/{login}/access")
     public ResponseEntity<?> updateUserStructureAccess(
+        HttpServletRequest request,
         @PathVariable String login,
         @RequestBody UserStructureAccessRequestDTO userStructureAccessRequestDTO
     ) {
         Objects.requireNonNull(userStructureAccessRequestDTO);
         try {
             return ResponseEntity.ok().body(accountService.updateUserStructureAccess(
-                login, userStructureAccessRequestDTO));
+                request, login, userStructureAccessRequestDTO));
         } catch (TraitementException e){
             return e.toResponseEntity("Account authorizations update failed: {}");
         }

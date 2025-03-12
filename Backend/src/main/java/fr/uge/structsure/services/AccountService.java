@@ -5,10 +5,11 @@ import fr.uge.structsure.dto.auth.*;
 import fr.uge.structsure.dto.userAccount.*;
 import fr.uge.structsure.dto.userAccount.accountStructure.GetStructureListForUserAccountsResponseDTO;
 import fr.uge.structsure.dto.userAccount.accountStructure.StructureAccessDetails;
-import fr.uge.structsure.dto.userAccount.accountStructure.UpdateUserStructureAccessResponseDTO;
 import fr.uge.structsure.dto.userAccount.accountStructure.StructurePermission;
+import fr.uge.structsure.dto.userAccount.accountStructure.UpdateUserStructureAccessResponseDTO;
 import fr.uge.structsure.entities.Account;
 import fr.uge.structsure.entities.Role;
+import fr.uge.structsure.entities.Structure;
 import fr.uge.structsure.exceptions.Error;
 import fr.uge.structsure.exceptions.TraitementException;
 import fr.uge.structsure.repositories.AccountRepository;
@@ -25,8 +26,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-import static fr.uge.structsure.StructSureBackendApplication.SUPER_ADMIN_LOGIN;
 
 /**
  * Account service class
@@ -35,7 +36,6 @@ import static fr.uge.structsure.StructSureBackendApplication.SUPER_ADMIN_LOGIN;
 public class AccountService {
     private final AccountRepository accountRepository;
     private final AuthenticationManager authenticationManager;
-    private final AccountStructureService accountStructureService;
     private final StructureRepository structureRepository;
     private final JwtUtils jwtUtils;
     private final AuthValidationService authValidationService;
@@ -44,7 +44,6 @@ public class AccountService {
     /**
      * Constructor
      * @param accountRepository Account repository to perform operations with the database
-     * @param accountStructureService The account structure service
      * @param structureRepository The structure repository
      * @param authenticationManager Authentication manager for the authentication
      * @param jwtUtils Jwt utils to perform operations with JWT token
@@ -52,12 +51,11 @@ public class AccountService {
      */
     @Autowired
     public AccountService(
-        AccountRepository accountRepository, AccountStructureService accountStructureService,
+        AccountRepository accountRepository,
         StructureRepository structureRepository, AuthenticationManager authenticationManager,
         JwtUtils jwtUtils, AuthValidationService authValidationService, AppLogService appLogs
     ) {
         this.accountRepository = Objects.requireNonNull(accountRepository);
-        this.accountStructureService = accountStructureService;
         this.structureRepository = structureRepository;
         this.authenticationManager = Objects.requireNonNull(authenticationManager);
         this.jwtUtils = Objects.requireNonNull(jwtUtils);
@@ -296,98 +294,93 @@ public class AccountService {
         return userAccount;
     }
 
-    /**
-     * Processes a structure permission and updates the access lists accordingly.
-     * <p>
-     * This method checks whether the structure exists in the repository. If it does not exist, the structure ID
-     * is added to the list of unchanged access. If the structure exists, the method checks if the user should have access
-     * or not, and then either assigns or removes the access based on that.
-     * </p>
-     *
-     * @param structurePermission The structure permission to process.
-     * @param login The login of the user whose access is being updated.
-     * @param unChangedAccess The list to collect structure IDs that couldn't be found in the repository.
-     * @param changedAccess The list to collect structure IDs whose access has been changed.
-     * @throws TraitementException If any error occurs during processing, such as issues with access assignment or removal.
-     */
-    private void processStructurePermission(
-            StructurePermission structurePermission,
-            String login,
-            List<Long> unChangedAccess,
-            List<Long> changedAccess
-    ) throws TraitementException {
-        if (!structureRepository.existsById(structurePermission.structureId())) {
-            unChangedAccess.add(structurePermission.structureId());
-        } else {
-            if (structurePermission.hasAccess()) {
-                assignAccessIfNeeded(login, structurePermission.structureId());
-            } else {
-                removeAccessIfNeeded(login, structurePermission.structureId());
-            }
-            changedAccess.add(structurePermission.structureId());
-        }
-    }
 
-
-    /**
-     * Assigns access to the given structure for the user if they do not already have access.
-     * <p>
-     * This method checks if the account already has access to the specified structure. If not,
-     * it assigns the account to the structure.
-     * </p>
-     *
-     * @param login The login of the user to assign access to.
-     * @param structureId The ID of the structure to assign access to.
-     * @throws TraitementException If any error occurs during the assignment process, such as a database issue.
-     */
-    private void assignAccessIfNeeded(String login, Long structureId) throws TraitementException {
-        if (!accountStructureService.isExist(login, structureId)) {
-            accountStructureService.assignAccountToStructure(login, structureId);
-        }
-    }
-
-    /**
-     * Removes access to the given structure for the user if they have access.
-     * <p>
-     * This method removes the association between the user and the specified structure,
-     * effectively revoking the user's access to that structure.
-     * </p>
-     *
-     * @param login The login of the user to remove access from.
-     * @param structureId The ID of the structure to remove access from.
-     * @throws TraitementException If any error occurs during the removal process, such as a database issue.
-     */
-    private void removeAccessIfNeeded(String login, Long structureId) throws TraitementException {
-        accountStructureService.removeAccountToStructure(login, structureId);
-    }
 
     /**
      * Service that update the user's structure access
+     * @param request to get the author of this update
+     * @param login The user login
      * @param userStructureAccessRequestDTO The DTO that represent the request
      * @return The Response DTO
      * @throws TraitementException thrown custom exception
      */
     public UpdateUserStructureAccessResponseDTO updateUserStructureAccess(
+        HttpServletRequest request,
         String login,
         UserStructureAccessRequestDTO userStructureAccessRequestDTO
-    ) throws TraitementException{
+    ) throws TraitementException {
         Objects.requireNonNull(login);
         Objects.requireNonNull(userStructureAccessRequestDTO);
-        checkIfAccountExist(login);
+        var userAccount = checkIfAccountExist(login);
 
-        if (userStructureAccessRequestDTO.access().isEmpty()){
-            return UpdateUserStructureAccessResponseDTO.success(login, List.of());
+        if (userStructureAccessRequestDTO.access().isEmpty()) {
+            return new UpdateUserStructureAccessResponseDTO(login, List.of());
         }
 
-        var unChangedAccess = new ArrayList<Long>();
-        var changedAccess = new ArrayList<Long>();
-        for (var structurePermission : userStructureAccessRequestDTO.access()){
-            processStructurePermission(structurePermission, login, unChangedAccess, changedAccess);
+        var allowedIds = userAccount.getAllowedStructures().stream()
+            .map(Structure::getId).collect(Collectors.toSet());
+        var changedAccess = new ArrayList<StructurePermission>();
+
+        /* Add updated access */
+        var addedAccess = userStructureAccessRequestDTO.access().stream()
+            .filter(StructurePermission::hasAccess)
+            .map(StructurePermission::structureId)
+            .filter(s -> !allowedIds.contains(s))
+            .toList();
+        for (var structure : addedAccess) {
+            authorizeStructureForAccount(structure, userAccount, changedAccess);
         }
-        if (!unChangedAccess.isEmpty()){
-            return UpdateUserStructureAccessResponseDTO.error("Ouvrage introuvable", Collections.unmodifiableList(changedAccess), Collections.unmodifiableList(unChangedAccess));
-        }
-        return UpdateUserStructureAccessResponseDTO.success(login, Collections.unmodifiableList(changedAccess));
+
+        /* Remove updated access */
+        userStructureAccessRequestDTO.access().stream()
+            .filter(access -> !access.hasAccess())
+            .map(StructurePermission::structureId)
+            .forEach(structure -> revokeStructureForAccount(structure, userAccount, changedAccess));
+
+        accountRepository.save(userAccount);
+        appLogs.editAccountAccess(request, userAccount, changedAccess);
+        var updatedAccess = changedAccess.stream()
+            .map(StructurePermission::structureId).toList();
+        return new UpdateUserStructureAccessResponseDTO(login, updatedAccess);
+    }
+
+    /**
+     * Allow the given account to access to the structure having the
+     * given ID.
+     * @param structureId the ID of the structure be allowed
+     * @param user the user to allow the structure to
+     * @param changedAccess list to put the ID of the structure if
+     *     the authorization was not already present.
+     * @throws TraitementException if the structureID does not exist
+     */
+    private void authorizeStructureForAccount(
+        long structureId, Account user, ArrayList<StructurePermission> changedAccess
+    ) throws TraitementException {
+        var structure = structureRepository.findById(structureId)
+            .orElseThrow(() -> new TraitementException(Error.STRUCTURE_ID_NOT_FOUND));
+        structure.add(user);
+        user.add(structure);
+        changedAccess.add(new StructurePermission(structureId, true));
+    }
+
+    /**
+     * Revoke the authorization from the given account to access to
+     * the structure having the given ID.
+     * @param structureId the ID of the structure be revoked
+     * @param user the user to revoke the structure from
+     * @param changedAccess list to put the ID of the structure if
+     *     the authorization was not already revoked.
+     */
+    private void revokeStructureForAccount(long structureId, Account user, ArrayList<StructurePermission> changedAccess) {
+        var structure = user.getAllowedStructures().stream()
+            .filter(s -> s.getId() == structureId)
+            .findAny()
+            .orElse(null);
+
+        if (structure == null) return; // Already not authorized!
+        structure.remove(user);
+        user.remove(structure);
+        changedAccess.add(new StructurePermission(structureId, false));
     }
 
 
@@ -442,7 +435,6 @@ public class AccountService {
 
     /**
      * Changes the password of a user.
-     *
      * This method validates the user's current password, ensures the new password is different,
      * and updates the stored password securely. It also performs validation on the new password.
      *
