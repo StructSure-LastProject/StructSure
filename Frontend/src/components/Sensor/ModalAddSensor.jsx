@@ -36,7 +36,6 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
    */
   const hexToBase10 = (hexString) => BigInt('0x' + hexString);
 
-
   /**
    * Helper function to insert a space every 4 character in tag chips
    * @param {String} inputString 
@@ -74,7 +73,7 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
    */
   const validateHexInput = (input) => {
     const cleanInput = input.replace(/\s+/g, '');
-    return /^[0-9A-F]+$/.test(cleanInput);
+    return /^[0-9A-Fa-f]+$/.test(cleanInput);
   };
 
   /**
@@ -191,11 +190,13 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
    * @returns value
    */
   const updateChip = (value) => {
-    setNextChip(hexAddOne(value.replace(/\s+/g, '')));
-    setControlHint(nextChip())
-    setMeasureHint(nextChip())
-    document.getElementById("addSensorControl").placeholder = nextChip();
-    document.getElementById("addSensorMeasure").placeholder = nextChip();
+    if (validateHexInput(value)) {
+      setNextChip(hexAddOne(value.replace(/\s+/g, '')));
+      setControlHint(nextChip())
+      setMeasureHint(nextChip())
+      document.getElementById("addSensorControl").placeholder = nextChip();
+      document.getElementById("addSensorMeasure").placeholder = nextChip();
+    }
     return value;
   }
 
