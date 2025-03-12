@@ -58,24 +58,6 @@ function LstStructureHead({setFilterVisible, filterVisible, fetchStructures}) {
     };
 
     /**
-     * Handles the form submit
-     * @param {Event} e The event of form submit
-     */
-    const handleFormSubmit = (e) => {
-        e.preventDefault();
-        const regex = /^[\p{L}\d@_-][\p{L}\d @_-]+$/u;
-        if (name().length < 1 || name().length > 64) {
-            setErrorFronted("Le nom de l'ouvrage doit comporter entre 1 et 64 caractères");
-        } else if (!regex.test(name())) {
-            setErrorFronted("Le nom doit contenir uniquement des lettres, des chiffres, des espaces, des underscores et des @");
-        } else if (note().length > 1000) {
-            setErrorFronted("La note d'un ouvrage ne peut pas dépasser 1000 caractères");
-        } else {
-            structuresFetchRequest("/api/structures");
-        }
-    };
-
-    /**
      * Fetch the strucutres
      * @param {String} url the url of the server
      */
@@ -101,6 +83,24 @@ function LstStructureHead({setFilterVisible, filterVisible, fetchStructures}) {
             closeModal();
         } else {
             setErrorFronted(error().errorData.error);
+        }
+    };
+
+    /**
+     * Handles the form submit
+     * @param {Event} e The event of form submit
+     */
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        const regex = /^[\p{L}\d@_-][\p{L}\d @_-]+$/u;
+        if (name().length < 1 || name().length > 64) {
+            setErrorFronted("Le nom de l'ouvrage doit comporter entre 1 et 64 caractères");
+        } else if (!regex.test(name())) {
+            setErrorFronted("Le nom doit contenir uniquement des lettres, des chiffres, des espaces, des underscores et des @");
+        } else if (note().length > 1000) {
+            setErrorFronted("La note d'un ouvrage ne peut pas dépasser 1000 caractères");
+        } else {
+            structuresFetchRequest("/api/structures");
         }
     };
 
