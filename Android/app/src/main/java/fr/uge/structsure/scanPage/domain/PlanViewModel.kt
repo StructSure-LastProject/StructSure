@@ -37,9 +37,6 @@ class PlanViewModel(context: Context, private val scanViewModel: ScanViewModel) 
     /** Image of the currently selected plan */
     val image = MutableLiveData(defaultImage)
 
-    /** Image for displaying in the sensor popup  */
-    val popupImage = MutableLiveData(defaultImage)
-
     init {
         val mediator = MediatorLiveData<List<SensorDB>>()
         mediator.addSource(scanViewModel.sensorsNotScanned) { sensors ->
