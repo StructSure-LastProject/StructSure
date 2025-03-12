@@ -81,9 +81,9 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
    * @param {String} controlChip The control chip
    * @param {String} measureChip The measure chip
    */
-  const saveTagOnLocalStorage = (controlChip, measureChip) => {
-    localStorage.setItem("controlChip", controlChip);
-    localStorage.setItem("measureChip", measureChip);
+  const saveTagOnLocalStorage = (ctrlChip, msrChip) => {
+    localStorage.setItem("controlChip", ctrlChip);
+    localStorage.setItem("measureChip", msrChip);
   }
 
   /**
@@ -101,6 +101,7 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
       controlChip: controlChip().trim(),
       measureChip: measureChip().trim(),
       installationDate: installationDate(),
+      archived: false,
       x: null,
       y: null
     }]);

@@ -63,7 +63,7 @@ function StructureDetailCanvas(props) {
     const filteredOptions = createMemo(() => {
         if (!props.localSensors()) return [];
         return props.localSensors().filter(detailSensor =>
-            detailSensor.x == null && detailSensor.y == null & detailSensor.name?.toLowerCase().includes(inputValue().toLowerCase() || "")
+            detailSensor.x == null && detailSensor.y == null && detailSensor.archived === false && detailSensor.name?.toLowerCase().includes(inputValue().toLowerCase() || "")
         );
     });
     
@@ -110,6 +110,10 @@ function StructureDetailCanvas(props) {
             }
             );
             props.setLocalSensors(newDetailSensors);
+            props.setSensorsDetail(props.structureDetails().sensors.map(sensor =>
+                sensor.controlChip === clickExistingPoint().controlChip && sensor.measureChip === clickExistingPoint().measureChip 
+                ? { ...sensor, x: null, y: null } : sensor
+            ));
             setClickExistingPoint(null);
             setInputValue("");
             setIsPopupVisible(false);

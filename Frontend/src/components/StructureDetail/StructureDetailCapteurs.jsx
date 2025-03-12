@@ -125,6 +125,23 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
         document.body.style.overflow = "auto";
     }
 
+    /**
+     * Updates the archived status of a specific sensor.
+     *
+     * This function searches for a sensor in the `sensors` array of `structureDetails()`
+     * that matches the given `sensorDetails` (based on `controlChip` and `measureChip`).
+     * If a match is found, it updates the sensor's `archived` property with `isArchiveValue`.
+     *
+     * @param {Object} sensorDetails - The details of the sensor to be updated.
+     * @param {boolean} isArchiveValue - The new archived state of the sensor (true for archived, false for active).
+     *
+     */
+    const updateDataWhenSensorArchived = (sensorDetails, isArchiveValue) => {
+        setSensorsDetail(structureDetails().sensors.map(sensor =>
+            sensor.controlChip === sensorDetails.controlChip && sensor.measureChip === sensorDetails.measureChip
+            ? { ...sensor, archived: isArchiveValue } : sensor
+        ));
+    }
 
     /**
      * Archive a sensor
@@ -148,6 +165,7 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
         await fetchData(navigate, "/api/sensors/archive", requestData);
 
         if (statusCode() === 200) {
+            updateDataWhenSensorArchived(sensorDetails, isArchiveValue);
             sensorsFetchRequest(structureId, setSensors, setTotalItems, navigate, {
                 orderByColumn: orderByColumn() !== "Tout" ? SORT_VALUES[orderByColumn()] : "STATE",
                 orderType: orderType() ? "ASC" : "DESC",
@@ -354,6 +372,8 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
                             sensorDetails={clickedSensor()} 
                             closeSensorPanel={closeSensorPanelHandler} 
                             setTotalItems={setTotalItems}
+                            setSensorsDetail={setSensorsDetail}
+                            structureDetails={structureDetails}
                             filters={{
                                 orderByColumn: orderByColumn() !== "Tout" ? SORT_VALUES[orderByColumn()] : "STATE",
                                 orderType: orderType() ? "ASC" : "DESC",

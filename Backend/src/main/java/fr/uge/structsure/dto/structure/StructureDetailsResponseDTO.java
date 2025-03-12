@@ -96,7 +96,7 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
      * @param x the position x of the sensor
      * @param y the position y of the sensor
      */
-    public record Sensor(String controlChip, String measureChip, String name, Integer x, Integer y) {
+    public record Sensor(String controlChip, String measureChip, String name, Integer x, Integer y, boolean archived) {
         public Sensor {
             Objects.requireNonNull(controlChip);
             Objects.requireNonNull(measureChip);
@@ -110,7 +110,7 @@ public record StructureDetailsResponseDTO(long id, String name, String note,
          */
         public static Sensor fromSensorEntity(fr.uge.structsure.entities.Sensor sensor) {
             return new Sensor(sensor.getSensorId().getControlChip(), sensor.getSensorId().getMeasureChip(), sensor.getName(),
-                    sensor.getX(), sensor.getY());
+                    sensor.getX(), sensor.getY(), sensor.isArchived());
         }
     }
 }
