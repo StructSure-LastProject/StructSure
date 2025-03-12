@@ -1,5 +1,5 @@
 import { createSignal, onMount, onCleanup, Show, createEffect, createMemo } from "solid-js";
-import { Check, ChevronDown, Minus, Plus, Trash2, X } from 'lucide-solid';
+import { Minus, Plus } from 'lucide-solid';
 import useFetch from '../../hooks/useFetch';
 import Alert from '../Alert';
 import { PointTooltip, PlacePoint } from "./StructureDetailCanvasModals";
