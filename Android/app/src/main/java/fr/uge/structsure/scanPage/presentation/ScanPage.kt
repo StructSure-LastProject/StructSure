@@ -112,7 +112,7 @@ fun ScanPage(context: Context,
         }
 
         ScanWeather(scanViewModel = scanViewModel, scrollState)
-        PlansView(scanViewModel)
+        PlansView(scanViewModel) { sensorPopup = it }
         SensorsList(scanViewModel, context) { sensorPopup = it }
 
         scanViewModel.sensorMessages.observeAsState(null).value?.let {

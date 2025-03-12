@@ -35,7 +35,7 @@ public record UserUpdateRequestDTO(String firstname, String lastname, String log
             .add("Nom", account.getLastname(), lastname)
             .add("Rôle", account.getRole().value, role)
             .add("Actif", account.getEnabled().toString(), accountState + "")
-            .add(!password.isEmpty(), "Mot de passe mis à jour")
+            .add(!password.isEmpty(), () -> "Mot de passe mis à jour")
             .toString();
     }
 }

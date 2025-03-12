@@ -1,5 +1,7 @@
 package fr.uge.structsure.utils;
 
+import java.util.function.Supplier;
+
 /**
  * Internal class to build diff summary between a previous value and
  * updates values that can then be logged.
@@ -30,7 +32,7 @@ public class DiffMaker {
      *             allowed to be logged (such as password)
      * @return the current object
      */
-    public DiffMaker add(boolean changed, String line) {
+    public DiffMaker add(boolean changed, Supplier<String> line) {
         if (changed) builder.append("\n").append(line);
         return this;
     }

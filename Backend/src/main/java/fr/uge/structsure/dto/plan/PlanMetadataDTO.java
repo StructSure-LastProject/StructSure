@@ -23,7 +23,7 @@ public record PlanMetadataDTO(String section, String name) {
         return new DiffMaker()
             .add("Nom", plan.getName(), name)
             .add("Section", plan.getSection(), section)
-            .add(imageUpdated, "Image mise à jour")
+            .add(imageUpdated, () -> "Image mise à jour")
             .toString();
     }
 }

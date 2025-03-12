@@ -127,9 +127,9 @@ class ScanRepository(context: Context) {
                     /* Get the new position of the sensor */
                     val sensor = sensorEdits.getOrPut(it.value) { SensorEditDTO(it.value) }
                     sensorEdits[it.value] = sensor.copy(
-                        plan = sensorDao.getSensor(it.value)?.plan,
-                        x = sensorDao.getSensor(it.value)?.x?.toInt(),
-                        y = sensorDao.getSensor(it.value)?.y?.toInt()
+                        plan = sensorDao.getSensor(it.value)?.plan?:-1,
+                        x = sensorDao.getSensor(it.value)?.x,
+                        y = sensorDao.getSensor(it.value)?.y
                     )
                 }
                 EditType.SENSOR_CREATION -> {

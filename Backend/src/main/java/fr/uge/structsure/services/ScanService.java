@@ -230,6 +230,12 @@ public class ScanService {
      * @param scan to add the installation date if not already set
      */
     private void setPlan(AndroidSensorEditDTO edit, Sensor sensor, Scan scan) {
+        if (edit.plan() == -1) { /* Plan removal */
+            sensor.setPlan(null);
+            sensor.setX(null);
+            sensor.setY(null);
+            return;
+        }
         if (edit.x() == null || edit.y() == null) {
             LOGGER.warn("Plan without coordinates received by Android will be ignored");
             return;

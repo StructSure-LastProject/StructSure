@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({HttpRequestMethodNotSupportedException.class})
     public ResponseEntity<String> handleRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception, HttpServletRequest request, HttpServletResponse response) {
-        LOGGER.info("Request method not supported for @{}/{} ({})", request.getMethod(), getUri(request), request.getRemoteHost());
+        LOGGER.info("Request method not supported for @{} {} ({})", request.getMethod(), getUri(request), request.getRemoteHost());
         response.setStatus(HttpStatus.NOT_FOUND.value());
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
