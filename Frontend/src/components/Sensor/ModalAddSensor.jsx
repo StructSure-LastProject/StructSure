@@ -1,10 +1,11 @@
-import {createEffect, createSignal, onCleanup, onMount, Show} from "solid-js";
+import {createSignal, onCleanup, onMount, Show} from "solid-js";
 import useFetch from "../../hooks/useFetch";
 import ModalHeader from "../Modal/ModalHeader";
 import ErrorMessage from "../Modal/ErrorMessage";
 import ModalField from "../Modal/ModalField";
 import ModalComment from "../Modal/ModalComment";
 import { useNavigate } from "@solidjs/router";
+import SensorFieldComponent from "../SensorPanel/SensorFieldComponent.jsx";
 
 /**
  * Modal for adding a sensor.
@@ -21,6 +22,7 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
   const [controlHint, setControlHint] = createSignal(nextChip() === "" ? "E280 6F12 0000 002 208F FACD" : nextChip());
   const [measureHint, setMeasureHint] = createSignal(nextChip() === "" ? "E280 6F12 0000 002 208F FACE" : nextChip());
   const [note, setNote] = createSignal("");
+  const [installationDate, setInstallationDate] = createSignal("");
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const [errorMsg, setError] = createSignal("");
   const navigate = useNavigate();
@@ -99,6 +101,7 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
       name: name().trim(),
       controlChip: controlChip().trim(),
       measureChip: measureChip().trim(),
+      installationDate: installationDate(),
       x: null,
       y: null
     }]);
@@ -156,7 +159,8 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
       name: name().trim(),
       note: note().trim(),
       measureChip: measureChip().trim(),
-      controlChip: controlChip().trim()
+      controlChip: controlChip().trim(),
+      installationDate: installationDate()
     };
 
     const { fetchData, statusCode, error } = useFetch();
@@ -259,6 +263,14 @@ const ModalAddSensor = ({ isOpen, onClose, nextChip, setNextChip, onSave, struct
             <ModalField label="Nom*" value={name()} maxLength={32} onInput={(e) => setName(e.target.value)} placeholder="Capteur 42" />
             <ModalField id="addSensorControl" label="Puce Témoin*" value={controlChip()} maxLength={32} onChange={(e) => setControlChip(updateChip(e.target.value))} placeholder={ controlHint() } />
             <ModalField id="addSensorMeasure" label="Puce Mesure*" value={measureChip()} maxLength={32} onChange={(e) => setMeasureChip(updateChip(e.target.value))} placeholder={ measureHint() } />
+            <SensorFieldComponent
+              title={"Date d’installation"}
+              value={installationDate}
+              editMode={()=>{return true;}}
+              type={"date"}
+              setter={setInstallationDate}
+              styles="rounded-[10px] px-[16px] py-[8px] w-full bg-lightgray normal text-black"
+            />
             <ModalComment note={note()} onInput={(e) => setNote(e.target.value)} />
           </div>
         </div>

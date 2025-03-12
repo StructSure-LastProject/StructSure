@@ -170,9 +170,13 @@ public class SensorService {
             throw new TraitementException(Error.SENSOR_NAME_ALREADY_EXISTS);
         }
         var sensor = new Sensor(sensorDto.controlChip(),
-            sensorDto.measureChip(),
-            sensorDto.name(),
-            sensorDto.note() == null ? "": sensorDto.note(),
+                sensorDto.measureChip(),
+                sensorDto.name(),
+                sensorDto.installationDate()
+                        .filter(dateStr -> !dateStr.isBlank())
+                        .map(dateStr -> LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE))
+                        .orElse(null),
+                sensorDto.note() == null ? "": sensorDto.note(),
                 structure);
         var saved = sensorRepository.save(sensor);
         appLogs.addSensor(request, sensor);

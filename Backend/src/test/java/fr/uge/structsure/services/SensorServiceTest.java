@@ -82,7 +82,7 @@ class SensorServiceTest extends DataBaseTests {
     // Test createSensor method
     @Test
     void testCreateSensor_StructureNotFound() {
-        BaseSensorDTO dto = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
+        BaseSensorDTO dto = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", Optional.empty(), "");
         when(structureRepository.findById(dto.structureId())).thenReturn(Optional.empty());
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(REQUEST, dto));
@@ -91,7 +91,7 @@ class SensorServiceTest extends DataBaseTests {
 
     @Test
     void testCreateSensor_SensorNameAlreadyExists() {
-        BaseSensorDTO dto = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
+        BaseSensorDTO dto = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", Optional.empty(), "");
         when(structureRepository.findById(dto.structureId())).thenReturn(Optional.of(new Structure()));
         when(sensorRepository.nameAlreadyExists(dto.name())).thenReturn(true);
 
@@ -101,7 +101,7 @@ class SensorServiceTest extends DataBaseTests {
 
     @Test
     void testCreateSensor_Success() throws TraitementException {
-        BaseSensorDTO dto = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", "");
+        BaseSensorDTO dto = new BaseSensorDTO(1L, "chip1", "chip2", "Sensor1", Optional.empty(), "");
         var structure = new Structure();
         when(structureRepository.findById(dto.structureId())).thenReturn(Optional.of(structure));
         when(sensorRepository.findByName(dto.name())).thenReturn(Optional.empty());
@@ -120,7 +120,7 @@ class SensorServiceTest extends DataBaseTests {
     // Test sensorEmptyPrecondition (indirectly tested through createSensor)
     @Test
     void testSensorEmptyPrecondition() {
-        BaseSensorDTO dto = new BaseSensorDTO(1L, null, "chip2", "Sensor1", "");
+        BaseSensorDTO dto = new BaseSensorDTO(1L, null, "chip2", "Sensor1", Optional.empty(), "");
 
         TraitementException exception = assertThrows(TraitementException.class, () -> sensorService.createSensor(REQUEST, dto));
         assertEquals(Error.SENSOR_CHIP_TAGS_IS_EMPTY, exception.error);
