@@ -100,13 +100,13 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
                 <p class="title w-full">{structureDetails().name}</p>
                     <Show when={isAuthorized()}>
                         <button
-                            class="bg-white rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+                            class="bg-white rounded-[50px] h-[40px] w-[40px] min-w-[40px] flex items-center justify-center"
                             onclick={openModal}
                         >
                             <Pencil size={20} />
                         </button>
                         <button
-                            class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] flex items-center justify-center"
+                            class="bg-[#F133271A] rounded-[50px] h-[40px] w-[40px] min-w-[40px] flex items-center justify-center"
                             onclick={handleArchiveClick}
                         >
                             <Trash2 color="red" size={20} />
