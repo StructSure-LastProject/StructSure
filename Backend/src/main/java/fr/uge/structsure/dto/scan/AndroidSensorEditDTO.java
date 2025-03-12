@@ -29,8 +29,8 @@ public record AndroidSensorEditDTO(
         if (name != null) diff.add("Nom", sensor.getName(), name);
         if (note != null) diff.add("Note", sensor.getNote(), note);
         return diff
-            .add(plan != null && plan == -1, "Plan retiré: #" + sensor.getPlan().getId())
-            .add(plan != null && plan != -1, "Plan ajouté: #" + plan + " (x:" + x + ", y:" + y + ")")
+            .add(plan != null && plan == -1, () -> "Plan retiré: #" + sensor.getPlan().getId())
+            .add(plan != null && plan != -1, () -> "Plan ajouté: #" + plan + " (x:" + x + ", y:" + y + ")")
             .toString();
     }
 }
