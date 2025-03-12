@@ -198,7 +198,6 @@ const SensorPanel = ({structureId, sensors, setSensors, setPlanSensors, selected
    *
   */
   const updateDataWhenSensorEdited = () => {
-    console.log("Edited: ", structureDetails());
     setSensorsDetail(structureDetails().sensors.map(sensor =>
       sensor.controlChip === sensorDetails.controlChip && sensor.measureChip === sensorDetails.measureChip
       ? { ...sensor, name: sensorName().trim() } : sensor

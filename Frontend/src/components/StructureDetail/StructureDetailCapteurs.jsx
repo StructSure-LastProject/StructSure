@@ -137,7 +137,6 @@ function StructureDetailCapteurs({structureId, setSensors, selectedScan, selecte
      *
      */
     const updateDataWhenSensorArchived = (sensorDetails, isArchiveValue) => {
-        console.log("Deleted: ", structureDetails());
         setSensorsDetail(structureDetails().sensors.map(sensor =>
             sensor.controlChip === sensorDetails.controlChip && sensor.measureChip === sensorDetails.measureChip
             ? { ...sensor, archived: isArchiveValue } : sensor
