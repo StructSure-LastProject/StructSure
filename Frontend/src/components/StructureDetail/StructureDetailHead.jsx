@@ -117,7 +117,7 @@ function StructureDetailHead({setTotalItems, setSensors, setNote, selectedPlan, 
                 <div class="relative w-full">
                     <select class="normal bg-white w-full h-[37px] rounded-full px-[16px] appearance-none" onChange={handleScanChange}>
                         <option value="-1">Aucun Scan Sélectionné</option>
-                        <For each={structureDetails().scans}>
+                        <For each={structureDetails()?.scans}>
                             {(scan) => (
                               <option value={scan.id} {...(selectedScan() === scan.id ? { selected: true } : {})} >{scan.dataRow}</option>
                             )}

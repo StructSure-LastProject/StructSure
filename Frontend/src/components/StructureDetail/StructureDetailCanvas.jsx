@@ -62,8 +62,8 @@ function StructureDetailCanvas(props) {
     };
 
     const filteredOptions = createMemo(() => {
-        if (!props.structureDetails().sensors) return [];
-        return props.structureDetails().sensors.filter(detailSensor =>
+        if (!props.localSensors()) return [];
+        return props.localSensors().filter(detailSensor =>
             detailSensor.x == null && detailSensor.y == null & detailSensor.name?.toLowerCase().includes(inputValue().toLowerCase() || "")
         );
     });
@@ -79,7 +79,7 @@ function StructureDetailCanvas(props) {
                 x: popupX(),
                 y: popupY()
             };
-            props.setSensorsDetail(props.structureDetails().sensors.map(sensor =>
+            props.setLocalSensors(props.localSensors().map(sensor =>
                 sensor.controlChip === selectedSensor().controlChip && sensor.measureChip === selectedSensor().measureChip 
                 ? { ...sensor, x: parseInt(newSensor.x), y: parseInt(newSensor.y) } : sensor
             ));
@@ -104,13 +104,13 @@ function StructureDetailCanvas(props) {
         if (clickExistingPoint()) {
 
             planSensorsFetchRequest(props.structureId, props.setPlanSensors, props.selectedPlanId(), navigate);
-            const newDetailSensors = props.structureDetails().sensors.map(sensor => {
+            const newDetailSensors = props.localSensors().map(sensor => {
                 return sensor.controlChip === clickExistingPoint().controlChip && sensor.measureChip === clickExistingPoint().measureChip
                     ? { ...sensor, x: null, y: null }
                     : sensor
             }
             );
-            props.setSensorsDetail(newDetailSensors);
+            props.setLocalSensors(newDetailSensors);
             setClickExistingPoint(null);
             setInputValue("");
             setIsPopupVisible(false);
@@ -388,9 +388,9 @@ function StructureDetailCanvas(props) {
     }
 
     /**
-         * Loads and draws the image from it's link
-         * @param {String} imgLink the link of the image
-         */
+     * Loads and draws the image from its link
+     * @param {String} imgLink the link of the image
+     */
     const loadAndDrawImage = (imgLink) => {
         img.src = imgLink;
         img.onload = () => drawImage();
@@ -415,7 +415,7 @@ function StructureDetailCanvas(props) {
     });
 
     /**
-     * This function is called in the begning when this component is mounted in the DOM
+     * This function is called in the beginning when this component is mounted in the DOM
      */
     onMount(() => {
         const ctx = canvasRef.getContext('2d');

@@ -1,5 +1,5 @@
 import {createEffect, createSignal, Show} from "solid-js";
-import {ChevronDown, ChevronRight, Dot, FolderSync, Pencil, Shield} from "lucide-solid";
+import {ChevronDown, ChevronRight, Dot, FolderSync, Pencil} from "lucide-solid";
 import { useSearchParams } from "@solidjs/router";
 import RestorePlanModal from "./RestorePlanModal.jsx"
 

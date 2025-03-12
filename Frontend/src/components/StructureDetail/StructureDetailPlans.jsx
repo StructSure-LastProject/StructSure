@@ -6,6 +6,8 @@ import DropdownsSection from "../Plan/DropdownsSection.jsx";
 import StructureDetailCanvas from "./StructureDetailCanvas";
 import useFetch from "../../hooks/useFetch.js";
 import {useNavigate, useSearchParams, useLocation} from "@solidjs/router";
+import {sensorsWithoutLimitAndOffsetFetchRequest} from "./StructureDetailBody.jsx";
+import image_plan_not_found from '/src/assets/image_plan_not_found.png';
 
 
 /**
@@ -23,6 +25,8 @@ export const planImageFetchRequest = async (planId, setPlan, navigate) => {
     await fetchImage(navigate, `/api/structures/plans/${planId()}/image`, requestData);
     if (statusCode() === 200) {
         setPlan(image());
+    } else {
+        setPlan(image_plan_not_found);
     }
 };
 
@@ -37,6 +41,7 @@ function StructureDetailPlans(props) {
 
     // Plans and modals state management
     const [plans, setPlans] = createSignal([]);
+    const [sensors, setSensors] = createSignal([]);
     const [isAddModalOpen, setIsAddModalOpen] = createSignal(false);
     const [isEditModalOpen, setIsEditModalOpen] = createSignal(false);
     const [selectedPlan, setSelectedPlan] = createSignal(null);
@@ -45,7 +50,8 @@ function StructureDetailPlans(props) {
     const [plan, setPlan] = createSignal(null);
 
     /**
-     *
+     * Tell whether the page is in scan mode
+     * @return the page is in scan mode or not
      */
     const isInScanMode = createMemo(() => {
         const scanParam = searchParams.selectedScan;
@@ -84,7 +90,7 @@ function StructureDetailPlans(props) {
             planImageFetchRequest(props.selectedPlanId, setPlan, navigate);
         }
     });
-    
+
     /**
      * Handles the edit action for a plan
      * @param {number|string} planId Identifier of the plan to edit
@@ -141,10 +147,10 @@ function StructureDetailPlans(props) {
      */
     const handlePlanRestore = (planId) => {
         setPlans(prevPlans =>
-          prevPlans.map(plan =>
-            plan.id === planId
-              ? { ...plan, archived: false, type: isAuthorized() ? "edit" : "plan" }
-              : plan
+          prevPlans.map(p =>
+            p.id === planId
+              ? { ...p, archived: false, type: isAuthorized() ? "edit" : "plan" }
+              : p
           )
         );
     }
@@ -155,10 +161,10 @@ function StructureDetailPlans(props) {
      */
     const handlePlanArchive = (planId) => {
         setPlans(prevPlans =>
-          prevPlans.map(plan =>
-            plan.id === planId
-              ? { ...plan, archived: true, type: "archived" }
-              : plan
+          prevPlans.map(p =>
+            p.id === planId
+              ? { ...p, archived: true, type: "archived" }
+              : p
           )
         );
 
@@ -180,6 +186,12 @@ function StructureDetailPlans(props) {
             }
             setPlan(null);
         }
+        sensorsWithoutLimitAndOffsetFetchRequest(
+          props.structureId,
+          setSensors,
+          () => {/*We don't need to set total items here*/},
+          navigate
+        )
         closeEditModal();
     }
 
@@ -190,6 +202,10 @@ function StructureDetailPlans(props) {
         const userRole = localStorage.getItem("role");
         const isOperator = userRole === "OPERATEUR";
         setIsAuthorized(userRole === "ADMIN" || userRole === "RESPONSABLE");
+
+        if (props.structureDetails().sensors) {
+            setSensors(props.structureDetails().sensors);
+        }
 
         if (props.structureDetails().plans) {
             let plansToDisplay = isOperator
@@ -211,6 +227,10 @@ function StructureDetailPlans(props) {
                 };
             });
             setPlans(newPlans);
+
+            if (plansToDisplay.length <= 0) {
+                setPlan(null)
+            }
         }
     });
 
@@ -274,6 +294,8 @@ function StructureDetailPlans(props) {
                                 interactiveMode={true}
                                 planSensors={props.planSensors}
                                 structureDetails={props.structureDetails}
+                                localSensors={sensors}
+                                setLocalSensors={setSensors}
                                 setPlanSensors={props.setPlanSensors}
                                 sensors={props.sensors}
                                 setSensors={props.setSensors}

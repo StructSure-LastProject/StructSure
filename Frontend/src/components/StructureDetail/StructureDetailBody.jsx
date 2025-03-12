@@ -5,8 +5,6 @@ import { useNavigate, useSearchParams } from '@solidjs/router';
 import { createEffect, createSignal } from "solid-js";
 import useFetch from '../../hooks/useFetch';
 
-
-
 /**
  * Will fetch the sensors for the plan
  */
@@ -151,7 +149,6 @@ function StructureDetailBody(props) {
     const navigate = useNavigate();
 
     const [note, setNote] = createSignal("");
-    
 
     /**
      * Will fetch the structure details
@@ -173,9 +170,7 @@ function StructureDetailBody(props) {
         }
     };
 
-
     createEffect(() => structureDetailsFetchRequest(props.structureId));
-
 
     createEffect(() => planSensorsFetchRequest(props.structureId, setPlanSensors, selectedPlanId(), navigate));
 
@@ -186,8 +181,6 @@ function StructureDetailBody(props) {
     const setSensorsDetail = (s) => {
         setStructureDetails(prev => ({ ...prev, sensors: s }));
     };
-
-
 
     return (
         <div class="flex flex-col gap-y-50px max-w-1250px mx-auto w-full">
