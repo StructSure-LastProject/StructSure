@@ -18,6 +18,8 @@ function LstStructureHead({setFilterVisible, filterVisible, fetchStructures}) {
     const closeModal = () => {
         setModalVisible(false);
         setErrorFronted("");
+        setName("");
+        setNote("");
     };
 
     const [errorFronted, setErrorFronted] = createSignal("");
