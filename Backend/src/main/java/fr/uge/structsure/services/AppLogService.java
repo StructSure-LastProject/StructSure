@@ -144,7 +144,7 @@ public class AppLogService {
      * @param account the account that is edited
      * @param edits the edited structures and their new state
      */
-    public void editAccountAccess(HttpServletRequest request, Account account, ArrayList<StructurePermission> edits) {
+    public void editAccountAccess(HttpServletRequest request, Account account, List<StructurePermission> edits) {
         var author = currentAccount(request);
         var diff = edits.stream()
             .map(e -> "#" + e.structureId() + " " + (e.hasAccess() ? "ajouté" : "retiré"))
@@ -243,7 +243,6 @@ public class AppLogService {
      * @param plan the plan that got archived
      */
     public void archivePlan(HttpServletRequest request, Plan plan) {
-        // TODO connect to the service method once implemented
         var author = currentAccount(request);
         save(author, String.format("Plan archivé: %s", plan));
     }
@@ -254,7 +253,6 @@ public class AppLogService {
      * @param plan the plan that got restored
      */
     public void restorePlan(HttpServletRequest request, Plan plan) {
-        // TODO connect to the service method once implemented
         var author = currentAccount(request);
         save(author, String.format("Plan restoré: %s", plan));
     }

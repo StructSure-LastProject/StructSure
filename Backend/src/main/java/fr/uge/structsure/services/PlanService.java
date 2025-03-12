@@ -506,12 +506,12 @@ public class PlanService {
      * Archive a plan and remove all sensors associated
      * @param id The structure id
      * @param planId The plan id
-     * @param httpRequest The http servlet request info
+     * @param request The http servlet request info
      * @return the record containing the response
      * @throws TraitementException in case of incorrect behaviour
      */
-    public ArchiveRestorePlanResponseDTO archivePlan(Long id, Long planId, HttpServletRequest httpRequest) throws TraitementException {
-        Objects.requireNonNull(httpRequest);
+    public ArchiveRestorePlanResponseDTO archivePlan(Long id, Long planId, HttpServletRequest request) throws TraitementException {
+        Objects.requireNonNull(request);
         planEmptyPrecondition(id, planId);
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
 
@@ -519,6 +519,7 @@ public class PlanService {
         plan.setArchived(true);
         sensorRepository.clearPlanReferencesByPlanId(planId);
         var saved = planRepository.save(plan);
+        appLogs.archivePlan(request, plan);
         return new ArchiveRestorePlanResponseDTO(saved.getId(), saved.getName(), saved.isArchived());
     }
 
@@ -526,17 +527,18 @@ public class PlanService {
      * Restore a plan
      * @param id The structure id
      * @param planId The plan id
-     * @param httpRequest The http servlet request info
+     * @param request The http servlet request info
      * @return the record containing the response
      * @throws TraitementException in case of incorrect behaviou
      */
-    public ArchiveRestorePlanResponseDTO restorePlan(Long id, Long planId, HttpServletRequest httpRequest) throws TraitementException {
-        Objects.requireNonNull(httpRequest);
+    public ArchiveRestorePlanResponseDTO restorePlan(Long id, Long planId, HttpServletRequest request) throws TraitementException {
+        Objects.requireNonNull(request);
         planEmptyPrecondition(id, planId);
         var structure = structureRepository.findById(id).orElseThrow(() -> new TraitementException(Error.PLAN_STRUCTURE_NOT_FOUND));
         var plan = planRepository.findByStructureAndId(structure, planId).orElseThrow(() -> new TraitementException(Error.PLAN_NOT_FOUND));
         plan.setArchived(false);
         var saved = planRepository.save(plan);
+        appLogs.restorePlan(request, plan);
         return new ArchiveRestorePlanResponseDTO(saved.getId(), saved.getName(), saved.isArchived());
     }
 }
